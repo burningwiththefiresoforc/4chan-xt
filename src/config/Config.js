@@ -246,6 +246,10 @@ const Config = {
         true,
         'Expand images / videos.'
       ],
+      'Image Media Controls': [
+        true,
+        'Show additional media controls when hovering over expanded images.'
+      ],
       'Image Hover': [
         true,
         'Show full image / video on mouseover.'
@@ -677,6 +681,8 @@ const Config = {
       'Advance to next post when contracting an expanded image.'
     ]
   },
+
+  imageMediaControlsPosition: 'top-left',
 
   gallery: {
     'Hide Thumbnails': [
