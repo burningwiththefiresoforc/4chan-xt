@@ -1,7 +1,4 @@
-# 4chan XT is dead
-
-I stopped using 4chan since the hack. I now browse alt chans that actually care about their users, and don't need an 
-userscript fighting their shitty design.
+Custom fork
 
 <details>
 <summary>Old readme</summary>

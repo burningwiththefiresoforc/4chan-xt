@@ -58,7 +58,7 @@
     ],
     "persistent": false
   },
-  "homepage_url": "https://github.com/TuxedoTako/4chan-xt",
+  "homepage_url": "https://github.com/burningwiththefiresoforc/4chan-xt",
   "minimum_chrome_version": "90",
   "applications": {
     "gecko": {

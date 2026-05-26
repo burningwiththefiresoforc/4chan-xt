@@ -5,7 +5,7 @@
 // @minFFVer     78
 // @namespace    4chan-XT
 // @description  4chan XT is a script that adds various features to anonymous imageboards.
-// @license      MIT; https://github.com/TuxedoTako/4chan-xt/blob/project-XT/LICENSE
+// @license      MIT; https://github.com/burningwiththefiresoforc/4chan-xt/blob/project-XT/LICENSE
 // @include      https://boards.4chan.org/*
 // @include      https://sys.4chan.org/*
 // @include      https://www.4chan.org/*
@@ -177,17 +177,17 @@
    "name": "4chan XT",
    "path": "4chan-XT",
    "fork": "TuxedoTako",
-   "page": "https://github.com/TuxedoTako/4chan-xt",
-   "downloads": "https://github.com/TuxedoTako/4chan-xt/releases",
+   "page": "https://github.com/burningwiththefiresoforc/4chan-xt",
+   "downloads": "https://github.com/burningwiththefiresoforc/4chan-xt/releases",
    "oldVersions": "https://raw.githubusercontent.com/ccd0/4chan-x/",
-   "faq": "https://github.com/TuxedoTako/4chan-xt/wiki/Frequently-Asked-Questions",
+   "faq": "https://github.com/burningwiththefiresoforc/4chan-xt/wiki/Frequently-Asked-Questions",
    "upstreamFaq": "https://github.com/ccd0/4chan-x/wiki/Frequently-Asked-Questions",
    "captchaFAQ": "https://github.com/ccd0/4chan-x/wiki/Captcha-FAQ",
    "cssGuide": "https://github.com/ccd0/4chan-x/wiki/Styling-Guide",
-   "license": "https://github.com/TuxedoTako/4chan-xt/blob/project-XT/LICENSE",
-   "changelog": "https://github.com/TuxedoTako/4chan-xt/blob/project-XT/CHANGELOG.md",
-   "issues": "https://github.com/TuxedoTako/4chan-xt/issues",
-   "newIssue": "https://github.com/TuxedoTako/4chan-xt/issues",
+   "license": "https://github.com/burningwiththefiresoforc/4chan-xt/blob/project-XT/LICENSE",
+   "changelog": "https://github.com/burningwiththefiresoforc/4chan-xt/blob/project-XT/CHANGELOG.md",
+   "issues": "https://github.com/burningwiththefiresoforc/4chan-xt/issues",
+   "newIssue": "https://github.com/burningwiththefiresoforc/4chan-xt/issues",
    "newIssueMaxLength": 8181,
    "alternatives": "https://www.4chan-x.net/4chan_alternatives.html",
    "appid": "lacclbnghgdicfifcamcmcnilckjamag",
@@ -241,42 +241,47 @@
   };
 
   class Callbacks {
-    static initClass() {
-      this.Post          = new Callbacks('Post');
-      this.Thread        = new Callbacks('Thread');
-      this.CatalogThread = new Callbacks('Catalog Thread');
-      this.CatalogThreadNative = new Callbacks('Catalog Thread');
-    }
-
-    constructor(type) {
-      this.type = type;
-      this.keys = [];
-    }
-
-    push({name, cb}) {
-      if (!this[name]) { this.keys.push(name); }
-      return this[name] = cb;
-    }
-
-    execute(node, keys=this.keys, force=false) {
-      let errors;
-      if (node.callbacksExecuted && !force) { return; }
-      node.callbacksExecuted = true;
-      for (var name of keys) {
-        try {
-          this[name]?.call(node);
-        } catch (err) {
-          if (!errors) { errors = []; }
-          errors.push({
-            message: ['"', name, '" crashed on node ', this.type, ' No.', node.ID, ' (', node.board, ').'].join(''),
-            error: err,
-            html: node.nodes?.root?.outerHTML
-          });
-        }
+      static initClass() {
+          this.Post = new Callbacks('Post');
+          this.Thread = new Callbacks('Thread');
+          this.CatalogThread = new Callbacks('Catalog Thread');
+          this.CatalogThreadNative = new Callbacks('Catalog Thread');
       }
-
-      if (errors) { return Main.handleErrors(errors); }
-    }
+      constructor(type) {
+          this.type = type;
+          this.keys = [];
+      }
+      push({ name, cb }) {
+          if (!this[name]) {
+              this.keys.push(name);
+          }
+          return this[name] = cb;
+      }
+      execute(node, keys = this.keys, force = false) {
+          let errors;
+          if (node.callbacksExecuted && !force) {
+              return;
+          }
+          node.callbacksExecuted = true;
+          for (var name of keys) {
+              try {
+                  this[name]?.call(node);
+              }
+              catch (err) {
+                  if (!errors) {
+                      errors = [];
+                  }
+                  errors.push({
+                      message: ['"', name, '" crashed on node ', this.type, ' No.', node.ID, ' (', node.board, ').'].join(''),
+                      error: err,
+                      html: node.nodes?.root?.outerHTML
+                  });
+              }
+          }
+          if (errors) {
+              return Main.handleErrors(errors);
+          }
+      }
   }
   Callbacks.initClass();
 
@@ -304,796 +309,775 @@ div.boardTitle {
   var banners = ["0.jpg", "1.jpg", "2.jpg", "4.jpg", "6.jpg", "7.jpg", "8.jpg", "9.jpg", "10.jpg", "11.jpg", "12.jpg", "13.jpg", "14.jpg", "16.jpg", "17.jpg", "18.jpg", "19.jpg", "20.jpg", "21.jpg", "22.jpg", "24.jpg", "25.jpg", "26.jpg", "28.jpg", "29.jpg", "33.jpg", "38.jpg", "39.jpg", "43.jpg", "44.jpg", "45.jpg", "46.jpg", "47.jpg", "52.jpg", "54.jpg", "57.jpg", "59.jpg", "60.jpg", "61.jpg", "64.jpg", "66.jpg", "67.jpg", "69.jpg", "71.jpg", "72.jpg", "76.jpg", "77.jpg", "81.jpg", "82.jpg", "83.jpg", "84.jpg", "88.jpg", "90.jpg", "91.jpg", "96.jpg", "98.jpg", "99.jpg", "100.jpg", "104.jpg", "106.jpg", "116.jpg", "119.jpg", "137.jpg", "140.jpg", "148.jpg", "149.jpg", "150.jpg", "154.jpg", "156.jpg", "157.jpg", "158.jpg", "159.jpg", "161.jpg", "162.jpg", "164.jpg", "165.jpg", "166.jpg", "167.jpg", "168.jpg", "169.jpg", "170.jpg", "171.jpg", "172.jpg", "173.jpg", "174.jpg", "175.jpg", "176.jpg", "178.jpg", "179.jpg", "180.jpg", "181.jpg", "182.jpg", "183.jpg", "186.jpg", "189.jpg", "190.jpg", "192.jpg", "193.jpg", "194.jpg", "197.jpg", "198.jpg", "200.jpg", "201.jpg", "202.jpg", "203.jpg", "205.jpg", "206.jpg", "207.jpg", "208.jpg", "210.jpg", "213.jpg", "214.jpg", "215.jpg", "216.jpg", "218.jpg", "219.jpg", "220.jpg", "221.jpg", "222.jpg", "223.jpg", "224.jpg", "227.jpg", "0.png", "1.png", "2.png", "3.png", "5.png", "6.png", "9.png", "10.png", "11.png", "12.png", "14.png", "16.png", "19.png", "20.png", "21.png", "22.png", "23.png", "24.png", "26.png", "27.png", "28.png", "29.png", "30.png", "31.png", "32.png", "33.png", "34.png", "37.png", "39.png", "40.png", "41.png", "42.png", "43.png", "44.png", "45.png", "48.png", "49.png", "50.png", "51.png", "52.png", "53.png", "57.png", "58.png", "59.png", "64.png", "66.png", "67.png", "68.png", "69.png", "70.png", "71.png", "72.png", "76.png", "78.png", "79.png", "81.png", "82.png", "85.png", "86.png", "87.png", "89.png", "95.png", "98.png", "100.png", "101.png", "102.png", "105.png", "106.png", "107.png", "109.png", "110.png", "111.png", "112.png", "113.png", "114.png", "115.png", "116.png", "118.png", "119.png", "120.png", "121.png", "122.png", "123.png", "126.png", "128.png", "130.png", "134.png", "136.png", "138.png", "139.png", "140.png", "142.png", "145.png", "146.png", "149.png", "150.png", "151.png", "152.png", "153.png", "154.png", "155.png", "156.png", "157.png", "158.png", "159.png", "160.png", "163.png", "164.png", "165.png", "166.png", "167.png", "168.png", "169.png", "170.png", "171.png", "172.png", "173.png", "174.png", "178.png", "179.png", "180.png", "181.png", "182.png", "184.png", "186.png", "188.png", "190.png", "192.png", "193.png", "194.png", "195.png", "196.png", "197.png", "198.png", "200.png", "202.png", "203.png", "205.png", "206.png", "207.png", "209.png", "212.png", "213.png", "214.png", "216.png", "217.png", "218.png", "219.png", "220.png", "221.png", "222.png", "223.png", "224.png", "225.png", "226.png", "229.png", "231.png", "232.png", "233.png", "234.png", "235.png", "237.png", "238.png", "239.png", "240.png", "241.png", "242.png", "244.png", "245.png", "246.png", "247.png", "248.png", "249.png", "250.png", "253.png", "254.png", "255.png", "256.png", "257.png", "258.png", "259.png", "260.png", "262.png", "268.png", "0.gif", "1.gif", "2.gif", "3.gif", "4.gif", "5.gif", "6.gif", "7.gif", "8.gif", "9.gif", "10.gif", "12.gif", "13.gif", "14.gif", "15.gif", "16.gif", "18.gif", "19.gif", "20.gif", "21.gif", "22.gif", "23.gif", "24.gif", "28.gif", "29.gif", "30.gif", "33.gif", "34.gif", "35.gif", "36.gif", "37.gif", "39.gif", "40.gif", "42.gif", "44.gif", "45.gif", "46.gif", "48.gif", "50.gif", "52.gif", "54.gif", "55.gif", "57.gif", "58.gif", "59.gif", "60.gif", "61.gif", "63.gif", "64.gif", "66.gif", "67.gif", "68.gif", "69.gif", "70.gif", "72.gif", "73.gif", "75.gif", "76.gif", "77.gif", "78.gif", "80.gif", "81.gif", "82.gif", "83.gif", "86.gif", "87.gif", "88.gif", "92.gif", "93.gif", "94.gif", "95.gif", "96.gif", "97.gif", "98.gif", "99.gif", "100.gif", "101.gif", "102.gif", "103.gif", "104.gif", "105.gif", "106.gif", "108.gif", "109.gif", "110.gif", "111.gif", "112.gif", "113.gif", "115.gif", "116.gif", "117.gif", "118.gif", "119.gif", "120.gif", "122.gif", "123.gif", "124.gif", "127.gif", "129.gif", "130.gif", "131.gif", "134.gif", "135.gif", "136.gif", "138.gif", "139.gif", "141.gif", "144.gif", "146.gif", "148.gif", "149.gif", "153.gif", "154.gif", "155.gif", "157.gif", "158.gif", "159.gif", "160.gif", "161.gif", "162.gif", "164.gif", "166.gif", "167.gif", "168.gif", "169.gif", "170.gif", "171.gif", "172.gif", "173.gif", "174.gif", "175.gif", "176.gif", "177.gif", "178.gif", "181.gif", "182.gif", "183.gif", "185.gif", "186.gif", "187.gif", "188.gif", "189.gif", "190.gif", "191.gif", "192.gif", "193.gif", "195.gif", "196.gif", "197.gif", "200.gif", "201.gif", "202.gif", "203.gif", "204.gif", "205.gif", "206.gif", "207.gif", "208.gif", "209.gif", "210.gif", "211.gif", "212.gif", "213.gif", "214.gif", "215.gif", "216.gif", "217.gif", "219.gif", "220.gif", "221.gif", "222.gif", "224.gif", "225.gif", "226.gif", "227.gif", "228.gif", "230.gif", "232.gif", "233.gif", "234.gif", "235.gif", "238.gif", "240.gif", "241.gif", "243.gif", "244.gif", "245.gif", "246.gif", "247.gif", "249.gif", "250.gif", "251.gif", "253.gif"];
 
   const Config = {
-    main: {
-      'Miscellaneous': {
-        'JSON Index': [
-          true,
-          'Replace the original board index with one supporting searching, sorting, infinite scrolling, and a catalog mode.'
-        ],
-        [`Use ${meta.name} Catalog`]: [
-          true,
-          `Link to ${meta.name}'s catalog instead of the native 4chan one.`,
-          1
-        ],
-        'Index Refresh Notifications': [
-          false,
-          'Show a notice at the top of the page when the index is refreshed.',
-          1
-        ],
-        'Follow Cursor': [
-          true,
-          'Image Hover and Quote Preview move with the mouse cursor.'
-        ],
-        'Open Threads in New Tab': [
-          false,
-          `Make links to threads in the index / ${meta.name} catalog open in a new tab.`
-        ],
-        'External Catalog': [
-          false,
-          'Link to external catalog instead of the internal one.'
-        ],
-        'Catalog Links': [
-          false,
-          'Add toggle link in header menu to turn Navigation links into links to each board\'s catalog.'
-        ],
-        'Announcement Hiding': [
-          true,
-          'Add button to hide 4chan announcements.'
-        ],
-        'Desktop Notifications': [
-          true,
-          `Enables desktop notifications across various ${meta.name} features.`
-        ],
-        '404 Redirect': [
-          true,
-          'Redirect dead threads and images to the archives.'
-        ],
-        'Archive Report': [
-          true,
-          'Enable reporting posts to supported archives.'
-        ],
-        'Exempt Archives from Encryption': [
-          false,
-          'Permit loading content from, and warningless redirects to, HTTP-only archives from HTTPS pages.'
-        ],
-        'Keybinds': [
-          true,
-          'Bind actions to keyboard shortcuts.'
-        ],
-        'Time Formatting': [
-          true,
-          'Localize and format timestamps. Has more options on the "Advanced" tab.'
-        ],
-        'Comment Expansion': [
-          true,
-          'Expand comments that are too long to display on the index. Not applicable with JSON Index.'
-        ],
-        'File Info Formatting': [
-          true,
-          'Reformat the file information.'
-        ],
-        'Thread Expansion': [
-          true,
-          'Add buttons to expand threads.'
-        ],
-        'Index Navigation': [
-          false,
-          'Add buttons to navigate between threads.'
-        ],
-        'Reply Navigation': [
-          false,
-          'Add buttons to navigate to top / bottom of thread.'
-        ],
-        'Unique ID and Capcode Navigation': [
-          false,
-          'Add buttons to navigate to posts having the same unique ID or capcode.'
-        ],
-        'Custom Board Titles': [
-          true,
-          'Allow editing of the board title and subtitle by ctrl/\u2318+clicking them.'
-        ],
-        'Persistent Custom Board Titles': [
-          false,
-          'Force custom board titles to be persistent, even if the board titles are updated.',
-          1
-        ],
-        'Show Updated Notifications': [
-          true,
-          `Show notifications when ${meta.name} is successfully updated.`
-        ],
-        'Color User IDs': [
-          true,
-          'Assign unique colors to user IDs on boards that use them'
-        ],
-        'Count Posts by ID': [
-          true,
-          'Display number of posts in the thread when hovering over an ID.'
-        ],
-        'Remove Spoilers': [
-          false,
-          'Remove all spoilers in text.'
-        ],
-        'Reveal Spoilers': [
-          false,
-          'Indicate spoilers if Remove Spoilers is enabled, or make the text appear hovered if Remove Spoiler is disabled.'
-        ],
-        'Normalize URL': [
-          true,
-          'Rewrite the URL of the current page, removing slugs and excess slashes, and changing /res/ to /thread/.'
-        ],
-        'Disable Autoplaying Sounds': [
-          false,
-          'Prevent sounds on the page from autoplaying.'
-        ],
-        'Disable Native Extension': [
-          true,
-          `${meta.name} is NOT designed to work with the native extension.`
-        ],
-        'Enable Native Flash Embedding': [
-          true,
-          'Activate the native extension\'s Flash embedding if the native extension is disabled.'
-        ],
-        'Export History': [
-          true,
-          'Export last read, your posts, etc. when exporting the setting'
-        ],
-        'Ask to Export History': [
-          true,
-          'Ask if history should be exported when settings are exported.'
-        ],
-        'Scroll Markers': [
-          true,
-          'Mark your posts and replies to them on the scroll bar. Relies on the "Highlight Posts Quoting You" and ' +
-            '"Highlight Own Posts" settings'
-        ],
+      main: {
+          'Miscellaneous': {
+              'JSON Index': [
+                  true,
+                  'Replace the original board index with one supporting searching, sorting, infinite scrolling, and a catalog mode.'
+              ],
+              [`Use ${meta.name} Catalog`]: [
+                  true,
+                  `Link to ${meta.name}'s catalog instead of the native 4chan one.`,
+                  1
+              ],
+              'Index Refresh Notifications': [
+                  false,
+                  'Show a notice at the top of the page when the index is refreshed.',
+                  1
+              ],
+              'Follow Cursor': [
+                  true,
+                  'Image Hover and Quote Preview move with the mouse cursor.'
+              ],
+              'Open Threads in New Tab': [
+                  false,
+                  `Make links to threads in the index / ${meta.name} catalog open in a new tab.`
+              ],
+              'External Catalog': [
+                  false,
+                  'Link to external catalog instead of the internal one.'
+              ],
+              'Catalog Links': [
+                  false,
+                  'Add toggle link in header menu to turn Navigation links into links to each board\'s catalog.'
+              ],
+              'Announcement Hiding': [
+                  true,
+                  'Add button to hide 4chan announcements.'
+              ],
+              'Desktop Notifications': [
+                  true,
+                  `Enables desktop notifications across various ${meta.name} features.`
+              ],
+              '404 Redirect': [
+                  true,
+                  'Redirect dead threads and images to the archives.'
+              ],
+              'Archive Report': [
+                  true,
+                  'Enable reporting posts to supported archives.'
+              ],
+              'Exempt Archives from Encryption': [
+                  false,
+                  'Permit loading content from, and warningless redirects to, HTTP-only archives from HTTPS pages.'
+              ],
+              'Keybinds': [
+                  true,
+                  'Bind actions to keyboard shortcuts.'
+              ],
+              'Time Formatting': [
+                  true,
+                  'Localize and format timestamps. Has more options on the "Advanced" tab.'
+              ],
+              'Comment Expansion': [
+                  true,
+                  'Expand comments that are too long to display on the index. Not applicable with JSON Index.'
+              ],
+              'File Info Formatting': [
+                  true,
+                  'Reformat the file information.'
+              ],
+              'Thread Expansion': [
+                  true,
+                  'Add buttons to expand threads.'
+              ],
+              'Index Navigation': [
+                  false,
+                  'Add buttons to navigate between threads.'
+              ],
+              'Reply Navigation': [
+                  false,
+                  'Add buttons to navigate to top / bottom of thread.'
+              ],
+              'Unique ID and Capcode Navigation': [
+                  false,
+                  'Add buttons to navigate to posts having the same unique ID or capcode.'
+              ],
+              'Custom Board Titles': [
+                  true,
+                  'Allow editing of the board title and subtitle by ctrl/\u2318+clicking them.'
+              ],
+              'Persistent Custom Board Titles': [
+                  false,
+                  'Force custom board titles to be persistent, even if the board titles are updated.',
+                  1
+              ],
+              'Show Updated Notifications': [
+                  true,
+                  `Show notifications when ${meta.name} is successfully updated.`
+              ],
+              'Color User IDs': [
+                  true,
+                  'Assign unique colors to user IDs on boards that use them'
+              ],
+              'Count Posts by ID': [
+                  true,
+                  'Display number of posts in the thread when hovering over an ID.'
+              ],
+              'Remove Spoilers': [
+                  false,
+                  'Remove all spoilers in text.'
+              ],
+              'Reveal Spoilers': [
+                  false,
+                  'Indicate spoilers if Remove Spoilers is enabled, or make the text appear hovered if Remove Spoiler is disabled.'
+              ],
+              'Normalize URL': [
+                  true,
+                  'Rewrite the URL of the current page, removing slugs and excess slashes, and changing /res/ to /thread/.'
+              ],
+              'Disable Autoplaying Sounds': [
+                  false,
+                  'Prevent sounds on the page from autoplaying.'
+              ],
+              'Disable Native Extension': [
+                  true,
+                  `${meta.name} is NOT designed to work with the native extension.`
+              ],
+              'Enable Native Flash Embedding': [
+                  true,
+                  'Activate the native extension\'s Flash embedding if the native extension is disabled.'
+              ],
+              'Export History': [
+                  true,
+                  'Export last read, your posts, etc. when exporting the setting'
+              ],
+              'Ask to Export History': [
+                  true,
+                  'Ask if history should be exported when settings are exported.'
+              ],
+              'Scroll Markers': [
+                  true,
+                  'Mark your posts and replies to them on the scroll bar. Relies on the "Highlight Posts Quoting You" and ' +
+                      '"Highlight Own Posts" settings'
+              ],
+          },
+          'Linkification': {
+              'Linkify': [
+                  true,
+                  'Convert text into links where applicable.'
+              ],
+              'Link Title': [
+                  true,
+                  'Replace the link of a supported site with its actual title.',
+                  1
+              ],
+              'Link Title in the catalog': [
+                  false,
+                  'Replace the link of a supported site with its actual title in the catalog too. ' +
+                      'Speed up performance for boards that have many embeds (e.g /vt/) if turned off',
+                  2
+              ],
+              'Cover Preview': [
+                  true,
+                  'Show preview of supported links on hover.',
+                  1
+              ],
+              'Embedding': [
+                  true,
+                  'Embed supported services. Note: Some services don\'t work on HTTPS.',
+                  1
+              ],
+              'Auto-embed': [
+                  false,
+                  'Auto-embed Linkify Embeds.',
+                  2
+              ],
+              'Floating Embeds': [
+                  false,
+                  'Embed content in a frame that remains in place when the page is scrolled.',
+                  2
+              ],
+          },
+          'Filtering': {
+              'Anonymize': [
+                  false,
+                  'Make everyone Anonymous.'
+              ],
+              'Filter': [
+                  true,
+                  'Self-moderation placebo.'
+              ],
+              'Filtered Backlinks': [
+                  false,
+                  'When enabled, shows backlinks to filtered posts with a line-through decoration. Otherwise, hides the backlinks.',
+                  1
+              ],
+              'Filter in Native Catalog': [
+                  true,
+                  'Apply 4chan X filters in native catalog.',
+                  1
+              ],
+              'MD5 Quick Filter Notifications': [
+                  true,
+                  'Show notification when quick filtering MD5s using the button or keybind.',
+                  1
+              ],
+              'MD5 Quick Filter in the Catalog': [
+                  true,
+                  'Quick filter by MD5 when clicking a thumbnail in the catalog and holding Shift. Disabling falls back on just hiding the thread.',
+                  1
+              ],
+              'MD5 Quick Filter in Threads': [
+                  true,
+                  'Quick filter by MD5 when clicking a thumbnail in a thread while holding shift.',
+                  1
+              ],
+              'Recursive Hiding': [
+                  true,
+                  'Hide replies of hidden posts, recursively.'
+              ],
+              'Thread Hiding Buttons': [
+                  true,
+                  'Add buttons to hide entire threads.'
+              ],
+              'Reply Hiding Buttons': [
+                  true,
+                  'Add buttons to hide single replies.'
+              ],
+              'Stubs': [
+                  true,
+                  'Show stubs of hidden threads / replies.'
+              ],
+              'Filter Reason': [
+                  true,
+                  'Show the reason the post was hidden in the stub. If disabled, you can hover over the stub to see the reason.'
+              ],
+          },
+          'Images and Videos': {
+              'Image Expansion': [
+                  true,
+                  'Expand images / videos.'
+              ],
+              'Image Hover': [
+                  true,
+                  'Show full image / video on mouseover.'
+              ],
+              'Image Hover in Catalog': [
+                  true,
+                  `Show full image / video on mouseover in ${meta.name} catalog.`
+              ],
+              'Gallery': [
+                  true,
+                  'Adds a simple and cute image gallery. Has more options in the gallery menu.'
+              ],
+              'Fullscreen Gallery': [
+                  false,
+                  'Open gallery in fullscreen mode.',
+                  1
+              ],
+              'PDF in Gallery': [
+                  false,
+                  'Show PDF files in gallery.',
+                  1
+              ],
+              'Sauce': [
+                  true,
+                  'Add sauce links to images.'
+              ],
+              'WEBM Metadata': [
+                  true,
+                  'Add link to fetch title metadata from webm videos.'
+              ],
+              'Reveal Spoiler Thumbnails': [
+                  false,
+                  'Replace spoiler thumbnails with the original image.'
+              ],
+              'Replace GIF': [
+                  false,
+                  'Replace gif thumbnails with the actual image.'
+              ],
+              'Replace JPG': [
+                  false,
+                  'Replace jpg thumbnails with the actual image.'
+              ],
+              'Replace PNG': [
+                  false,
+                  'Replace png thumbnails with the actual image.'
+              ],
+              'Replace WEBM': [
+                  false,
+                  'Replace webm, mp4, and ogv thumbnails with the actual video. Probably will degrade browser performance ;)'
+              ],
+              'Image Prefetching': [
+                  true,
+                  'Add a shortcut icon to the header to turn on image preloading.'
+              ],
+              'Fappe Tyme': [
+                  true,
+                  'Hide posts without images when header menu item is checked. *hint* *hint*'
+              ],
+              'Werk Tyme': [
+                  true,
+                  'Hide all post images when header menu item is checked.'
+              ],
+              'Autoplay': [
+                  true,
+                  'Videos begin playing immediately when opened.'
+              ],
+              'Restart when Opened': [
+                  false,
+                  'Restart GIFs and WebMs when you hover over or expand them.'
+              ],
+              'Show Controls': [
+                  true,
+                  'Show controls on videos expanded inline.'
+              ],
+              'Click Passthrough': [
+                  false,
+                  'Clicks on videos trigger your browser\'s default behavior. Videos can be contracted with button / dragging to the left.',
+                  1
+              ],
+              'Allow Sound': [
+                  true,
+                  'Open videos with the sound unmuted.'
+              ],
+              'Mouse Wheel Volume': [
+                  true,
+                  'Adjust volume of videos with the mouse wheel over the thumbnail/filename/gallery.'
+              ],
+              'Loop in New Tab': [
+                  true,
+                  'Loop videos opened in their own tabs.'
+              ],
+              'Volume in New Tab': [
+                  true,
+                  `Apply ${meta.name} mute and volume settings to videos opened in their own tabs.`
+              ],
+              'Enable sound posts': [
+                  true,
+                  'Enable loading audio from [sound=] file names. This audio is fetched from third parties.'
+              ],
+          },
+          'Menu': {
+              'Menu': [
+                  true,
+                  'Add a drop-down menu to posts.'
+              ],
+              'Report Link': [
+                  true,
+                  'Add a report link to the menu.',
+                  1
+              ],
+              'Copy Text Link': [
+                  true,
+                  'Add a link to copy the post\'s text.',
+                  1
+              ],
+              'Thread Hiding Link': [
+                  true,
+                  'Add a link to hide entire threads.',
+                  1
+              ],
+              'Reply Hiding Link': [
+                  true,
+                  'Add a link to hide single replies.',
+                  1
+              ],
+              'Delete Link': [
+                  true,
+                  'Add post and image deletion links to the menu.',
+                  1
+              ],
+              'Archive Link': [
+                  true,
+                  'Add an archive link to the menu.',
+                  1
+              ],
+              'Edit Link': [
+                  true,
+                  'Add a link to edit the image in Tegaki, /i/\'s painting program. Requires Quick Reply.',
+                  1
+              ],
+              'Download Link': [
+                  false,
+                  'Add a download with original filename link to the menu.',
+                  1
+              ]
+          },
+          'Monitoring': {
+              'Thread Updater': [
+                  true,
+                  'Fetch and insert new replies. Has more options in the header menu and the "Advanced" tab.'
+              ],
+              'Unread Count': [
+                  true,
+                  'Show the unread posts count in the tab title.'
+              ],
+              'Quoted Title': [
+                  false,
+                  'Change the page title to reflect you\'ve been quoted.',
+                  1
+              ],
+              'Hide Unread Count at (0)': [
+                  false,
+                  'Hide the unread posts count in the tab title when it reaches 0.',
+                  1
+              ],
+              'Unread Favicon': [
+                  true,
+                  'Show a different favicon when there are unread posts.'
+              ],
+              'Unread Line': [
+                  true,
+                  'Show a line to distinguish read posts from unread ones.'
+              ],
+              'Remember Last Read Post': [
+                  true,
+                  'Remember how far you\'ve read after you close the thread.'
+              ],
+              'Scroll to Last Read Post': [
+                  true,
+                  'Scroll back to the last read post when reopening a thread.',
+                  1
+              ],
+              'Unread Line in Index': [
+                  false,
+                  'Show a line between read and unread posts in threads in the index.',
+                  1
+              ],
+              'Remove Thread Excerpt': [
+                  false,
+                  'Replace the excerpt of the thread in the tab title with the board title.'
+              ],
+              'Thread Stats': [
+                  true,
+                  'Display reply and image count.'
+              ],
+              'IP Count in Stats': [
+                  true,
+                  'Display the unique IP count in the thread stats.',
+                  1
+              ],
+              'Page Count in Stats': [
+                  true,
+                  'Display the page count in the thread stats.',
+                  1
+              ],
+              'Purge Position': [
+                  false,
+                  'Update stats more often and add purge position when a thread is close to getting purged, for anons who manage general threads.',
+                  2
+              ],
+              'Updater and Stats in Header': [
+                  true,
+                  'Places the thread updater and thread stats in the header instead of floating them.'
+              ],
+              'Thread Watcher': [
+                  true,
+                  'Bookmark threads. Has more options in the thread watcher menu.'
+              ],
+              'Fixed Thread Watcher': [
+                  true,
+                  'Makes the thread watcher scroll with the page.',
+                  1
+              ],
+              'Persistent Thread Watcher': [
+                  false,
+                  'The thread watcher will be visible when the page is loaded.',
+                  1
+              ],
+              'Mark New IPs': [
+                  false,
+                  'Label each post from a new IP with the thread\'s current IP count.'
+              ],
+              'Reply Pruning': [
+                  true,
+                  'Add option in header menu to hide old replies in long threads. Activated by default in stickies.'
+              ],
+              'Prune All Threads': [
+                  false,
+                  'Activate Reply Pruning by default in all threads.',
+                  1
+              ]
+          },
+          'Posting and Captchas': {
+              'Quick Reply': [
+                  true,
+                  'All-in-one form to reply, create threads, automate dumping and more.'
+              ],
+              'Persistent QR': [
+                  false,
+                  'The Quick reply won\'t disappear after posting.',
+                  1
+              ],
+              'Auto Hide QR': [
+                  true,
+                  'Automatically hide the quick reply when posting.',
+                  2
+              ],
+              'Open Post in New Tab': [
+                  true,
+                  'Open new threads in a new tab, and open replies in a new tab if you\'re not already in the thread.',
+                  1
+              ],
+              'Remember QR Size': [
+                  false,
+                  'Remember the size of the Quick reply.',
+                  1
+              ],
+              'Remember Spoiler': [
+                  false,
+                  'Remember the spoiler state, instead of resetting after posting.',
+                  1
+              ],
+              'Randomize Filename': [
+                  false,
+                  'Set the filename to a random timestamp within the past year. Disabled on /f/.',
+                  1
+              ],
+              'Show New Thread Option in Threads': [
+                  true,
+                  'Show the option to post a new / different thread from inside a thread.',
+                  1
+              ],
+              'Show Upload Progress': [
+                  true,
+                  'Track progress of file uploads as percentage in submit button.',
+                  1
+              ],
+              'Cooldown': [
+                  true,
+                  'Indicate the remaining time before posting again.',
+                  1
+              ],
+              'Posting Success Notifications': [
+                  true,
+                  'Show notifications on successful post creation or file uploading.',
+                  1
+              ],
+              'Auto-load captcha': [
+                  false,
+                  'Automatically load the captcha in the QR even if your post is empty.',
+                  1
+              ],
+              'Post on Captcha Completion': [
+                  false,
+                  'Submit the post immediately when the captcha is completed.',
+                  1
+              ],
+              'Avoid OffscreenCanvas': [
+                  false,
+                  'Do not use OffscreenCanvas when converting images, workaround for ' +
+                      '<a href="https://github.com/TuxedoTako/4chan-xt/issues/132">this LibreWolf bug</a>',
+                  1
+              ],
+              'Force Noscript Captcha': [
+                  false,
+                  'Use the non-Javascript fallback captcha even if Javascript is enabled.'
+              ],
+              'Pass Link': [
+                  false,
+                  'Add a 4chan Pass login link to the bottom of the page.'
+              ]
+          },
+          'Quote Links': {
+              'Quote Backlinks': [
+                  true,
+                  'Add quote backlinks.'
+              ],
+              'OP Backlinks': [
+                  true,
+                  'Add backlinks to the OP.',
+                  1
+              ],
+              'Bottom Backlinks': [
+                  false,
+                  'Place backlinks at the bottom of posts.',
+                  1
+              ],
+              'Quote Inlining': [
+                  true,
+                  'Inline quoted post on click.'
+              ],
+              'Inline Cross-thread Quotes Only': [
+                  false,
+                  'Don\'t inline quote links when the posts are visible in the thread.',
+                  1
+              ],
+              'Quote Hash Navigation': [
+                  false,
+                  'Include an extra link after quotes for autoscrolling to quoted posts.',
+                  1
+              ],
+              'Forward Hiding': [
+                  true,
+                  'Hide original posts of inlined backlinks.',
+                  1
+              ],
+              'Quote Previewing': [
+                  true,
+                  'Show quoted post on hover.'
+              ],
+              'Quote Highlighting': [
+                  true,
+                  'Highlight the previewed post.',
+                  1
+              ],
+              'Resurrect Quotes': [
+                  true,
+                  'Link dead quotes to the archives, and support inlining/previewing of archive links like quote links.'
+              ],
+              'Remember Your Posts': [
+                  true,
+                  'Remember your posting history.'
+              ],
+              'Mark Quotes of You': [
+                  true,
+                  'Add \'(You)\' to quotes linking to your posts.',
+                  1
+              ],
+              'Highlight Posts Quoting You': [
+                  true,
+                  'Highlights any posts that contain a quote to your post.',
+                  1
+              ],
+              'Highlight Own Posts': [
+                  true,
+                  'Highlights own posts.',
+                  1
+              ],
+              'Mark OP Quotes': [
+                  true,
+                  'Add \'(OP)\' to OP quotes.'
+              ],
+              'Mark Cross-thread Quotes': [
+                  true,
+                  'Add \'(Cross-thread)\' to cross-threads quotes.'
+              ],
+              'Quote Threading': [
+                  true,
+                  'Add option in header menu to thread conversations.'
+              ]
+          }
       },
-
-      'Linkification': {
-        'Linkify': [
-          true,
-          'Convert text into links where applicable.'
-        ],
-        'Link Title': [
-          true,
-          'Replace the link of a supported site with its actual title.',
-          1
-        ],
-        'Link Title in the catalog': [
-          false,
-          'Replace the link of a supported site with its actual title in the catalog too. ' +
-            'Speed up performance for boards that have many embeds (e.g /vt/) if turned off',
-          2
-        ],
-        'Cover Preview': [
-          true,
-          'Show preview of supported links on hover.',
-          1
-        ],
-        'Embedding': [
-          true,
-          'Embed supported services. Note: Some services don\'t work on HTTPS.',
-          1
-        ],
-        'Auto-embed': [
-          false,
-          'Auto-embed Linkify Embeds.',
-          2
-        ],
-        'Floating Embeds': [
-          false,
-          'Embed content in a frame that remains in place when the page is scrolled.',
-          2
-        ],
+      imageExpansion: {
+          'Fit width': [
+              true,
+              ''
+          ],
+          'Fit height': [
+              false,
+              ''
+          ],
+          'Scroll into view': [
+              true,
+              'Scroll down when expanding images to bring the full image into view.'
+          ],
+          'Expand spoilers': [
+              true,
+              'Expand all images along with spoilers.'
+          ],
+          'Expand videos': [
+              true,
+              'Expand all images also expands videos.'
+          ],
+          'Expand from here': [
+              false,
+              'Expand all images only from current position to thread end.'
+          ],
+          'Expand thread only': [
+              false,
+              'In index, expand all images only within the current thread.'
+          ],
+          'Advance on contract': [
+              false,
+              'Advance to next post when contracting an expanded image.'
+          ]
       },
-
-      'Filtering': {
-        'Anonymize': [
-          false,
-          'Make everyone Anonymous.'
-        ],
-        'Filter': [
-          true,
-          'Self-moderation placebo.'
-        ],
-        'Filtered Backlinks': [
-          false,
-          'When enabled, shows backlinks to filtered posts with a line-through decoration. Otherwise, hides the backlinks.',
-          1
-        ],
-        'Filter in Native Catalog': [
-          true,
-          'Apply 4chan X filters in native catalog.',
-          1
-        ],
-        'MD5 Quick Filter Notifications': [
-          true,
-          'Show notification when quick filtering MD5s using the button or keybind.',
-          1
-        ],
-        'MD5 Quick Filter in the Catalog': [
-          true,
-          'Quick filter by MD5 when clicking a thumbnail in the catalog and holding Shift. Disabling falls back on just hiding the thread.',
-          1
-        ],
-        'MD5 Quick Filter in Threads': [
-          true,
-          'Quick filter by MD5 when clicking a thumbnail in a thread while holding shift.',
-          1
-        ],
-        'Recursive Hiding': [
-          true,
-          'Hide replies of hidden posts, recursively.'
-        ],
-        'Thread Hiding Buttons': [
-          true,
-          'Add buttons to hide entire threads.'
-        ],
-        'Reply Hiding Buttons': [
-          true,
-          'Add buttons to hide single replies.'
-        ],
-        'Stubs': [
-          true,
-          'Show stubs of hidden threads / replies.'
-        ],
-        'Filter Reason': [
-          true,
-          'Show the reason the post was hidden in the stub. If disabled, you can hover over the stub to see the reason.'
-        ],
+      gallery: {
+          'Hide Thumbnails': [
+              false
+          ],
+          'Fit Width': [
+              true
+          ],
+          'Fit Height': [
+              true
+          ],
+          'Stretch to Fit': [
+              false
+          ],
+          'Scroll to Post': [
+              true
+          ],
+          'Slide Delay': [
+              6.0
+          ]
       },
-
-      'Images and Videos': {
-        'Image Expansion': [
-          true,
-          'Expand images / videos.'
-        ],
-        'Image Hover': [
-          true,
-          'Show full image / video on mouseover.'
-        ],
-        'Image Hover in Catalog': [
-          true,
-          `Show full image / video on mouseover in ${meta.name} catalog.`
-        ],
-        'Gallery': [
-          true,
-          'Adds a simple and cute image gallery. Has more options in the gallery menu.'
-        ],
-        'Fullscreen Gallery': [
-          false,
-          'Open gallery in fullscreen mode.',
-          1
-        ],
-        'PDF in Gallery': [
-          false,
-          'Show PDF files in gallery.',
-          1
-        ],
-        'Sauce': [
-          true,
-          'Add sauce links to images.'
-        ],
-        'WEBM Metadata': [
-          true,
-          'Add link to fetch title metadata from webm videos.'
-        ],
-        'Reveal Spoiler Thumbnails': [
-          false,
-          'Replace spoiler thumbnails with the original image.'
-        ],
-        'Replace GIF': [
-          false,
-          'Replace gif thumbnails with the actual image.'
-        ],
-        'Replace JPG': [
-          false,
-          'Replace jpg thumbnails with the actual image.'
-        ],
-        'Replace PNG': [
-          false,
-          'Replace png thumbnails with the actual image.'
-        ],
-        'Replace WEBM': [
-          false,
-          'Replace webm, mp4, and ogv thumbnails with the actual video. Probably will degrade browser performance ;)'
-        ],
-        'Image Prefetching': [
-          true,
-          'Add a shortcut icon to the header to turn on image preloading.'
-        ],
-        'Fappe Tyme': [
-          true,
-          'Hide posts without images when header menu item is checked. *hint* *hint*'
-        ],
-        'Werk Tyme': [
-          true,
-          'Hide all post images when header menu item is checked.'
-        ],
-        'Autoplay': [
-          true,
-          'Videos begin playing immediately when opened.'
-        ],
-        'Restart when Opened': [
-          false,
-          'Restart GIFs and WebMs when you hover over or expand them.'
-        ],
-        'Show Controls': [
-          true,
-          'Show controls on videos expanded inline.'
-        ],
-        'Click Passthrough': [
-          false,
-          'Clicks on videos trigger your browser\'s default behavior. Videos can be contracted with button / dragging to the left.',
-          1
-        ],
-        'Allow Sound': [
-          true,
-          'Open videos with the sound unmuted.'
-        ],
-        'Mouse Wheel Volume': [
-          true,
-          'Adjust volume of videos with the mouse wheel over the thumbnail/filename/gallery.'
-        ],
-        'Loop in New Tab': [
-          true,
-          'Loop videos opened in their own tabs.'
-        ],
-        'Volume in New Tab': [
-          true,
-          `Apply ${meta.name} mute and volume settings to videos opened in their own tabs.`
-        ],
-        'Enable sound posts': [
-          true,
-          'Enable loading audio from [sound=] file names. This audio is fetched from third parties.'
-        ],
+      'Default Volume': 1.0,
+      threadWatcher: {
+          'Current Board': [
+              false,
+              'Only show watched threads from the current board.'
+          ],
+          'Auto Update Thread Watcher': [
+              true,
+              'Periodically check status of watched threads.'
+          ],
+          'Auto Watch': [
+              true,
+              'Automatically watch threads you start.'
+          ],
+          'Auto Watch Reply': [
+              true,
+              'Automatically watch threads you reply to.'
+          ],
+          'Auto Prune': [
+              false,
+              'Automatically remove dead threads.'
+          ],
+          'Show Page': [
+              true,
+              'Show what page watched threads are on.'
+          ],
+          'Show Unread Count': [
+              true,
+              'Show number of unread posts in watched threads.'
+          ],
+          'Show Site Prefix': [
+              true,
+              'When multiple sites are shown in the thread watcher, add a prefix to board names to distinguish them.'
+          ],
+          'Require OP Quote Link': [
+              false,
+              'For purposes of thread watcher highlighting, only consider posts with a quote link to the OP as replies to the OP.'
+          ]
       },
-
-      'Menu': {
-        'Menu': [
-          true,
-          'Add a drop-down menu to posts.'
-        ],
-        'Report Link': [
-          true,
-          'Add a report link to the menu.',
-          1
-        ],
-        'Copy Text Link': [
-          true,
-          'Add a link to copy the post\'s text.',
-          1
-        ],
-        'Thread Hiding Link': [
-          true,
-          'Add a link to hide entire threads.',
-          1
-        ],
-        'Reply Hiding Link': [
-          true,
-          'Add a link to hide single replies.',
-          1
-        ],
-        'Delete Link': [
-          true,
-          'Add post and image deletion links to the menu.',
-          1
-        ],
-        'Archive Link': [
-          true,
-          'Add an archive link to the menu.',
-          1
-        ],
-        'Edit Link': [
-          true,
-          'Add a link to edit the image in Tegaki, /i/\'s painting program. Requires Quick Reply.',
-          1
-        ],
-        'Download Link': [
-          false,
-          'Add a download with original filename link to the menu.',
-          1
-        ]
-      },
-
-      'Monitoring': {
-        'Thread Updater': [
-          true,
-          'Fetch and insert new replies. Has more options in the header menu and the "Advanced" tab.'
-        ],
-        'Unread Count': [
-          true,
-          'Show the unread posts count in the tab title.'
-        ],
-        'Quoted Title': [
-          false,
-          'Change the page title to reflect you\'ve been quoted.',
-          1
-        ],
-        'Hide Unread Count at (0)': [
-          false,
-          'Hide the unread posts count in the tab title when it reaches 0.',
-          1
-        ],
-        'Unread Favicon': [
-          true,
-          'Show a different favicon when there are unread posts.'
-        ],
-        'Unread Line': [
-          true,
-          'Show a line to distinguish read posts from unread ones.'
-        ],
-        'Remember Last Read Post': [
-          true,
-          'Remember how far you\'ve read after you close the thread.'
-        ],
-        'Scroll to Last Read Post': [
-          true,
-          'Scroll back to the last read post when reopening a thread.',
-          1
-        ],
-        'Unread Line in Index': [
-          false,
-          'Show a line between read and unread posts in threads in the index.',
-          1
-        ],
-        'Remove Thread Excerpt': [
-          false,
-          'Replace the excerpt of the thread in the tab title with the board title.'
-        ],
-        'Thread Stats': [
-          true,
-          'Display reply and image count.'
-        ],
-        'IP Count in Stats': [
-          true,
-          'Display the unique IP count in the thread stats.',
-          1
-        ],
-        'Page Count in Stats': [
-          true,
-          'Display the page count in the thread stats.',
-          1
-        ],
-        'Purge Position': [
-          false,
-          'Update stats more often and add purge position when a thread is close to getting purged, for anons who manage general threads.',
-          2
-        ],
-        'Updater and Stats in Header': [
-          true,
-          'Places the thread updater and thread stats in the header instead of floating them.'
-        ],
-        'Thread Watcher': [
-          true,
-          'Bookmark threads. Has more options in the thread watcher menu.'
-        ],
-        'Fixed Thread Watcher': [
-          true,
-          'Makes the thread watcher scroll with the page.',
-          1
-        ],
-        'Persistent Thread Watcher': [
-          false,
-          'The thread watcher will be visible when the page is loaded.',
-          1
-        ],
-        'Mark New IPs': [
-          false,
-          'Label each post from a new IP with the thread\'s current IP count.'
-        ],
-        'Reply Pruning': [
-          true,
-          'Add option in header menu to hide old replies in long threads. Activated by default in stickies.'
-        ],
-        'Prune All Threads': [
-          false,
-          'Activate Reply Pruning by default in all threads.',
-          1
-        ]
-      },
-
-      'Posting and Captchas': {
-        'Quick Reply': [
-          true,
-          'All-in-one form to reply, create threads, automate dumping and more.'
-        ],
-        'Persistent QR': [
-          false,
-          'The Quick reply won\'t disappear after posting.',
-          1
-        ],
-        'Auto Hide QR': [
-          true,
-          'Automatically hide the quick reply when posting.',
-          2
-        ],
-        'Open Post in New Tab': [
-          true,
-          'Open new threads in a new tab, and open replies in a new tab if you\'re not already in the thread.',
-          1
-        ],
-        'Remember QR Size': [
-          false,
-          'Remember the size of the Quick reply.',
-          1
-        ],
-        'Remember Spoiler': [
-          false,
-          'Remember the spoiler state, instead of resetting after posting.',
-          1
-        ],
-        'Randomize Filename': [
-          false,
-          'Set the filename to a random timestamp within the past year. Disabled on /f/.',
-          1
-        ],
-        'Show New Thread Option in Threads': [
-          true,
-          'Show the option to post a new / different thread from inside a thread.',
-          1
-        ],
-        'Show Upload Progress': [
-          true,
-          'Track progress of file uploads as percentage in submit button.',
-          1
-        ],
-        'Cooldown': [
-          true,
-          'Indicate the remaining time before posting again.',
-          1
-        ],
-        'Posting Success Notifications': [
-          true,
-          'Show notifications on successful post creation or file uploading.',
-          1
-        ],
-        'Auto-load captcha': [
-          false,
-          'Automatically load the captcha in the QR even if your post is empty.',
-          1
-        ],
-        'Post on Captcha Completion': [
-          false,
-          'Submit the post immediately when the captcha is completed.',
-          1
-        ],
-        'Avoid OffscreenCanvas': [
-          false,
-          'Do not use OffscreenCanvas when converting images, workaround for ' +
-            '<a href="https://github.com/TuxedoTako/4chan-xt/issues/132">this LibreWolf bug</a>',
-          1
-        ],
-        'Force Noscript Captcha': [
-          false,
-          'Use the non-Javascript fallback captcha even if Javascript is enabled.'
-        ],
-        'Pass Link': [
-          false,
-          'Add a 4chan Pass login link to the bottom of the page.'
-        ]
-      },
-
-      'Quote Links': {
-        'Quote Backlinks': [
-          true,
-          'Add quote backlinks.'
-        ],
-        'OP Backlinks': [
-          true,
-          'Add backlinks to the OP.',
-          1
-        ],
-        'Bottom Backlinks': [
-          false,
-          'Place backlinks at the bottom of posts.',
-          1
-        ],
-        'Quote Inlining': [
-          true,
-          'Inline quoted post on click.'
-        ],
-        'Inline Cross-thread Quotes Only': [
-          false,
-          'Don\'t inline quote links when the posts are visible in the thread.',
-          1
-        ],
-        'Quote Hash Navigation': [
-          false,
-          'Include an extra link after quotes for autoscrolling to quoted posts.',
-          1
-        ],
-        'Forward Hiding': [
-          true,
-          'Hide original posts of inlined backlinks.',
-          1
-        ],
-        'Quote Previewing': [
-          true,
-          'Show quoted post on hover.'
-        ],
-        'Quote Highlighting': [
-          true,
-          'Highlight the previewed post.',
-          1
-        ],
-        'Resurrect Quotes': [
-          true,
-          'Link dead quotes to the archives, and support inlining/previewing of archive links like quote links.'
-        ],
-        'Remember Your Posts': [
-          true,
-          'Remember your posting history.'
-        ],
-        'Mark Quotes of You': [
-          true,
-          'Add \'(You)\' to quotes linking to your posts.',
-          1
-        ],
-        'Highlight Posts Quoting You': [
-          true,
-          'Highlights any posts that contain a quote to your post.',
-          1
-        ],
-        'Highlight Own Posts': [
-          true,
-          'Highlights own posts.',
-          1
-        ],
-        'Mark OP Quotes': [
-          true,
-          'Add \'(OP)\' to OP quotes.'
-        ],
-        'Mark Cross-thread Quotes': [
-          true,
-          'Add \'(Cross-thread)\' to cross-threads quotes.'
-        ],
-        'Quote Threading': [
-          true,
-          'Add option in header menu to thread conversations.'
-        ]
-      }
-    },
-
-    imageExpansion: {
-      'Fit width': [
-        true,
-        ''
-      ],
-      'Fit height': [
-        false,
-        ''
-      ],
-      'Scroll into view': [
-        true,
-        'Scroll down when expanding images to bring the full image into view.'
-      ],
-      'Expand spoilers': [
-        true,
-        'Expand all images along with spoilers.'
-      ],
-      'Expand videos': [
-        true,
-        'Expand all images also expands videos.'
-      ],
-      'Expand from here': [
-        false,
-        'Expand all images only from current position to thread end.'
-      ],
-      'Expand thread only': [
-        false,
-        'In index, expand all images only within the current thread.'
-      ],
-      'Advance on contract': [
-        false,
-        'Advance to next post when contracting an expanded image.'
-      ]
-    },
-
-    gallery: {
-      'Hide Thumbnails': [
-        false
-      ],
-      'Fit Width': [ // 'Fit width' (lowercase W) belongs to Image Expansion. Engine limitations, heh.
-        true
-      ],
-      'Fit Height': [
-        true
-      ],
-      'Stretch to Fit': [
-        false
-      ],
-      'Scroll to Post': [
-        true
-      ],
-      'Slide Delay': [
-        6.0
-      ]
-    },
-
-    'Default Volume': 1.0,
-
-    threadWatcher: {
-      'Current Board': [
-        false,
-        'Only show watched threads from the current board.'
-      ],
-      'Auto Update Thread Watcher': [
-        true,
-        'Periodically check status of watched threads.'
-      ],
-      'Auto Watch': [
-        true,
-        'Automatically watch threads you start.'
-      ],
-      'Auto Watch Reply': [
-        true,
-        'Automatically watch threads you reply to.'
-      ],
-      'Auto Prune': [
-        false,
-        'Automatically remove dead threads.'
-      ],
-      'Show Page': [
-        true,
-        'Show what page watched threads are on.'
-      ],
-      'Show Unread Count': [
-        true,
-        'Show number of unread posts in watched threads.'
-      ],
-      'Show Site Prefix': [
-        true,
-        'When multiple sites are shown in the thread watcher, add a prefix to board names to distinguish them.'
-      ],
-      'Require OP Quote Link': [
-        false,
-        'For purposes of thread watcher highlighting, only consider posts with a quote link to the OP as replies to the OP.'
-      ]
-    },
-
-    filter: {
-      general: '',
-
-      postID: `\
+      filter: {
+          general: '',
+          postID: `\
 # Highlight dubs on [s4s]:
 #/(\\d)\\1$/;highlight;top:no;boards:s4s\
 `,
-
-      name: `\
+          name: `\
 # Filter any namefags:
 #/^(?!Anonymous$)/\
 `,
-
-      uniqueID: `\
+          uniqueID: `\
 # Filter a specific ID:
 #/Txhvk1Tl/\
 `,
-
-      tripcode: `\
+          tripcode: `\
 # Filter any tripfag
 #/^!/\
 `,
-
-      capcode: `\
+          capcode: `\
 # Set a custom class for mods:
 #/Mod$/;highlight:mod;op:yes
 # Set a custom class for admins:
 #/Admin$/;highlight:admin;op:yes\
 `,
-
-      pass: `\
+          pass: `\
 # Filter anyone using since4pass:
 #/./\
 `,
-
-      email: '',
-
-      subject: `\
+          email: '',
+          subject: `\
 # Filter Generals on /v/:
 #/general/i;boards:v;op:only\
 `,
-
-      comment: `\
+          comment: `\
 # Filter Stallman copypasta on /g/:
 #/what you\'re refer+ing to as linux/i;boards:g
 # Filter posts with 20 or more quote links:
@@ -1101,20 +1085,16 @@ div.boardTitle {
 # Filter posts like T H I S / H / I / S:
 #/^>?\\s?\\w\\s?(\\w)\\s?(\\w)\\s?(\\w).*$[\\s>]+\\1[\\s>]+\\2[\\s>]+\\3/im\
 `,
-
-      flag: '',
-      filename: '',
-      dimensions: `\
+          flag: '',
+          filename: '',
+          dimensions: `\
 # Highlight potential wallpapers:
 #/1920x1080/;op:yes;highlight;top:no;boards:w,wg\
 `,
-
-      filesize: '',
-
-      MD5: ''
-    },
-
-    sauces: `\
+          filesize: '',
+          MD5: ''
+      },
+      sauces: `\
 # Known filename formats:
 https://www.pixiv.net/member_illust.php?mode=medium&illust_id=%$1;regexp:/^(\\d+)_p\\d+/
 javascript:void(open("https://www.deviantart.com/"+%$1.replace(/_/g,"-")+"/art/"+parseInt(%$2,36)));regexp:/^\\w+_by_(\\w+)[_-]d([\\da-z]{6})\\b/
@@ -1147,48 +1127,41 @@ http://eye.swfchan.com/search/?q=%name;types:swf
 #//imgops.com/start?url=%URL;types:gif,jpg,png
 #//www.gif-explode.com/%URL;types:gif\
 `,
-
-    FappeT: {
-      werk:  false
-    },
-
-    'Custom CSS': true,
-
-    Index: {
-      'Index Mode': 'paged',
-      'Previous Index Mode': 'paged',
-      'Index Size': 'small',
-      'Show Replies':          [true,  'Show replies in the index, and also in the catalog if "Catalog hover expand" is checked.'],
-      'Catalog Hover Expand':  [false, 'Expand the comment and show more details when you hover over a thread in the catalog.'],
-      'Catalog Hover Toggle':  [true,  'Turn "Catalog hover expand" on and off by clicking in the catalog.'],
-      'Pin Watched Threads':   [false, 'Move watched threads to the start of the index.'],
-      'Anchor Hidden Threads': [true,  'Move hidden threads to the end of the index.'],
-      'Refreshed Navigation':  [false, 'Refresh index when navigating through pages.']
-    },
-
-    Header: {
-      'Fixed Header':               true,
-      'Header auto-hide':           false,
-      'Header auto-hide on scroll': false,
-      'Bottom Header':              false,
-      'Centered links':             false,
-      'Header catalog links':       false,
-      'Bottom Board List':          true,
-      'Shortcut Icons':             true,
-      'Custom Board Navigation':    true
-    },
-
-    archives: {
-      archiveLists:      'https://4chenz.github.io/archives.json/archives.json',
-      lastarchivecheck:  0,
-      archiveAutoUpdate: true
-    },
-
-    externalCatalogURLs: `\
+      FappeT: {
+          werk: false
+      },
+      'Custom CSS': true,
+      Index: {
+          'Index Mode': 'paged',
+          'Previous Index Mode': 'paged',
+          'Index Size': 'small',
+          'Show Replies': [true, 'Show replies in the index, and also in the catalog if "Catalog hover expand" is checked.'],
+          'Catalog Hover Expand': [false, 'Expand the comment and show more details when you hover over a thread in the catalog.'],
+          'Catalog Hover Toggle': [true, 'Turn "Catalog hover expand" on and off by clicking in the catalog.'],
+          'Pin Watched Threads': [false, 'Move watched threads to the start of the index.'],
+          'Anchor Hidden Threads': [true, 'Move hidden threads to the end of the index.'],
+          'Refreshed Navigation': [false, 'Refresh index when navigating through pages.']
+      },
+      Header: {
+          'Fixed Header': true,
+          'Header auto-hide': false,
+          'Header auto-hide on scroll': false,
+          'Bottom Header': false,
+          'Centered links': false,
+          'Header catalog links': false,
+          'Bottom Board List': true,
+          'Shortcut Icons': true,
+          'Custom Board Navigation': true
+      },
+      archives: {
+          archiveLists: 'https://4chenz.github.io/archives.json/archives.json',
+          lastarchivecheck: 0,
+          archiveAutoUpdate: true
+      },
+      externalCatalogURLs: `\
 //catalog.neet.tv/%board/;boards:4chan.org:3,a,adv,an,asp,biz,c,cgl,ck,cm,co,diy,f,fa,fit,g,gd,his,i,int,jp,k,lgbt,lit,m,mlp,mu,n,news,o,out,p,po,pol,s4s,sci,sp,tg,toy,trv,tv,v,vg,vip,vp,vr,w,wg,wsg,wsr,x\
 `,
-
-    boardnav: `\
+      boardnav: `\
 [ toggle-all ]
 [current-index-text:"Index"
 current-catalog-text:"Catalog"
@@ -1196,337 +1169,314 @@ current-expired-text:"Expired"
 current-archive-text:"Archive"]
 [external-text:"FAQ","${meta.faq}"]\
 `,
-
-    QR: {
-      'QR.personas': `\
+      QR: {
+          'QR.personas': `\
 #options:"sage";boards:jp;always\
 `,
-      sjisPreview: false
-    },
-
-    jsWhitelist: '',
-
-    captchaLanguage: '',
-
-    time: '%m/%d/%y(%a)%H:%M:%S',
-    timeLocale: '',
-    RelativeTime: 'Hover',
-
-    backlink: '>>%id',
-
-    pastedname: 'file',
-
-    fileInfo: '%l %d (%p%s, %r%g)',
-
-    favicon: 'ferongr',
-
-    usercss: userCss,
-
-    hotkeys: {
-      // QR & Options
-      'Toggle board list': [
-        'Ctrl+b',
-        'Toggle the full board list.'
-      ],
-      'Toggle header': [
-        'Shift+h',
-        'Toggle the auto-hide option of the header.'
-      ],
-      'Open empty QR': [
-        'q',
-        'Open QR without post number inserted.'
-      ],
-      'Open QR': [
-        'Shift+q',
-        'Open QR with post number inserted.'
-      ],
-      'Open settings': [
-        'Alt+o',
-        'Open Settings.'
-      ],
-      'Close': [
-        'Esc',
-        'Close dialogs or notifications.'
-      ],
-      'Spoiler tags': [
-        'Ctrl+s',
-        'Insert spoiler tags.'
-      ],
-      'Code tags': [
-        'Alt+c',
-        'Insert code tags.'
-      ],
-      'Eqn tags':  [
-        'Alt+e',
-        'Insert eqn tags.'
-      ],
-      'Math tags': [
-        'Alt+m',
-        'Insert math tags.'
-      ],
-      'SJIS tags': [
-        'Alt+a',
-        'Insert SJIS tags.'
-      ],
-      'Toggle sage': [
-        'Alt+s',
-        'Toggle sage in options field.'
-      ],
-      'Toggle Cooldown': [
-        'Alt+Comma',
-        'Toggle custom cooldown timer.'
-      ],
-      'Post from URL': [
-        'Alt+l',
-        'Post from URL.'
-      ],
-      'Add new post': [
-        'Alt+n',
-        'Add new post to the QR dump list.'
-      ],
-      'Submit QR': [
-        'Ctrl+Enter',
-        'Submit post.'
-      ],
-      // Thread related
-      'Watch': [
-        'w',
-        'Watch thread.'
-      ],
-      'Update': [
-        'r',
-        'Update the thread / refresh the index.'
-      ],
-      'Update thread watcher': [
-        'Shift+r',
-        'Manually refresh thread watcher.'
-      ],
-      'Toggle thread watcher': [
-        't',
-        'Toggle visibility of thread watcher.'
-      ],
-      'Toggle threading': [
-        'Shift+t',
-        'Toggle threading.'
-      ],
-      'Mark thread read': [
-        'Ctrl+0',
-        'Mark thread read from index (requires "Unread Line in Index").'
-      ],
-      // Images
-      'Expand image': [
-        'Shift+e',
-        'Expand selected image.'
-      ],
-      'Expand images': [
-        'e',
-        'Expand all images.'
-      ],
-      'Open Gallery': [
-        'g',
-        'Opens the gallery.'
-      ],
-      'Next Gallery Image': [
-        'Right',
-        'Go to the next image in gallery mode.'
-      ],
-      'Previous Gallery Image': [
-        'Left',
-        'Go to the previous image in gallery mode.'
-      ],
-      'Advance Gallery': [
-        'Enter',
-        'Go to next image or, if Autoplay is off, play video.'
-      ],
-      'Pause': [
-        'p',
-        'Pause/play videos in the gallery.'
-      ],
-      'Slideshow': [
-        'Ctrl+Right',
-        'Toggle the gallery slideshow mode.'
-      ],
-      'Rotate image clockwise': [
-        'Shift+Right',
-        'Rotate image clockwise in gallery.'
-      ],
-      'Rotate image anticlockwise': [
-        'Shift+Left',
-        'Rotate image anticlockwise in gallery.'
-      ],
-      'Download Gallery Image': [
-        'Shift+j',
-        'Download current image in gallery.'
-      ],
-      'fappeTyme': [
-        'f',
-        'Toggle Fappe Tyme.'
-      ],
-      'werkTyme': [
-        'Shift+w',
-        'Toggle Werk Tyme.'
-      ],
-      // Board Navigation
-      'Front page': [
-        '1',
-        'Jump to front page.'
-      ],
-      'Open front page': [
-        'Shift+1',
-        'Open front page in a new tab.'
-      ],
-      'Next page': [
-        'Ctrl+Right',
-        'Jump to the next page.'
-      ],
-      'Previous page': [
-        'Ctrl+Left',
-        'Jump to the previous page.'
-      ],
-      'Paged mode': [
-        'Alt+1',
-        'Open the index in paged mode.'
-      ],
-      'Infinite scrolling mode': [
-        'Alt+2',
-        'Open the index in infinite scrolling mode.'
-      ],
-      'All pages mode': [
-        'Alt+3',
-        'Open the index in all threads mode.'
-      ],
-      'Open catalog': [
-        'Shift+c',
-        'Open the catalog of the current board.'
-      ],
-      'Search form': [
-        'Ctrl+Alt+s',
-        'Focus the search field on the board index.'
-      ],
-      'Cycle sort type': [
-        'Alt+x',
-        'Cycle through index sort types.'
-      ],
-      // Thread Navigation
-      'Next thread': [
-        'Ctrl+Down',
-        'See next thread.'
-      ],
-      'Previous thread': [
-        'Ctrl+Up',
-        'See previous thread.'
-      ],
-      'Expand thread': [
-        'Ctrl+e',
-        'Expand thread.'
-      ],
-      'Open thread': [
-        'o',
-        'Open thread in current tab.'
-      ],
-      'Open thread tab': [
-        'Shift+o',
-        'Open thread in new tab.'
-      ],
-      // Reply Navigation
-      'Next reply': [
-        'j',
-        'Select next reply.'
-      ],
-      'Previous reply': [
-        'k',
-        'Select previous reply.'
-      ],
-      'Deselect reply': [
-        'Shift+d',
-        'Deselect reply.'
-      ],
-      'Hide': [
-        'x',
-        'Hide thread.'
-      ],
-      'Quick Filter MD5': [
-        '5',
-        'Add the MD5 of the selected image to the filter list.'
-      ],
-      'Previous Post Quoting You': [
-        'Alt+Up',
-        'Scroll to the previous post that quotes you.'
-      ],
-      'Next Post Quoting You': [
-        'Alt+Down',
-        'Scroll to the next post that quotes you.'
-      ]
-    },
-
-    updater: {
-      checkbox: {
-        'Beep': [
-          false,
-          'Beep on new post to completely read thread.'
-        ],
-        'Beep Quoting You': [
-          false,
-          'Beep on new post quoting you.'
-        ],
-        'Auto Scroll': [
-          false,
-          'Scroll updated posts into view. Only enabled at bottom of page.'
-        ],
-        'Bottom Scroll': [
-          false,
-          'Always scroll to the bottom, not the first new post. Useful for event threads.'
-        ],
-        'Scroll BG': [
-          false,
-          'Auto-scroll background tabs.'
-        ],
-        'Auto Update': [
-          true,
-          'Automatically fetch new posts.'
-        ],
-        'Optional Increase': [
-          false,
-          'Increase the intervals between updates on threads without new posts.'
-        ]
+          sjisPreview: false
       },
-      'Interval': 5
-    },
-
-    customCooldown: 0,
-    customCooldownEnabled: true,
-
-    'Thread Quotes': false,
-
-    'Max Replies': 1000,
-
-    'Autohiding Scrollbar': false,
-
-    position: {
-      'embedding.position':      'top: 50px; right: 0px;',
-      'thread-stats.position':   'bottom: 0px; right: 0px;',
-      'updater.position':        'bottom: 0px; left: 0px;',
-      'thread-watcher.position': 'top: 50px; left: 0px;',
-      'qr.position':             'top: 50px; right: 0px;'
-    },
-
-    fourchanImageHost: 'i.4cdn.org',
-
-    hiddenPSAList: [{}],
-
-    knownBanners: banners.join(','),
-
-    passMessageClosed: false,
-
-    'PSAseen': [[]],
-
-    XEmbedder: 'fxt',
-    fxtLang: '',
-    fxtUrl: 'https://api.fxtwitter.com',
-    fxtMaxReplies: 5,
-
-    beepSource: '',
-    beepVolume: 1,
+      jsWhitelist: '',
+      captchaLanguage: '',
+      time: '%m/%d/%y(%a)%H:%M:%S',
+      timeLocale: '',
+      RelativeTime: 'Hover',
+      backlink: '>>%id',
+      pastedname: 'file',
+      fileInfo: '%l %d (%p%s, %r%g)',
+      favicon: 'ferongr',
+      usercss: userCss,
+      hotkeys: {
+          // QR & Options
+          'Toggle board list': [
+              'Ctrl+b',
+              'Toggle the full board list.'
+          ],
+          'Toggle header': [
+              'Shift+h',
+              'Toggle the auto-hide option of the header.'
+          ],
+          'Open empty QR': [
+              'q',
+              'Open QR without post number inserted.'
+          ],
+          'Open QR': [
+              'Shift+q',
+              'Open QR with post number inserted.'
+          ],
+          'Open settings': [
+              'Alt+o',
+              'Open Settings.'
+          ],
+          'Close': [
+              'Esc',
+              'Close dialogs or notifications.'
+          ],
+          'Spoiler tags': [
+              'Ctrl+s',
+              'Insert spoiler tags.'
+          ],
+          'Code tags': [
+              'Alt+c',
+              'Insert code tags.'
+          ],
+          'Eqn tags': [
+              'Alt+e',
+              'Insert eqn tags.'
+          ],
+          'Math tags': [
+              'Alt+m',
+              'Insert math tags.'
+          ],
+          'SJIS tags': [
+              'Alt+a',
+              'Insert SJIS tags.'
+          ],
+          'Toggle sage': [
+              'Alt+s',
+              'Toggle sage in options field.'
+          ],
+          'Toggle Cooldown': [
+              'Alt+Comma',
+              'Toggle custom cooldown timer.'
+          ],
+          'Post from URL': [
+              'Alt+l',
+              'Post from URL.'
+          ],
+          'Add new post': [
+              'Alt+n',
+              'Add new post to the QR dump list.'
+          ],
+          'Submit QR': [
+              'Ctrl+Enter',
+              'Submit post.'
+          ],
+          // Thread related
+          'Watch': [
+              'w',
+              'Watch thread.'
+          ],
+          'Update': [
+              'r',
+              'Update the thread / refresh the index.'
+          ],
+          'Update thread watcher': [
+              'Shift+r',
+              'Manually refresh thread watcher.'
+          ],
+          'Toggle thread watcher': [
+              't',
+              'Toggle visibility of thread watcher.'
+          ],
+          'Toggle threading': [
+              'Shift+t',
+              'Toggle threading.'
+          ],
+          'Mark thread read': [
+              'Ctrl+0',
+              'Mark thread read from index (requires "Unread Line in Index").'
+          ],
+          // Images
+          'Expand image': [
+              'Shift+e',
+              'Expand selected image.'
+          ],
+          'Expand images': [
+              'e',
+              'Expand all images.'
+          ],
+          'Open Gallery': [
+              'g',
+              'Opens the gallery.'
+          ],
+          'Next Gallery Image': [
+              'Right',
+              'Go to the next image in gallery mode.'
+          ],
+          'Previous Gallery Image': [
+              'Left',
+              'Go to the previous image in gallery mode.'
+          ],
+          'Advance Gallery': [
+              'Enter',
+              'Go to next image or, if Autoplay is off, play video.'
+          ],
+          'Pause': [
+              'p',
+              'Pause/play videos in the gallery.'
+          ],
+          'Slideshow': [
+              'Ctrl+Right',
+              'Toggle the gallery slideshow mode.'
+          ],
+          'Rotate image clockwise': [
+              'Shift+Right',
+              'Rotate image clockwise in gallery.'
+          ],
+          'Rotate image anticlockwise': [
+              'Shift+Left',
+              'Rotate image anticlockwise in gallery.'
+          ],
+          'Download Gallery Image': [
+              'Shift+j',
+              'Download current image in gallery.'
+          ],
+          'fappeTyme': [
+              'f',
+              'Toggle Fappe Tyme.'
+          ],
+          'werkTyme': [
+              'Shift+w',
+              'Toggle Werk Tyme.'
+          ],
+          // Board Navigation
+          'Front page': [
+              '1',
+              'Jump to front page.'
+          ],
+          'Open front page': [
+              'Shift+1',
+              'Open front page in a new tab.'
+          ],
+          'Next page': [
+              'Ctrl+Right',
+              'Jump to the next page.'
+          ],
+          'Previous page': [
+              'Ctrl+Left',
+              'Jump to the previous page.'
+          ],
+          'Paged mode': [
+              'Alt+1',
+              'Open the index in paged mode.'
+          ],
+          'Infinite scrolling mode': [
+              'Alt+2',
+              'Open the index in infinite scrolling mode.'
+          ],
+          'All pages mode': [
+              'Alt+3',
+              'Open the index in all threads mode.'
+          ],
+          'Open catalog': [
+              'Shift+c',
+              'Open the catalog of the current board.'
+          ],
+          'Search form': [
+              'Ctrl+Alt+s',
+              'Focus the search field on the board index.'
+          ],
+          'Cycle sort type': [
+              'Alt+x',
+              'Cycle through index sort types.'
+          ],
+          // Thread Navigation
+          'Next thread': [
+              'Ctrl+Down',
+              'See next thread.'
+          ],
+          'Previous thread': [
+              'Ctrl+Up',
+              'See previous thread.'
+          ],
+          'Expand thread': [
+              'Ctrl+e',
+              'Expand thread.'
+          ],
+          'Open thread': [
+              'o',
+              'Open thread in current tab.'
+          ],
+          'Open thread tab': [
+              'Shift+o',
+              'Open thread in new tab.'
+          ],
+          // Reply Navigation
+          'Next reply': [
+              'j',
+              'Select next reply.'
+          ],
+          'Previous reply': [
+              'k',
+              'Select previous reply.'
+          ],
+          'Deselect reply': [
+              'Shift+d',
+              'Deselect reply.'
+          ],
+          'Hide': [
+              'x',
+              'Hide thread.'
+          ],
+          'Quick Filter MD5': [
+              '5',
+              'Add the MD5 of the selected image to the filter list.'
+          ],
+          'Previous Post Quoting You': [
+              'Alt+Up',
+              'Scroll to the previous post that quotes you.'
+          ],
+          'Next Post Quoting You': [
+              'Alt+Down',
+              'Scroll to the next post that quotes you.'
+          ]
+      },
+      updater: {
+          checkbox: {
+              'Beep': [
+                  false,
+                  'Beep on new post to completely read thread.'
+              ],
+              'Beep Quoting You': [
+                  false,
+                  'Beep on new post quoting you.'
+              ],
+              'Auto Scroll': [
+                  false,
+                  'Scroll updated posts into view. Only enabled at bottom of page.'
+              ],
+              'Bottom Scroll': [
+                  false,
+                  'Always scroll to the bottom, not the first new post. Useful for event threads.'
+              ],
+              'Scroll BG': [
+                  false,
+                  'Auto-scroll background tabs.'
+              ],
+              'Auto Update': [
+                  true,
+                  'Automatically fetch new posts.'
+              ],
+              'Optional Increase': [
+                  false,
+                  'Increase the intervals between updates on threads without new posts.'
+              ]
+          },
+          'Interval': 5
+      },
+      customCooldown: 0,
+      customCooldownEnabled: true,
+      'Thread Quotes': false,
+      'Max Replies': 1000,
+      'Autohiding Scrollbar': false,
+      position: {
+          'embedding.position': 'top: 50px; right: 0px;',
+          'thread-stats.position': 'bottom: 0px; right: 0px;',
+          'updater.position': 'bottom: 0px; left: 0px;',
+          'thread-watcher.position': 'top: 50px; left: 0px;',
+          'qr.position': 'top: 50px; right: 0px;'
+      },
+      fourchanImageHost: 'i.4cdn.org',
+      hiddenPSAList: [{}],
+      knownBanners: banners.join(','),
+      passMessageClosed: false,
+      'PSAseen': [[]],
+      XEmbedder: 'fxt',
+      fxtLang: '',
+      fxtUrl: 'https://api.fxtwitter.com',
+      fxtMaxReplies: 5,
+      beepSource: '',
+      beepVolume: 1,
   };
 
   // This file was created because these functions on $ were sometimes not initialized yet because of circular
@@ -2494,93 +2444,113 @@ current-archive-text:"Archive"]
     }
 
   var Get = {
-    url(type, IDs, ...args) {
-      let f, site;
-      if ((site = g.sites[IDs.siteID]) && (f = $.getOwn(site.urls, type))) {
-        return f(IDs, ...args);
-      } else {
-        return undefined;
+      url(type, IDs, ...args) {
+          let f, site;
+          if ((site = g.sites[IDs.siteID]) && (f = $.getOwn(site.urls, type))) {
+              return f(IDs, ...args);
+          }
+          else {
+              return undefined;
+          }
+      },
+      threadExcerpt(thread) {
+          const { OP } = thread;
+          const excerpt = (`/${decodeURIComponent(thread.board.ID)}/ - `) + (OP.info.subject?.trim() ||
+              OP.commentDisplay().replace(/\n+/g, ' // ') ||
+              OP.file?.name ||
+              `No.${OP}`);
+          if (excerpt.length > 73) {
+              return `${excerpt.slice(0, 70)}...`;
+          }
+          return excerpt;
+      },
+      threadFromRoot(root) {
+          if (root == null) {
+              return null;
+          }
+          const { board } = root.dataset;
+          return g.threads.get(`${board ? encodeURIComponent(board) : g.BOARD.ID}.${root.id.match(/\d*$/)[0]}`);
+      },
+      threadFromNode(node) {
+          return Get.threadFromRoot($.x(`ancestor-or-self::${g.SITE.xpath.thread}`, node));
+      },
+      postFromRoot(root) {
+          if (root == null) {
+              return null;
+          }
+          const post = g.posts.get(root.dataset.fullID);
+          const index = root.dataset.clone;
+          if (index) {
+              return post.clones[+index];
+          }
+          else {
+              return post;
+          }
+      },
+      postFromNode(root) {
+          return Get.postFromRoot($.x(`ancestor-or-self::${g.SITE.xpath.postContainer}[1]`, root));
+      },
+      postDataFromLink(link) {
+          let boardID, postID, threadID;
+          if (link.dataset.postID) { // resurrected quote
+              ({ boardID, threadID, postID } = link.dataset);
+              if (!threadID) {
+                  threadID = 0;
+              }
+          }
+          else {
+              const match = link.href.match(g.SITE.regexp.quotelink);
+              [boardID, threadID, postID] = match.slice(1);
+              if (!postID) {
+                  postID = threadID;
+              }
+          }
+          return {
+              boardID,
+              threadID: +threadID,
+              postID: +postID
+          };
+      },
+      allQuotelinksLinkingTo(post) {
+          // Get quotelinks & backlinks linking to the given post.
+          const quotelinks = [];
+          const { posts } = g;
+          const { fullID } = post;
+          const handleQuotes = function (qPost, type) {
+              quotelinks.push(...(qPost.nodes[type] || []));
+              for (var clone of qPost.clones) {
+                  quotelinks.push(...(clone.nodes[type] || []));
+              }
+          };
+          // First:
+          //   In every posts,
+          //   if it did quote this post,
+          //   get all their backlinks.
+          posts.forEach(function (qPost) {
+              if (qPost.quotes.includes(fullID)) {
+                  return handleQuotes(qPost, 'quotelinks');
+              }
+          });
+          // Second:
+          //   If we have quote backlinks:
+          //   in all posts this post quoted
+          //   and their clones,
+          //   get all of their backlinks.
+          if (Conf['Quote Backlinks']) {
+              for (var quote of post.quotes) {
+                  var qPost;
+                  if ((qPost = posts.get(quote))) {
+                      handleQuotes(qPost, 'backlinks');
+                  }
+              }
+          }
+          // Third:
+          //   Filter out irrelevant quotelinks.
+          return quotelinks.filter(function (quotelink) {
+              const { boardID, postID } = Get.postDataFromLink(quotelink);
+              return (boardID === post.board.ID) && (postID === post.ID);
+          });
       }
-    },
-    threadExcerpt(thread) {
-      const {OP} = thread;
-      const excerpt = (`/${decodeURIComponent(thread.board.ID)}/ - `) + (
-        OP.info.subject?.trim() ||
-        OP.commentDisplay().replace(/\n+/g, ' // ') ||
-        OP.file?.name ||
-        `No.${OP}`);
-      if (excerpt.length > 73) { return `${excerpt.slice(0, 70)}...`; }
-      return excerpt;
-    },
-    threadFromRoot(root) {
-      if (root == null) { return null; }
-      const {board} = root.dataset;
-      return g.threads.get(`${board ? encodeURIComponent(board) : g.BOARD.ID}.${root.id.match(/\d*$/)[0]}`);
-    },
-    threadFromNode(node) {
-      return Get.threadFromRoot($.x(`ancestor-or-self::${g.SITE.xpath.thread}`, node));
-    },
-    postFromRoot(root) {
-      if (root == null) { return null; }
-      const post  = g.posts.get(root.dataset.fullID);
-      const index = root.dataset.clone;
-      if (index) { return post.clones[+index]; } else { return post; }
-    },
-    postFromNode(root) {
-      return Get.postFromRoot($.x(`ancestor-or-self::${g.SITE.xpath.postContainer}[1]`, root));
-    },
-    postDataFromLink(link) {
-      let boardID, postID, threadID;
-      if (link.dataset.postID) { // resurrected quote
-        ({boardID, threadID, postID} = link.dataset);
-        if (!threadID) { threadID = 0; }
-      } else {
-        const match = link.href.match(g.SITE.regexp.quotelink);
-        [boardID, threadID, postID] = match.slice(1);
-        if (!postID) { postID = threadID; }
-      }
-      return {
-        boardID,
-        threadID: +threadID,
-        postID:   +postID
-      };
-    },
-    allQuotelinksLinkingTo(post) {
-      // Get quotelinks & backlinks linking to the given post.
-      const quotelinks = [];
-      const {posts} = g;
-      const {fullID} = post;
-      const handleQuotes = function(qPost, type) {
-        quotelinks.push(...(qPost.nodes[type] || []));
-        for (var clone of qPost.clones) { quotelinks.push(...(clone.nodes[type] || [])); }
-      };
-      // First:
-      //   In every posts,
-      //   if it did quote this post,
-      //   get all their backlinks.
-      posts.forEach(function(qPost) {
-        if (qPost.quotes.includes(fullID)) {
-          return handleQuotes(qPost, 'quotelinks');
-        }
-      });
-
-      // Second:
-      //   If we have quote backlinks:
-      //   in all posts this post quoted
-      //   and their clones,
-      //   get all of their backlinks.
-      if (Conf['Quote Backlinks']) {
-        for (var quote of post.quotes) { var qPost;
-        if ((qPost = posts.get(quote))) { handleQuotes(qPost, 'backlinks'); } }
-      }
-
-      // Third:
-      //   Filter out irrelevant quotelinks.
-      return quotelinks.filter(function(quotelink) {
-        const {boardID, postID} = Get.postDataFromLink(quotelink);
-        return (boardID === post.board.ID) && (postID === post.ID);
-      });
-    }
   };
 
   /*
@@ -3016,50 +2986,53 @@ current-archive-text:"Archive"]
   const $$ = (selector, root = d.body) => Array.from(root.querySelectorAll(selector));
 
   var ImageHost = {
-    init() {
-      if ((!(this.useFaster = /\S/.test(Conf['fourchanImageHost']))) || (g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW)) { return; }
-      return Callbacks.Post.push({
-        name: 'Image Host Rewriting',
-        cb:   this.node
-      });
-    },
-
-    suggestions: ['i.4cdn.org', 'is2.4chan.org'],
-
-    host() {
-      return Conf['fourchanImageHost'].trim() || 'i.4cdn.org';
-    },
-    flashHost() {
-      return 'i.4cdn.org';
-    },
-    thumbHost() {
-      return 'i.4cdn.org';
-    },
-    test(hostname) {
-      return (hostname === 'i.4cdn.org') || ImageHost.regex.test(hostname);
-    },
-
-    regex: /^is\d*\.4chan(?:nel)?\.org$/,
-
-    node() {
-      if (this.isClone) { return; }
-      const host = ImageHost.host();
-      if (this.file && ImageHost.test(this.file.url.split('/')[2]) && !/\.swf$/.test(this.file.url)) {
-        this.file.link.hostname = host;
-        if (this.file.thumbLink) { this.file.thumbLink.hostname = host; }
-        this.file.url = this.file.link.href;
+      init() {
+          if ((!(this.useFaster = /\S/.test(Conf['fourchanImageHost']))) || (g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW)) {
+              return;
+          }
+          return Callbacks.Post.push({
+              name: 'Image Host Rewriting',
+              cb: this.node
+          });
+      },
+      suggestions: ['i.4cdn.org', 'is2.4chan.org'],
+      host() {
+          return Conf['fourchanImageHost'].trim() || 'i.4cdn.org';
+      },
+      flashHost() {
+          return 'i.4cdn.org';
+      },
+      thumbHost() {
+          return 'i.4cdn.org';
+      },
+      test(hostname) {
+          return (hostname === 'i.4cdn.org') || ImageHost.regex.test(hostname);
+      },
+      regex: /^is\d*\.4chan(?:nel)?\.org$/,
+      node() {
+          if (this.isClone) {
+              return;
+          }
+          const host = ImageHost.host();
+          if (this.file && ImageHost.test(this.file.url.split('/')[2]) && !/\.swf$/.test(this.file.url)) {
+              this.file.link.hostname = host;
+              if (this.file.thumbLink) {
+                  this.file.thumbLink.hostname = host;
+              }
+              this.file.url = this.file.link.href;
+          }
+          return ImageHost.fixLinks($$('a', this.nodes.comment));
+      },
+      fixLinks(links) {
+          for (var link of links) {
+              if (ImageHost.test(link.hostname) && !/\.swf$/.test(link.pathname)) {
+                  var host = ImageHost.host();
+                  if (link.hostname !== host) {
+                      link.hostname = host;
+                  }
+              }
+          }
       }
-      return ImageHost.fixLinks($$('a', this.nodes.comment));
-    },
-
-    fixLinks(links) {
-      for (var link of links) {
-        if (ImageHost.test(link.hostname) && !/\.swf$/.test(link.pathname)) {
-          var host = ImageHost.host();
-          if (link.hostname !== host) { link.hostname = host; }
-        }
-      }
-    }
   };
 
   var burichan = `:root.burichan {
@@ -6131,76 +6104,75 @@ svg.icon {
   };
 
   const CustomCSS = {
-    init() {
-      if (!Conf['Custom CSS']) { return; }
-      return this.addStyle();
-    },
-
-    addStyle() {
-      return this.style = $.addStyle(CSS.sub(Conf['usercss']), 'custom-css', '#fourchanx-css');
-    },
-
-    rmStyle() {
-      if (this.style) {
-        $.rm(this.style);
-        return delete this.style;
+      init() {
+          if (!Conf['Custom CSS']) {
+              return;
+          }
+          return this.addStyle();
+      },
+      addStyle() {
+          return this.style = $.addStyle(CSS.sub(Conf['usercss']), 'custom-css', '#fourchanx-css');
+      },
+      rmStyle() {
+          if (this.style) {
+              $.rm(this.style);
+              return delete this.style;
+          }
+      },
+      update() {
+          if (!this.style) {
+              return this.addStyle();
+          }
+          return this.style.textContent = CSS.sub(Conf['usercss']);
       }
-    },
-
-    update() {
-      if (!this.style) {
-        return this.addStyle();
-      }
-      return this.style.textContent = CSS.sub(Conf['usercss']);
-    }
   };
 
-  const ImageSvg = 'M448 80c8.8 0 16 7.2 16 16V415.8l-5-6.5-136-176c-4.5-5.9-11.6-9.3-19-9.3s-14.4 3.4-19 9.3L202 340.7l-30.5-42.7C167 291.7 159.8 288 152 288s-15 3.7-19.5 10.1l-80 112L48 416.3l0-.3V96c0-8.8 7.2-16 16-16H448zM64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm80 192a48 48 0 1 0 0-96 48 48 0 1 0 0 96z';
+  const ImageSvg = 'M448 80c8.8 0 16 7.2 16 16l0 319.8-5-6.5-136-176c-4.5-5.9-11.6-9.3-19-9.3s-14.4 3.4-19 9.3L202 340.7l-30.5-42.7C167 291.7 159.8 288 152 288s-15 3.7-19.5 10.1l-80 112L48 416.3l0-.3L48 96c0-8.8 7.2-16 16-16l384 0zM64 32C28.7 32 0 60.7 0 96L0 416c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-320c0-35.3-28.7-64-64-64L64 32zm80 192a48 48 0 1 0 0-96 48 48 0 1 0 0 96z';
   const ImageW = 512, ImageH = 512;
 
   const EyeSvg = 'M288 80c-65.2 0-118.8 29.6-159.9 67.7C89.6 183.5 63 226 49.4 256c13.6 30 40.2 72.5 78.6 108.3C169.2 402.4 222.8 432 288 432s118.8-29.6 159.9-67.7C486.4 328.5 513 286 526.6 256c-13.6-30-40.2-72.5-78.6-108.3C406.8 109.6 353.2 80 288 80zM95.4 112.6C142.5 68.8 207.2 32 288 32s145.5 36.8 192.6 80.6c46.8 43.5 78.1 95.4 93 131.1c3.3 7.9 3.3 16.7 0 24.6c-14.9 35.7-46.2 87.7-93 131.1C433.5 443.2 368.8 480 288 480s-145.5-36.8-192.6-80.6C48.6 356 17.3 304 2.5 268.3c-3.3-7.9-3.3-16.7 0-24.6C17.3 208 48.6 156 95.4 112.6zM288 336c44.2 0 80-35.8 80-80s-35.8-80-80-80c-.7 0-1.3 0-2 0c1.3 5.1 2 10.5 2 16c0 35.3-28.7 64-64 64c-5.5 0-10.9-.7-16-2c0 .7 0 1.3 0 2c0 44.2 35.8 80 80 80zm0-208a128 128 0 1 1 0 256 128 128 0 1 1 0-256z';
   const EyeW = 576, EyeH = 512;
 
-  const UpRightAndDownLeftFromCenterSvg = 'M344 0H488c13.3 0 24 10.7 24 24V168c0 9.7-5.8 18.5-14.8 22.2s-19.3 1.7-26.2-5.2l-39-39-87 87c-9.4 9.4-24.6 9.4-33.9 0l-32-32c-9.4-9.4-9.4-24.6 0-33.9l87-87L327 41c-6.9-6.9-8.9-17.2-5.2-26.2S334.3 0 344 0zM168 512H24c-13.3 0-24-10.7-24-24V344c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2l39 39 87-87c9.4-9.4 24.6-9.4 33.9 0l32 32c9.4 9.4 9.4 24.6 0 33.9l-87 87 39 39c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8z';
+  const UpRightAndDownLeftFromCenterSvg = 'M344 0L488 0c13.3 0 24 10.7 24 24l0 144c0 9.7-5.8 18.5-14.8 22.2s-19.3 1.7-26.2-5.2l-39-39-87 87c-9.4 9.4-24.6 9.4-33.9 0l-32-32c-9.4-9.4-9.4-24.6 0-33.9l87-87L327 41c-6.9-6.9-8.9-17.2-5.2-26.2S334.3 0 344 0zM168 512L24 512c-13.3 0-24-10.7-24-24L0 344c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2l39 39 87-87c9.4-9.4 24.6-9.4 33.9 0l32 32c9.4 9.4 9.4 24.6 0 33.9l-87 87 39 39c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8z';
   const UpRightAndDownLeftFromCenterW = 512, UpRightAndDownLeftFromCenterH = 512;
 
-  const CommentSvg = 'M123.6 391.3c12.9-9.4 29.6-11.8 44.6-6.4c26.5 9.6 56.2 15.1 87.8 15.1c124.7 0 208-80.5 208-160s-83.3-160-208-160S48 160.5 48 240c0 32 12.4 62.8 35.7 89.2c8.6 9.7 12.8 22.5 11.8 35.5c-1.4 18.1-5.7 34.7-11.3 49.4c17-7.9 31.1-16.7 39.4-22.7zM21.2 431.9c1.8-2.7 3.5-5.4 5.1-8.1c10-16.6 19.5-38.4 21.4-62.9C17.7 326.8 0 285.1 0 240C0 125.1 114.6 32 256 32s256 93.1 256 208s-114.6 208-256 208c-37.1 0-72.3-6.4-104.1-17.9c-11.9 8.7-31.3 20.6-54.3 30.6c-15.1 6.6-32.3 12.6-50.1 16.1c-.8 .2-1.6 .3-2.4 .5c-4.4 .8-8.7 1.5-13.2 1.9c-.2 0-.5 .1-.7 .1c-5.1 .5-10.2 .8-15.3 .8c-6.5 0-12.3-3.9-14.8-9.9c-2.5-6-1.1-12.8 3.4-17.4c4.1-4.2 7.8-8.7 11.3-13.5c1.7-2.3 3.3-4.6 4.8-6.9c.1-.2 .2-.3 .3-.5z';
+  const CommentSvg = 'M123.6 391.3c12.9-9.4 29.6-11.8 44.6-6.4c26.5 9.6 56.2 15.1 87.8 15.1c124.7 0 208-80.5 208-160s-83.3-160-208-160S48 160.5 48 240c0 32 12.4 62.8 35.7 89.2c8.6 9.7 12.8 22.5 11.8 35.5c-1.4 18.1-5.7 34.7-11.3 49.4c17-7.9 31.1-16.7 39.4-22.7zM21.2 431.9c1.8-2.7 3.5-5.4 5.1-8.1c10-16.6 19.5-38.4 21.4-62.9C17.7 326.8 0 285.1 0 240C0 125.1 114.6 32 256 32s256 93.1 256 208s-114.6 208-256 208c-37.1 0-72.3-6.4-104.1-17.9c-11.9 8.7-31.3 20.6-54.3 30.6c-15.1 6.6-32.3 12.6-50.1 16.1c-.8 .2-1.6 .3-2.4 .5c-4.4 .8-8.7 1.5-13.2 1.9c-.2 0-.5 .1-.7 .1c-5.1 .5-10.2 .8-15.3 .8c-6.5 0-12.3-3.9-14.8-9.9c-2.5-6-1.1-12.8 3.4-17.4c4.1-4.2 7.8-8.7 11.3-13.5c1.7-2.3 3.3-4.6 4.8-6.9l.3-.5z';
   const CommentW = 512, CommentH = 512;
 
-  const RotateSvg = 'M142.9 142.9c62.2-62.2 162.7-62.5 225.3-1L327 183c-6.9 6.9-8.9 17.2-5.2 26.2s12.5 14.8 22.2 14.8H463.5c0 0 0 0 0 0H472c13.3 0 24-10.7 24-24V72c0-9.7-5.8-18.5-14.8-22.2s-19.3-1.7-26.2 5.2L413.4 96.6c-87.6-86.5-228.7-86.2-315.8 1C73.2 122 55.6 150.7 44.8 181.4c-5.9 16.7 2.9 34.9 19.5 40.8s34.9-2.9 40.8-19.5c7.7-21.8 20.2-42.3 37.8-59.8zM16 312v7.6 .7V440c0 9.7 5.8 18.5 14.8 22.2s19.3 1.7 26.2-5.2l41.6-41.6c87.6 86.5 228.7 86.2 315.8-1c24.4-24.4 42.1-53.1 52.9-83.7c5.9-16.7-2.9-34.9-19.5-40.8s-34.9 2.9-40.8 19.5c-7.7 21.8-20.2 42.3-37.8 59.8c-62.2 62.2-162.7 62.5-225.3 1L185 329c6.9-6.9 8.9-17.2 5.2-26.2s-12.5-14.8-22.2-14.8H48.4h-.7H40c-13.3 0-24 10.7-24 24z';
+  const RotateSvg = 'M142.9 142.9c-17.5 17.5-30.1 38-37.8 59.8c-5.9 16.7-24.2 25.4-40.8 19.5s-25.4-24.2-19.5-40.8C55.6 150.7 73.2 122 97.6 97.6c87.2-87.2 228.3-87.5 315.8-1L455 55c6.9-6.9 17.2-8.9 26.2-5.2s14.8 12.5 14.8 22.2l0 128c0 13.3-10.7 24-24 24l-8.4 0c0 0 0 0 0 0L344 224c-9.7 0-18.5-5.8-22.2-14.8s-1.7-19.3 5.2-26.2l41.1-41.1c-62.6-61.5-163.1-61.2-225.3 1zM16 312c0-13.3 10.7-24 24-24l7.6 0 .7 0L168 288c9.7 0 18.5 5.8 22.2 14.8s1.7 19.3-5.2 26.2l-41.1 41.1c62.6 61.5 163.1 61.2 225.3-1c17.5-17.5 30.1-38 37.8-59.8c5.9-16.7 24.2-25.4 40.8-19.5s25.4 24.2 19.5 40.8c-10.8 30.6-28.4 59.3-52.9 83.8c-87.2 87.2-228.3 87.5-315.8 1L57 457c-6.9 6.9-17.2 8.9-26.2 5.2S16 449.7 16 440l0-119.6 0-.7 0-7.6z';
   const RotateW = 512, RotateH = 512;
 
-  const WrenchSvg = 'M352 320c88.4 0 160-71.6 160-160c0-15.3-2.2-30.1-6.2-44.2c-3.1-10.8-16.4-13.2-24.3-5.3l-76.8 76.8c-3 3-7.1 4.7-11.3 4.7H336c-8.8 0-16-7.2-16-16V118.6c0-4.2 1.7-8.3 4.7-11.3l76.8-76.8c7.9-7.9 5.4-21.2-5.3-24.3C382.1 2.2 367.3 0 352 0C263.6 0 192 71.6 192 160c0 19.1 3.4 37.5 9.5 54.5L19.9 396.1C7.2 408.8 0 426.1 0 444.1C0 481.6 30.4 512 67.9 512c18 0 35.3-7.2 48-19.9L297.5 310.5c17 6.2 35.4 9.5 54.5 9.5zM80 408a24 24 0 1 1 0 48 24 24 0 1 1 0-48z';
+  const WrenchSvg = 'M352 320c88.4 0 160-71.6 160-160c0-15.3-2.2-30.1-6.2-44.2c-3.1-10.8-16.4-13.2-24.3-5.3l-76.8 76.8c-3 3-7.1 4.7-11.3 4.7L336 192c-8.8 0-16-7.2-16-16l0-57.4c0-4.2 1.7-8.3 4.7-11.3l76.8-76.8c7.9-7.9 5.4-21.2-5.3-24.3C382.1 2.2 367.3 0 352 0C263.6 0 192 71.6 192 160c0 19.1 3.4 37.5 9.5 54.5L19.9 396.1C7.2 408.8 0 426.1 0 444.1C0 481.6 30.4 512 67.9 512c18 0 35.3-7.2 48-19.9L297.5 310.5c17 6.2 35.4 9.5 54.5 9.5zM80 408a24 24 0 1 1 0 48 24 24 0 1 1 0-48z';
   const WrenchW = 512, WrenchH = 512;
 
-  const BoltSvg = 'M349.4 44.6c5.9-13.7 1.5-29.7-10.6-38.5s-28.6-8-39.9 1.8l-256 224c-10 8.8-13.6 22.9-8.9 35.3S50.7 288 64 288H175.5L98.6 467.4c-5.9 13.7-1.5 29.7 10.6 38.5s28.6 8 39.9-1.8l256-224c10-8.8 13.6-22.9 8.9-35.3s-16.6-20.7-30-20.7H272.5L349.4 44.6z';
+  const BoltSvg = 'M349.4 44.6c5.9-13.7 1.5-29.7-10.6-38.5s-28.6-8-39.9 1.8l-256 224c-10 8.8-13.6 22.9-8.9 35.3S50.7 288 64 288l111.5 0L98.6 467.4c-5.9 13.7-1.5 29.7 10.6 38.5s28.6 8 39.9-1.8l256-224c10-8.8 13.6-22.9 8.9-35.3s-16.6-20.7-30-20.7l-111.5 0L349.4 44.6z';
   const BoltW = 448, BoltH = 512;
 
-  const PencilSvg = 'M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z';
+  const PencilSvg = 'M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1 0 32c0 8.8 7.2 16 16 16l32 0zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z';
   const PencilW = 512, PencilH = 512;
 
-  const ClipboardSvg = 'M192 0c-41.8 0-77.4 26.7-90.5 64H64C28.7 64 0 92.7 0 128V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V128c0-35.3-28.7-64-64-64H282.5C269.4 26.7 233.8 0 192 0zm0 64a32 32 0 1 1 0 64 32 32 0 1 1 0-64zM112 192H272c8.8 0 16 7.2 16 16s-7.2 16-16 16H112c-8.8 0-16-7.2-16-16s7.2-16 16-16z';
+  const ClipboardSvg = 'M192 0c-41.8 0-77.4 26.7-90.5 64L64 64C28.7 64 0 92.7 0 128L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-320c0-35.3-28.7-64-64-64l-37.5 0C269.4 26.7 233.8 0 192 0zm0 64a32 32 0 1 1 0 64 32 32 0 1 1 0-64zM112 192l160 0c8.8 0 16 7.2 16 16s-7.2 16-16 16l-160 0c-8.8 0-16-7.2-16-16s7.2-16 16-16z';
   const ClipboardW = 384, ClipboardH = 512;
 
-  const ClockSvg = 'M464 256A208 208 0 1 1 48 256a208 208 0 1 1 416 0zM0 256a256 256 0 1 0 512 0A256 256 0 1 0 0 256zM232 120V256c0 8 4 15.5 10.7 20l96 64c11 7.4 25.9 4.4 33.3-6.7s4.4-25.9-6.7-33.3L280 243.2V120c0-13.3-10.7-24-24-24s-24 10.7-24 24z';
+  const ClockSvg = 'M464 256A208 208 0 1 1 48 256a208 208 0 1 1 416 0zM0 256a256 256 0 1 0 512 0A256 256 0 1 0 0 256zM232 120l0 136c0 8 4 15.5 10.7 20l96 64c11 7.4 25.9 4.4 33.3-6.7s4.4-25.9-6.7-33.3L280 243.2 280 120c0-13.3-10.7-24-24-24s-24 10.7-24 24z';
   const ClockW = 512, ClockH = 512;
 
   const LinkSvg = 'M579.8 267.7c56.5-56.5 56.5-148 0-204.5c-50-50-128.8-56.5-186.3-15.4l-1.6 1.1c-14.4 10.3-17.7 30.3-7.4 44.6s30.3 17.7 44.6 7.4l1.6-1.1c32.1-22.9 76-19.3 103.8 8.6c31.5 31.5 31.5 82.5 0 114L422.3 334.8c-31.5 31.5-82.5 31.5-114 0c-27.9-27.9-31.5-71.8-8.6-103.8l1.1-1.6c10.3-14.4 6.9-34.4-7.4-44.6s-34.4-6.9-44.6 7.4l-1.1 1.6C206.5 251.2 213 330 263 380c56.5 56.5 148 56.5 204.5 0L579.8 267.7zM60.2 244.3c-56.5 56.5-56.5 148 0 204.5c50 50 128.8 56.5 186.3 15.4l1.6-1.1c14.4-10.3 17.7-30.3 7.4-44.6s-30.3-17.7-44.6-7.4l-1.6 1.1c-32.1 22.9-76 19.3-103.8-8.6C74 372 74 321 105.5 289.5L217.7 177.2c31.5-31.5 82.5-31.5 114 0c27.9 27.9 31.5 71.8 8.6 103.9l-1.1 1.6c-10.3 14.4-6.9 34.4 7.4 44.6s34.4 6.9 44.6-7.4l1.1-1.6C433.5 260.8 427 182 377 132c-56.5-56.5-148-56.5-204.5 0L60.2 244.3z';
   const LinkW = 640, LinkH = 512;
 
-  const ShuffleSvg = 'M403.8 34.4c12-5 25.7-2.2 34.9 6.9l64 64c6 6 9.4 14.1 9.4 22.6s-3.4 16.6-9.4 22.6l-64 64c-9.2 9.2-22.9 11.9-34.9 6.9s-19.8-16.6-19.8-29.6V160H352c-10.1 0-19.6 4.7-25.6 12.8L284 229.3 244 176l31.2-41.6C293.3 110.2 321.8 96 352 96h32V64c0-12.9 7.8-24.6 19.8-29.6zM164 282.7L204 336l-31.2 41.6C154.7 401.8 126.2 416 96 416H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H96c10.1 0 19.6-4.7 25.6-12.8L164 282.7zm274.6 188c-9.2 9.2-22.9 11.9-34.9 6.9s-19.8-16.6-19.8-29.6V416H352c-30.2 0-58.7-14.2-76.8-38.4L121.6 172.8c-6-8.1-15.5-12.8-25.6-12.8H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H96c30.2 0 58.7 14.2 76.8 38.4L326.4 339.2c6 8.1 15.5 12.8 25.6 12.8h32V320c0-12.9 7.8-24.6 19.8-29.6s25.7-2.2 34.9 6.9l64 64c6 6 9.4 14.1 9.4 22.6s-3.4 16.6-9.4 22.6l-64 64z';
+  const ShuffleSvg = 'M403.8 34.4c12-5 25.7-2.2 34.9 6.9l64 64c6 6 9.4 14.1 9.4 22.6s-3.4 16.6-9.4 22.6l-64 64c-9.2 9.2-22.9 11.9-34.9 6.9s-19.8-16.6-19.8-29.6l0-32-32 0c-10.1 0-19.6 4.7-25.6 12.8L284 229.3 244 176l31.2-41.6C293.3 110.2 321.8 96 352 96l32 0 0-32c0-12.9 7.8-24.6 19.8-29.6zM164 282.7L204 336l-31.2 41.6C154.7 401.8 126.2 416 96 416l-64 0c-17.7 0-32-14.3-32-32s14.3-32 32-32l64 0c10.1 0 19.6-4.7 25.6-12.8L164 282.7zm274.6 188c-9.2 9.2-22.9 11.9-34.9 6.9s-19.8-16.6-19.8-29.6l0-32-32 0c-30.2 0-58.7-14.2-76.8-38.4L121.6 172.8c-6-8.1-15.5-12.8-25.6-12.8l-64 0c-17.7 0-32-14.3-32-32s14.3-32 32-32l64 0c30.2 0 58.7 14.2 76.8 38.4L326.4 339.2c6 8.1 15.5 12.8 25.6 12.8l32 0 0-32c0-12.9 7.8-24.6 19.8-29.6s25.7-2.2 34.9 6.9l64 64c6 6 9.4 14.1 9.4 22.6s-3.4 16.6-9.4 22.6l-64 64z';
   const ShuffleW = 512, ShuffleH = 512;
 
-  const RotateLeftSvg = 'M48.5 224H40c-13.3 0-24-10.7-24-24V72c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2L98.6 96.6c87.6-86.5 228.7-86.2 315.8 1c87.5 87.5 87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3c-62.2-62.2-162.7-62.5-225.3-1L185 183c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8H48.5z';
+  const RotateLeftSvg = 'M48.5 224L40 224c-13.3 0-24-10.7-24-24L16 72c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2L98.6 96.6c87.6-86.5 228.7-86.2 315.8 1c87.5 87.5 87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3c-62.2-62.2-162.7-62.5-225.3-1L185 183c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8L48.5 224z';
   const RotateLeftW = 512, RotateLeftH = 512;
 
-  const DownloadSvg = 'M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32V274.7l-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7V32zM64 352c-35.3 0-64 28.7-64 64v32c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V416c0-35.3-28.7-64-64-64H346.5l-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352H64zm368 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48z';
+  const DownloadSvg = 'M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 242.7-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7 288 32zM64 352c-35.3 0-64 28.7-64 64l0 32c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-32c0-35.3-28.7-64-64-64l-101.5 0-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352 64 352zm368 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48z';
   const DownloadW = 512, DownloadH = 512;
 
-  const BookOpenSvg = 'M249.6 471.5c10.8 3.8 22.4-4.1 22.4-15.5V78.6c0-4.2-1.6-8.4-5-11C247.4 52 202.4 32 144 32C93.5 32 46.3 45.3 18.1 56.1C6.8 60.5 0 71.7 0 83.8V454.1c0 11.9 12.8 20.2 24.1 16.5C55.6 460.1 105.5 448 144 448c33.9 0 79 14 105.6 23.5zm76.8 0C353 462 398.1 448 432 448c38.5 0 88.4 12.1 119.9 22.6c11.3 3.8 24.1-4.6 24.1-16.5V83.8c0-12.1-6.8-23.3-18.1-27.6C529.7 45.3 482.5 32 432 32c-58.4 0-103.4 20-123 35.6c-3.3 2.6-5 6.8-5 11V456c0 11.4 11.7 19.3 22.4 15.5z';
+  const BookOpenSvg = 'M249.6 471.5c10.8 3.8 22.4-4.1 22.4-15.5l0-377.4c0-4.2-1.6-8.4-5-11C247.4 52 202.4 32 144 32C93.5 32 46.3 45.3 18.1 56.1C6.8 60.5 0 71.7 0 83.8L0 454.1c0 11.9 12.8 20.2 24.1 16.5C55.6 460.1 105.5 448 144 448c33.9 0 79 14 105.6 23.5zm76.8 0C353 462 398.1 448 432 448c38.5 0 88.4 12.1 119.9 22.6c11.3 3.8 24.1-4.6 24.1-16.5l0-370.3c0-12.1-6.8-23.3-18.1-27.6C529.7 45.3 482.5 32 432 32c-58.4 0-103.4 20-123 35.6c-3.3 2.6-5 6.8-5 11L304 456c0 11.4 11.7 19.3 22.4 15.5z';
   const BookOpenW = 576, BookOpenH = 512;
 
-  const DownLeftAndUpRightToCenterSvg = 'M439 7c9.4-9.4 24.6-9.4 33.9 0l32 32c9.4 9.4 9.4 24.6 0 33.9l-87 87 39 39c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8H296c-13.3 0-24-10.7-24-24V72c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2l39 39L439 7zM72 272H216c13.3 0 24 10.7 24 24V440c0 9.7-5.8 18.5-14.8 22.2s-19.3 1.7-26.2-5.2l-39-39L73 505c-9.4 9.4-24.6 9.4-33.9 0L7 473c-9.4-9.4-9.4-24.6 0-33.9l87-87L55 313c-6.9-6.9-8.9-17.2-5.2-26.2s12.5-14.8 22.2-14.8z';
+  const DownLeftAndUpRightToCenterSvg = 'M439 7c9.4-9.4 24.6-9.4 33.9 0l32 32c9.4 9.4 9.4 24.6 0 33.9l-87 87 39 39c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8l-144 0c-13.3 0-24-10.7-24-24l0-144c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2l39 39L439 7zM72 272l144 0c13.3 0 24 10.7 24 24l0 144c0 9.7-5.8 18.5-14.8 22.2s-19.3 1.7-26.2-5.2l-39-39L73 505c-9.4 9.4-24.6 9.4-33.9 0L7 473c-9.4-9.4-9.4-24.6 0-33.9l87-87L55 313c-6.9-6.9-8.9-17.2-5.2-26.2s12.5-14.8 22.2-14.8z';
   const DownLeftAndUpRightToCenterW = 512, DownLeftAndUpRightToCenterH = 512;
 
   const HeartSvg = 'M47.6 300.4L228.3 469.1c7.5 7 17.4 10.9 27.7 10.9s20.2-3.9 27.7-10.9L464.4 300.4c30.4-28.3 47.6-68 47.6-109.5v-5.8c0-69.9-50.5-129.5-119.4-141C347 36.5 300.6 51.4 268 84L256 96 244 84c-32.6-32.6-79-47.5-124.6-39.9C50.5 55.6 0 115.2 0 185.1v5.8c0 41.5 17.2 81.2 47.6 109.5z';
@@ -6224,22 +6196,22 @@ svg.icon {
   const ArrowRightLongSvg = 'M502.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l370.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128z';
   const ArrowRightLongW = 512, ArrowRightLongH = 512;
 
-  const PlusSvg = 'M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z';
+  const PlusSvg = 'M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 144L48 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l144 0 0 144c0 17.7 14.3 32 32 32s32-14.3 32-32l0-144 144 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-144 0 0-144z';
   const PlusW = 448, PlusH = 512;
 
-  const SquarePlusSvg = 'M64 80c-8.8 0-16 7.2-16 16V416c0 8.8 7.2 16 16 16H384c8.8 0 16-7.2 16-16V96c0-8.8-7.2-16-16-16H64zM0 96C0 60.7 28.7 32 64 32H384c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96zM200 344V280H136c-13.3 0-24-10.7-24-24s10.7-24 24-24h64V168c0-13.3 10.7-24 24-24s24 10.7 24 24v64h64c13.3 0 24 10.7 24 24s-10.7 24-24 24H248v64c0 13.3-10.7 24-24 24s-24-10.7-24-24z';
+  const SquarePlusSvg = 'M64 80c-8.8 0-16 7.2-16 16l0 320c0 8.8 7.2 16 16 16l320 0c8.8 0 16-7.2 16-16l0-320c0-8.8-7.2-16-16-16L64 80zM0 96C0 60.7 28.7 32 64 32l320 0c35.3 0 64 28.7 64 64l0 320c0 35.3-28.7 64-64 64L64 480c-35.3 0-64-28.7-64-64L0 96zM200 344l0-64-64 0c-13.3 0-24-10.7-24-24s10.7-24 24-24l64 0 0-64c0-13.3 10.7-24 24-24s24 10.7 24 24l0 64 64 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-64 0 0 64c0 13.3-10.7 24-24 24s-24-10.7-24-24z';
   const SquarePlusW = 448, SquarePlusH = 512;
 
-  const SquareMinusSvg = 'M64 80c-8.8 0-16 7.2-16 16V416c0 8.8 7.2 16 16 16H384c8.8 0 16-7.2 16-16V96c0-8.8-7.2-16-16-16H64zM0 96C0 60.7 28.7 32 64 32H384c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96zM152 232H296c13.3 0 24 10.7 24 24s-10.7 24-24 24H152c-13.3 0-24-10.7-24-24s10.7-24 24-24z';
+  const SquareMinusSvg = 'M64 80c-8.8 0-16 7.2-16 16l0 320c0 8.8 7.2 16 16 16l320 0c8.8 0 16-7.2 16-16l0-320c0-8.8-7.2-16-16-16L64 80zM0 96C0 60.7 28.7 32 64 32l320 0c35.3 0 64 28.7 64 64l0 320c0 35.3-28.7 64-64 64L64 480c-35.3 0-64-28.7-64-64L0 96zM152 232l144 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-144 0c-13.3 0-24-10.7-24-24s10.7-24 24-24z';
   const SquareMinusW = 448, SquareMinusH = 512;
 
-  const PlaySvg = 'M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z';
+  const PlaySvg = 'M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80L0 432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z';
   const PlayW = 384, PlayH = 512;
 
   const StopSvg = 'M0 128C0 92.7 28.7 64 64 64H320c35.3 0 64 28.7 64 64V384c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V128z';
   const StopW = 384, StopH = 512;
 
-  const ArrowUpLongSvg = 'M214.6 9.4c-12.5-12.5-32.8-12.5-45.3 0l-128 128c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L160 109.3V480c0 17.7 14.3 32 32 32s32-14.3 32-32V109.3l73.4 73.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-128-128z';
+  const ArrowUpLongSvg = 'M214.6 9.4c-12.5-12.5-32.8-12.5-45.3 0l-128 128c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L160 109.3 160 480c0 17.7 14.3 32 32 32s32-14.3 32-32l0-370.7 73.4 73.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-128-128z';
   const ArrowUpLongW = 384, ArrowUpLongH = 512;
 
   const ArrowDownLongSvg = 'M169.4 502.6c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 402.7 224 32c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 370.7L86.6 329.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128z';
@@ -6457,234 +6429,230 @@ svg.icon {
   var empty = 'R0lGODlhEAAQAJEAAAAAAP///9vb2////yH5BAEAAAMALAAAAAAQABAAAAIvnI+pq+D9DBAUoFkPFnbs7lFZKIJOJJ3MyraoB14jFpOcVMpzrnF3OKlZYsMWowAAOw==';
 
   var Favicon = {
-    init() {
-      return $.asap((() => d.head && (Favicon.el = $('link[rel="shortcut icon"]', d.head))), Favicon.initAsap);
-    },
-
-    set(status) {
-      Favicon.status = status;
-      if (Favicon.el) {
-        Favicon.el.href = Favicon[status];
-        // `favicon.href = href` doesn't work on Firefox.
-        return $.add(d.head, Favicon.el);
-      }
-    },
-
-    initAsap() {
-      Favicon.el.type = 'image/x-icon';
-      const {href}          = Favicon.el;
-      Favicon.isSFW   = /ws\.ico$/.test(href);
-      Favicon.default = href;
-      Favicon.switch();
-      if (Favicon.status) {
-        return Favicon.set(Favicon.status);
-      }
-    },
-
-    switch() {
-      let items = {
-        ferongr: [
-          ferongr_unreadDead,
-          ferongr_unreadDeadY,
-          ferongr_unreadSFW,
-          ferongr_unreadSFWY,
-          ferongr_unreadNSFW,
-          ferongr_unreadNSFWY,
-        ],
-        'xat-': [
-          xat_unreadDead,
-          xat_unreadDeadY,
-          xat_unreadSFW,
-          xat_unreadSFWY,
-          xat_unreadNSFW,
-          xat_unreadNSFWY,
-        ],
-        Mayhem: [
-          Mayhem_unreadDead,
-          Mayhem_unreadDeadY,
-          Mayhem_unreadSFW,
-          Mayhem_unreadSFWY,
-          Mayhem_unreadNSFW,
-          Mayhem_unreadNSFWY,
-        ],
-        '4chanJS': [
-          fourChanJS_unreadDead,
-          fourChanJS_unreadDeadY,
-          fourChanJS_unreadSFW,
-          fourChanJS_unreadSFWY,
-          fourChanJS_unreadNSFW,
-          fourChanJS_unreadNSFWY,
-        ],
-        Original: [
-          Original_unreadDead,
-          Original_unreadDeadY,
-          Original_unreadSFW,
-          Original_unreadSFWY,
-          Original_unreadNSFW,
-          Original_unreadNSFWY,
-        ],
-        'Metro': [
-          Metro_unreadDead,
-          Metro_unreadDeadY,
-          Metro_unreadSFW,
-          Metro_unreadSFWY,
-          Metro_unreadNSFW,
-          Metro_unreadNSFWY,
-        ]
-      };
-      items = $.getOwn(items, Conf['favicon']);
-
-      const f = Favicon;
-      const t = 'data:image/png;base64,';
-      let i = 0;
-      while (items[i]) {
-        items[i] = t + items[i++];
-      }
-
-      [f.unreadDead, f.unreadDeadY, f.unreadSFW, f.unreadSFWY, f.unreadNSFW, f.unreadNSFWY] = items;
-      return f.update();
-    },
-
-    update() {
-      if (this.isSFW) {
-        this.unread  = this.unreadSFW;
-        return this.unreadY = this.unreadSFWY;
-      } else {
-        this.unread  = this.unreadNSFW;
-        return this.unreadY = this.unreadNSFWY;
-      }
-    },
-
-    SFW:   '//s.4cdn.org/image/favicon-ws.ico',
-    NSFW:  '//s.4cdn.org/image/favicon.ico',
-    dead: `data:image/gif;base64,${dead}`,
-    logo: `data:image/png;base64,${empty}`,
+      init() {
+          return $.asap((() => d.head && (Favicon.el = $('link[rel="shortcut icon"]', d.head))), Favicon.initAsap);
+      },
+      set(status) {
+          Favicon.status = status;
+          if (Favicon.el) {
+              Favicon.el.href = Favicon[status];
+              // `favicon.href = href` doesn't work on Firefox.
+              return $.add(d.head, Favicon.el);
+          }
+      },
+      initAsap() {
+          Favicon.el.type = 'image/x-icon';
+          const { href } = Favicon.el;
+          Favicon.isSFW = /ws\.ico$/.test(href);
+          Favicon.default = href;
+          Favicon.switch();
+          if (Favicon.status) {
+              return Favicon.set(Favicon.status);
+          }
+      },
+      switch() {
+          let items = {
+              ferongr: [
+                  ferongr_unreadDead,
+                  ferongr_unreadDeadY,
+                  ferongr_unreadSFW,
+                  ferongr_unreadSFWY,
+                  ferongr_unreadNSFW,
+                  ferongr_unreadNSFWY,
+              ],
+              'xat-': [
+                  xat_unreadDead,
+                  xat_unreadDeadY,
+                  xat_unreadSFW,
+                  xat_unreadSFWY,
+                  xat_unreadNSFW,
+                  xat_unreadNSFWY,
+              ],
+              Mayhem: [
+                  Mayhem_unreadDead,
+                  Mayhem_unreadDeadY,
+                  Mayhem_unreadSFW,
+                  Mayhem_unreadSFWY,
+                  Mayhem_unreadNSFW,
+                  Mayhem_unreadNSFWY,
+              ],
+              '4chanJS': [
+                  fourChanJS_unreadDead,
+                  fourChanJS_unreadDeadY,
+                  fourChanJS_unreadSFW,
+                  fourChanJS_unreadSFWY,
+                  fourChanJS_unreadNSFW,
+                  fourChanJS_unreadNSFWY,
+              ],
+              Original: [
+                  Original_unreadDead,
+                  Original_unreadDeadY,
+                  Original_unreadSFW,
+                  Original_unreadSFWY,
+                  Original_unreadNSFW,
+                  Original_unreadNSFWY,
+              ],
+              'Metro': [
+                  Metro_unreadDead,
+                  Metro_unreadDeadY,
+                  Metro_unreadSFW,
+                  Metro_unreadSFWY,
+                  Metro_unreadNSFW,
+                  Metro_unreadNSFWY,
+              ]
+          };
+          items = $.getOwn(items, Conf['favicon']);
+          const f = Favicon;
+          const t = 'data:image/png;base64,';
+          let i = 0;
+          while (items[i]) {
+              items[i] = t + items[i++];
+          }
+          [f.unreadDead, f.unreadDeadY, f.unreadSFW, f.unreadSFWY, f.unreadNSFW, f.unreadNSFWY] = items;
+          return f.update();
+      },
+      update() {
+          if (this.isSFW) {
+              this.unread = this.unreadSFW;
+              return this.unreadY = this.unreadSFWY;
+          }
+          else {
+              this.unread = this.unreadNSFW;
+              return this.unreadY = this.unreadNSFWY;
+          }
+      },
+      SFW: '//s.4cdn.org/image/favicon-ws.ico',
+      NSFW: '//s.4cdn.org/image/favicon.ico',
+      dead: `data:image/gif;base64,${dead}`,
+      logo: `data:image/png;base64,${empty}`,
   };
 
   const CaptchaReplace = {
-    init() {
-      if ((g.SITE.software !== 'yotsuba') || (d.cookie.indexOf('pass_enabled=1') >= 0)) { return; }
-
-      if (Conf['Force Noscript Captcha'] && Main.jsEnabled) {
-        $.ready(this.noscript);
-        return;
+      init() {
+          if ((g.SITE.software !== 'yotsuba') || (d.cookie.indexOf('pass_enabled=1') >= 0)) {
+              return;
+          }
+          if (Conf['Force Noscript Captcha'] && Main.jsEnabled) {
+              $.ready(this.noscript);
+              return;
+          }
+          if (Conf['captchaLanguage'].trim()) {
+              if (['boards.4chan.org', 'boards.4channel.org'].includes(location.hostname)) {
+                  $.onExists(doc, '#captchaFormPart', node => $.onExists(node, 'iframe[src^="https://www.google.com/recaptcha/"]', this.iframe));
+              }
+              else {
+                  $.onExists(doc, 'iframe[src^="https://www.google.com/recaptcha/"]', this.iframe);
+              }
+          }
+      },
+      noscript() {
+          let noscript, original, toggle;
+          if (!((original = $('#g-recaptcha')) && (noscript = $('noscript', original.parentNode)))) {
+              return;
+          }
+          const span = $.el('span', { id: 'captcha-forced-noscript' });
+          $.replace(noscript, span);
+          $.rm(original);
+          const insert = function () {
+              span.innerHTML = noscript.textContent;
+              this.iframe($('iframe[src^="https://www.google.com/recaptcha/"]', span));
+          };
+          if (toggle = $('#togglePostFormLink a, #form-link')) {
+              $.on(toggle, 'click', insert);
+          }
+          else {
+              insert();
+          }
+      },
+      iframe(iframe) {
+          let lang;
+          if (lang = Conf['captchaLanguage'].trim()) {
+              const src = /[?&]hl=/.test(iframe.src) ?
+                  iframe.src.replace(/([?&]hl=)[^&]*/, '$1' + encodeURIComponent(lang))
+                  :
+                      iframe.src + `&hl=${encodeURIComponent(lang)}`;
+              if (iframe.src !== src) {
+                  iframe.src = src;
+              }
+          }
       }
-
-      if (Conf['captchaLanguage'].trim()) {
-        if (['boards.4chan.org', 'boards.4channel.org'].includes(location.hostname)) {
-          $.onExists(doc, '#captchaFormPart', node => $.onExists(node, 'iframe[src^="https://www.google.com/recaptcha/"]', this.iframe));
-        } else {
-          $.onExists(doc, 'iframe[src^="https://www.google.com/recaptcha/"]', this.iframe);
-        }
-      }
-    },
-
-    noscript() {
-      let noscript, original, toggle;
-      if (!((original = $('#g-recaptcha')) && (noscript = $('noscript', original.parentNode)))) { return; }
-      const span = $.el('span',
-        {id: 'captcha-forced-noscript'});
-      $.replace(noscript, span);
-      $.rm(original);
-      const insert = function() {
-        span.innerHTML = noscript.textContent;
-        this.iframe($('iframe[src^="https://www.google.com/recaptcha/"]', span));
-      };
-      if (toggle = $('#togglePostFormLink a, #form-link')) {
-        $.on(toggle, 'click', insert);
-      } else {
-        insert();
-      }
-    },
-
-    iframe(iframe) {
-      let lang;
-      if (lang = Conf['captchaLanguage'].trim()) {
-        const src = /[?&]hl=/.test(iframe.src) ?
-          iframe.src.replace(/([?&]hl=)[^&]*/, '$1' + encodeURIComponent(lang))
-        :
-          iframe.src + `&hl=${encodeURIComponent(lang)}`;
-        if (iframe.src !== src) { iframe.src = src; }
-      }
-    }
   };
 
   const CaptchaT = {
-    init() {
-      if (d.cookie.indexOf('pass_enabled=1') >= 0) { return; }
-      if (!(this.isEnabled = !!$('#t-root') || !$.id('postForm'))) { return; }
-
-      const root = $.el('div', {className: 'captcha-root'});
-      this.nodes = {root};
-
-      $.addClass(QR.nodes.el, 'has-captcha', 'captcha-t');
-      $.after(QR.nodes.com.parentNode, root);
-    },
-
-    moreNeeded() {
-    },
-
-    getThread() {
-      return {
-        boardID: g.BOARD.ID,
-        threadID: QR.posts[0].thread === 'new' ? '0' : ('' + QR.posts[0].thread),
-      };
-    },
-
-    setup(focus) {
-      if (!this.isEnabled) { return; }
-
-      if (!this.nodes.container) {
-        this.nodes.container = $.el('div', {className: 'captcha-container'});
-        $.prepend(this.nodes.root, this.nodes.container);
-        CaptchaT.currentThread = CaptchaT.getThread();
-        CaptchaT.currentThread.autoLoad = Conf['Auto-load captcha'] ? '1' : '0';
-        $.global('setupTCaptcha', CaptchaT.currentThread);
+      init() {
+          if (d.cookie.indexOf('pass_enabled=1') >= 0) {
+              return;
+          }
+          if (!(this.isEnabled = !!$('#t-root') || !$.id('postForm'))) {
+              return;
+          }
+          const root = $.el('div', { className: 'captcha-root' });
+          this.nodes = { root };
+          $.addClass(QR.nodes.el, 'has-captcha', 'captcha-t');
+          $.after(QR.nodes.com.parentNode, root);
+      },
+      moreNeeded() {
+      },
+      getThread() {
+          return {
+              boardID: g.BOARD.ID,
+              threadID: QR.posts[0].thread === 'new' ? '0' : ('' + QR.posts[0].thread),
+          };
+      },
+      setup(focus) {
+          if (!this.isEnabled) {
+              return;
+          }
+          if (!this.nodes.container) {
+              this.nodes.container = $.el('div', { className: 'captcha-container' });
+              $.prepend(this.nodes.root, this.nodes.container);
+              CaptchaT.currentThread = CaptchaT.getThread();
+              CaptchaT.currentThread.autoLoad = Conf['Auto-load captcha'] ? '1' : '0';
+              $.global('setupTCaptcha', CaptchaT.currentThread);
+          }
+          if (focus)
+              $('#t-resp').focus();
+      },
+      destroy() {
+          if (!this.isEnabled || !this.nodes.container) {
+              return;
+          }
+          $.global('destroyTCaptcha');
+          $.rm(this.nodes.container);
+          delete this.nodes.container;
+      },
+      updateThread() {
+          if (!this.isEnabled) {
+              return;
+          }
+          const { boardID, threadID } = (CaptchaT.currentThread || {});
+          const newThread = CaptchaT.getThread();
+          if ((newThread.boardID !== boardID) || (newThread.threadID !== threadID)) {
+              CaptchaT.destroy();
+              CaptchaT.setup();
+          }
+      },
+      getOne() {
+          let el;
+          let response = {};
+          if (this.nodes.container) {
+              for (var key of ['t-response', 't-challenge']) {
+                  response[key] = $(`[name='${key}']`, this.nodes.container).value;
+              }
+          }
+          if (!response['t-response'] && !((el = $('#t-msg, #t-task')) && /Verification not required/i.test(el.textContent))) {
+              response = null;
+          }
+          return response;
+      },
+      setUsed() {
+          if (this.isEnabled && this.nodes.container) {
+              $.global('TCaptchaClearChallenge');
+          }
+      },
+      occupied() {
+          return !!this.nodes.container;
       }
-
-      if (focus) $('#t-resp').focus();
-    },
-
-    destroy() {
-      if (!this.isEnabled || !this.nodes.container) { return; }
-      $.global('destroyTCaptcha');
-      $.rm(this.nodes.container);
-      delete this.nodes.container;
-    },
-
-    updateThread() {
-      if (!this.isEnabled) { return; }
-      const {boardID, threadID} = (CaptchaT.currentThread || {});
-      const newThread = CaptchaT.getThread();
-      if ((newThread.boardID !== boardID) || (newThread.threadID !== threadID)) {
-        CaptchaT.destroy();
-        CaptchaT.setup();
-      }
-    },
-
-    getOne() {
-      let el;
-      let response = {};
-      if (this.nodes.container) {
-        for (var key of ['t-response', 't-challenge']) {
-          response[key] = $(`[name='${key}']`, this.nodes.container).value;
-        }
-      }
-      if (!response['t-response'] && !((el = $('#t-msg, #t-task')) && /Verification not required/i.test(el.textContent))) {
-        response = null;
-      }
-      return response;
-    },
-
-    setUsed() {
-      if (this.isEnabled && this.nodes.container) {
-        $.global('TCaptchaClearChallenge');
-      }
-    },
-
-    occupied() {
-      return !!this.nodes.container;
-    }
   };
 
   /**
@@ -7120,725 +7088,719 @@ svg.icon {
   }
 
   class CatalogThread {
-    toString() { return this.ID; }
-
-    constructor(root, thread) {
-      this.thread = thread;
-      this.ID    = this.thread.ID;
-      this.board = this.thread.board;
-      const {post} = this.thread.OP.nodes;
-      this.nodes = {
-        root,
-        thumb:     $('.catalog-thumb', post),
-        icons:     $('.catalog-icons', post),
-        postCount: $('.post-count',    post),
-        fileCount: $('.file-count',    post),
-        pageCount: $('.page-count',    post),
-        replies:   null
-      };
-      this.thread.catalogView = this;
-    }
+      toString() { return this.ID; }
+      constructor(root, thread) {
+          this.thread = thread;
+          this.ID = this.thread.ID;
+          this.board = this.thread.board;
+          const { post } = this.thread.OP.nodes;
+          this.nodes = {
+              root,
+              thumb: $('.catalog-thumb', post),
+              icons: $('.catalog-icons', post),
+              postCount: $('.post-count', post),
+              fileCount: $('.file-count', post),
+              pageCount: $('.page-count', post),
+              replies: null
+          };
+          this.thread.catalogView = this;
+      }
   }
 
-  const dialog = function(id, properties) {
-    const el = $.el('div', {
-      className: 'dialog',
-      id
-    }
-    );
-    $.extend(el, properties);
-    el.style.cssText = Conf[`${id}.position`];
-
-    const move = $('.move', el);
-    $.on(move, 'touchstart mousedown', dragstart);
-    for (var child of move.children) {
-      if (!child.tagName) { continue; }
-      $.on(child, 'touchstart mousedown', e => e.stopPropagation());
-    }
-
-    return el;
-  };
-
-  var Menu$1 = (function() {
-    let currentMenu = undefined;
-    let lastToggledButton = undefined;
-    Menu$1 = class Menu {
-      static initClass() {
-        currentMenu       = null;
-        lastToggledButton = null;
-      }
-
-      constructor(type) {
-        // XXX AddMenuEntry event is deprecated
-        this.setPosition = this.setPosition.bind(this);
-        this.close = this.close.bind(this);
-        this.keybinds = this.keybinds.bind(this);
-        this.onFocus = this.onFocus.bind(this);
-        this.addEntry = this.addEntry.bind(this);
-        this.type = type;
-        $.on(d, 'AddMenuEntry', ({detail}) => {
-          if (detail.type !== this.type) { return; }
-          delete detail.open;
-          return this.addEntry(detail);
-        });
-        this.entries = [];
-      }
-
-      makeMenu() {
-        const menu = $.el('div', {
+  const dialog = function (id, properties) {
+      const el = $.el('div', {
           className: 'dialog',
-          id:        'menu',
-          tabIndex:  0
-        }
-        );
-        menu.dataset.type = this.type;
-        $.on(menu, 'click', e => e.stopPropagation());
-        $.on(menu, 'keydown', this.keybinds);
-        return menu;
-      }
-
-      toggle(e, button, data) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (currentMenu) {
-          // Close if it's already opened.
-          // Reopen if we clicked on another button.
-          const previousButton = lastToggledButton;
-          currentMenu.close();
-          if (previousButton === button) { return; }
-        }
-
-        if (!this.entries.length) { return; }
-        return this.open(button, data);
-      }
-
-      open(button, data) {
-        let entry;
-        const menu = (this.menu = this.makeMenu());
-        currentMenu       = this;
-        lastToggledButton = button;
-
-        this.entries.sort((first, second) => first.order - second.order);
-
-        for (entry of this.entries) {
-          this.insertEntry(entry, menu, data);
-        }
-
-        $.addClass(lastToggledButton, 'active');
-
-        $.on(d, 'click CloseMenu', this.close);
-        $.on(d, 'scroll', this.setPosition);
-        $.on(window, 'resize', this.setPosition);
-        $.after(button, menu);
-
-        this.setPosition();
-
-        entry = $('.entry', menu);
-        // We've removed flexbox, so we don't use order anymore.
-        // while prevEntry = @findNextEntry entry, -1
-        //   entry = prevEntry
-        this.focus(entry);
-
-        return menu.focus();
-      }
-
-      setPosition() {
-        const mRect   = this.menu.getBoundingClientRect();
-        const bRect   = lastToggledButton.getBoundingClientRect();
-        const cHeight = doc.clientHeight;
-        const cWidth  = doc.clientWidth;
-        const [top, bottom] = (bRect.top + bRect.height + mRect.height) < cHeight ?
-          [`${bRect.bottom}px`, '']
-        :
-          ['', `${cHeight - bRect.top}px`];
-        const [left, right] = (bRect.left + mRect.width) < cWidth ?
-          [`${bRect.left}px`, '']
-        :
-          ['', `${cWidth - bRect.right}px`];
-        $.extend(this.menu.style, {top, right, bottom, left});
-        return this.menu.classList.toggle('left', right);
-      }
-
-      insertEntry(entry, parent, data) {
-        let submenu;
-        if (typeof entry.open === 'function') {
-          try {
-            if (!entry.open(data)) { return; }
-          } catch (err) {
-            Main.handleErrors({
-              message: `Error in building the ${this.type} menu.`,
-              error: err
-            });
-            return;
+          id
+      });
+      $.extend(el, properties);
+      el.style.cssText = Conf[`${id}.position`];
+      const move = $('.move', el);
+      $.on(move, 'touchstart mousedown', dragstart);
+      for (var child of move.children) {
+          if (!child.tagName) {
+              continue;
           }
-        }
-        $.add(parent, entry.el);
-
-        if (!entry.subEntries) { return; }
-        if (submenu = $('.submenu', entry.el)) {
-          // Reset sub menu, remove irrelevant entries.
-          $.rm(submenu);
-        }
-        submenu = $.el('div',
-          {className: 'dialog submenu'});
-        for (var subEntry of entry.subEntries) {
-          this.insertEntry(subEntry, submenu, data);
-        }
-        $.add(entry.el, submenu);
+          $.on(child, 'touchstart mousedown', e => e.stopPropagation());
       }
-
-      close() {
-        $.rm(this.menu);
-        delete this.menu;
-        $.rmClass(lastToggledButton, 'active');
-        currentMenu       = null;
-        lastToggledButton = null;
-        $.off(d, 'click scroll CloseMenu', this.close);
-        $.off(d, 'scroll', this.setPosition);
-        return $.off(window, 'resize', this.setPosition);
-      }
-
-      findNextEntry(entry, direction) {
-        const entries = [...entry.parentNode.children];
-        entries.sort((first, second) => first.style.order - second.style.order);
-        return entries[entries.indexOf(entry) + direction];
-      }
-
-      keybinds(e) {
-        let subEntry;
-        let next, submenu;
-        let entry = $('.focused', this.menu);
-        while ((subEntry = $('.focused', entry))) {
-          entry = subEntry;
-        }
-
-        switch (e.keyCode) {
-          case 27: // Esc
-            lastToggledButton.focus();
-            this.close();
-            break;
-          case 13: case 32: // Enter, Space
-            entry.click();
-            break;
-          case 38: // Up
-            if (next = this.findNextEntry(entry, -1)) {
-              this.focus(next);
-            }
-            break;
-          case 40: // Down
-            if (next = this.findNextEntry(entry, +1)) {
-              this.focus(next);
-            }
-            break;
-          case 39: // Right
-            if ((submenu = $('.submenu', entry)) && (next = submenu.firstElementChild)) {
-              let nextPrev;
-              while ((nextPrev = this.findNextEntry(next, -1))) {
-                next = nextPrev;
+      return el;
+  };
+  var Menu$1 = (function () {
+      let currentMenu = undefined;
+      let lastToggledButton = undefined;
+      Menu$1 = class Menu {
+          static initClass() {
+              currentMenu = null;
+              lastToggledButton = null;
+          }
+          constructor(type) {
+              // XXX AddMenuEntry event is deprecated
+              this.setPosition = this.setPosition.bind(this);
+              this.close = this.close.bind(this);
+              this.keybinds = this.keybinds.bind(this);
+              this.onFocus = this.onFocus.bind(this);
+              this.addEntry = this.addEntry.bind(this);
+              this.type = type;
+              $.on(d, 'AddMenuEntry', ({ detail }) => {
+                  if (detail.type !== this.type) {
+                      return;
+                  }
+                  delete detail.open;
+                  return this.addEntry(detail);
+              });
+              this.entries = [];
+          }
+          makeMenu() {
+              const menu = $.el('div', {
+                  className: 'dialog',
+                  id: 'menu',
+                  tabIndex: 0
+              });
+              menu.dataset.type = this.type;
+              $.on(menu, 'click', e => e.stopPropagation());
+              $.on(menu, 'keydown', this.keybinds);
+              return menu;
+          }
+          toggle(e, button, data) {
+              e.preventDefault();
+              e.stopPropagation();
+              if (currentMenu) {
+                  // Close if it's already opened.
+                  // Reopen if we clicked on another button.
+                  const previousButton = lastToggledButton;
+                  currentMenu.close();
+                  if (previousButton === button) {
+                      return;
+                  }
               }
-              this.focus(next);
-            }
-            break;
-          case 37: // Left
-            if (next = $.x('parent::*[contains(@class,"submenu")]/parent::*', entry)) {
-              this.focus(next);
-            }
-            break;
-          default:
-            return;
-        }
-
-        e.preventDefault();
-        return e.stopPropagation();
-      }
-
-      onFocus(e) {
-        e.stopPropagation();
-        return this.focus(e.target);
-      }
-
-      focus(entry) {
-        let focused, submenu;
-        while ((focused = $.x('parent::*/child::*[contains(@class,"focused")]', entry))) {
-          $.rmClass(focused, 'focused');
-        }
-        for (focused of $$('.focused', entry)) {
-          $.rmClass(focused, 'focused');
-        }
-        $.addClass(entry, 'focused');
-
-        // Submenu positioning.
-        if (!(submenu = $('.submenu', entry))) { return; }
-        const sRect   = submenu.getBoundingClientRect();
-        const eRect   = entry.getBoundingClientRect();
-        const cHeight = doc.clientHeight;
-        const cWidth  = doc.clientWidth;
-        const [top, bottom] = (eRect.top + sRect.height) < cHeight ?
-          ['0px', 'auto']
-        :
-          ['auto', '0px'];
-        const [left, right] = (eRect.right + sRect.width) < (cWidth - 150) ?
-          ['100%', 'auto']
-        :
-          ['auto', '100%'];
-        const {style} = submenu;
-        style.top    = top;
-        style.bottom = bottom;
-        style.left   = left;
-        return style.right  = right;
-      }
-
-      addEntry(entry) {
-        this.parseEntry(entry);
-        return this.entries.push(entry);
-      }
-
-      parseEntry(entry) {
-        const {el, subEntries} = entry;
-        $.addClass(el, 'entry');
-        $.on(el, 'focus mouseover', this.onFocus);
-        el.style.order = entry.order || 100;
-        if (!subEntries) { return; }
-        $.addClass(el, 'has-submenu');
-        for (var subEntry of subEntries) {
-          this.parseEntry(subEntry);
-        }
-        const span = $.el('span',
-          {className: 'menu-indicator'}
-        );
-        Icon.set(span, 'caretRight');
-        $.add(el, span);
-      }
-    };
-    Menu$1.initClass();
-    return Menu$1;
+              if (!this.entries.length) {
+                  return;
+              }
+              return this.open(button, data);
+          }
+          open(button, data) {
+              let entry;
+              const menu = (this.menu = this.makeMenu());
+              currentMenu = this;
+              lastToggledButton = button;
+              this.entries.sort((first, second) => first.order - second.order);
+              for (entry of this.entries) {
+                  this.insertEntry(entry, menu, data);
+              }
+              $.addClass(lastToggledButton, 'active');
+              $.on(d, 'click CloseMenu', this.close);
+              $.on(d, 'scroll', this.setPosition);
+              $.on(window, 'resize', this.setPosition);
+              $.after(button, menu);
+              this.setPosition();
+              entry = $('.entry', menu);
+              // We've removed flexbox, so we don't use order anymore.
+              // while prevEntry = @findNextEntry entry, -1
+              //   entry = prevEntry
+              this.focus(entry);
+              return menu.focus();
+          }
+          setPosition() {
+              const mRect = this.menu.getBoundingClientRect();
+              const bRect = lastToggledButton.getBoundingClientRect();
+              const cHeight = doc.clientHeight;
+              const cWidth = doc.clientWidth;
+              const [top, bottom] = (bRect.top + bRect.height + mRect.height) < cHeight ?
+                  [`${bRect.bottom}px`, '']
+                  :
+                      ['', `${cHeight - bRect.top}px`];
+              const [left, right] = (bRect.left + mRect.width) < cWidth ?
+                  [`${bRect.left}px`, '']
+                  :
+                      ['', `${cWidth - bRect.right}px`];
+              $.extend(this.menu.style, { top, right, bottom, left });
+              return this.menu.classList.toggle('left', right);
+          }
+          insertEntry(entry, parent, data) {
+              let submenu;
+              if (typeof entry.open === 'function') {
+                  try {
+                      if (!entry.open(data)) {
+                          return;
+                      }
+                  }
+                  catch (err) {
+                      Main.handleErrors({
+                          message: `Error in building the ${this.type} menu.`,
+                          error: err
+                      });
+                      return;
+                  }
+              }
+              $.add(parent, entry.el);
+              if (!entry.subEntries) {
+                  return;
+              }
+              if (submenu = $('.submenu', entry.el)) {
+                  // Reset sub menu, remove irrelevant entries.
+                  $.rm(submenu);
+              }
+              submenu = $.el('div', { className: 'dialog submenu' });
+              for (var subEntry of entry.subEntries) {
+                  this.insertEntry(subEntry, submenu, data);
+              }
+              $.add(entry.el, submenu);
+          }
+          close() {
+              $.rm(this.menu);
+              delete this.menu;
+              $.rmClass(lastToggledButton, 'active');
+              currentMenu = null;
+              lastToggledButton = null;
+              $.off(d, 'click scroll CloseMenu', this.close);
+              $.off(d, 'scroll', this.setPosition);
+              return $.off(window, 'resize', this.setPosition);
+          }
+          findNextEntry(entry, direction) {
+              const entries = [...entry.parentNode.children];
+              entries.sort((first, second) => first.style.order - second.style.order);
+              return entries[entries.indexOf(entry) + direction];
+          }
+          keybinds(e) {
+              let subEntry;
+              let next, submenu;
+              let entry = $('.focused', this.menu);
+              while ((subEntry = $('.focused', entry))) {
+                  entry = subEntry;
+              }
+              switch (e.keyCode) {
+                  case 27: // Esc
+                      lastToggledButton.focus();
+                      this.close();
+                      break;
+                  case 13:
+                  case 32: // Enter, Space
+                      entry.click();
+                      break;
+                  case 38: // Up
+                      if (next = this.findNextEntry(entry, -1)) {
+                          this.focus(next);
+                      }
+                      break;
+                  case 40: // Down
+                      if (next = this.findNextEntry(entry, 1)) {
+                          this.focus(next);
+                      }
+                      break;
+                  case 39: // Right
+                      if ((submenu = $('.submenu', entry)) && (next = submenu.firstElementChild)) {
+                          let nextPrev;
+                          while ((nextPrev = this.findNextEntry(next, -1))) {
+                              next = nextPrev;
+                          }
+                          this.focus(next);
+                      }
+                      break;
+                  case 37: // Left
+                      if (next = $.x('parent::*[contains(@class,"submenu")]/parent::*', entry)) {
+                          this.focus(next);
+                      }
+                      break;
+                  default:
+                      return;
+              }
+              e.preventDefault();
+              return e.stopPropagation();
+          }
+          onFocus(e) {
+              e.stopPropagation();
+              return this.focus(e.target);
+          }
+          focus(entry) {
+              let focused, submenu;
+              while ((focused = $.x('parent::*/child::*[contains(@class,"focused")]', entry))) {
+                  $.rmClass(focused, 'focused');
+              }
+              for (focused of $$('.focused', entry)) {
+                  $.rmClass(focused, 'focused');
+              }
+              $.addClass(entry, 'focused');
+              // Submenu positioning.
+              if (!(submenu = $('.submenu', entry))) {
+                  return;
+              }
+              const sRect = submenu.getBoundingClientRect();
+              const eRect = entry.getBoundingClientRect();
+              const cHeight = doc.clientHeight;
+              const cWidth = doc.clientWidth;
+              const [top, bottom] = (eRect.top + sRect.height) < cHeight ?
+                  ['0px', 'auto']
+                  :
+                      ['auto', '0px'];
+              const [left, right] = (eRect.right + sRect.width) < (cWidth - 150) ?
+                  ['100%', 'auto']
+                  :
+                      ['auto', '100%'];
+              const { style } = submenu;
+              style.top = top;
+              style.bottom = bottom;
+              style.left = left;
+              return style.right = right;
+          }
+          addEntry(entry) {
+              this.parseEntry(entry);
+              return this.entries.push(entry);
+          }
+          parseEntry(entry) {
+              const { el, subEntries } = entry;
+              $.addClass(el, 'entry');
+              $.on(el, 'focus mouseover', this.onFocus);
+              el.style.order = entry.order || 100;
+              if (!subEntries) {
+                  return;
+              }
+              $.addClass(el, 'has-submenu');
+              for (var subEntry of subEntries) {
+                  this.parseEntry(subEntry);
+              }
+              const span = $.el('span', { className: 'menu-indicator' });
+              Icon.set(span, 'caretRight');
+              $.add(el, span);
+          }
+      };
+      Menu$1.initClass();
+      return Menu$1;
   })();
-
   var dragstart = function (e) {
-    let isTouching;
-    if ((e.type === 'mousedown') && (e.button !== 0)) { return; } // not LMB
-    // prevent text selection
-    e.preventDefault();
-    if (isTouching = e.type === 'touchstart') {
-      e = e.changedTouches[e.changedTouches.length - 1];
-    }
-    // distance from pointer to el edge is constant; calculate it here.
-    const el = $.x('ancestor::div[contains(@class,"dialog")][1]', this);
-    const rect = el.getBoundingClientRect();
-    const screenHeight = doc.clientHeight;
-    const screenWidth  = doc.clientWidth;
-    const o = {
-      id:     el.id,
-      style:  el.style,
-      dx:     e.clientX - rect.left,
-      dy:     e.clientY - rect.top,
-      height: screenHeight - rect.height,
-      width:  screenWidth  - rect.width,
-      screenHeight,
-      screenWidth,
-      isTouching
-    };
-
-    [o.topBorder, o.bottomBorder] = Conf['Header auto-hide'] || !Conf['Fixed Header'] ?
-      [0, 0]
-    : Conf['Bottom Header'] ?
-      [0, Header.bar.getBoundingClientRect().height]
-    :
-      [Header.bar.getBoundingClientRect().height, 0];
-
-    if (isTouching) {
-      o.identifier = e.identifier;
-      o.move = touchmove.bind(o);
-      o.up   = touchend.bind(o);
-      $.on(d, 'touchmove', o.move);
-      return $.on(d, 'touchend touchcancel', o.up);
-    } else { // mousedown
-      o.move = drag.bind(o);
-      o.up   = dragend.bind(o);
-      $.on(d, 'mousemove', o.move);
-      return $.on(d, 'mouseup',   o.up);
-    }
+      let isTouching;
+      if ((e.type === 'mousedown') && (e.button !== 0)) {
+          return;
+      } // not LMB
+      // prevent text selection
+      e.preventDefault();
+      if (isTouching = e.type === 'touchstart') {
+          e = e.changedTouches[e.changedTouches.length - 1];
+      }
+      // distance from pointer to el edge is constant; calculate it here.
+      const el = $.x('ancestor::div[contains(@class,"dialog")][1]', this);
+      const rect = el.getBoundingClientRect();
+      const screenHeight = doc.clientHeight;
+      const screenWidth = doc.clientWidth;
+      const o = {
+          id: el.id,
+          style: el.style,
+          dx: e.clientX - rect.left,
+          dy: e.clientY - rect.top,
+          height: screenHeight - rect.height,
+          width: screenWidth - rect.width,
+          screenHeight,
+          screenWidth,
+          isTouching
+      };
+      [o.topBorder, o.bottomBorder] = Conf['Header auto-hide'] || !Conf['Fixed Header'] ?
+          [0, 0]
+          : Conf['Bottom Header'] ?
+              [0, Header.bar.getBoundingClientRect().height]
+              :
+                  [Header.bar.getBoundingClientRect().height, 0];
+      if (isTouching) {
+          o.identifier = e.identifier;
+          o.move = touchmove.bind(o);
+          o.up = touchend.bind(o);
+          $.on(d, 'touchmove', o.move);
+          return $.on(d, 'touchend touchcancel', o.up);
+      }
+      else { // mousedown
+          o.move = drag.bind(o);
+          o.up = dragend.bind(o);
+          $.on(d, 'mousemove', o.move);
+          return $.on(d, 'mouseup', o.up);
+      }
   };
-
   var touchmove = function (e) {
-    for (var touch of e.changedTouches) {
-      if (touch.identifier === this.identifier) {
-        drag.call(this, touch);
-        return;
+      for (var touch of e.changedTouches) {
+          if (touch.identifier === this.identifier) {
+              drag.call(this, touch);
+              return;
+          }
       }
-    }
   };
-
   var drag = function (e) {
-    const {clientX, clientY} = e;
-
-    let left = clientX - this.dx;
-    left = left < 10 ?
-      0
-    : (this.width - left) < 10 ?
-      ''
-    :
-      ((left / this.screenWidth) * 100) + '%';
-
-    let top = clientY - this.dy;
-    top = top < (10 + this.topBorder) ?
-      this.topBorder + 'px'
-    : (this.height - top) < (10 + this.bottomBorder) ?
-      ''
-    :
-      ((top / this.screenHeight) * 100) + '%';
-
-    const right = left === '' ?
-      0
-    :
-      '';
-
-    const bottom = top === '' ?
-      this.bottomBorder + 'px'
-    :
-      '';
-
-    const {style} = this;
-    style.left   = left;
-    style.right  = right;
-    style.top    = top;
-    style.bottom = bottom;
+      const { clientX, clientY } = e;
+      let left = clientX - this.dx;
+      left = left < 10 ?
+          0
+          : (this.width - left) < 10 ?
+              ''
+              :
+                  ((left / this.screenWidth) * 100) + '%';
+      let top = clientY - this.dy;
+      top = top < (10 + this.topBorder) ?
+          this.topBorder + 'px'
+          : (this.height - top) < (10 + this.bottomBorder) ?
+              ''
+              :
+                  ((top / this.screenHeight) * 100) + '%';
+      const right = left === '' ?
+          0
+          :
+              '';
+      const bottom = top === '' ?
+          this.bottomBorder + 'px'
+          :
+              '';
+      const { style } = this;
+      style.left = left;
+      style.right = right;
+      style.top = top;
+      style.bottom = bottom;
   };
-
   var touchend = function (e) {
-    for (var touch of e.changedTouches) {
-      if (touch.identifier === this.identifier) {
-        dragend.call(this);
-        return;
+      for (var touch of e.changedTouches) {
+          if (touch.identifier === this.identifier) {
+              dragend.call(this);
+              return;
+          }
       }
-    }
   };
-
   var dragend = function () {
-    if (this.isTouching) {
-      $.off(d, 'touchmove', this.move);
-      $.off(d, 'touchend touchcancel', this.up);
-    } else { // mouseup
-      $.off(d, 'mousemove', this.move);
-      $.off(d, 'mouseup',   this.up);
-    }
-    if (this.style.length === 2) { // assume only left or right and top or bottom
-      $.set(`${this.id}.position`, this.style.cssText);
-    } else { // only include position data.
-      const { left, right, top, bottom } = this.style;
-      let position = '';
-      if (left) position += `left:${left};`;
-      if (right) position += `right:${right};`;
-      if (top) position += `top:${top};`;
-      if (bottom) position += `bottom:${bottom};`;
-      $.set(`${this.id}.position`, position);
-    }
+      if (this.isTouching) {
+          $.off(d, 'touchmove', this.move);
+          $.off(d, 'touchend touchcancel', this.up);
+      }
+      else { // mouseup
+          $.off(d, 'mousemove', this.move);
+          $.off(d, 'mouseup', this.up);
+      }
+      if (this.style.length === 2) { // assume only left or right and top or bottom
+          $.set(`${this.id}.position`, this.style.cssText);
+      }
+      else { // only include position data.
+          const { left, right, top, bottom } = this.style;
+          let position = '';
+          if (left)
+              position += `left:${left};`;
+          if (right)
+              position += `right:${right};`;
+          if (top)
+              position += `top:${top};`;
+          if (bottom)
+              position += `bottom:${bottom};`;
+          $.set(`${this.id}.position`, position);
+      }
   };
-
   const hoverstart = function ({ root, el, latestEvent, endEvents, height, width, cb, noRemove }) {
-    const rect = root.getBoundingClientRect();
-    const o = {
-      root,
-      el,
-      style: el.style,
-      isImage: ['IMG', 'VIDEO'].includes(el.nodeName),
-      cb,
-      endEvents,
-      latestEvent,
-      clientHeight: doc.clientHeight,
-      clientWidth:  doc.clientWidth,
-      height,
-      width,
-      noRemove,
-      clientX: (rect.left + rect.right) / 2,
-      clientY: (rect.top + rect.bottom) / 2
-    };
-    o.hover    = hover.bind(o);
-    o.hoverend = hoverend.bind(o);
-
-    o.hover(o.latestEvent);
-    new MutationObserver(function() {
-      if (el.parentNode) { return o.hover(o.latestEvent); }
-    }).observe(el, {childList: true});
-
-    $.on(root, endEvents,   o.hoverend);
-    if ($.x('ancestor::div[contains(@class,"inline")][1]', root)) {
-      $.on(d,    'keydown',   o.hoverend);
-    }
-    $.on(root, 'mousemove', o.hover);
-
-    // Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=674955
-    o.workaround = function(e) { if (!root.contains(e.target)) { return o.hoverend(e); } };
-    return $.on(doc,  'mousemove', o.workaround);
+      const rect = root.getBoundingClientRect();
+      const o = {
+          root,
+          el,
+          style: el.style,
+          isImage: ['IMG', 'VIDEO'].includes(el.nodeName),
+          cb,
+          endEvents,
+          latestEvent,
+          clientHeight: doc.clientHeight,
+          clientWidth: doc.clientWidth,
+          height,
+          width,
+          noRemove,
+          clientX: (rect.left + rect.right) / 2,
+          clientY: (rect.top + rect.bottom) / 2
+      };
+      o.hover = hover.bind(o);
+      o.hoverend = hoverend.bind(o);
+      o.hover(o.latestEvent);
+      new MutationObserver(function () {
+          if (el.parentNode) {
+              return o.hover(o.latestEvent);
+          }
+      }).observe(el, { childList: true });
+      $.on(root, endEvents, o.hoverend);
+      if ($.x('ancestor::div[contains(@class,"inline")][1]', root)) {
+          $.on(d, 'keydown', o.hoverend);
+      }
+      $.on(root, 'mousemove', o.hover);
+      // Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=674955
+      o.workaround = function (e) { if (!root.contains(e.target)) {
+          return o.hoverend(e);
+      } };
+      return $.on(doc, 'mousemove', o.workaround);
   };
-
   hoverstart.padding = 25;
-
   var hover = function (e) {
-    this.latestEvent = e;
-    const height = (this.height || this.el.offsetHeight) + hoverstart.padding;
-    const width  = (this.width  || this.el.offsetWidth);
-    const {clientX, clientY} = Conf['Follow Cursor'] ? e : this;
-
-    const top = this.isImage ?
-      Math.max(0, (clientY * (this.clientHeight - height)) / this.clientHeight)
-    :
-      Math.max(0, Math.min(this.clientHeight - height, clientY - 120));
-
-    let threshold = this.clientWidth / 2;
-    if (!this.isImage) { threshold = Math.max(threshold, this.clientWidth - 400); }
-    let marginX = (clientX <= threshold ? clientX : this.clientWidth - clientX) + 45;
-    if (this.isImage) { marginX = Math.min(marginX, this.clientWidth - width); }
-    marginX += 'px';
-    const [left, right] = clientX <= threshold ? [marginX, ''] : ['', marginX];
-
-    const {style} = this;
-    style.top   = top + 'px';
-    style.left  = left;
-    return style.right = right;
+      this.latestEvent = e;
+      const height = (this.height || this.el.offsetHeight) + hoverstart.padding;
+      const width = (this.width || this.el.offsetWidth);
+      const { clientX, clientY } = Conf['Follow Cursor'] ? e : this;
+      const top = this.isImage ?
+          Math.max(0, (clientY * (this.clientHeight - height)) / this.clientHeight)
+          :
+              Math.max(0, Math.min(this.clientHeight - height, clientY - 120));
+      let threshold = this.clientWidth / 2;
+      if (!this.isImage) {
+          threshold = Math.max(threshold, this.clientWidth - 400);
+      }
+      let marginX = (clientX <= threshold ? clientX : this.clientWidth - clientX) + 45;
+      if (this.isImage) {
+          marginX = Math.min(marginX, this.clientWidth - width);
+      }
+      marginX += 'px';
+      const [left, right] = clientX <= threshold ? [marginX, ''] : ['', marginX];
+      const { style } = this;
+      style.top = top + 'px';
+      style.left = left;
+      return style.right = right;
   };
-
   var hoverend = function (e) {
-    if (((e.type === 'keydown') && (e.keyCode !== 13)) || (e.target.nodeName === "TEXTAREA")) { return; }
-    if (!this.noRemove) { $.rm(this.el); }
-    $.off(this.root, this.endEvents,  this.hoverend);
-    $.off(d,     'keydown',   this.hoverend);
-    $.off(this.root, 'mousemove', this.hover);
-    // Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=674955
-    $.off(doc,   'mousemove', this.workaround);
-    if (this.cb) { return this.cb.call(this); }
+      if (((e.type === 'keydown') && (e.keyCode !== 13)) || (e.target.nodeName === "TEXTAREA")) {
+          return;
+      }
+      if (!this.noRemove) {
+          $.rm(this.el);
+      }
+      $.off(this.root, this.endEvents, this.hoverend);
+      $.off(d, 'keydown', this.hoverend);
+      $.off(this.root, 'mousemove', this.hover);
+      // Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=674955
+      $.off(doc, 'mousemove', this.workaround);
+      if (this.cb) {
+          return this.cb.call(this);
+      }
   };
-
   const checkbox = function (name, text, checked) {
-    if (checked == null) { checked = Conf[name]; }
-    const label = $.el('label');
-    const input = $.el('input', {type: 'checkbox', name, checked});
-    $.add(label, [input, $.tn(` ${text}`)]);
-    return label;
+      if (checked == null) {
+          checked = Conf[name];
+      }
+      const label = $.el('label');
+      const input = $.el('input', { type: 'checkbox', name, checked });
+      $.add(label, [input, $.tn(` ${text}`)]);
+      return label;
   };
-
   const UI = {
-    dialog,
-    Menu: Menu$1,
-    hover:    hoverstart,
-    checkbox
+      dialog,
+      Menu: Menu$1,
+      hover: hoverstart,
+      checkbox
   };
 
   var Nav = {
-    init() {
-      switch (g.VIEW) {
-        case 'index':
-          if (!Conf['Index Navigation']) { return; }
-          break;
-        case 'thread':
-          if (!Conf['Reply Navigation']) { return; }
-          break;
-        default:
-          return;
+      init() {
+          switch (g.VIEW) {
+              case 'index':
+                  if (!Conf['Index Navigation']) {
+                      return;
+                  }
+                  break;
+              case 'thread':
+                  if (!Conf['Reply Navigation']) {
+                      return;
+                  }
+                  break;
+              default:
+                  return;
+          }
+          const span = $.el('span', { id: 'navlinks' });
+          const prev = $.el('a', {
+              textContent: '▲',
+              className: 'navlinks-navlink navlink-prev',
+              href: 'javascript:;'
+          });
+          const next = $.el('a', {
+              textContent: '▼',
+              className: 'navlinks-navlink navlink-next',
+              href: 'javascript:;'
+          });
+          Icon.set(prev, 'arrowUpLong');
+          Icon.set(next, 'arrowDownLong');
+          $.on(prev, 'click', this.prev);
+          $.on(next, 'click', this.next);
+          $.add(span, [prev, $.tn(' '), next]);
+          var append = function () {
+              $.off(d, '4chanXInitFinished', append);
+              return $.add(d.body, span);
+          };
+          return $.on(d, '4chanXInitFinished', append);
+      },
+      prev() {
+          if (g.VIEW === 'thread') {
+              return window.scrollTo(0, 0);
+          }
+          else {
+              return Nav.scroll(-1);
+          }
+      },
+      next() {
+          if (g.VIEW === 'thread') {
+              return window.scrollTo(0, d.body.scrollHeight);
+          }
+          else {
+              return Nav.scroll(1);
+          }
+      },
+      getThread() {
+          if (g.VIEW === 'thread') {
+              return g.threads.get(`${g.BOARD}.${g.THREADID}`).nodes.root;
+          }
+          if ($.hasClass(doc, 'catalog-mode')) {
+              return;
+          }
+          for (var threadRoot of $$(g.SITE.selectors.thread)) {
+              var thread = Get.threadFromRoot(threadRoot);
+              if (thread.isHidden && !thread.stub) {
+                  continue;
+              }
+              if (Header.getTopOf(threadRoot) >= -threadRoot.getBoundingClientRect().height) { // not scrolled past
+                  return threadRoot;
+              }
+          }
+      },
+      scroll(delta) {
+          let next;
+          d.activeElement?.blur();
+          let thread = Nav.getThread();
+          if (!thread) {
+              return;
+          }
+          const axis = delta === 1 ?
+              'following'
+              :
+                  'preceding';
+          if (next = $.x(`${axis}-sibling::${g.SITE.xpath.thread}[not(@hidden)][1]`, thread)) {
+              // Unless we're not at the beginning of the current thread,
+              // and thus wanting to move to beginning,
+              // or we're above the first thread and don't want to skip it.
+              const top = Header.getTopOf(thread);
+              if (((delta === 1) && (top < 5)) || ((delta === -1) && (top > -5))) {
+                  thread = next;
+              }
+          }
+          // Add extra space to the end of the page if necessary so that all threads can be selected by keybinds.
+          const extra = (Header.getTopOf(thread) + doc.clientHeight) - d.body.getBoundingClientRect().bottom;
+          if (extra > 0) {
+              d.body.style.marginBottom = `${extra}px`;
+          }
+          Header.scrollTo(thread);
+          if ((extra > 0) && !Nav.haveExtra) {
+              Nav.haveExtra = true;
+              return $.on(d, 'scroll', Nav.removeExtra);
+          }
+      },
+      removeExtra() {
+          const extra = doc.clientHeight - d.body.getBoundingClientRect().bottom;
+          if (extra > 0) {
+              return d.body.style.marginBottom = `${extra}px`;
+          }
+          else {
+              d.body.style.marginBottom = '';
+              delete Nav.haveExtra;
+              return $.off(d, 'scroll', Nav.removeExtra);
+          }
       }
-
-      const span = $.el('span',
-        {id: 'navlinks'});
-      const prev = $.el('a', {
-        textContent: '▲',
-        className: 'navlinks-navlink navlink-prev',
-        href: 'javascript:;'
-      }
-      );
-      const next = $.el('a', {
-        textContent: '▼',
-        className: 'navlinks-navlink navlink-next',
-        href: 'javascript:;'
-      }
-      );
-
-      Icon.set(prev, 'arrowUpLong');
-      Icon.set(next, 'arrowDownLong');
-
-      $.on(prev, 'click', this.prev);
-      $.on(next, 'click', this.next);
-
-      $.add(span, [prev, $.tn(' '), next]);
-      var append = function() {
-        $.off(d, '4chanXInitFinished', append);
-        return $.add(d.body, span);
-      };
-      return $.on(d, '4chanXInitFinished', append);
-    },
-
-    prev() {
-      if (g.VIEW === 'thread') {
-        return window.scrollTo(0, 0);
-      } else {
-        return Nav.scroll(-1);
-      }
-    },
-
-    next() {
-      if (g.VIEW === 'thread') {
-        return window.scrollTo(0, d.body.scrollHeight);
-      } else {
-        return Nav.scroll(+1);
-      }
-    },
-
-    getThread() {
-      if (g.VIEW === 'thread') { return g.threads.get(`${g.BOARD}.${g.THREADID}`).nodes.root; }
-      if ($.hasClass(doc, 'catalog-mode')) { return; }
-      for (var threadRoot of $$(g.SITE.selectors.thread)) {
-        var thread = Get.threadFromRoot(threadRoot);
-        if (thread.isHidden && !thread.stub) { continue; }
-        if (Header.getTopOf(threadRoot) >= -threadRoot.getBoundingClientRect().height) { // not scrolled past
-          return threadRoot;
-        }
-      }
-    },
-
-    scroll(delta) {
-      let next;
-      d.activeElement?.blur();
-      let thread = Nav.getThread();
-      if (!thread) { return; }
-      const axis = delta === +1 ?
-        'following'
-      :
-        'preceding';
-      if (next = $.x(`${axis}-sibling::${g.SITE.xpath.thread}[not(@hidden)][1]`, thread)) {
-        // Unless we're not at the beginning of the current thread,
-        // and thus wanting to move to beginning,
-        // or we're above the first thread and don't want to skip it.
-        const top = Header.getTopOf(thread);
-        if (((delta === +1) && (top < 5)) || ((delta === -1) && (top > -5))) { thread = next; }
-      }
-      // Add extra space to the end of the page if necessary so that all threads can be selected by keybinds.
-      const extra = (Header.getTopOf(thread) + doc.clientHeight) - d.body.getBoundingClientRect().bottom;
-      if (extra > 0) { d.body.style.marginBottom = `${extra}px`; }
-
-      Header.scrollTo(thread);
-
-      if ((extra > 0) && !Nav.haveExtra) {
-        Nav.haveExtra = true;
-        return $.on(d, 'scroll', Nav.removeExtra);
-      }
-    },
-
-    removeExtra() {
-      const extra = doc.clientHeight - d.body.getBoundingClientRect().bottom;
-      if (extra > 0) {
-        return d.body.style.marginBottom = `${extra}px`;
-      } else {
-        d.body.style.marginBottom = '';
-        delete Nav.haveExtra;
-        return $.off(d, 'scroll', Nav.removeExtra);
-      }
-    }
   };
 
   var Volume = {
-    init() {
-      if (!['index', 'thread'].includes(g.VIEW) ||
-        (!Conf['Image Expansion'] && !Conf['Image Hover'] && !Conf['Image Hover in Catalog'] && !Conf['Gallery'])) { return; }
-
-      $.sync('Allow Sound', function(x) {
-        Conf['Allow Sound'] = x;
-        if (Volume.inputs) Volume.inputs.unmute.checked = x;
-      });
-
-      $.sync('Default Volume', function(x) {
-        Conf['Default Volume'] = x;
-        if (Volume.inputs) Volume.inputs.volume.value = x;
-      });
-
-      if (Conf['Mouse Wheel Volume']) {
-        Callbacks.Post.push({
-          name: 'Mouse Wheel Volume',
-          cb:   this.node
-        });
+      init() {
+          if (!['index', 'thread'].includes(g.VIEW) ||
+              (!Conf['Image Expansion'] && !Conf['Image Hover'] && !Conf['Image Hover in Catalog'] && !Conf['Gallery'])) {
+              return;
+          }
+          $.sync('Allow Sound', function (x) {
+              Conf['Allow Sound'] = x;
+              if (Volume.inputs)
+                  Volume.inputs.unmute.checked = x;
+          });
+          $.sync('Default Volume', function (x) {
+              Conf['Default Volume'] = x;
+              if (Volume.inputs)
+                  Volume.inputs.volume.value = x;
+          });
+          if (Conf['Mouse Wheel Volume']) {
+              Callbacks.Post.push({
+                  name: 'Mouse Wheel Volume',
+                  cb: this.node
+              });
+          }
+          if (g.SITE.noAudio?.(g.BOARD)) {
+              return;
+          }
+          if (Conf['Mouse Wheel Volume']) {
+              Callbacks.CatalogThread.push({
+                  name: 'Mouse Wheel Volume',
+                  cb: this.catalogNode
+              });
+          }
+          const unmuteEntry = UI.checkbox('Allow Sound', 'Allow Sound');
+          unmuteEntry.title = Config.main['Images and Videos']['Allow Sound'][1];
+          const volumeEntry = $.el('label', { title: 'Default volume for videos.' });
+          $.extend(volumeEntry, { innerHTML: "<input name=\"Default Volume\" type=\"range\" min=\"0\" max=\"1\" step=\"0.01\" value=\"" + E(Conf["Default Volume"]) + "\"> Volume" });
+          this.inputs = {
+              unmute: unmuteEntry.firstElementChild,
+              volume: volumeEntry.firstElementChild
+          };
+          $.on(this.inputs.unmute, 'change', $.cb.checked);
+          $.on(this.inputs.volume, 'change', $.cb.value);
+          Header.menu.addEntry({ el: unmuteEntry, order: 200 });
+          return Header.menu.addEntry({ el: volumeEntry, order: 201 });
+      },
+      setup(video) {
+          video.muted = !Conf['Allow Sound'];
+          video.volume = Conf['Default Volume'];
+          return $.on(video, 'volumechange', Volume.change);
+      },
+      change() {
+          const { muted, volume } = this;
+          const items = {
+              'Allow Sound': !muted,
+              'Default Volume': volume
+          };
+          for (var key in items) {
+              var val = items[key];
+              if (Conf[key] === val) {
+                  delete items[key];
+              }
+          }
+          $.set(items);
+          $.extend(Conf, items);
+          if (Volume.inputs) {
+              Volume.inputs.unmute.checked = !muted;
+              return Volume.inputs.volume.value = volume;
+          }
+      },
+      node() {
+          if (g.SITE.noAudio?.(this.board)) {
+              return;
+          }
+          for (var file of this.files) {
+              if (file.isVideo) {
+                  if (file.thumb) {
+                      $.on(file.thumb, 'wheel', Volume.wheel.bind(Header.hover));
+                  }
+                  $.on(($('.file-info', file.text) || file.link), 'wheel', Volume.wheel.bind(file.thumbLink));
+              }
+          }
+      },
+      catalogNode() {
+          const file = this.thread.OP.files[0];
+          if (!file?.isVideo) {
+              return;
+          }
+          return $.on(this.nodes.thumb, 'wheel', Volume.wheel.bind(Header.hover));
+      },
+      wheel(e) {
+          let el;
+          if (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) {
+              return;
+          }
+          if (!(el = $('video:not([data-md5])', this))) {
+              return;
+          }
+          if (el.muted || !$.hasAudio(el)) {
+              return;
+          }
+          let volume = el.volume + 0.1;
+          if (e.deltaY < 0) {
+              volume *= 1.1;
+          }
+          if (e.deltaY > 0) {
+              volume /= 1.1;
+          }
+          el.volume = $.minmax(volume - 0.1, 0, 1);
+          return e.preventDefault();
       }
-
-      if (g.SITE.noAudio?.(g.BOARD)) { return; }
-
-      if (Conf['Mouse Wheel Volume']) {
-        Callbacks.CatalogThread.push({
-          name: 'Mouse Wheel Volume',
-          cb:   this.catalogNode
-        });
-      }
-
-      const unmuteEntry = UI.checkbox('Allow Sound', 'Allow Sound');
-      unmuteEntry.title = Config.main['Images and Videos']['Allow Sound'][1];
-
-      const volumeEntry = $.el('label',
-        {title: 'Default volume for videos.'});
-      $.extend(volumeEntry,
-        {innerHTML: "<input name=\"Default Volume\" type=\"range\" min=\"0\" max=\"1\" step=\"0.01\" value=\"" + E(Conf["Default Volume"]) + "\"> Volume"});
-
-      this.inputs = {
-        unmute: unmuteEntry.firstElementChild,
-        volume: volumeEntry.firstElementChild
-      };
-
-      $.on(this.inputs.unmute, 'change', $.cb.checked);
-      $.on(this.inputs.volume, 'change', $.cb.value);
-
-      Header.menu.addEntry({el: unmuteEntry, order: 200});
-      return Header.menu.addEntry({el: volumeEntry, order: 201});
-    },
-
-    setup(video) {
-      video.muted  = !Conf['Allow Sound'];
-      video.volume = Conf['Default Volume'];
-      return $.on(video, 'volumechange', Volume.change);
-    },
-
-    change() {
-      const {muted, volume} = this;
-      const items = {
-        'Allow Sound': !muted,
-        'Default Volume': volume
-      };
-      for (var key in items) {
-        var val = items[key];
-        if (Conf[key] === val) {
-          delete items[key];
-        }
-      }
-      $.set(items);
-      $.extend(Conf, items);
-      if (Volume.inputs) {
-        Volume.inputs.unmute.checked = !muted;
-        return Volume.inputs.volume.value = volume;
-      }
-    },
-
-    node() {
-      if (g.SITE.noAudio?.(this.board)) { return; }
-      for (var file of this.files) {
-        if (file.isVideo) {
-          if (file.thumb) { $.on(file.thumb, 'wheel', Volume.wheel.bind(Header.hover)); }
-          $.on(($('.file-info', file.text) || file.link), 'wheel', Volume.wheel.bind(file.thumbLink));
-        }
-      }
-    },
-
-    catalogNode() {
-      const file = this.thread.OP.files[0];
-      if (!file?.isVideo) { return; }
-      return $.on(this.nodes.thumb, 'wheel', Volume.wheel.bind(Header.hover));
-    },
-
-    wheel(e) {
-      let el;
-      if (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) { return; }
-      if (!(el = $('video:not([data-md5])', this))) { return; }
-      if (el.muted || !$.hasAudio(el)) { return; }
-      let volume = el.volume + 0.1;
-      if (e.deltaY < 0) { volume *= 1.1; }
-      if (e.deltaY > 0) { volume /= 1.1; }
-      el.volume = $.minmax(volume - 0.1, 0, 1);
-      return e.preventDefault();
-    }
   };
 
   const Audio = {
@@ -8717,146 +8679,140 @@ svg.icon {
   PostClone.suffix = 0;
 
   var BoardConfig = {
-    cbs: [],
-
-    init() {
-      let middle;
-      if (g.SITE.software !== 'yotsuba') { return; }
-      const now = Date.now();
-      if (now - (2 * HOUR) >= ((middle = Conf['boardConfig'].lastChecked || 0)) || middle > now) {
-        return $.ajax(`${location.protocol}//a.4cdn.org/boards.json`,
-          {onloadend: this.load});
-      } else {
-        const {boards} = Conf['boardConfig'];
-        return this.set(boards);
-      }
-    },
-
-    load() {
-      let boards;
-      if ((this.status === 200) && this.response && this.response.boards) {
-        boards = dict();
-        for (var board of this.response.boards) {
-          boards[board.board] = board;
-        }
-        $.set('boardConfig', {boards, lastChecked: Date.now()});
-      } else {
-        ({boards} = Conf['boardConfig']);
-        const err = (() => { switch (this.status) {
-          case 0:   return 'Connection Error';
-          case 200: return 'Invalid Data';
-          default:          return `Error ${this.statusText} (${this.status})`;
-        } })();
-        new Notice('warning', `Failed to load board configuration. ${err}`, 20);
-      }
-      return BoardConfig.set(boards);
-    },
-
-    set(boards) {
-      this.boards = boards;
-      for (var ID in g.boards) {
-        var board = g.boards[ID];
-        board.config = this.boards[ID] || {};
-      }
-      for (var cb of this.cbs) {
-        $.queueTask(cb);
-      }
-    },
-
-    ready(cb) {
-      if (this.boards) {
-        return cb();
-      } else {
-        return this.cbs.push(cb);
-      }
-    },
-
-    sfwBoards(sfw) {
-      return (() => {
-        const result = [];
-        const object = this.boards || Conf['boardConfig'].boards;
-        for (var board in object) {
-          var data = object[board];
-          if (!!data.ws_board === sfw) {
-            result.push(board);
+      cbs: [],
+      init() {
+          let middle;
+          if (g.SITE.software !== 'yotsuba') {
+              return;
           }
-        }
-        return result;
-      })();
-    },
-
-    isSFW(board) {
-      return !!(this.boards || Conf['boardConfig'].boards)[board]?.ws_board;
-    },
-
-    domain(board) {
-      // return `boards.${BoardConfig.isSFW(board) ? '4channel' : '4chan'}.org`;
-      return 'boards.4chan.org';
-    },
-
-    isArchived(board) {
-      // assume archive exists if no data available to prevent cleaning of archived threads
-      const data = (this.boards || Conf['boardConfig'].boards)[board];
-      return !data || data.is_archived;
-    },
-
-    noAudio(boardID) {
-      if (g.SITE.software !== 'yotsuba') { return false; }
-      const boards = this.boards || Conf['boardConfig'].boards;
-      return boards && boards[boardID] && !boards[boardID].webm_audio;
-    },
-
-    title(boardID) {
-      return (this.boards || Conf['boardConfig'].boards)?.[boardID]?.title || '';
-    }
+          const now = Date.now();
+          if (now - (2 * HOUR) >= ((middle = Conf['boardConfig'].lastChecked || 0)) || middle > now) {
+              return $.ajax(`${location.protocol}//a.4cdn.org/boards.json`, { onloadend: this.load });
+          }
+          else {
+              const { boards } = Conf['boardConfig'];
+              return this.set(boards);
+          }
+      },
+      load() {
+          let boards;
+          if ((this.status === 200) && this.response && this.response.boards) {
+              boards = dict();
+              for (var board of this.response.boards) {
+                  boards[board.board] = board;
+              }
+              $.set('boardConfig', { boards, lastChecked: Date.now() });
+          }
+          else {
+              ({ boards } = Conf['boardConfig']);
+              const err = (() => {
+                  switch (this.status) {
+                      case 0: return 'Connection Error';
+                      case 200: return 'Invalid Data';
+                      default: return `Error ${this.statusText} (${this.status})`;
+                  }
+              })();
+              new Notice('warning', `Failed to load board configuration. ${err}`, 20);
+          }
+          return BoardConfig.set(boards);
+      },
+      set(boards) {
+          this.boards = boards;
+          for (var ID in g.boards) {
+              var board = g.boards[ID];
+              board.config = this.boards[ID] || {};
+          }
+          for (var cb of this.cbs) {
+              $.queueTask(cb);
+          }
+      },
+      ready(cb) {
+          if (this.boards) {
+              return cb();
+          }
+          else {
+              return this.cbs.push(cb);
+          }
+      },
+      sfwBoards(sfw) {
+          return (() => {
+              const result = [];
+              const object = this.boards || Conf['boardConfig'].boards;
+              for (var board in object) {
+                  var data = object[board];
+                  if (!!data.ws_board === sfw) {
+                      result.push(board);
+                  }
+              }
+              return result;
+          })();
+      },
+      isSFW(board) {
+          return !!(this.boards || Conf['boardConfig'].boards)[board]?.ws_board;
+      },
+      domain(board) {
+          // return `boards.${BoardConfig.isSFW(board) ? '4channel' : '4chan'}.org`;
+          return 'boards.4chan.org';
+      },
+      isArchived(board) {
+          // assume archive exists if no data available to prevent cleaning of archived threads
+          const data = (this.boards || Conf['boardConfig'].boards)[board];
+          return !data || data.is_archived;
+      },
+      noAudio(boardID) {
+          if (g.SITE.software !== 'yotsuba') {
+              return false;
+          }
+          const boards = this.boards || Conf['boardConfig'].boards;
+          return boards && boards[boardID] && !boards[boardID].webm_audio;
+      },
+      title(boardID) {
+          return (this.boards || Conf['boardConfig'].boards)?.[boardID]?.title || '';
+      }
   };
 
   var Menu = {
-    init() {
-      if (!['index', 'thread'].includes(g.VIEW) || !Conf['Menu']) { return; }
-
-      this.button = $.el('a', {
-        className: 'menu-button',
-        href:      'javascript:;'
+      init() {
+          if (!['index', 'thread'].includes(g.VIEW) || !Conf['Menu']) {
+              return;
+          }
+          this.button = $.el('a', {
+              className: 'menu-button',
+              href: 'javascript:;'
+          });
+          Icon.set(this.button, 'caretDown');
+          this.menu = new UI.Menu('post');
+          Callbacks.Post.push({
+              name: 'Menu',
+              cb: this.node
+          });
+          return Callbacks.CatalogThread.push({
+              name: 'Menu',
+              cb: this.catalogNode
+          });
+      },
+      node() {
+          if (this.isClone) {
+              const button = $('.menu-button', this.nodes.info);
+              $.rmClass(button, 'active');
+              $.rm($('.dialog', this.nodes.info));
+              Menu.makeButton(this, button);
+              return;
+          }
+          return $.add(this.nodes.info, Menu.makeButton(this));
+      },
+      catalogNode() {
+          return $.after(this.nodes.icons, Menu.makeButton(this.thread.OP));
+      },
+      makeButton(post, button) {
+          if (!button) {
+              button = Menu.button.cloneNode(true);
+          }
+          $.on(button, 'click', function (e) {
+              return Menu.menu.toggle(e, this, post);
+          });
+          return button;
       }
-      );
-
-      Icon.set(this.button, 'caretDown');
-
-      this.menu = new UI.Menu('post');
-      Callbacks.Post.push({
-        name: 'Menu',
-        cb:   this.node
-      });
-
-      return Callbacks.CatalogThread.push({
-        name: 'Menu',
-        cb:   this.catalogNode
-      });
-    },
-
-    node() {
-      if (this.isClone) {
-        const button = $('.menu-button', this.nodes.info);
-        $.rmClass(button, 'active');
-        $.rm($('.dialog', this.nodes.info));
-        Menu.makeButton(this, button);
-        return;
-      }
-      return $.add(this.nodes.info, Menu.makeButton(this));
-    },
-
-    catalogNode() {
-      return $.after(this.nodes.icons, Menu.makeButton(this.thread.OP));
-    },
-
-    makeButton(post, button) {
-      if (!button) { button = Menu.button.cloneNode(true); }
-      $.on(button, 'click', function(e) {
-        return Menu.menu.toggle(e, this, post);
-      });
-      return button;
-    }
   };
 
   var Recursive = {
@@ -9441,125 +9397,127 @@ svg.icon {
   }
 
   const PostRedirect = {
-    init() {
-      return $.on(d, 'QRPostSuccessful', e => {
-        if (!e.detail.redirect) { return; }
-        this.event = e;
-        this.delays = 0;
-        return $.queueTask(() => {
-          if ((e === this.event) && (this.delays === 0)) {
-            return location.href = e.detail.redirect;
+      init() {
+          return $.on(d, 'QRPostSuccessful', e => {
+              if (!e.detail.redirect) {
+                  return;
+              }
+              this.event = e;
+              this.delays = 0;
+              return $.queueTask(() => {
+                  if ((e === this.event) && (this.delays === 0)) {
+                      return location.href = e.detail.redirect;
+                  }
+              });
+          });
+      },
+      delays: 0,
+      delay() {
+          if (!this.event) {
+              return null;
           }
-        });
-      });
-    },
-
-    delays: 0,
-
-    delay() {
-      if (!this.event) { return null; }
-      const e = this.event;
-      this.delays++;
-      return () => {
-        if (e !== this.event) { return; }
-        this.delays--;
-        if (this.delays === 0) {
-          return location.href = e.detail.redirect;
-        }
-      };
-    }
+          const e = this.event;
+          this.delays++;
+          return () => {
+              if (e !== this.event) {
+                  return;
+              }
+              this.delays--;
+              if (this.delays === 0) {
+                  return location.href = e.detail.redirect;
+              }
+          };
+      }
   };
 
   var ExpandComment = {
-    init() {
-      if ((g.VIEW !== 'index') || !Conf['Comment Expansion'] || Conf['JSON Index']) { return; }
-
-      return Callbacks.Post.push({
-        name: 'Comment Expansion',
-        cb:   this.node
-      });
-    },
-
-    node() {
-      let a;
-      if (a = $('.abbr > a:not([onclick])', this.nodes.comment)) {
-        return $.on(a, 'click', ExpandComment.cb);
+      init() {
+          if ((g.VIEW !== 'index') || !Conf['Comment Expansion'] || Conf['JSON Index']) {
+              return;
+          }
+          return Callbacks.Post.push({
+              name: 'Comment Expansion',
+              cb: this.node
+          });
+      },
+      node() {
+          let a;
+          if (a = $('.abbr > a:not([onclick])', this.nodes.comment)) {
+              return $.on(a, 'click', ExpandComment.cb);
+          }
+      },
+      callbacks: [],
+      cb(e) {
+          e.preventDefault();
+          return ExpandComment.expand(Get.postFromNode(this));
+      },
+      expand(post) {
+          let a;
+          if (post.nodes.longComment && !post.nodes.longComment.parentNode) {
+              $.replace(post.nodes.shortComment, post.nodes.longComment);
+              post.nodes.comment = post.nodes.longComment;
+              return;
+          }
+          if (!(a = $('.abbr > a', post.nodes.comment))) {
+              return;
+          }
+          a.textContent = `Post No.${post} Loading...`;
+          return $.cache(g.SITE.urls.threadJSON({ boardID: post.boardID, threadID: post.threadID }), function () { return ExpandComment.parse(this, a, post); });
+      },
+      contract(post) {
+          if (!post.nodes.shortComment) {
+              return;
+          }
+          const a = $('.abbr > a', post.nodes.shortComment);
+          a.textContent = 'here';
+          $.replace(post.nodes.longComment, post.nodes.shortComment);
+          return post.nodes.comment = post.nodes.shortComment;
+      },
+      parse(req, a, post) {
+          let postObj, spoilerRange;
+          const { status } = req;
+          if (![200, 304].includes(status)) {
+              a.textContent = status ? `Error ${req.statusText} (${status})` : 'Connection Error';
+              return;
+          }
+          const { posts } = req.response;
+          if (spoilerRange = posts[0].custom_spoiler) {
+              g.SITE.Build.spoilerRange[g.BOARD] = spoilerRange;
+          }
+          for (postObj of posts) {
+              if (postObj.no === post.ID) {
+                  break;
+              }
+          }
+          if (postObj.no !== post.ID) {
+              a.textContent = `Post No.${post} not found.`;
+              return;
+          }
+          const { comment } = post.nodes;
+          const clone = comment.cloneNode(false);
+          clone.innerHTML = postObj.com;
+          // Fix pathnames
+          for (var quote of $$('.quotelink', clone)) {
+              var href = quote.getAttribute('href');
+              if (href[0] === '/') {
+                  continue;
+              } // Cross-board quote, or board link
+              if (href[0] === '#') {
+                  quote.href = `${a.pathname.split(/\/+/).splice(0, 4).join('/')}${href}`;
+              }
+              else {
+                  quote.href = `${a.pathname.split(/\/+/).splice(0, 3).join('/')}/${href}`;
+              }
+          }
+          post.nodes.shortComment = comment;
+          $.replace(comment, clone);
+          post.nodes.comment = (post.nodes.longComment = clone);
+          post.parseComment();
+          post.parseQuotes();
+          for (var callback of ExpandComment.callbacks) {
+              callback.call(post);
+          }
       }
-    },
-
-    callbacks: [],
-
-    cb(e) {
-      e.preventDefault();
-      return ExpandComment.expand(Get.postFromNode(this));
-    },
-
-    expand(post) {
-      let a;
-      if (post.nodes.longComment && !post.nodes.longComment.parentNode) {
-        $.replace(post.nodes.shortComment, post.nodes.longComment);
-        post.nodes.comment = post.nodes.longComment;
-        return;
-      }
-      if (!(a = $('.abbr > a', post.nodes.comment))) { return; }
-      a.textContent = `Post No.${post} Loading...`;
-      return $.cache(g.SITE.urls.threadJSON({boardID: post.boardID, threadID: post.threadID}), function() { return ExpandComment.parse(this, a, post); });
-    },
-
-    contract(post) {
-      if (!post.nodes.shortComment) { return; }
-      const a = $('.abbr > a', post.nodes.shortComment);
-      a.textContent = 'here';
-      $.replace(post.nodes.longComment, post.nodes.shortComment);
-      return post.nodes.comment = post.nodes.shortComment;
-    },
-
-    parse(req, a, post) {
-      let postObj, spoilerRange;
-      const {status} = req;
-      if (![200, 304].includes(status)) {
-        a.textContent = status ? `Error ${req.statusText} (${status})` : 'Connection Error';
-        return;
-      }
-
-      const {
-        posts
-      } = req.response;
-      if (spoilerRange = posts[0].custom_spoiler) {
-        g.SITE.Build.spoilerRange[g.BOARD] = spoilerRange;
-      }
-
-      for (postObj of posts) {
-        if (postObj.no === post.ID) { break; }
-      }
-      if (postObj.no !== post.ID) {
-        a.textContent = `Post No.${post} not found.`;
-        return;
-      }
-
-      const {comment} = post.nodes;
-      const clone = comment.cloneNode(false);
-      clone.innerHTML = postObj.com;
-      // Fix pathnames
-      for (var quote of $$('.quotelink', clone)) {
-        var href = quote.getAttribute('href');
-        if (href[0] === '/') { continue; } // Cross-board quote, or board link
-        if (href[0] === '#') {
-          quote.href = `${a.pathname.split(/\/+/).splice(0,4).join('/')}${href}`;
-        } else {
-          quote.href = `${a.pathname.split(/\/+/).splice(0,3).join('/')}/${href}`;
-        }
-      }
-      post.nodes.shortComment = comment;
-      $.replace(comment, clone);
-      post.nodes.comment = (post.nodes.longComment = clone);
-      post.parseComment();
-      post.parseQuotes();
-
-      for (var callback of ExpandComment.callbacks) {
-        callback.call(post);
-      }
-    }
   };
 
   const ScrollMarkers = {
@@ -9631,1815 +9589,1898 @@ svg.icon {
   };
 
   var QuoteYou = {
-    init() {
-      if (!Conf['Remember Your Posts']) { return; }
-
-      this.db = new DataBoard('yourPosts');
-      $.sync('Remember Your Posts', enabled => Conf['Remember Your Posts'] = enabled);
-      $.on(d, 'QRPostSuccessful', function(e) {
-        const cb = PostRedirect.delay();
-        return $.get('Remember Your Posts', Conf['Remember Your Posts'], function(items) {
-          if (!items['Remember Your Posts']) { return; }
-          const {boardID, threadID, postID} = e.detail;
-          return QuoteYou.db.set({boardID, threadID, postID, val: true}, cb);
-        });
-      });
-
-      if (!['index', 'thread', 'archive'].includes(g.VIEW)) { return; }
-
-      if (Conf['Highlight Own Posts']) {
-        $.addClass(doc, 'highlight-own');
-      }
-
-      if (Conf['Highlight Posts Quoting You']) {
-        $.addClass(doc, 'highlight-you');
-      }
-
-      if (Conf['Comment Expansion']) {
-        ExpandComment.callbacks.push(this.node);
-      }
-
-      // \u00A0 is nbsp
-      this.mark = $.el('span', {
-        textContent: '\u00A0(You)',
-        className:   'qmark-you'
-      }
-      );
-      Callbacks.Post.push({
-        name: 'Mark Quotes of You',
-        cb:   this.node
-      });
-
-      QuoteYou.menu.init();
-    },
-
-    isYou(post) {
-      return !!QuoteYou.db?.get({
-        boardID:  post.boardID,
-        threadID: post.threadID,
-        postID:   post.ID
-      });
-    },
-
-    node() {
-      if (this.isClone) { return; }
-
-      if (QuoteYou.isYou(this)) {
-        $.addClass(this.nodes.root, 'yourPost');
-        ScrollMarkers.markScroll();
-      }
-
-      // Stop there if there's no quotes in that post.
-      if (!this.quotes.length) { return; }
-
-      for (var quotelink of this.nodes.quotelinks) {
-        if (QuoteYou.db.get(Get.postDataFromLink(quotelink))) {
-          if (Conf['Mark Quotes of You']) { $.add(quotelink, QuoteYou.mark.cloneNode(true)); }
-          $.addClass(quotelink, 'you');
-          $.addClass(this.nodes.root, 'quotesYou');
-        }
-      }
-    },
-
-    menu: {
       init() {
-        const label = $.el('label',
-          {className: 'toggle-you'}
-        ,
-          {innerHTML: '<input type="checkbox"> You'});
-        const input = $('input', label);
-        $.on(input, 'change', QuoteYou.menu.toggle);
-        Menu.menu?.addEntry({
-          el: label,
-          order: 80,
-          open(post) {
-            QuoteYou.menu.post = (post.origin || post);
-            input.checked = QuoteYou.isYou(post);
-            return true;
+          if (!Conf['Remember Your Posts']) {
+              return;
           }
-        });
+          this.db = new DataBoard('yourPosts');
+          $.sync('Remember Your Posts', enabled => Conf['Remember Your Posts'] = enabled);
+          $.on(d, 'QRPostSuccessful', function (e) {
+              const cb = PostRedirect.delay();
+              return $.get('Remember Your Posts', Conf['Remember Your Posts'], function (items) {
+                  if (!items['Remember Your Posts']) {
+                      return;
+                  }
+                  const { boardID, threadID, postID } = e.detail;
+                  return QuoteYou.db.set({ boardID, threadID, postID, val: true }, cb);
+              });
+          });
+          if (!['index', 'thread', 'archive'].includes(g.VIEW)) {
+              return;
+          }
+          if (Conf['Highlight Own Posts']) {
+              $.addClass(doc, 'highlight-own');
+          }
+          if (Conf['Highlight Posts Quoting You']) {
+              $.addClass(doc, 'highlight-you');
+          }
+          if (Conf['Comment Expansion']) {
+              ExpandComment.callbacks.push(this.node);
+          }
+          // \u00A0 is nbsp
+          this.mark = $.el('span', {
+              textContent: '\u00A0(You)',
+              className: 'qmark-you'
+          });
+          Callbacks.Post.push({
+              name: 'Mark Quotes of You',
+              cb: this.node
+          });
+          QuoteYou.menu.init();
       },
-
-      toggle() {
-        const {post} = QuoteYou.menu;
-        const data = {boardID: post.board.ID, threadID: post.thread.ID, postID: post.ID, val: true};
-        if (this.checked) {
-          QuoteYou.db.set(data);
-        } else {
-          QuoteYou.db.delete(data);
-        }
-        for (var clone of [post].concat(post.clones)) {
-          clone.nodes.root.classList.toggle('yourPost', this.checked);
-        }
-        for (var quotelink of Get.allQuotelinksLinkingTo(post)) {
-          if (this.checked) {
-            if (Conf['Mark Quotes of You']) { $.add(quotelink, QuoteYou.mark.cloneNode(true)); }
-          } else {
-            $.rm($('.qmark-you', quotelink));
-          }
-          quotelink.classList.toggle('you', this.checked);
-          if ($.hasClass(quotelink, 'quotelink')) {
-            var quoter = Get.postFromNode(quotelink).nodes.root;
-            quoter.classList.toggle('quotesYou', !!$('.quotelink.you', quoter));
-          }
-        }
-        ScrollMarkers.markScroll();
-      }
-    },
-
-    cb: {
-      seek(type) {
-        let highlighted, post;
-        let result;
-        const {highlight} = g.SITE.classes;
-        if (highlighted = $(`.${highlight}`)) { $.rmClass(highlighted, highlight); }
-
-        if (!QuoteYou.lastRead || !doc.contains(QuoteYou.lastRead) || !$.hasClass(QuoteYou.lastRead, 'quotesYou')) {
-          if (!(post = (QuoteYou.lastRead = $('.quotesYou')))) {
-            new Notice('warning', 'No posts are currently quoting you, loser.', 20);
-            return;
-          }
-          if (QuoteYou.cb.scroll(post)) { return; }
-        } else {
-          post = QuoteYou.lastRead;
-        }
-
-        const str = `${type}::div[contains(@class,'quotesYou')]`;
-
-        while (post = (result = $.X(str, post)).snapshotItem(type === 'preceding' ? result.snapshotLength - 1 : 0)) {
-          if (QuoteYou.cb.scroll(post)) { return; }
-        }
-
-        const posts = $$('.quotesYou');
-        return QuoteYou.cb.scroll(posts[type === 'following' ? 0 : posts.length - 1]);
+      isYou(post) {
+          return !!QuoteYou.db?.get({
+              boardID: post.boardID,
+              threadID: post.threadID,
+              postID: post.ID
+          });
       },
-
-      scroll(root) {
-        const post = Get.postFromRoot(root);
-        if (!post.nodes.post.getBoundingClientRect().height) {
-          return false;
-        } else {
-          QuoteYou.lastRead = root;
-          location.href = Get.url('post', post);
-          Header.scrollTo(post.nodes.post);
-          if (post.isReply) {
-            const sel = `${g.SITE.selectors.postContainer}${g.SITE.selectors.highlightable.reply}`;
-            let node = post.nodes.root;
-            if (!node.matches(sel)) { node = $(sel, node); }
-            $.addClass(node, g.SITE.classes.highlight);
+      node() {
+          if (this.isClone) {
+              return;
           }
-          return true;
-        }
+          if (QuoteYou.isYou(this)) {
+              $.addClass(this.nodes.root, 'yourPost');
+              ScrollMarkers.markScroll();
+          }
+          // Stop there if there's no quotes in that post.
+          if (!this.quotes.length) {
+              return;
+          }
+          for (var quotelink of this.nodes.quotelinks) {
+              if (QuoteYou.db.get(Get.postDataFromLink(quotelink))) {
+                  if (Conf['Mark Quotes of You']) {
+                      $.add(quotelink, QuoteYou.mark.cloneNode(true));
+                  }
+                  $.addClass(quotelink, 'you');
+                  $.addClass(this.nodes.root, 'quotesYou');
+              }
+          }
+      },
+      menu: {
+          init() {
+              const label = $.el('label', { className: 'toggle-you' }, { innerHTML: '<input type="checkbox"> You' });
+              const input = $('input', label);
+              $.on(input, 'change', QuoteYou.menu.toggle);
+              Menu.menu?.addEntry({
+                  el: label,
+                  order: 80,
+                  open(post) {
+                      QuoteYou.menu.post = (post.origin || post);
+                      input.checked = QuoteYou.isYou(post);
+                      return true;
+                  }
+              });
+          },
+          toggle() {
+              const { post } = QuoteYou.menu;
+              const data = { boardID: post.board.ID, threadID: post.thread.ID, postID: post.ID, val: true };
+              if (this.checked) {
+                  QuoteYou.db.set(data);
+              }
+              else {
+                  QuoteYou.db.delete(data);
+              }
+              for (var clone of [post].concat(post.clones)) {
+                  clone.nodes.root.classList.toggle('yourPost', this.checked);
+              }
+              for (var quotelink of Get.allQuotelinksLinkingTo(post)) {
+                  if (this.checked) {
+                      if (Conf['Mark Quotes of You']) {
+                          $.add(quotelink, QuoteYou.mark.cloneNode(true));
+                      }
+                  }
+                  else {
+                      $.rm($('.qmark-you', quotelink));
+                  }
+                  quotelink.classList.toggle('you', this.checked);
+                  if ($.hasClass(quotelink, 'quotelink')) {
+                      var quoter = Get.postFromNode(quotelink).nodes.root;
+                      quoter.classList.toggle('quotesYou', !!$('.quotelink.you', quoter));
+                  }
+              }
+              ScrollMarkers.markScroll();
+          }
+      },
+      cb: {
+          seek(type) {
+              let highlighted, post;
+              let result;
+              const { highlight } = g.SITE.classes;
+              if (highlighted = $(`.${highlight}`)) {
+                  $.rmClass(highlighted, highlight);
+              }
+              if (!QuoteYou.lastRead || !doc.contains(QuoteYou.lastRead) || !$.hasClass(QuoteYou.lastRead, 'quotesYou')) {
+                  if (!(post = (QuoteYou.lastRead = $('.quotesYou')))) {
+                      new Notice('warning', 'No posts are currently quoting you, loser.', 20);
+                      return;
+                  }
+                  if (QuoteYou.cb.scroll(post)) {
+                      return;
+                  }
+              }
+              else {
+                  post = QuoteYou.lastRead;
+              }
+              const str = `${type}::div[contains(@class,'quotesYou')]`;
+              while (post = (result = $.X(str, post)).snapshotItem(type === 'preceding' ? result.snapshotLength - 1 : 0)) {
+                  if (QuoteYou.cb.scroll(post)) {
+                      return;
+                  }
+              }
+              const posts = $$('.quotesYou');
+              return QuoteYou.cb.scroll(posts[type === 'following' ? 0 : posts.length - 1]);
+          },
+          scroll(root) {
+              const post = Get.postFromRoot(root);
+              if (!post.nodes.post.getBoundingClientRect().height) {
+                  return false;
+              }
+              else {
+                  QuoteYou.lastRead = root;
+                  location.href = Get.url('post', post);
+                  Header.scrollTo(post.nodes.post);
+                  if (post.isReply) {
+                      const sel = `${g.SITE.selectors.postContainer}${g.SITE.selectors.highlightable.reply}`;
+                      let node = post.nodes.root;
+                      if (!node.matches(sel)) {
+                          node = $(sel, node);
+                      }
+                      $.addClass(node, g.SITE.classes.highlight);
+                  }
+                  return true;
+              }
+          }
       }
-    }
   };
 
   class RandomAccessList {
-    constructor(items) {
-      this.length = 0;
-      if (items) { for (var item of items) { this.push(item); } }
-    }
-
-    push(data) {
-      let item;
-      let {ID} = data;
-      if (!ID) { ID = data.id; }
-      if (this[ID]) { return; }
-      const {last} = this;
-      this[ID] = (item = {
-        prev: last,
-        next: null,
-        data,
-        ID
-      });
-      item.prev = last;
-      this.last = last ?
-        (last.next = item)
-      :
-        (this.first = item);
-      return this.length++;
-    }
-
-    before(root, item) {
-      if ((item.next === root) || (item === root)) { return; }
-
-      this.rmi(item);
-
-      const {prev} = root;
-      root.prev = item;
-      item.next = root;
-      item.prev = prev;
-      if (prev) {
-        return prev.next = item;
-      } else {
-        return this.first = item;
+      constructor(items) {
+          this.length = 0;
+          if (items) {
+              for (var item of items) {
+                  this.push(item);
+              }
+          }
       }
-    }
-
-    after(root, item) {
-      if ((item.prev === root) || (item === root)) { return; }
-
-      this.rmi(item);
-
-      const {next} = root;
-      root.next = item;
-      item.prev = root;
-      item.next = next;
-      if (next) {
-        return next.prev = item;
-      } else {
-        return this.last = item;
+      push(data) {
+          let item;
+          let { ID } = data;
+          if (!ID) {
+              ID = data.id;
+          }
+          if (this[ID]) {
+              return;
+          }
+          const { last } = this;
+          this[ID] = (item = {
+              prev: last,
+              next: null,
+              data,
+              ID
+          });
+          item.prev = last;
+          this.last = last ?
+              (last.next = item)
+              :
+                  (this.first = item);
+          return this.length++;
       }
-    }
-
-    prepend(item) {
-      const {first} = this;
-      if ((item === first) || !this[item.ID]) { return; }
-      this.rmi(item);
-      item.next  = first;
-      if (first) {
-        first.prev = item;
-      } else {
-        this.last = item;
+      before(root, item) {
+          if ((item.next === root) || (item === root)) {
+              return;
+          }
+          this.rmi(item);
+          const { prev } = root;
+          root.prev = item;
+          item.next = root;
+          item.prev = prev;
+          if (prev) {
+              return prev.next = item;
+          }
+          else {
+              return this.first = item;
+          }
       }
-      this.first = item;
-      return delete item.prev;
-    }
-
-    shift() {
-      return this.rm(this.first.ID);
-    }
-
-    order() {
-      let item;
-      const order = [(item = this.first)];
-      while ((item = item.next)) { order.push(item); }
-      return order;
-    }
-
-    rm(ID) {
-      const item = this[ID];
-      if (!item) { return; }
-      delete this[ID];
-      this.length--;
-      this.rmi(item);
-      delete item.next;
-      return delete item.prev;
-    }
-
-    rmi(item) {
-      const {prev, next} = item;
-      if (prev) {
-        prev.next = next;
-      } else {
-        this.first = next;
+      after(root, item) {
+          if ((item.prev === root) || (item === root)) {
+              return;
+          }
+          this.rmi(item);
+          const { next } = root;
+          root.next = item;
+          item.prev = root;
+          item.next = next;
+          if (next) {
+              return next.prev = item;
+          }
+          else {
+              return this.last = item;
+          }
       }
-      if (next) {
-        return next.prev = prev;
-      } else {
-        return this.last = prev;
+      prepend(item) {
+          const { first } = this;
+          if ((item === first) || !this[item.ID]) {
+              return;
+          }
+          this.rmi(item);
+          item.next = first;
+          if (first) {
+              first.prev = item;
+          }
+          else {
+              this.last = item;
+          }
+          this.first = item;
+          return delete item.prev;
       }
-    }
+      shift() {
+          return this.rm(this.first.ID);
+      }
+      order() {
+          let item;
+          const order = [(item = this.first)];
+          while ((item = item.next)) {
+              order.push(item);
+          }
+          return order;
+      }
+      rm(ID) {
+          const item = this[ID];
+          if (!item) {
+              return;
+          }
+          delete this[ID];
+          this.length--;
+          this.rmi(item);
+          delete item.next;
+          return delete item.prev;
+      }
+      rmi(item) {
+          const { prev, next } = item;
+          if (prev) {
+              prev.next = next;
+          }
+          else {
+              this.first = next;
+          }
+          if (next) {
+              return next.prev = prev;
+          }
+          else {
+              return this.last = prev;
+          }
+      }
   }
 
   var Unread = {
-    init() {
-      if ((g.VIEW !== 'thread') || (
-        !Conf['Unread Count'] &&
-        !Conf['Unread Favicon'] &&
-        !Conf['Unread Line'] &&
-        !Conf['Remember Last Read Post'] &&
-        !Conf['Desktop Notifications'] &&
-        !Conf['Quote Threading']
-      )) { return; }
-
-      if (Conf['Remember Last Read Post']) {
-        $.sync('Remember Last Read Post', enabled => Conf['Remember Last Read Post'] = enabled);
-        this.db = new DataBoard('lastReadPosts', this.sync);
-      }
-
-      this.hr = $.el('hr', {
-        id: 'unread-line',
-        className: 'unread-line'
-      }
-      );
-      this.posts = new Set();
-      this.postsQuotingYou = new Set();
-      this.order = new RandomAccessList();
-      this.position = null;
-
-      Callbacks.Thread.push({
-        name: 'Unread',
-        cb:   this.node
-      });
-
-      return Callbacks.Post.push({
-        name: 'Unread',
-        cb:   this.addPost
-      });
-    },
-
-    node() {
-      Unread.thread = this;
-      Unread.title  = d.title;
-      Unread.lastReadPost = Unread.db?.get({
-        boardID: this.board.ID,
-        threadID: this.ID
-      }) || 0;
-      Unread.readCount = 0;
-      for (var ID of this.posts.keys) { if (+ID <= Unread.lastReadPost) { Unread.readCount++; } }
-      $.one(d, '4chanXInitFinished', Unread.ready);
-      $.on(d, 'PostsInserted',      Unread.onUpdate);
-      $.on(d, 'ThreadUpdate',       function(e) { if (e.detail[404]) { return Unread.update(); } });
-      const resetLink = $.el('a', {
-        href: 'javascript:;',
-        className: 'unread-reset',
-        textContent: 'Mark all unread'
-      }
-      );
-      $.on(resetLink, 'click', Unread.reset);
-      return Header.menu.addEntry({
-        el: resetLink,
-        order: 70
-      });
-    },
-
-    ready() {
-      if (Conf['Remember Last Read Post'] && Conf['Scroll to Last Read Post']) { Unread.scroll(); }
-      Unread.setLine(true);
-      Unread.read();
-      Unread.update();
-      $.on(d, 'scroll visibilitychange', Unread.read);
-      if (Conf['Unread Line']) { return $.on(d, 'visibilitychange',        Unread.setLine); }
-    },
-
-    positionPrev() {
-      if (Unread.position) { return Unread.position.prev; } else { return Unread.order.last; }
-    },
-
-    scroll() {
-      // Let the header's onload callback handle it.
-      let hash;
-      if ((hash = location.hash.match(/\d+/)) && hash[0] in Unread.thread.posts) { return; }
-
-      let position = Unread.positionPrev();
-      while (position) {
-        var {bottom} = position.data.nodes;
-        if (!bottom.getBoundingClientRect().height) {
-          // Don't try to scroll to posts with display: none
-          position = position.prev;
-        } else {
-          Header.scrollToIfNeeded(bottom, true);
-          break;
-        }
-      }
-    },
-
-    reset() {
-      if (Unread.lastReadPost == null) { return; }
-
-      Unread.posts = new Set();
-      Unread.postsQuotingYou = new Set();
-      Unread.order = new RandomAccessList();
-      Unread.position = null;
-      Unread.lastReadPost = 0;
-      Unread.readCount = 0;
-      Unread.thread.posts.forEach(post => Unread.addPost.call(post));
-
-      $.forceSync('Remember Last Read Post');
-      if (Conf['Remember Last Read Post'] && (!Unread.thread.isDead || Unread.thread.isArchived)) {
-        Unread.db.set({
-          boardID:  Unread.thread.board.ID,
-          threadID: Unread.thread.ID,
-          val:      0
-        });
-      }
-
-      Unread.updatePosition();
-      Unread.setLine();
-      return Unread.update();
-    },
-
-    sync() {
-      if (Unread.lastReadPost == null) { return; }
-      const lastReadPost = Unread.db.get({
-        boardID: Unread.thread.board.ID,
-        threadID: Unread.thread.ID,
-        defaultValue: 0
-      });
-      if (Unread.lastReadPost >= lastReadPost) { return; }
-      Unread.lastReadPost = lastReadPost;
-
-      const postIDs = Unread.thread.posts.keys;
-      for (let i = Unread.readCount, end = postIDs.length; i < end; i++) {
-        var ID = +postIDs[i];
-        if (!Unread.thread.posts.get(ID).isFetchedQuote) {
-          if (ID > Unread.lastReadPost) { break; }
+      init() {
+          if ((g.VIEW !== 'thread') || (!Conf['Unread Count'] &&
+              !Conf['Unread Favicon'] &&
+              !Conf['Unread Line'] &&
+              !Conf['Remember Last Read Post'] &&
+              !Conf['Desktop Notifications'] &&
+              !Conf['Quote Threading'])) {
+              return;
+          }
+          if (Conf['Remember Last Read Post']) {
+              $.sync('Remember Last Read Post', enabled => Conf['Remember Last Read Post'] = enabled);
+              this.db = new DataBoard('lastReadPosts', this.sync);
+          }
+          this.hr = $.el('hr', {
+              id: 'unread-line',
+              className: 'unread-line'
+          });
+          this.posts = new Set();
+          this.postsQuotingYou = new Set();
+          this.order = new RandomAccessList();
+          this.position = null;
+          Callbacks.Thread.push({
+              name: 'Unread',
+              cb: this.node
+          });
+          return Callbacks.Post.push({
+              name: 'Unread',
+              cb: this.addPost
+          });
+      },
+      node() {
+          Unread.thread = this;
+          Unread.title = d.title;
+          Unread.lastReadPost = Unread.db?.get({
+              boardID: this.board.ID,
+              threadID: this.ID
+          }) || 0;
+          Unread.readCount = 0;
+          for (var ID of this.posts.keys) {
+              if (+ID <= Unread.lastReadPost) {
+                  Unread.readCount++;
+              }
+          }
+          $.one(d, '4chanXInitFinished', Unread.ready);
+          $.on(d, 'PostsInserted', Unread.onUpdate);
+          $.on(d, 'ThreadUpdate', function (e) { if (e.detail[404]) {
+              return Unread.update();
+          } });
+          const resetLink = $.el('a', {
+              href: 'javascript:;',
+              className: 'unread-reset',
+              textContent: 'Mark all unread'
+          });
+          $.on(resetLink, 'click', Unread.reset);
+          return Header.menu.addEntry({
+              el: resetLink,
+              order: 70
+          });
+      },
+      ready() {
+          if (Conf['Remember Last Read Post'] && Conf['Scroll to Last Read Post']) {
+              Unread.scroll();
+          }
+          Unread.setLine(true);
+          Unread.read();
+          Unread.update();
+          $.on(d, 'scroll visibilitychange', Unread.read);
+          if (Conf['Unread Line']) {
+              return $.on(d, 'visibilitychange', Unread.setLine);
+          }
+      },
+      positionPrev() {
+          if (Unread.position) {
+              return Unread.position.prev;
+          }
+          else {
+              return Unread.order.last;
+          }
+      },
+      scroll() {
+          // Let the header's onload callback handle it.
+          let hash;
+          if ((hash = location.hash.match(/\d+/)) && hash[0] in Unread.thread.posts) {
+              return;
+          }
+          let position = Unread.positionPrev();
+          while (position) {
+              var { bottom } = position.data.nodes;
+              if (!bottom.getBoundingClientRect().height) {
+                  // Don't try to scroll to posts with display: none
+                  position = position.prev;
+              }
+              else {
+                  Header.scrollToIfNeeded(bottom, true);
+                  break;
+              }
+          }
+      },
+      reset() {
+          if (Unread.lastReadPost == null) {
+              return;
+          }
+          Unread.posts = new Set();
+          Unread.postsQuotingYou = new Set();
+          Unread.order = new RandomAccessList();
+          Unread.position = null;
+          Unread.lastReadPost = 0;
+          Unread.readCount = 0;
+          Unread.thread.posts.forEach(post => Unread.addPost.call(post));
+          $.forceSync('Remember Last Read Post');
+          if (Conf['Remember Last Read Post'] && (!Unread.thread.isDead || Unread.thread.isArchived)) {
+              Unread.db.set({
+                  boardID: Unread.thread.board.ID,
+                  threadID: Unread.thread.ID,
+                  val: 0
+              });
+          }
+          Unread.updatePosition();
+          Unread.setLine();
+          return Unread.update();
+      },
+      sync() {
+          if (Unread.lastReadPost == null) {
+              return;
+          }
+          const lastReadPost = Unread.db.get({
+              boardID: Unread.thread.board.ID,
+              threadID: Unread.thread.ID,
+              defaultValue: 0
+          });
+          if (Unread.lastReadPost >= lastReadPost) {
+              return;
+          }
+          Unread.lastReadPost = lastReadPost;
+          const postIDs = Unread.thread.posts.keys;
+          for (let i = Unread.readCount, end = postIDs.length; i < end; i++) {
+              var ID = +postIDs[i];
+              if (!Unread.thread.posts.get(ID).isFetchedQuote) {
+                  if (ID > Unread.lastReadPost) {
+                      break;
+                  }
+                  Unread.posts.delete(ID);
+                  Unread.postsQuotingYou.delete(ID);
+              }
+              Unread.readCount++;
+          }
+          Unread.updatePosition();
+          Unread.setLine();
+          return Unread.update();
+      },
+      addPost() {
+          if (this.isFetchedQuote || this.isClone)
+              return;
+          Unread.order.push(this);
+          if ((this.ID <= Unread.lastReadPost) || this.isHidden || QuoteYou.isYou(this))
+              return;
+          Unread.posts.add((Unread.posts.last = this.ID));
+          Unread.addPostQuotingYou(this);
+          return Unread.position != null ? Unread.position : (Unread.position = Unread.order[this.ID]);
+      },
+      addPostQuotingYou(post) {
+          for (var quotelink of post.nodes.quotelinks) {
+              if (QuoteYou.db?.get(Get.postDataFromLink(quotelink))) {
+                  Unread.postsQuotingYou.add((Unread.postsQuotingYou.last = post.ID));
+                  Unread.openNotification(post);
+                  return;
+              }
+          }
+      },
+      openNotification(post, predicate = ' replied to you') {
+          if (!Header.areNotificationsEnabled) {
+              return;
+          }
+          const notif = new Notification(`${post.info.nameBlock}${predicate}`, {
+              body: post.commentDisplay(),
+              icon: Favicon.logo
+          });
+          notif.onclick = function () {
+              Header.scrollToIfNeeded(post.nodes.bottom, true);
+              return window.focus();
+          };
+          return notif.onshow = () => setTimeout(() => notif.close(), 7 * SECOND);
+      },
+      onUpdate() {
+          return $.queueTask(function () {
+              Unread.setLine();
+              Unread.read();
+              return Unread.update();
+          });
+      },
+      readSinglePost(post) {
+          const { ID } = post;
+          if (!Unread.posts.has(ID)) {
+              return;
+          }
           Unread.posts.delete(ID);
           Unread.postsQuotingYou.delete(ID);
-        }
-        Unread.readCount++;
-      }
-
-      Unread.updatePosition();
-      Unread.setLine();
-      return Unread.update();
-    },
-
-    addPost() {
-      if (this.isFetchedQuote || this.isClone) return;
-      Unread.order.push(this);
-      if ((this.ID <= Unread.lastReadPost) || this.isHidden || QuoteYou.isYou(this)) return;
-      Unread.posts.add((Unread.posts.last = this.ID));
-      Unread.addPostQuotingYou(this);
-      return Unread.position != null ? Unread.position : (Unread.position = Unread.order[this.ID]);
-    },
-
-    addPostQuotingYou(post) {
-      for (var quotelink of post.nodes.quotelinks) {
-        if (QuoteYou.db?.get(Get.postDataFromLink(quotelink))) {
-          Unread.postsQuotingYou.add((Unread.postsQuotingYou.last = post.ID));
-          Unread.openNotification(post);
-          return;
-        }
-      }
-    },
-
-    openNotification(post, predicate=' replied to you') {
-      if (!Header.areNotificationsEnabled) { return; }
-      const notif = new Notification(`${post.info.nameBlock}${predicate}`, {
-        body: post.commentDisplay(),
-        icon: Favicon.logo
-      }
-      );
-      notif.onclick = function() {
-        Header.scrollToIfNeeded(post.nodes.bottom, true);
-        return window.focus();
-      };
-      return notif.onshow = () => setTimeout(() => notif.close()
-      , 7 * SECOND);
-    },
-
-    onUpdate() {
-      return $.queueTask(function() { // ThreadUpdater may scroll immediately after inserting posts
-        Unread.setLine();
-        Unread.read();
-        return Unread.update();
-      });
-    },
-
-    readSinglePost(post) {
-      const {ID} = post;
-      if (!Unread.posts.has(ID)) { return; }
-      Unread.posts.delete(ID);
-      Unread.postsQuotingYou.delete(ID);
-      Unread.updatePosition();
-      Unread.saveLastReadPost();
-      return Unread.update();
-    },
-
-    read: debounce(100, function(e) {
-      // Update the lastReadPost when hidden posts are added to the thread.
-      if (!Unread.posts.size && (Unread.readCount !== Unread.thread.posts.keys.length)) {
-        Unread.saveLastReadPost();
-      }
-
-      if (d.hidden || !Unread.posts.size) { return; }
-
-      let count = 0;
-      while (Unread.position) {
-        var {ID, data} = Unread.position;
-        var {bottom} = data.nodes;
-        if (!!bottom.getBoundingClientRect().height && // post has been hidden
-          (Header.getBottomOf(bottom) <= -1)) { break; }                      // post is completely read
-        count++;
-        Unread.posts.delete(ID);
-        Unread.postsQuotingYou.delete(ID);
-        Unread.position = Unread.position.next;
-      }
-
-      if (!count) { return; }
-      Unread.updatePosition();
-      Unread.saveLastReadPost();
-      if (e) { return Unread.update(); }
-    }),
-
-    updatePosition() {
-      while (Unread.position && !Unread.posts.has(Unread.position.ID)) {
-        Unread.position = Unread.position.next;
-      }
-    },
-
-    saveLastReadPost: debounce(2 * SECOND, function() {
-      let ID;
-      $.forceSync('Remember Last Read Post');
-      if (!Conf['Remember Last Read Post'] || !Unread.db) { return; }
-      const postIDs = Unread.thread.posts.keys;
-      for (let i = Unread.readCount, end = postIDs.length; i < end; i++) {
-        ID = +postIDs[i];
-        if (!Unread.thread.posts.get(ID).isFetchedQuote) {
-          if (Unread.posts.has(ID)) { break; }
-          Unread.lastReadPost = ID;
-        }
-        Unread.readCount++;
-      }
-      if (Unread.thread.isDead && !Unread.thread.isArchived) { return; }
-      return Unread.db.set({
-        boardID:  Unread.thread.board.ID,
-        threadID: Unread.thread.ID,
-        val:      Unread.lastReadPost
-      });
-    }),
-
-    setLine(force) {
-      if (!Conf['Unread Line']) { return; }
-      if (Unread.hr.hidden || d.hidden || (force === true)) {
-        const oldPosition = Unread.linePosition;
-        if (Unread.linePosition = Unread.positionPrev()) {
-          if (Unread.linePosition !== oldPosition) {
-            let node = Unread.linePosition.data.nodes.bottom;
-            if (node.nextSibling?.tagName === 'BR') { node = node.nextSibling; }
-            $.after(node, Unread.hr);
+          Unread.updatePosition();
+          Unread.saveLastReadPost();
+          return Unread.update();
+      },
+      read: debounce(100, function (e) {
+          // Update the lastReadPost when hidden posts are added to the thread.
+          if (!Unread.posts.size && (Unread.readCount !== Unread.thread.posts.keys.length)) {
+              Unread.saveLastReadPost();
           }
-        } else {
-          $.rm(Unread.hr);
-        }
-      }
-      return Unread.hr.hidden = Unread.linePosition === Unread.order.last;
-    },
-
-    update() {
-      const count = Unread.posts.size;
-      const countQuotingYou = Unread.postsQuotingYou.size;
-
-      if (Conf['Unread Count']) {
-        const titleQuotingYou = Conf['Quoted Title'] && countQuotingYou ? '(!) ' : '';
-        const titleCount = count || !Conf['Hide Unread Count at (0)'] ? `(${count}) ` : '';
-        const titleDead = Unread.thread.isDead ?
-          Unread.title.replace('-', (Unread.thread.isArchived ? '- Archived -' : '- 404 -'))
-        :
-          Unread.title;
-        d.title = `${titleQuotingYou}${titleCount}${titleDead}`;
-      }
-
-      Unread.saveThreadWatcherCount();
-
-      if (Conf['Unread Favicon'] && (g.SITE.software === 'yotsuba')) {
-        const {isDead} = Unread.thread;
-        return Favicon.set((
-          countQuotingYou ?
-            (isDead ? 'unreadDeadY' : 'unreadY')
-          : count ?
-            (isDead ? 'unreadDead' : 'unread')
-          :
-            (isDead ? 'dead' : 'default')
-        )
-        );
-      }
-    },
-
-    saveThreadWatcherCount: debounce(2 * SECOND, function() {
-      $.forceSync('Remember Last Read Post');
-      if (Conf['Remember Last Read Post'] && (!Unread.thread.isDead || Unread.thread.isArchived)) {
-        let posts;
-        const quotingYou = !Conf['Require OP Quote Link'] && QuoteYou.isYou(Unread.thread.OP) ? Unread.posts : Unread.postsQuotingYou;
-        if (!quotingYou.size) {
-          quotingYou.last = 0;
-        } else if (!quotingYou.has(quotingYou.last)) {
-          quotingYou.last = 0;
-          posts = Unread.thread.posts.keys;
-          for (let i = posts.length - 1; i >= 0; i--) {
-            if (quotingYou.has(+posts[i])) {
-              quotingYou.last = posts[i];
-              break;
-            }
+          if (d.hidden || !Unread.posts.size) {
+              return;
           }
-        }
-        return ThreadWatcher.update(g.SITE.ID, Unread.thread.board.ID, Unread.thread.ID, {
-          last: Unread.thread.lastPost,
-          isDead: Unread.thread.isDead,
-          isArchived: Unread.thread.isArchived,
-          unread: Unread.posts.size,
-          quotingYou: (quotingYou.last || 0)
-        }
-        );
-      }
-    })
+          let count = 0;
+          while (Unread.position) {
+              var { ID, data } = Unread.position;
+              var { bottom } = data.nodes;
+              if (!!bottom.getBoundingClientRect().height && // post has been hidden
+                  (Header.getBottomOf(bottom) <= -1)) {
+                  break;
+              } // post is completely read
+              count++;
+              Unread.posts.delete(ID);
+              Unread.postsQuotingYou.delete(ID);
+              Unread.position = Unread.position.next;
+          }
+          if (!count) {
+              return;
+          }
+          Unread.updatePosition();
+          Unread.saveLastReadPost();
+          if (e) {
+              return Unread.update();
+          }
+      }),
+      updatePosition() {
+          while (Unread.position && !Unread.posts.has(Unread.position.ID)) {
+              Unread.position = Unread.position.next;
+          }
+      },
+      saveLastReadPost: debounce(2 * SECOND, function () {
+          let ID;
+          $.forceSync('Remember Last Read Post');
+          if (!Conf['Remember Last Read Post'] || !Unread.db) {
+              return;
+          }
+          const postIDs = Unread.thread.posts.keys;
+          for (let i = Unread.readCount, end = postIDs.length; i < end; i++) {
+              ID = +postIDs[i];
+              if (!Unread.thread.posts.get(ID).isFetchedQuote) {
+                  if (Unread.posts.has(ID)) {
+                      break;
+                  }
+                  Unread.lastReadPost = ID;
+              }
+              Unread.readCount++;
+          }
+          if (Unread.thread.isDead && !Unread.thread.isArchived) {
+              return;
+          }
+          return Unread.db.set({
+              boardID: Unread.thread.board.ID,
+              threadID: Unread.thread.ID,
+              val: Unread.lastReadPost
+          });
+      }),
+      setLine(force) {
+          if (!Conf['Unread Line']) {
+              return;
+          }
+          if (Unread.hr.hidden || d.hidden || (force === true)) {
+              const oldPosition = Unread.linePosition;
+              if (Unread.linePosition = Unread.positionPrev()) {
+                  if (Unread.linePosition !== oldPosition) {
+                      let node = Unread.linePosition.data.nodes.bottom;
+                      if (node.nextSibling?.tagName === 'BR') {
+                          node = node.nextSibling;
+                      }
+                      $.after(node, Unread.hr);
+                  }
+              }
+              else {
+                  $.rm(Unread.hr);
+              }
+          }
+          return Unread.hr.hidden = Unread.linePosition === Unread.order.last;
+      },
+      update() {
+          const count = Unread.posts.size;
+          const countQuotingYou = Unread.postsQuotingYou.size;
+          if (Conf['Unread Count']) {
+              const titleQuotingYou = Conf['Quoted Title'] && countQuotingYou ? '(!) ' : '';
+              const titleCount = count || !Conf['Hide Unread Count at (0)'] ? `(${count}) ` : '';
+              const titleDead = Unread.thread.isDead ?
+                  Unread.title.replace('-', (Unread.thread.isArchived ? '- Archived -' : '- 404 -'))
+                  :
+                      Unread.title;
+              d.title = `${titleQuotingYou}${titleCount}${titleDead}`;
+          }
+          Unread.saveThreadWatcherCount();
+          if (Conf['Unread Favicon'] && (g.SITE.software === 'yotsuba')) {
+              const { isDead } = Unread.thread;
+              return Favicon.set((countQuotingYou ?
+                  (isDead ? 'unreadDeadY' : 'unreadY')
+                  : count ?
+                      (isDead ? 'unreadDead' : 'unread')
+                      :
+                          (isDead ? 'dead' : 'default')));
+          }
+      },
+      saveThreadWatcherCount: debounce(2 * SECOND, function () {
+          $.forceSync('Remember Last Read Post');
+          if (Conf['Remember Last Read Post'] && (!Unread.thread.isDead || Unread.thread.isArchived)) {
+              let posts;
+              const quotingYou = !Conf['Require OP Quote Link'] && QuoteYou.isYou(Unread.thread.OP) ? Unread.posts : Unread.postsQuotingYou;
+              if (!quotingYou.size) {
+                  quotingYou.last = 0;
+              }
+              else if (!quotingYou.has(quotingYou.last)) {
+                  quotingYou.last = 0;
+                  posts = Unread.thread.posts.keys;
+                  for (let i = posts.length - 1; i >= 0; i--) {
+                      if (quotingYou.has(+posts[i])) {
+                          quotingYou.last = posts[i];
+                          break;
+                      }
+                  }
+              }
+              return ThreadWatcher.update(g.SITE.ID, Unread.thread.board.ID, Unread.thread.ID, {
+                  last: Unread.thread.lastPost,
+                  isDead: Unread.thread.isDead,
+                  isArchived: Unread.thread.isArchived,
+                  unread: Unread.posts.size,
+                  quotingYou: (quotingYou.last || 0)
+              });
+          }
+      })
   };
 
   var ExpandThread = {
-    statuses: dict(),
-    init() {
-      if (!((g.VIEW === 'index') && Conf['Thread Expansion'])) { return; }
-      if (Conf['JSON Index']) {
-        $.on(d, 'IndexRefreshInternal', this.onIndexRefresh);
-      } else {
-        Callbacks.Thread.push({
-          name: 'Expand Thread',
-          cb() { ExpandThread.setButton(this); }
-        });
+      statuses: dict(),
+      init() {
+          if (!((g.VIEW === 'index') && Conf['Thread Expansion'])) {
+              return;
+          }
+          if (Conf['JSON Index']) {
+              $.on(d, 'IndexRefreshInternal', this.onIndexRefresh);
+          }
+          else {
+              Callbacks.Thread.push({
+                  name: 'Expand Thread',
+                  cb() { ExpandThread.setButton(this); }
+              });
+          }
+      },
+      setButton(thread) {
+          if (!thread.nodes.root)
+              return;
+          const a = $('a.summary', thread.nodes.root);
+          if (!a)
+              return;
+          a.textContent = g.SITE.Build.summaryText('+', ...a.textContent.match(/\d+/g));
+          a.style.cursor = 'pointer';
+          $.on(a, 'click', ExpandThread.cbToggle);
+      },
+      disconnect(refresh) {
+          if ((g.VIEW === 'thread') || !Conf['Thread Expansion']) {
+              return;
+          }
+          for (var threadID in ExpandThread.statuses) {
+              var oldReq;
+              var status = ExpandThread.statuses[threadID];
+              if (oldReq = status.req) {
+                  delete status.req;
+                  oldReq.abort();
+              }
+              delete ExpandThread.statuses[threadID];
+          }
+          if (!refresh)
+              $.off(d, 'IndexRefreshInternal', this.onIndexRefresh);
+      },
+      onIndexRefresh() {
+          ExpandThread.disconnect(true);
+          g.BOARD.threads.forEach(thread => ExpandThread.setButton(thread));
+      },
+      cbToggle(e) {
+          if ($.modifiedClick(e)) {
+              return;
+          }
+          e.preventDefault();
+          ExpandThread.toggle(Get.threadFromNode(this));
+      },
+      cbToggleBottom(e) {
+          if ($.modifiedClick(e)) {
+              return;
+          }
+          e.preventDefault();
+          const thread = Get.threadFromNode(this);
+          $.rm(this); // remove before fixing bottom of thread position
+          const { bottom } = thread.nodes.root.getBoundingClientRect();
+          ExpandThread.toggle(thread);
+          return window.scrollBy(0, (thread.nodes.root.getBoundingClientRect().bottom - bottom));
+      },
+      toggle(thread) {
+          if (!thread.nodes.root)
+              return;
+          const a = $('a.summary', thread.nodes.root);
+          if (!a)
+              return;
+          if (thread.ID in ExpandThread.statuses) {
+              ExpandThread.contract(thread, a, thread.nodes.root);
+          }
+          else {
+              ExpandThread.expand(thread, a);
+          }
+      },
+      expand(thread, a) {
+          let status;
+          ExpandThread.statuses[thread] = (status = {});
+          a.textContent = g.SITE.Build.summaryText('...', ...a.textContent.match(/\d+/g));
+          status.req = $.cache(g.SITE.urls.threadJSON({ boardID: thread.board.ID, threadID: thread.ID }), function () {
+              if (this !== status.req) {
+                  return;
+              } // aborted
+              delete status.req;
+              ExpandThread.parse(this, thread, a);
+          });
+          status.numReplies = $$(g.SITE.selectors.replyOriginal, thread.nodes.root).length;
+      },
+      contract(thread, a, threadRoot) {
+          let oldReq;
+          const status = ExpandThread.statuses[thread];
+          delete ExpandThread.statuses[thread];
+          if (oldReq = status.req) {
+              delete status.req;
+              oldReq.abort();
+              if (a) {
+                  a.textContent = g.SITE.Build.summaryText('+', ...a.textContent.match(/\d+/g));
+              }
+              return;
+          }
+          let replies = $$('.thread > .replyContainer', threadRoot);
+          if (status.numReplies) {
+              replies = replies.slice(0, (-status.numReplies));
+          }
+          let postsCount = 0;
+          let filesCount = 0;
+          for (var reply of replies) {
+              // rm clones
+              if (Conf['Quote Inlining']) {
+                  var inlined;
+                  while ((inlined = $('.inlined', reply))) {
+                      inlined.click();
+                  }
+              }
+              postsCount++;
+              if ('file' in Get.postFromRoot(reply)) {
+                  filesCount++;
+              }
+              $.rm(reply);
+          }
+          if (Index.enabled) { // otherwise handled by Main.addPosts
+              $.event('PostsRemoved', null, a.parentNode);
+          }
+          a.textContent = g.SITE.Build.summaryText('+', postsCount, filesCount);
+          $.rm($('.summary-bottom', threadRoot));
+      },
+      parse(req, thread, a) {
+          let root;
+          if (![200, 304].includes(req.status)) {
+              a.textContent = req.status ? `Error ${req.statusText} (${req.status})` : 'Connection Error';
+              return;
+          }
+          g.SITE.Build.spoilerRange[thread.board] = req.response.posts[0].custom_spoiler;
+          const posts = [];
+          const postsRoot = [];
+          let filesCount = 0;
+          for (var postData of req.response.posts) {
+              var post;
+              if (postData.no === thread.ID) {
+                  continue;
+              }
+              if ((post = thread.posts.get(postData.no)) && !post.isFetchedQuote) {
+                  if ('file' in post) {
+                      filesCount++;
+                  }
+                  ({ root } = post.nodes);
+                  postsRoot.push(root);
+                  continue;
+              }
+              root = g.SITE.Build.postFromObject(postData, thread.board.ID);
+              post = new Post(root, thread, thread.board);
+              if ('file' in post) {
+                  filesCount++;
+              }
+              posts.push(post);
+              postsRoot.push(root);
+          }
+          Main.callbackNodes('Post', posts);
+          $.after(a, postsRoot);
+          $.event('PostsInserted', null, a.parentNode);
+          const postsCount = postsRoot.length;
+          a.textContent = g.SITE.Build.summaryText('-', postsCount, filesCount);
+          if (root) {
+              const a2 = a.cloneNode(true);
+              a2.classList.add('summary-bottom');
+              $.on(a2, 'click', ExpandThread.cbToggleBottom);
+              $.after(root, a2);
+          }
       }
-    },
-
-    setButton(thread) {
-      if (!thread.nodes.root) return;
-      const a = $('a.summary', thread.nodes.root);
-      if (!a) return;
-      a.textContent = g.SITE.Build.summaryText('+', ...a.textContent.match(/\d+/g));
-      a.style.cursor = 'pointer';
-      $.on(a, 'click', ExpandThread.cbToggle);
-    },
-
-    disconnect(refresh) {
-      if ((g.VIEW === 'thread') || !Conf['Thread Expansion']) { return; }
-      for (var threadID in ExpandThread.statuses) {
-        var oldReq;
-        var status = ExpandThread.statuses[threadID];
-        if (oldReq = status.req) {
-          delete status.req;
-          oldReq.abort();
-        }
-        delete ExpandThread.statuses[threadID];
-      }
-
-      if (!refresh) $.off(d, 'IndexRefreshInternal', this.onIndexRefresh);
-    },
-
-    onIndexRefresh() {
-      ExpandThread.disconnect(true);
-      g.BOARD.threads.forEach(thread => ExpandThread.setButton(thread));
-    },
-
-    cbToggle(e) {
-      if ($.modifiedClick(e)) { return; }
-      e.preventDefault();
-      ExpandThread.toggle(Get.threadFromNode(this));
-    },
-
-    cbToggleBottom(e) {
-      if ($.modifiedClick(e)) { return; }
-      e.preventDefault();
-      const thread = Get.threadFromNode(this);
-      $.rm(this); // remove before fixing bottom of thread position
-      const {bottom} = thread.nodes.root.getBoundingClientRect();
-      ExpandThread.toggle(thread);
-      return window.scrollBy(0, (thread.nodes.root.getBoundingClientRect().bottom - bottom));
-    },
-
-    toggle(thread) {
-      if (!thread.nodes.root) return;
-      const a = $('a.summary', thread.nodes.root);
-      if (!a) return;
-      if (thread.ID in ExpandThread.statuses) {
-        ExpandThread.contract(thread, a, thread.nodes.root);
-      } else {
-        ExpandThread.expand(thread, a);
-      }
-    },
-
-    expand(thread, a) {
-      let status;
-      ExpandThread.statuses[thread] = (status = {});
-      a.textContent = g.SITE.Build.summaryText('...', ...a.textContent.match(/\d+/g));
-      status.req = $.cache(g.SITE.urls.threadJSON({boardID: thread.board.ID, threadID: thread.ID}), function() {
-        if (this !== status.req) { return; } // aborted
-        delete status.req;
-        ExpandThread.parse(this, thread, a);
-      });
-      status.numReplies = $$(g.SITE.selectors.replyOriginal, thread.nodes.root).length;
-    },
-
-    contract(thread, a, threadRoot) {
-      let oldReq;
-      const status = ExpandThread.statuses[thread];
-      delete ExpandThread.statuses[thread];
-      if (oldReq = status.req) {
-        delete status.req;
-        oldReq.abort();
-        if (a) { a.textContent = g.SITE.Build.summaryText('+', ...a.textContent.match(/\d+/g)); }
-        return;
-      }
-
-      let replies = $$('.thread > .replyContainer', threadRoot);
-      if (status.numReplies) { replies = replies.slice(0, (-status.numReplies)); }
-      let postsCount = 0;
-      let filesCount = 0;
-      for (var reply of replies) {
-        // rm clones
-        if (Conf['Quote Inlining']) { var inlined;
-        while ((inlined = $('.inlined', reply))) { inlined.click(); } }
-        postsCount++;
-        if ('file' in Get.postFromRoot(reply)) { filesCount++; }
-        $.rm(reply);
-      }
-      if (Index.enabled) { // otherwise handled by Main.addPosts
-        $.event('PostsRemoved', null, a.parentNode);
-      }
-      a.textContent = g.SITE.Build.summaryText('+', postsCount, filesCount);
-      $.rm($('.summary-bottom', threadRoot));
-    },
-
-    parse(req, thread, a) {
-      let root;
-      if (![200, 304].includes(req.status)) {
-        a.textContent = req.status ? `Error ${req.statusText} (${req.status})` : 'Connection Error';
-        return;
-      }
-
-      g.SITE.Build.spoilerRange[thread.board] = req.response.posts[0].custom_spoiler;
-
-      const posts      = [];
-      const postsRoot  = [];
-      let filesCount = 0;
-      for (var postData of req.response.posts) {
-        var post;
-        if (postData.no === thread.ID) { continue; }
-        if ((post = thread.posts.get(postData.no)) && !post.isFetchedQuote) {
-          if ('file' in post) { filesCount++; }
-          ({root} = post.nodes);
-          postsRoot.push(root);
-          continue;
-        }
-        root = g.SITE.Build.postFromObject(postData, thread.board.ID);
-        post = new Post(root, thread, thread.board);
-        if ('file' in post) { filesCount++; }
-        posts.push(post);
-        postsRoot.push(root);
-      }
-      Main.callbackNodes('Post', posts);
-      $.after(a, postsRoot);
-      $.event('PostsInserted', null, a.parentNode);
-
-      const postsCount    = postsRoot.length;
-      a.textContent = g.SITE.Build.summaryText('-', postsCount, filesCount);
-
-      if (root) {
-        const a2 = a.cloneNode(true);
-        a2.classList.add('summary-bottom');
-        $.on(a2, 'click', ExpandThread.cbToggleBottom);
-        $.after(root, a2);
-      }
-    }
   };
 
   var UnreadIndex = {
-    lastReadPost: dict(),
-    hr:           dict(),
-    markReadLink: dict(),
-
-    init() {
-      if ((g.VIEW !== 'index') || !Conf['Remember Last Read Post'] || !Conf['Unread Line in Index']) { return; }
-
-      this.enabled = true;
-      this.db = new DataBoard('lastReadPosts', this.sync);
-
-      Callbacks.Thread.push({
-        name: 'Unread Line in Index',
-        cb:   this.node
-      });
-
-      $.on(d, 'IndexRefreshInternal', this.onIndexRefresh);
-      return $.on(d, 'PostsInserted PostsRemoved', this.onPostsInserted);
-    },
-
-    node() {
-      UnreadIndex.lastReadPost[this.fullID] = UnreadIndex.db.get({
-        boardID: this.board.ID,
-        threadID: this.ID
-      }) || 0;
-      if (!Index.enabled) { // let onIndexRefresh handle JSON Index
-        return UnreadIndex.update(this);
-      }
-    },
-
-    onIndexRefresh(e) {
-      if (e.detail.isCatalog) { return; }
-      return (() => {
-        const result = [];
-        for (var threadID of e.detail.threadIDs) {
-          var thread = g.threads.get(threadID);
-          result.push(UnreadIndex.update(thread));
-        }
-        return result;
-      })();
-    },
-
-    onPostsInserted(e) {
-      if (e.target === Index.root) { return; } // onIndexRefresh handles this case
-      const thread = Get.threadFromNode(e.target);
-      if (!thread || (thread.nodes.root !== e.target)) { return; }
-      const wasVisible = !!UnreadIndex.hr[thread.fullID]?.parentNode;
-      UnreadIndex.update(thread);
-      if (Conf['Scroll to Last Read Post'] && (e.type === 'PostsInserted') && !wasVisible && !!UnreadIndex.hr[thread.fullID]?.parentNode) {
-        return Header.scrollToIfNeeded(UnreadIndex.hr[thread.fullID], true);
-      }
-    },
-
-    sync() {
-      return g.threads.forEach(function(thread) {
-        const lastReadPost = UnreadIndex.db.get({
-          boardID: thread.board.ID,
-          threadID: thread.ID
-        }) || 0;
-        if (lastReadPost !== UnreadIndex.lastReadPost[thread.fullID]) {
-          UnreadIndex.lastReadPost[thread.fullID] = lastReadPost;
-          if (thread.nodes.root?.parentNode) {
-            return UnreadIndex.update(thread);
+      lastReadPost: dict(),
+      hr: dict(),
+      markReadLink: dict(),
+      init() {
+          if ((g.VIEW !== 'index') || !Conf['Remember Last Read Post'] || !Conf['Unread Line in Index']) {
+              return;
           }
-        }
-      });
-    },
-
-    update(thread) {
-      let divider;
-      const lastReadPost = UnreadIndex.lastReadPost[thread.fullID];
-      let repliesShown = 0;
-      let repliesRead = 0;
-      let firstUnread = null;
-      thread.posts.forEach(function(post) {
-        if (post.isReply && thread.nodes.root.contains(post.nodes.root)) {
-          repliesShown++;
-          if (post.ID <= lastReadPost) {
-            return repliesRead++;
-          } else if ((!firstUnread || (post.ID < firstUnread.ID)) && !post.isHidden && !QuoteYou.isYou(post)) {
-            return firstUnread = post;
+          this.enabled = true;
+          this.db = new DataBoard('lastReadPosts', this.sync);
+          Callbacks.Thread.push({
+              name: 'Unread Line in Index',
+              cb: this.node
+          });
+          $.on(d, 'IndexRefreshInternal', this.onIndexRefresh);
+          return $.on(d, 'PostsInserted PostsRemoved', this.onPostsInserted);
+      },
+      node() {
+          UnreadIndex.lastReadPost[this.fullID] = UnreadIndex.db.get({
+              boardID: this.board.ID,
+              threadID: this.ID
+          }) || 0;
+          if (!Index.enabled) { // let onIndexRefresh handle JSON Index
+              return UnreadIndex.update(this);
           }
-        }
-      });
-
-      let hr = UnreadIndex.hr[thread.fullID];
-      if (firstUnread && (repliesRead || ((lastReadPost === thread.OP.ID) && (!$(g.SITE.selectors.summary, thread.nodes.root) || thread.ID in ExpandThread.statuses)))) {
-        if (!hr) {
-          hr = (UnreadIndex.hr[thread.fullID] = $.el('hr',
-            {className: 'unread-line'}));
-        }
-        $.before(firstUnread.nodes.root, hr);
-      } else {
-        $.rm(hr);
+      },
+      onIndexRefresh(e) {
+          if (e.detail.isCatalog) {
+              return;
+          }
+          return (() => {
+              const result = [];
+              for (var threadID of e.detail.threadIDs) {
+                  var thread = g.threads.get(threadID);
+                  result.push(UnreadIndex.update(thread));
+              }
+              return result;
+          })();
+      },
+      onPostsInserted(e) {
+          if (e.target === Index.root) {
+              return;
+          } // onIndexRefresh handles this case
+          const thread = Get.threadFromNode(e.target);
+          if (!thread || (thread.nodes.root !== e.target)) {
+              return;
+          }
+          const wasVisible = !!UnreadIndex.hr[thread.fullID]?.parentNode;
+          UnreadIndex.update(thread);
+          if (Conf['Scroll to Last Read Post'] && (e.type === 'PostsInserted') && !wasVisible && !!UnreadIndex.hr[thread.fullID]?.parentNode) {
+              return Header.scrollToIfNeeded(UnreadIndex.hr[thread.fullID], true);
+          }
+      },
+      sync() {
+          return g.threads.forEach(function (thread) {
+              const lastReadPost = UnreadIndex.db.get({
+                  boardID: thread.board.ID,
+                  threadID: thread.ID
+              }) || 0;
+              if (lastReadPost !== UnreadIndex.lastReadPost[thread.fullID]) {
+                  UnreadIndex.lastReadPost[thread.fullID] = lastReadPost;
+                  if (thread.nodes.root?.parentNode) {
+                      return UnreadIndex.update(thread);
+                  }
+              }
+          });
+      },
+      update(thread) {
+          let divider;
+          const lastReadPost = UnreadIndex.lastReadPost[thread.fullID];
+          let repliesShown = 0;
+          let repliesRead = 0;
+          let firstUnread = null;
+          thread.posts.forEach(function (post) {
+              if (post.isReply && thread.nodes.root.contains(post.nodes.root)) {
+                  repliesShown++;
+                  if (post.ID <= lastReadPost) {
+                      return repliesRead++;
+                  }
+                  else if ((!firstUnread || (post.ID < firstUnread.ID)) && !post.isHidden && !QuoteYou.isYou(post)) {
+                      return firstUnread = post;
+                  }
+              }
+          });
+          let hr = UnreadIndex.hr[thread.fullID];
+          if (firstUnread && (repliesRead || ((lastReadPost === thread.OP.ID) && (!$(g.SITE.selectors.summary, thread.nodes.root) || thread.ID in ExpandThread.statuses)))) {
+              if (!hr) {
+                  hr = (UnreadIndex.hr[thread.fullID] = $.el('hr', { className: 'unread-line' }));
+              }
+              $.before(firstUnread.nodes.root, hr);
+          }
+          else {
+              $.rm(hr);
+          }
+          const hasUnread = repliesShown ?
+              firstUnread || !repliesRead
+              : Index.enabled ?
+                  thread.lastPost > lastReadPost
+                  :
+                      thread.OP.ID > lastReadPost;
+          thread.nodes.root.classList.toggle('unread-thread', hasUnread);
+          let link = UnreadIndex.markReadLink[thread.fullID];
+          if (!link) {
+              link = (UnreadIndex.markReadLink[thread.fullID] = $.el('a', {
+                  className: 'unread-mark-read brackets-wrap',
+                  href: 'javascript:;',
+                  textContent: 'Mark Read'
+              }));
+              $.on(link, 'click', UnreadIndex.markRead);
+          }
+          if (divider = $(g.SITE.selectors.threadDivider, thread.nodes.root)) { // divider inside thread as in Tinyboard
+              return $.before(divider, link);
+          }
+          else {
+              return $.add(thread.nodes.root, link);
+          }
+      },
+      markRead() {
+          const thread = Get.threadFromNode(this);
+          UnreadIndex.lastReadPost[thread.fullID] = thread.lastPost;
+          UnreadIndex.db.set({
+              boardID: thread.board.ID,
+              threadID: thread.ID,
+              val: thread.lastPost
+          });
+          $.rm(UnreadIndex.hr[thread.fullID]);
+          thread.nodes.root.classList.remove('unread-thread');
+          return ThreadWatcher.update(g.SITE.ID, thread.board.ID, thread.ID, {
+              last: thread.lastPost,
+              unread: 0,
+              quotingYou: 0
+          });
       }
-
-      const hasUnread = repliesShown ?
-        firstUnread || !repliesRead
-      : Index.enabled ?
-        thread.lastPost > lastReadPost
-      :
-        thread.OP.ID > lastReadPost;
-      thread.nodes.root.classList.toggle('unread-thread', hasUnread);
-
-      let link = UnreadIndex.markReadLink[thread.fullID];
-      if (!link) {
-        link = (UnreadIndex.markReadLink[thread.fullID] = $.el('a', {
-          className: 'unread-mark-read brackets-wrap',
-          href: 'javascript:;',
-          textContent: 'Mark Read'
-        }
-        ));
-        $.on(link, 'click', UnreadIndex.markRead);
-      }
-      if (divider = $(g.SITE.selectors.threadDivider, thread.nodes.root)) { // divider inside thread as in Tinyboard
-        return $.before(divider, link);
-      } else {
-        return $.add(thread.nodes.root, link);
-      }
-    },
-
-    markRead() {
-      const thread = Get.threadFromNode(this);
-      UnreadIndex.lastReadPost[thread.fullID] = thread.lastPost;
-      UnreadIndex.db.set({
-        boardID:  thread.board.ID,
-        threadID: thread.ID,
-        val:      thread.lastPost
-      });
-      $.rm(UnreadIndex.hr[thread.fullID]);
-      thread.nodes.root.classList.remove('unread-thread');
-      return ThreadWatcher.update(g.SITE.ID, thread.board.ID, thread.ID, {
-        last: thread.lastPost,
-        unread: 0,
-        quotingYou: 0
-      }
-      );
-    }
   };
 
   var ThreadWatcher = {
-    init() {
-      let sc;
-      if (!(this.enabled = Conf['Thread Watcher'])) { return; }
-
-      this.shortcut = (sc = $.el('a', {
-        id:    'watcher-link',
-        title: 'Thread Watcher',
-        href:  'javascript:;',
-      }));
-      Icon.set(this.shortcut, 'eye', 'Watcher');
-
-      this.db     = new DataBoard('watchedThreads', this.refresh, true);
-      this.dbLM   = new DataBoard('watcherLastModified', null, true);
-      this.dialog = UI.dialog('thread-watcher', { innerHTML: ThreadWatcherPage });
-      this.status = $('#watcher-status', this.dialog);
-      this.list   = this.dialog.lastElementChild;
-      this.refreshButton = $('.refresh', this.dialog);
-      this.menuButton = $('.menu-button', this.dialog);
-      this.closeButton = $('.move > .close', this.dialog);
-      this.unreaddb = Unread.db || UnreadIndex.db || new DataBoard('lastReadPosts');
-      this.unreadEnabled = Conf['Remember Last Read Post'];
-
-      Icon.set(this.refreshButton, 'refresh');
-      Icon.set(this.menuButton, 'caretDown');
-      Icon.set(this.closeButton, 'xmark');
-
-      $.on(d, 'QRPostSuccessful',   this.cb.post);
-      $.on(sc, 'click', this.toggleWatcher);
-      $.on(this.refreshButton, 'click', this.buttonFetchAll);
-      $.on(this.closeButton, 'click', this.toggleWatcher);
-
-      this.menu.addHeaderMenuEntry();
-      $.onExists(doc, 'body', this.addDialog);
-
-      switch (g.VIEW) {
-        case 'index':
-          $.on(d, 'IndexUpdate', this.cb.onIndexUpdate);
-          break;
-        case 'thread':
-          $.on(d, 'ThreadUpdate', this.cb.onThreadRefresh);
-          break;
-      }
-
-      if (Conf['Fixed Thread Watcher']) {
-        $.addClass(doc, 'fixed-watcher');
-      }
-      if (!Conf['Persistent Thread Watcher']) {
-        $.addClass(ThreadWatcher.shortcut, 'disabled');
-        this.dialog.hidden = true;
-      }
-
-      Header.addShortcut('watcher', sc, 510,);
-
-      ThreadWatcher.initLastModified();
-      ThreadWatcher.fetchAuto();
-      $.on(window, 'visibilitychange focus', () => $.queueTask(ThreadWatcher.fetchAuto));
-
-      if (Conf['Menu'] && Index.enabled) {
-        Menu.menu.addEntry({
-          el: $.el('a', {
-            href:      'javascript:;',
-            className: 'has-shortcut-text'
+      init() {
+          let sc;
+          if (!(this.enabled = Conf['Thread Watcher'])) {
+              return;
           }
-          , {innerHTML: '<span></span><span class="shortcut-text">Alt+click</span>'}),
-          order: 6,
-          open({thread}) {
-            if (Conf['Index Mode'] !== 'catalog') { return false; }
-            this.el.firstElementChild.textContent = ThreadWatcher.isWatched(thread) ?
-              'Unwatch'
-            :
-              'Watch';
-            if (this.cb) { $.off(this.el, 'click', this.cb); }
-            this.cb = function() {
-              $.event('CloseMenu');
-              return ThreadWatcher.toggle(thread, true);
-            };
-            $.on(this.el, 'click', this.cb);
-            return true;
+          this.shortcut = (sc = $.el('a', {
+              id: 'watcher-link',
+              title: 'Thread Watcher',
+              href: 'javascript:;',
+          }));
+          Icon.set(this.shortcut, 'eye', 'Watcher');
+          this.db = new DataBoard('watchedThreads', this.refresh, true);
+          this.dbLM = new DataBoard('watcherLastModified', null, true);
+          this.dialog = UI.dialog('thread-watcher', { innerHTML: ThreadWatcherPage });
+          this.status = $('#watcher-status', this.dialog);
+          this.list = this.dialog.lastElementChild;
+          this.refreshButton = $('.refresh', this.dialog);
+          this.menuButton = $('.menu-button', this.dialog);
+          this.closeButton = $('.move > .close', this.dialog);
+          this.unreaddb = Unread.db || UnreadIndex.db || new DataBoard('lastReadPosts');
+          this.unreadEnabled = Conf['Remember Last Read Post'];
+          Icon.set(this.refreshButton, 'refresh');
+          Icon.set(this.menuButton, 'caretDown');
+          Icon.set(this.closeButton, 'xmark');
+          $.on(d, 'QRPostSuccessful', this.cb.post);
+          $.on(sc, 'click', this.toggleWatcher);
+          $.on(this.refreshButton, 'click', this.buttonFetchAll);
+          $.on(this.closeButton, 'click', this.toggleWatcher);
+          this.menu.addHeaderMenuEntry();
+          $.onExists(doc, 'body', this.addDialog);
+          switch (g.VIEW) {
+              case 'index':
+                  $.on(d, 'IndexUpdate', this.cb.onIndexUpdate);
+                  break;
+              case 'thread':
+                  $.on(d, 'ThreadUpdate', this.cb.onThreadRefresh);
+                  break;
           }
-        });
-      }
-
-      if (!['index', 'thread'].includes(g.VIEW)) { return; }
-
-      Callbacks.Post.push({
-        name: 'Thread Watcher',
-        cb:   this.node
-      });
-      return Callbacks.CatalogThread.push({
-        name: 'Thread Watcher',
-        cb:   this.catalogNode
-      });
-    },
-
-    isWatched(thread) {
-      return !!ThreadWatcher.db?.get({boardID: thread.board.ID, threadID: thread.ID});
-    },
-
-    isWatchedRaw(boardID, threadID) {
-      return !!ThreadWatcher.db?.get({boardID, threadID});
-    },
-
-    setToggler(toggler, isWatched) {
-      toggler.classList.toggle('watched', isWatched);
-      return toggler.title = `${isWatched ? 'Unwatch' : 'Watch'} Thread`;
-    },
-
-    node() {
-      let toggler;
-      if (this.isReply) { return; }
-      if (this.isClone) {
-        toggler = $('.watch-thread-link', this.nodes.info);
-      } else {
-        toggler = $.el('button', {
-          type: 'button',
-          className: 'watch-thread-link'
-        });
-        Icon.set(toggler, 'heart');
-        $.before($('input', this.nodes.info), toggler);
-      }
-      const siteID = g.SITE.ID;
-      const boardID = this.board.ID;
-      const threadID = this.thread.ID;
-      const data = ThreadWatcher.db.get({siteID, boardID, threadID});
-      ThreadWatcher.setToggler(toggler, !!data);
-      $.on(toggler, 'click', ThreadWatcher.cb.toggle);
-      // Add missing excerpt for threads added by Auto Watch
-      if (data && (data.excerpt == null)) {
-        return $.queueTask(() => {
-          return ThreadWatcher.update(siteID, boardID, threadID, {excerpt: Get.threadExcerpt(this.thread)});
-      });
-      }
-    },
-
-    catalogNode() {
-      if (ThreadWatcher.isWatched(this.thread)) { $.addClass(this.nodes.root, 'watched'); }
-      return $.on(this.nodes.root, 'mousedown click', e => {
-        if ((e.button !== 0) || !e.altKey) return;
-        if (e.type === 'click') ThreadWatcher.toggle(this.thread, true);
-        return e.preventDefault();
-      });
-    }, // Also on mousedown to prevent highlighting thumbnail in Firefox.
-
-    addDialog() {
-      if (!Main.isThisPageLegit()) { return; }
-      ThreadWatcher.build();
-      return $.prepend(d.body, ThreadWatcher.dialog);
-    },
-
-    toggleWatcher() {
-      $.toggleClass(ThreadWatcher.shortcut, 'disabled');
-      return ThreadWatcher.dialog.hidden = !ThreadWatcher.dialog.hidden;
-    },
-
-    cb: {
-      openAll() {
-        if ($.hasClass(this, 'disabled')) return;
-        for (var a of $$('a.watcher-link', ThreadWatcher.list)) {
-          $.open(a.href);
-        }
-        $.event('CloseMenu');
-      },
-      openUnread() {
-        if ($.hasClass(this, 'disabled')) return;
-        for (var a of $$('.replies-unread > a.watcher-link', ThreadWatcher.list)) {
-          $.open(a.href);
-        }
-        $.event('CloseMenu');
-      },
-      openDeads() {
-        if ($.hasClass(this, 'disabled')) return;
-        for (var a of $$('.dead-thread.replies-unread > a.watcher-link', ThreadWatcher.list)) {
-          $.open(a.href);
-        }
-        $.event('CloseMenu');
-      },
-      clear() {
-        if (!confirm("Delete ALL threads from watcher?")) return;
-        const ref = ThreadWatcher.getAll();
-        for (let i = 0, len = ref.length; i < len; i++) {
-          const { siteID, boardID, threadID } = ref[i];
-          ThreadWatcher.db.delete({ siteID, boardID, threadID });
-        }
-        ThreadWatcher.refresh(true);
-        $.event('CloseMenu');
-      },
-      pruneDeads() {
-        if ($.hasClass(this, 'disabled')) return;
-        for (var {siteID, boardID, threadID, data} of ThreadWatcher.getAll()) {
-          if (data.isDead) {
-            ThreadWatcher.db.delete({siteID, boardID, threadID});
+          if (Conf['Fixed Thread Watcher']) {
+              $.addClass(doc, 'fixed-watcher');
           }
-        }
-        ThreadWatcher.refresh(true);
-        $.event('CloseMenu');
-      },
-      pruneReadDeads() {
-        if ($.hasClass(this, 'disabled')) return;
-        for (var { siteID, boardID, threadID, data } of ThreadWatcher.getAll()) {
-          if (data.isDead && !data.unread) {
-            ThreadWatcher.db.delete({ siteID, boardID, threadID });
+          if (!Conf['Persistent Thread Watcher']) {
+              $.addClass(ThreadWatcher.shortcut, 'disabled');
+              this.dialog.hidden = true;
           }
-        }
-        ThreadWatcher.refresh(true);
-        $.event('CloseMenu');
-      },
-      dismiss() {
-        for (var {siteID, boardID, threadID, data} of ThreadWatcher.getAll()) {
-          if (data.quotingYou) {
-            ThreadWatcher.update(siteID, boardID, threadID, {dismiss: data.quotingYou || 0});
+          Header.addShortcut('watcher', sc, 510);
+          ThreadWatcher.initLastModified();
+          ThreadWatcher.fetchAuto();
+          $.on(window, 'visibilitychange focus', () => $.queueTask(ThreadWatcher.fetchAuto));
+          if (Conf['Menu'] && Index.enabled) {
+              Menu.menu.addEntry({
+                  el: $.el('a', {
+                      href: 'javascript:;',
+                      className: 'has-shortcut-text'
+                  }, { innerHTML: '<span></span><span class="shortcut-text">Alt+click</span>' }),
+                  order: 6,
+                  open({ thread }) {
+                      if (Conf['Index Mode'] !== 'catalog') {
+                          return false;
+                      }
+                      this.el.firstElementChild.textContent = ThreadWatcher.isWatched(thread) ?
+                          'Unwatch'
+                          :
+                              'Watch';
+                      if (this.cb) {
+                          $.off(this.el, 'click', this.cb);
+                      }
+                      this.cb = function () {
+                          $.event('CloseMenu');
+                          return ThreadWatcher.toggle(thread, true);
+                      };
+                      $.on(this.el, 'click', this.cb);
+                      return true;
+                  }
+              });
           }
-        }
-        $.event('CloseMenu');
-      },
-      toggle() {
-        const {thread} = Get.postFromNode(this);
-        ThreadWatcher.toggle(thread, true);
-      },
-      rm() {
-        const {siteID} = this.parentNode.dataset;
-        const [boardID, threadID] = this.parentNode.dataset.fullID.split('.');
-        ThreadWatcher.rm(siteID, boardID, +threadID, undefined, true);
-      },
-      post(e) {
-        const {boardID, threadID, postID} = e.detail;
-        const cb = PostRedirect.delay();
-        if (postID === threadID) {
-          if (Conf['Auto Watch']) {
-            ThreadWatcher.addRaw(boardID, threadID, {}, cb, true);
+          if (!['index', 'thread'].includes(g.VIEW)) {
+              return;
           }
-        } else if (Conf['Auto Watch Reply']) {
-          ThreadWatcher.add(
-            (g.threads.get(boardID + '.' + threadID) || new Thread(threadID, g.boards[boardID] || new Board(boardID))),
-            cb, true);
-        }
+          Callbacks.Post.push({
+              name: 'Thread Watcher',
+              cb: this.node
+          });
+          return Callbacks.CatalogThread.push({
+              name: 'Thread Watcher',
+              cb: this.catalogNode
+          });
       },
-      onIndexUpdate(e) {
-        const {db}    = ThreadWatcher;
-        const siteID  = g.SITE.ID;
-        const boardID = g.BOARD.ID;
-        let nKilled = 0;
-        for (var threadID in db.data[siteID].boards[boardID]) {
-          // Don't prune threads that have yet to appear in index.
-          var data = db.data[siteID].boards[boardID][threadID];
-          if (!data?.isDead && !e.detail.threads.includes(`${boardID}.${threadID}`)) {
-            if (!e.detail.threads.some(fullID => +fullID.split('.')[1] > threadID)) { continue; }
-            if (Conf['Auto Prune'] || !(data && (typeof data === 'object'))) { // corrupt data
-              db.delete({boardID, threadID});
-              nKilled++;
-            } else {
-              ThreadWatcher.fetchStatus({siteID, boardID, threadID, data});
-            }
-          }
-        }
-        if (nKilled) { return ThreadWatcher.refresh(); }
+      isWatched(thread) {
+          return !!ThreadWatcher.db?.get({ boardID: thread.board.ID, threadID: thread.ID });
       },
-      onThreadRefresh(e) {
-        const thread = g.threads.get(e.detail.threadID);
-        if (!e.detail[404] || !ThreadWatcher.isWatched(thread)) { return; }
-        // Update dead status.
-        return ThreadWatcher.add(thread);
-      }
-    },
-
-    requests: [],
-    fetched:  0,
-
-    fetch(url, {siteID, force}, args, cb) {
-      if (ThreadWatcher.requests.length === 0) {
-        ThreadWatcher.status.textContent = '...';
-        $.addClass(ThreadWatcher.refreshButton, 'spin');
-      }
-      const onloadend = function() {
-        if (this.finished) { return; }
-        this.finished = true;
-        ThreadWatcher.fetched++;
-        if (ThreadWatcher.fetched === ThreadWatcher.requests.length) {
-          ThreadWatcher.clearRequests();
-        } else {
-          ThreadWatcher.status.textContent = `${Math.round((ThreadWatcher.fetched / ThreadWatcher.requests.length) * 100)}%`;
-        }
-        return cb.apply(this, args);
-      };
-      const ajax = siteID === g.SITE.ID ? $.ajax : CrossOrigin.ajax;
-      if (force) {
-        delete $.lastModified.ThreadWatcher?.[url];
-      }
-      const req = $.whenModified(
-        url,
-        'ThreadWatcher',
-        onloadend,
-        { timeout: MINUTE, ajax }
-      );
-      return ThreadWatcher.requests.push(req);
-    },
-
-    clearRequests() {
-      ThreadWatcher.requests = [];
-      ThreadWatcher.fetched = 0;
-      ThreadWatcher.status.textContent = '';
-      return $.rmClass(ThreadWatcher.refreshButton, 'spin');
-    },
-
-    abort() {
-      delete ThreadWatcher.syncing;
-      for (var req of ThreadWatcher.requests) {
-        if (!req.finished) {
-          req.finished = true;
-          req.abort();
-        }
-      }
-      return ThreadWatcher.clearRequests();
-    },
-
-    initLastModified() {
-      const lm = ($.lastModified['ThreadWatcher'] || ($.lastModified['ThreadWatcher'] = dict()));
-      for (var siteID in ThreadWatcher.dbLM.data) {
-        var boards = ThreadWatcher.dbLM.data[siteID];
-        for (var boardID in boards.boards) {
-          var data = boards.boards[boardID];
-          if (ThreadWatcher.db.get({siteID, boardID})) {
-            for (var url in data) {
-              var date = data[url];
-              lm[url] = date;
-            }
-          } else {
-            ThreadWatcher.dbLM.delete({siteID, boardID});
+      isWatchedRaw(boardID, threadID) {
+          return !!ThreadWatcher.db?.get({ boardID, threadID });
+      },
+      setToggler(toggler, isWatched) {
+          toggler.classList.toggle('watched', isWatched);
+          return toggler.title = `${isWatched ? 'Unwatch' : 'Watch'} Thread`;
+      },
+      node() {
+          let toggler;
+          if (this.isReply) {
+              return;
           }
-        }
-      }
-    },
-
-    fetchAuto() {
-      let middle;
-      clearTimeout(ThreadWatcher.timeout);
-      if (!Conf['Auto Update Thread Watcher']) { return; }
-      const {db} = ThreadWatcher;
-      const interval = Conf['Show Page'] || (ThreadWatcher.unreadEnabled && Conf['Show Unread Count']) ? 5 * MINUTE : 2 * HOUR;
-      const now = Date.now();
-      if ((now - interval >= ((middle = db.data.lastChecked || 0)) || middle > now) && !d.hidden && !!d.hasFocus()) {
-        ThreadWatcher.fetchAllStatus(interval);
-      }
-      return ThreadWatcher.timeout = setTimeout(ThreadWatcher.fetchAuto, interval);
-    },
-
-    buttonFetchAll() {
-      if (ThreadWatcher.syncing || ThreadWatcher.requests.length) {
-        return ThreadWatcher.abort();
-      } else {
-        return ThreadWatcher.fetchAllStatus();
-      }
-    },
-
-    fetchAllStatus(interval=0) {
-      ThreadWatcher.status.textContent = '...';
-      $.addClass(ThreadWatcher.refreshButton, 'spin');
-      ThreadWatcher.syncing = true;
-      const dbs = [ThreadWatcher.db, ThreadWatcher.unreaddb, QuoteYou.db].filter(x => x);
-      let n = 0;
-      return dbs.map((dbi) =>
-        dbi.forceSync(function() {
-          if ((++n) === dbs.length) {
-            let middle;
-            if (!ThreadWatcher.syncing) { return; } // aborted
-            delete ThreadWatcher.syncing;
-            if (0 > (middle = Date.now() - (ThreadWatcher.db.data.lastChecked || 0)) || middle >= interval) { // not checked in another tab
-              // XXX On vichan boards, last_modified field of threads.json does not account for sage posts.
-              // Occasionally check replies field of catalog.json to find these posts.
-              let middle1;
-              const {db} = ThreadWatcher;
-              const now = Date.now();
-              const deep = !(now - (2 * HOUR) < ((middle1 = db.data.lastChecked2 || 0)) && middle1 <= now);
-              const boards = ThreadWatcher.getAll(true);
-              for (var board of boards) {
-                ThreadWatcher.fetchBoard(board, deep);
+          if (this.isClone) {
+              toggler = $('.watch-thread-link', this.nodes.info);
+          }
+          else {
+              toggler = $.el('button', {
+                  type: 'button',
+                  className: 'watch-thread-link'
+              });
+              Icon.set(toggler, 'heart');
+              $.before($('input', this.nodes.info), toggler);
+          }
+          const siteID = g.SITE.ID;
+          const boardID = this.board.ID;
+          const threadID = this.thread.ID;
+          const data = ThreadWatcher.db.get({ siteID, boardID, threadID });
+          ThreadWatcher.setToggler(toggler, !!data);
+          $.on(toggler, 'click', ThreadWatcher.cb.toggle);
+          // Add missing excerpt for threads added by Auto Watch
+          if (data && (data.excerpt == null)) {
+              return $.queueTask(() => {
+                  return ThreadWatcher.update(siteID, boardID, threadID, { excerpt: Get.threadExcerpt(this.thread) });
+              });
+          }
+      },
+      catalogNode() {
+          if (ThreadWatcher.isWatched(this.thread)) {
+              $.addClass(this.nodes.root, 'watched');
+          }
+          return $.on(this.nodes.root, 'mousedown click', e => {
+              if ((e.button !== 0) || !e.altKey)
+                  return;
+              if (e.type === 'click')
+                  ThreadWatcher.toggle(this.thread, true);
+              return e.preventDefault();
+          });
+      }, // Also on mousedown to prevent highlighting thumbnail in Firefox.
+      addDialog() {
+          if (!Main.isThisPageLegit()) {
+              return;
+          }
+          ThreadWatcher.build();
+          return $.prepend(d.body, ThreadWatcher.dialog);
+      },
+      toggleWatcher() {
+          $.toggleClass(ThreadWatcher.shortcut, 'disabled');
+          return ThreadWatcher.dialog.hidden = !ThreadWatcher.dialog.hidden;
+      },
+      cb: {
+          openAll() {
+              if ($.hasClass(this, 'disabled'))
+                  return;
+              for (var a of $$('a.watcher-link', ThreadWatcher.list)) {
+                  $.open(a.href);
               }
-              db.setLastChecked();
-              if (deep) { db.setLastChecked('lastChecked2'); }
-            }
-            if (ThreadWatcher.fetched === ThreadWatcher.requests.length) {
-              return ThreadWatcher.clearRequests();
-            }
+              $.event('CloseMenu');
+          },
+          openUnread() {
+              if ($.hasClass(this, 'disabled'))
+                  return;
+              for (var a of $$('.replies-unread > a.watcher-link', ThreadWatcher.list)) {
+                  $.open(a.href);
+              }
+              $.event('CloseMenu');
+          },
+          openDeads() {
+              if ($.hasClass(this, 'disabled'))
+                  return;
+              for (var a of $$('.dead-thread.replies-unread > a.watcher-link', ThreadWatcher.list)) {
+                  $.open(a.href);
+              }
+              $.event('CloseMenu');
+          },
+          clear() {
+              if (!confirm("Delete ALL threads from watcher?"))
+                  return;
+              const ref = ThreadWatcher.getAll();
+              for (let i = 0, len = ref.length; i < len; i++) {
+                  const { siteID, boardID, threadID } = ref[i];
+                  ThreadWatcher.db.delete({ siteID, boardID, threadID });
+              }
+              ThreadWatcher.refresh(true);
+              $.event('CloseMenu');
+          },
+          pruneDeads() {
+              if ($.hasClass(this, 'disabled'))
+                  return;
+              for (var { siteID, boardID, threadID, data } of ThreadWatcher.getAll()) {
+                  if (data.isDead) {
+                      ThreadWatcher.db.delete({ siteID, boardID, threadID });
+                  }
+              }
+              ThreadWatcher.refresh(true);
+              $.event('CloseMenu');
+          },
+          pruneReadDeads() {
+              if ($.hasClass(this, 'disabled'))
+                  return;
+              for (var { siteID, boardID, threadID, data } of ThreadWatcher.getAll()) {
+                  if (data.isDead && !data.unread) {
+                      ThreadWatcher.db.delete({ siteID, boardID, threadID });
+                  }
+              }
+              ThreadWatcher.refresh(true);
+              $.event('CloseMenu');
+          },
+          dismiss() {
+              for (var { siteID, boardID, threadID, data } of ThreadWatcher.getAll()) {
+                  if (data.quotingYou) {
+                      ThreadWatcher.update(siteID, boardID, threadID, { dismiss: data.quotingYou || 0 });
+                  }
+              }
+              $.event('CloseMenu');
+          },
+          toggle() {
+              const { thread } = Get.postFromNode(this);
+              ThreadWatcher.toggle(thread, true);
+          },
+          rm() {
+              const { siteID } = this.parentNode.dataset;
+              const [boardID, threadID] = this.parentNode.dataset.fullID.split('.');
+              ThreadWatcher.rm(siteID, boardID, +threadID, undefined, true);
+          },
+          post(e) {
+              const { boardID, threadID, postID } = e.detail;
+              const cb = PostRedirect.delay();
+              if (postID === threadID) {
+                  if (Conf['Auto Watch']) {
+                      ThreadWatcher.addRaw(boardID, threadID, {}, cb, true);
+                  }
+              }
+              else if (Conf['Auto Watch Reply']) {
+                  ThreadWatcher.add((g.threads.get(boardID + '.' + threadID) || new Thread(threadID, g.boards[boardID] || new Board(boardID))), cb, true);
+              }
+          },
+          onIndexUpdate(e) {
+              const { db } = ThreadWatcher;
+              const siteID = g.SITE.ID;
+              const boardID = g.BOARD.ID;
+              let nKilled = 0;
+              for (var threadID in db.data[siteID].boards[boardID]) {
+                  // Don't prune threads that have yet to appear in index.
+                  var data = db.data[siteID].boards[boardID][threadID];
+                  if (!data?.isDead && !e.detail.threads.includes(`${boardID}.${threadID}`)) {
+                      if (!e.detail.threads.some(fullID => +fullID.split('.')[1] > threadID)) {
+                          continue;
+                      }
+                      if (Conf['Auto Prune'] || !(data && (typeof data === 'object'))) { // corrupt data
+                          db.delete({ boardID, threadID });
+                          nKilled++;
+                      }
+                      else {
+                          ThreadWatcher.fetchStatus({ siteID, boardID, threadID, data });
+                      }
+                  }
+              }
+              if (nKilled) {
+                  return ThreadWatcher.refresh();
+              }
+          },
+          onThreadRefresh(e) {
+              const thread = g.threads.get(e.detail.threadID);
+              if (!e.detail[404] || !ThreadWatcher.isWatched(thread)) {
+                  return;
+              }
+              // Update dead status.
+              return ThreadWatcher.add(thread);
           }
-        }));
-    },
-
-    fetchBoard(board, deep) {
-      if (!board.some(thread => !thread.data.isDead)) { return; }
-      let force = false;
-      for (var thread of board) {
-        var {data} = thread;
-        if (!data.isDead && (data.last !== -1)) {
-          if (Conf['Show Page'] && (data.page == null)) { force = true; }
-          if ((data.modified == null)) { force = (thread.force = true); }
-        }
-      }
-      const {siteID, boardID} = board[0];
-      const site = g.sites[siteID];
-      if (!site) { return; }
-      const urlF = deep && site.threadModTimeIgnoresSage ? 'catalogJSON' : 'threadsListJSON';
-      const url = site.urls[urlF]?.({siteID, boardID});
-      if (!url) { return; }
-      return ThreadWatcher.fetch(url, {siteID, force}, [board, url], ThreadWatcher.parseBoard);
-    },
-
-    parseBoard(board, url) {
-      let page, thread;
-      if (this.status !== 200) { return; }
-      const {siteID, boardID} = board[0];
-      const lmDate = this.getResponseHeader('Last-Modified');
-      ThreadWatcher.dbLM.extend({siteID, boardID, val: $.item(url, lmDate)});
-      const threads = dict();
-      let pageLength = 0;
-      let nThreads = 0;
-      let oldest = null;
-      try {
-        pageLength = this.response[0]?.threads.length || 0;
-        for (let i = 0; i < this.response.length; i++) {
-          page = this.response[i];
-          for (var item of page.threads) {
-            threads[item.no] = {
-              page: i + 1,
-              index: nThreads,
-              modified: item.last_modified,
-              replies: item.replies
-            };
-            nThreads++;
-            if ((oldest == null) || (item.no < oldest)) {
-              oldest = item.no;
-            }
+      },
+      requests: [],
+      fetched: 0,
+      fetch(url, { siteID, force }, args, cb) {
+          if (ThreadWatcher.requests.length === 0) {
+              ThreadWatcher.status.textContent = '...';
+              $.addClass(ThreadWatcher.refreshButton, 'spin');
           }
-        }
-      } catch (error) {
-        for (thread of board) {
-          ThreadWatcher.fetchStatus(thread);
-        }
-      }
-      for (thread of board) {
-        var {threadID, data} = thread;
-        if (threads[threadID]) {
-          var index, modified, replies;
-          ({page, index, modified, replies} = threads[threadID]);
+          const onloadend = function () {
+              if (this.finished) {
+                  return;
+              }
+              this.finished = true;
+              ThreadWatcher.fetched++;
+              if (ThreadWatcher.fetched === ThreadWatcher.requests.length) {
+                  ThreadWatcher.clearRequests();
+              }
+              else {
+                  ThreadWatcher.status.textContent = `${Math.round((ThreadWatcher.fetched / ThreadWatcher.requests.length) * 100)}%`;
+              }
+              return cb.apply(this, args);
+          };
+          const ajax = siteID === g.SITE.ID ? $.ajax : CrossOrigin.ajax;
+          if (force) {
+              delete $.lastModified.ThreadWatcher?.[url];
+          }
+          const req = $.whenModified(url, 'ThreadWatcher', onloadend, { timeout: MINUTE, ajax });
+          return ThreadWatcher.requests.push(req);
+      },
+      clearRequests() {
+          ThreadWatcher.requests = [];
+          ThreadWatcher.fetched = 0;
+          ThreadWatcher.status.textContent = '';
+          return $.rmClass(ThreadWatcher.refreshButton, 'spin');
+      },
+      abort() {
+          delete ThreadWatcher.syncing;
+          for (var req of ThreadWatcher.requests) {
+              if (!req.finished) {
+                  req.finished = true;
+                  req.abort();
+              }
+          }
+          return ThreadWatcher.clearRequests();
+      },
+      initLastModified() {
+          const lm = ($.lastModified['ThreadWatcher'] || ($.lastModified['ThreadWatcher'] = dict()));
+          for (var siteID in ThreadWatcher.dbLM.data) {
+              var boards = ThreadWatcher.dbLM.data[siteID];
+              for (var boardID in boards.boards) {
+                  var data = boards.boards[boardID];
+                  if (ThreadWatcher.db.get({ siteID, boardID })) {
+                      for (var url in data) {
+                          var date = data[url];
+                          lm[url] = date;
+                      }
+                  }
+                  else {
+                      ThreadWatcher.dbLM.delete({ siteID, boardID });
+                  }
+              }
+          }
+      },
+      fetchAuto() {
+          let middle;
+          clearTimeout(ThreadWatcher.timeout);
+          if (!Conf['Auto Update Thread Watcher']) {
+              return;
+          }
+          const { db } = ThreadWatcher;
+          const interval = Conf['Show Page'] || (ThreadWatcher.unreadEnabled && Conf['Show Unread Count']) ? 5 * MINUTE : 2 * HOUR;
+          const now = Date.now();
+          if ((now - interval >= ((middle = db.data.lastChecked || 0)) || middle > now) && !d.hidden && !!d.hasFocus()) {
+              ThreadWatcher.fetchAllStatus(interval);
+          }
+          return ThreadWatcher.timeout = setTimeout(ThreadWatcher.fetchAuto, interval);
+      },
+      buttonFetchAll() {
+          if (ThreadWatcher.syncing || ThreadWatcher.requests.length) {
+              return ThreadWatcher.abort();
+          }
+          else {
+              return ThreadWatcher.fetchAllStatus();
+          }
+      },
+      fetchAllStatus(interval = 0) {
+          ThreadWatcher.status.textContent = '...';
+          $.addClass(ThreadWatcher.refreshButton, 'spin');
+          ThreadWatcher.syncing = true;
+          const dbs = [ThreadWatcher.db, ThreadWatcher.unreaddb, QuoteYou.db].filter(x => x);
+          let n = 0;
+          return dbs.map((dbi) => dbi.forceSync(function () {
+              if ((++n) === dbs.length) {
+                  let middle;
+                  if (!ThreadWatcher.syncing) {
+                      return;
+                  } // aborted
+                  delete ThreadWatcher.syncing;
+                  if (0 > (middle = Date.now() - (ThreadWatcher.db.data.lastChecked || 0)) || middle >= interval) { // not checked in another tab
+                      // XXX On vichan boards, last_modified field of threads.json does not account for sage posts.
+                      // Occasionally check replies field of catalog.json to find these posts.
+                      let middle1;
+                      const { db } = ThreadWatcher;
+                      const now = Date.now();
+                      const deep = !(now - (2 * HOUR) < ((middle1 = db.data.lastChecked2 || 0)) && middle1 <= now);
+                      const boards = ThreadWatcher.getAll(true);
+                      for (var board of boards) {
+                          ThreadWatcher.fetchBoard(board, deep);
+                      }
+                      db.setLastChecked();
+                      if (deep) {
+                          db.setLastChecked('lastChecked2');
+                      }
+                  }
+                  if (ThreadWatcher.fetched === ThreadWatcher.requests.length) {
+                      return ThreadWatcher.clearRequests();
+                  }
+              }
+          }));
+      },
+      fetchBoard(board, deep) {
+          if (!board.some(thread => !thread.data.isDead)) {
+              return;
+          }
+          let force = false;
+          for (var thread of board) {
+              var { data } = thread;
+              if (!data.isDead && (data.last !== -1)) {
+                  if (Conf['Show Page'] && (data.page == null)) {
+                      force = true;
+                  }
+                  if ((data.modified == null)) {
+                      force = (thread.force = true);
+                  }
+              }
+          }
+          const { siteID, boardID } = board[0];
+          const site = g.sites[siteID];
+          if (!site) {
+              return;
+          }
+          const urlF = deep && site.threadModTimeIgnoresSage ? 'catalogJSON' : 'threadsListJSON';
+          const url = site.urls[urlF]?.({ siteID, boardID });
+          if (!url) {
+              return;
+          }
+          return ThreadWatcher.fetch(url, { siteID, force }, [board, url], ThreadWatcher.parseBoard);
+      },
+      parseBoard(board, url) {
+          let page, thread;
+          if (this.status !== 200) {
+              return;
+          }
+          const { siteID, boardID } = board[0];
+          const lmDate = this.getResponseHeader('Last-Modified');
+          ThreadWatcher.dbLM.extend({ siteID, boardID, val: $.item(url, lmDate) });
+          const threads = dict();
+          let pageLength = 0;
+          let nThreads = 0;
+          let oldest = null;
+          try {
+              pageLength = this.response[0]?.threads.length || 0;
+              for (let i = 0; i < this.response.length; i++) {
+                  page = this.response[i];
+                  for (var item of page.threads) {
+                      threads[item.no] = {
+                          page: i + 1,
+                          index: nThreads,
+                          modified: item.last_modified,
+                          replies: item.replies
+                      };
+                      nThreads++;
+                      if ((oldest == null) || (item.no < oldest)) {
+                          oldest = item.no;
+                      }
+                  }
+              }
+          }
+          catch (error) {
+              for (thread of board) {
+                  ThreadWatcher.fetchStatus(thread);
+              }
+          }
+          for (thread of board) {
+              var { threadID, data } = thread;
+              if (threads[threadID]) {
+                  var index, modified, replies;
+                  ({ page, index, modified, replies } = threads[threadID]);
+                  if (Conf['Show Page']) {
+                      var lastPage = g.sites[siteID].isPrunedByAge?.({ siteID, boardID }) ?
+                          threadID === oldest
+                          :
+                              index >= (nThreads - pageLength);
+                      ThreadWatcher.update(siteID, boardID, threadID, { page, lastPage });
+                  }
+                  if (ThreadWatcher.unreadEnabled && Conf['Show Unread Count']) {
+                      if ((modified !== data.modified) || ((replies != null) && (replies !== data.replies))) {
+                          (thread.newData || (thread.newData = {})).modified = modified;
+                          ThreadWatcher.fetchStatus(thread);
+                      }
+                  }
+              }
+              else {
+                  ThreadWatcher.fetchStatus(thread);
+              }
+          }
+      },
+      fetchStatus(thread) {
+          const { siteID, boardID, threadID, data, force } = thread;
+          const url = g.sites[siteID]?.urls.threadJSON?.({ siteID, boardID, threadID });
+          if (!url) {
+              return;
+          }
+          if (data.isDead && !force) {
+              return;
+          }
+          if (data.last === -1) {
+              return;
+          } // 404 or no JSON API
+          return ThreadWatcher.fetch(url, { siteID, force }, [thread], ThreadWatcher.parseStatus);
+      },
+      parseStatus(thread, isArchiveURL) {
+          let isDead, last;
+          let { siteID, boardID, threadID, data, newData, force } = thread;
+          const site = g.sites[siteID];
+          if ((this.status === 200) && this.response) {
+              let isArchived;
+              last = this.response.posts[this.response.posts.length - 1].no;
+              const replies = this.response.posts.length - 1;
+              isDead = (isArchived = !!(this.response.posts[0].archived || isArchiveURL));
+              if (isDead && Conf['Auto Prune']) {
+                  ThreadWatcher.rm(siteID, boardID, threadID);
+                  return;
+              }
+              if ((last === data.last) && (isDead === data.isDead) && (isArchived === data.isArchived)) {
+                  return;
+              }
+              const lastReadPost = ThreadWatcher.unreaddb.get({ siteID, boardID, threadID, defaultValue: 0 });
+              let unread = data.unread || 0;
+              let quotingYou = data.quotingYou || 0;
+              const youOP = !!QuoteYou.db?.get({ siteID, boardID, threadID, postID: threadID });
+              for (var postObj of this.response.posts) {
+                  if ((postObj.no <= (data.last || 0)) || (postObj.no <= lastReadPost)) {
+                      continue;
+                  }
+                  if (QuoteYou.db?.get({ siteID, boardID, threadID, postID: postObj.no })) {
+                      continue;
+                  }
+                  var quotesYou = false;
+                  if (!Conf['Require OP Quote Link'] && youOP) {
+                      quotesYou = true;
+                  }
+                  else if (QuoteYou.db && postObj.com) {
+                      var match;
+                      var regexp = site.regexp.quotelinkHTML;
+                      regexp.lastIndex = 0;
+                      while (match = regexp.exec(postObj.com)) {
+                          if (QuoteYou.db.get({
+                              siteID,
+                              boardID: match[1] ? encodeURIComponent(match[1]) : boardID,
+                              threadID: match[2] || threadID,
+                              postID: match[3] || match[2] || threadID
+                          })) {
+                              quotesYou = true;
+                              break;
+                          }
+                      }
+                  }
+                  if (!unread || (!quotingYou && quotesYou)) {
+                      if (Filter.isHidden(site.Build.parseJSON(postObj, { siteID, boardID }))) {
+                          continue;
+                      }
+                  }
+                  unread++;
+                  if (quotesYou) {
+                      quotingYou = postObj.no;
+                  }
+              }
+              if (!newData) {
+                  newData = {};
+              }
+              $.extend(newData, { last, replies, isDead, isArchived, unread, quotingYou });
+              return ThreadWatcher.update(siteID, boardID, threadID, newData);
+          }
+          else if (this.status === 404) {
+              const archiveURL = g.sites[siteID]?.urls.archivedThreadJSON?.({ siteID, boardID, threadID });
+              if (!isArchiveURL && archiveURL) {
+                  return ThreadWatcher.fetch(archiveURL, { siteID, force }, [thread, true], ThreadWatcher.parseStatus);
+              }
+              else if (site.mayLackJSON && (data.last == null)) {
+                  return ThreadWatcher.update(siteID, boardID, threadID, { last: -1 });
+              }
+              else {
+                  return ThreadWatcher.update(siteID, boardID, threadID, { isDead: true });
+              }
+          }
+      },
+      getAll(groupByBoard) {
+          const all = [];
+          for (var siteID in ThreadWatcher.db.data) {
+              var boards = ThreadWatcher.db.data[siteID];
+              for (var boardID in boards.boards) {
+                  var cont;
+                  var threads = boards.boards[boardID];
+                  if (Conf['Current Board'] && ((siteID !== g.SITE.ID) || (boardID !== g.BOARD.ID))) {
+                      continue;
+                  }
+                  if (groupByBoard) {
+                      all.push((cont = []));
+                  }
+                  for (var threadID in threads) {
+                      var data = threads[threadID];
+                      if (data && (typeof data === 'object')) {
+                          (groupByBoard ? cont : all).push({ siteID, boardID, threadID, data });
+                      }
+                  }
+              }
+          }
+          return all;
+      },
+      makeLine(siteID, boardID, threadID, data) {
+          let page;
+          const x = $.el('a', {
+              textContent: '✕',
+              href: 'javascript:;'
+          });
+          Icon.set(x, 'xmark');
+          $.on(x, 'click', ThreadWatcher.cb.rm);
+          let { excerpt, isArchived } = data;
+          if (!excerpt) {
+              excerpt = `/${boardID}/ - No.${threadID}`;
+          }
+          if (Conf['Show Site Prefix']) {
+              excerpt = ThreadWatcher.prefixes[siteID] + excerpt;
+          }
+          const link = $.el('a', {
+              href: g.sites[siteID]?.urls.thread({ siteID, boardID, threadID }, isArchived) || '',
+              title: excerpt,
+              className: 'watcher-link'
+          });
+          if (Conf['Show Page'] && (data.page != null)) {
+              page = $.el('span', {
+                  textContent: `[${data.page}]`,
+                  className: 'watcher-page'
+              });
+              $.add(link, page);
+          }
+          if (ThreadWatcher.unreadEnabled && Conf['Show Unread Count'] && (data.unread != null)) {
+              const count = $.el('span', {
+                  textContent: `(${data.unread})`,
+                  className: 'watcher-unread'
+              });
+              $.add(link, count);
+          }
+          const title = $.el('span', {
+              textContent: excerpt,
+              className: 'watcher-title'
+          });
+          $.add(link, title);
+          const div = $.el('div');
+          const fullID = `${boardID}.${threadID}`;
+          div.dataset.fullID = fullID;
+          div.dataset.siteID = siteID;
+          if ((g.VIEW === 'thread') && (fullID === `${g.BOARD}.${g.THREADID}`)) {
+              $.addClass(div, 'current');
+          }
+          if (data.isDead) {
+              $.addClass(div, 'dead-thread');
+          }
           if (Conf['Show Page']) {
-            var lastPage = g.sites[siteID].isPrunedByAge?.({siteID, boardID}) ?
-              threadID === oldest
-            :
-              index >= (nThreads - pageLength);
-            ThreadWatcher.update(siteID, boardID, threadID, {page, lastPage});
+              if (data.lastPage) {
+                  $.addClass(div, 'last-page');
+              }
+              if (data.page != null) {
+                  div.dataset.page = data.page;
+              }
           }
           if (ThreadWatcher.unreadEnabled && Conf['Show Unread Count']) {
-            if ((modified !== data.modified) || ((replies != null) && (replies !== data.replies))) {
-              (thread.newData || (thread.newData = {})).modified = modified;
-              ThreadWatcher.fetchStatus(thread);
-            }
-          }
-        } else {
-          ThreadWatcher.fetchStatus(thread);
-        }
-      }
-    },
-
-    fetchStatus(thread) {
-      const {siteID, boardID, threadID, data, force} = thread;
-      const url = g.sites[siteID]?.urls.threadJSON?.({siteID, boardID, threadID});
-      if (!url) { return; }
-      if (data.isDead && !force) { return; }
-      if (data.last === -1) { return; } // 404 or no JSON API
-      return ThreadWatcher.fetch(url, {siteID, force}, [thread], ThreadWatcher.parseStatus);
-    },
-
-    parseStatus(thread, isArchiveURL) {
-      let isDead, last;
-      let {siteID, boardID, threadID, data, newData, force} = thread;
-      const site = g.sites[siteID];
-      if ((this.status === 200) && this.response) {
-        let isArchived;
-        last = this.response.posts[this.response.posts.length-1].no;
-        const replies = this.response.posts.length-1;
-        isDead = (isArchived = !!(this.response.posts[0].archived || isArchiveURL));
-        if (isDead && Conf['Auto Prune']) {
-          ThreadWatcher.rm(siteID, boardID, threadID);
-          return;
-        }
-
-        if ((last === data.last) && (isDead === data.isDead) && (isArchived === data.isArchived)) { return; }
-
-        const lastReadPost = ThreadWatcher.unreaddb.get({siteID, boardID, threadID, defaultValue: 0});
-        let unread = data.unread || 0;
-        let quotingYou = data.quotingYou || 0;
-        const youOP = !!QuoteYou.db?.get({siteID, boardID, threadID, postID: threadID});
-
-        for (var postObj of this.response.posts) {
-          if ((postObj.no <= (data.last || 0)) || (postObj.no <= lastReadPost)) { continue; }
-          if (QuoteYou.db?.get({siteID, boardID, threadID, postID: postObj.no})) { continue; }
-
-          var quotesYou = false;
-          if (!Conf['Require OP Quote Link'] && youOP) {
-            quotesYou = true;
-          } else if (QuoteYou.db && postObj.com) {
-            var match;
-            var regexp = site.regexp.quotelinkHTML;
-            regexp.lastIndex = 0;
-            while (match = regexp.exec(postObj.com)) {
-              if (QuoteYou.db.get({
-                siteID,
-                boardID:  match[1] ? encodeURIComponent(match[1]) : boardID,
-                threadID: match[2] || threadID,
-                postID:   match[3] || match[2] || threadID
-              })) {
-                quotesYou = true;
-                break;
+              if (data.unread === 0) {
+                  $.addClass(div, 'replies-read');
               }
-            }
+              if (data.unread) {
+                  $.addClass(div, 'replies-unread');
+              }
+              if ((data.quotingYou || 0) > (data.dismiss || 0)) {
+                  $.addClass(div, 'replies-quoting-you');
+              }
           }
-
-          if (!unread || (!quotingYou && quotesYou)) {
-            if (Filter.isHidden(site.Build.parseJSON(postObj, {siteID, boardID}))) { continue; }
-          }
-
-          unread++;
-          if (quotesYou) { quotingYou = postObj.no; }
-        }
-
-        if (!newData) { newData = {}; }
-        $.extend(newData, {last, replies, isDead, isArchived, unread, quotingYou});
-        return ThreadWatcher.update(siteID, boardID, threadID, newData);
-
-      } else if (this.status === 404) {
-        const archiveURL = g.sites[siteID]?.urls.archivedThreadJSON?.({siteID, boardID, threadID});
-        if (!isArchiveURL && archiveURL) {
-          return ThreadWatcher.fetch(archiveURL, {siteID, force}, [thread, true], ThreadWatcher.parseStatus);
-        } else if (site.mayLackJSON && (data.last == null)) {
-          return ThreadWatcher.update(siteID, boardID, threadID, {last: -1});
-        } else {
-          return ThreadWatcher.update(siteID, boardID, threadID, {isDead: true});
-        }
-      }
-    },
-
-    getAll(groupByBoard) {
-      const all = [];
-      for (var siteID in ThreadWatcher.db.data) {
-        var boards = ThreadWatcher.db.data[siteID];
-        for (var boardID in boards.boards) {
-          var cont;
-          var threads = boards.boards[boardID];
-          if (Conf['Current Board'] && ((siteID !== g.SITE.ID) || (boardID !== g.BOARD.ID))) {
-            continue;
-          }
-          if (groupByBoard) {
-            all.push((cont = []));
-          }
-          for (var threadID in threads) {
-            var data = threads[threadID];
-            if (data && (typeof data === 'object')) {
-              (groupByBoard ? cont : all).push({siteID, boardID, threadID, data});
-            }
-          }
-        }
-      }
-      return all;
-    },
-
-    makeLine(siteID, boardID, threadID, data) {
-      let page;
-      const x = $.el('a', {
-        textContent: '✕',
-        href: 'javascript:;'
-      });
-      Icon.set(x, 'xmark');
-      $.on(x, 'click', ThreadWatcher.cb.rm);
-
-      let {excerpt, isArchived} = data;
-      if (!excerpt) { excerpt = `/${boardID}/ - No.${threadID}`; }
-      if (Conf['Show Site Prefix']) { excerpt = ThreadWatcher.prefixes[siteID] + excerpt; }
-
-      const link = $.el('a', {
-        href: g.sites[siteID]?.urls.thread({siteID, boardID, threadID}, isArchived) || '',
-        title: excerpt,
-        className: 'watcher-link'
-      });
-
-      if (Conf['Show Page'] && (data.page != null)) {
-        page = $.el('span', {
-          textContent: `[${data.page}]`,
-          className: 'watcher-page'
-        });
-        $.add(link, page);
-      }
-
-      if (ThreadWatcher.unreadEnabled && Conf['Show Unread Count'] && (data.unread != null)) {
-        const count = $.el('span', {
-          textContent: `(${data.unread})`,
-          className: 'watcher-unread'
-        });
-        $.add(link, count);
-      }
-
-      const title = $.el('span', {
-        textContent: excerpt,
-        className: 'watcher-title'
-      });
-      $.add(link, title);
-
-      const div = $.el('div');
-      const fullID = `${boardID}.${threadID}`;
-      div.dataset.fullID = fullID;
-      div.dataset.siteID = siteID;
-      if ((g.VIEW === 'thread') && (fullID === `${g.BOARD}.${g.THREADID}`)) { $.addClass(div, 'current'); }
-      if (data.isDead) { $.addClass(div, 'dead-thread'); }
-      if (Conf['Show Page']) {
-        if (data.lastPage) { $.addClass(div, 'last-page'); }
-        if (data.page != null) { div.dataset.page = data.page; }
-      }
-      if (ThreadWatcher.unreadEnabled && Conf['Show Unread Count']) {
-        if (data.unread === 0) { $.addClass(div, 'replies-read'); }
-        if (data.unread) { $.addClass(div, 'replies-unread'); }
-        if ((data.quotingYou || 0) > (data.dismiss || 0)) { $.addClass(div, 'replies-quoting-you'); }
-      }
-      $.add(div, [x, $.tn(' '), link]);
-      return div;
-    },
-
-    setPrefixes(threads) {
-      const prefixes = dict();
-      for (var {siteID} of threads) {
-        if (siteID in prefixes) { continue; }
-        var len = 0;
-        var prefix = '';
-        var conflicts = Object.keys(prefixes);
-        while (conflicts.length > 0) {
-          len++;
-          prefix = siteID.slice(0, len);
-          var conflicts2 = [];
-          for (var siteID2 of conflicts) {
-            if (siteID2.slice(0, len) === prefix) {
-              conflicts2.push(siteID2);
-            } else if (prefixes[siteID2].length < len) {
-              prefixes[siteID2] = siteID2.slice(0, len);
-            }
-          }
-          conflicts = conflicts2;
-        }
-        prefixes[siteID] = prefix;
-      }
-      return ThreadWatcher.prefixes = prefixes;
-    },
-
-    build() {
-      const nodes = [];
-      const threads = ThreadWatcher.getAll();
-      ThreadWatcher.setPrefixes(threads);
-      for (var {siteID, boardID, threadID, data} of threads) {
-        // Add missing excerpt for threads added by Auto Watch
-        var thread;
-        if ((data.excerpt == null) && (siteID === g.SITE.ID) && (thread = g.threads.get(`${boardID}.${threadID}`)) && thread.OP) {
-          ThreadWatcher.db.extend({boardID, threadID, val: {excerpt: Get.threadExcerpt(thread)}});
-        }
-        nodes.push(ThreadWatcher.makeLine(siteID, boardID, threadID, data));
-      }
-      const {list} = ThreadWatcher;
-      $.rmAll(list);
-      $.add(list, nodes);
-
-      return ThreadWatcher.refreshIcon();
-    },
-
-    refresh(manual) {
-      ThreadWatcher.build();
-
-      g.threads.forEach(function(thread) {
-        const isWatched = ThreadWatcher.isWatched(thread);
-        if (thread.OP) {
-          for (var post of [thread.OP, ...thread.OP.clones]) {
-            var toggler;
-            if (toggler = $('.watch-thread-link', post.nodes.info)) {
-              ThreadWatcher.setToggler(toggler, isWatched);
-            }
-          }
-        }
-        if (thread.catalogView) { return thread.catalogView.nodes.root.classList.toggle('watched', isWatched); }
-      });
-
-      if (Conf['Pin Watched Threads']) {
-        return $.event('SortIndex', {deferred: !(manual && Conf['Index Mode'] === 'catalog')});
-      }
-    },
-
-    refreshIcon() {
-      for (var className of ['replies-unread', 'replies-quoting-you']) {
-        ThreadWatcher.shortcut.classList.toggle(className, !!$(`.${className}`, ThreadWatcher.dialog));
-      }
-    },
-
-    update(siteID, boardID, threadID, newData) {
-      let data, key, line, val;
-      if (!(data = ThreadWatcher.db?.get({siteID, boardID, threadID}))) { return; }
-      if (newData.isDead && Conf['Auto Prune']) {
-        ThreadWatcher.rm(siteID, boardID, threadID);
-        return;
-      }
-      if (newData.isDead || (newData.last === -1)) {
-        for (key of ['isArchived', 'page', 'lastPage', 'unread', 'quotingyou']) {
-          if (!(key in newData)) {
-            newData[key] = undefined;
-          }
-        }
-      }
-      if ((newData.last != null) && (newData.last < data.last)) {
-        newData.modified = undefined;
-      }
-      let n = 0;
-      for (key in newData) { val = newData[key]; if (data[key] !== val) { n++; } }
-      if (!n) { return; }
-      ThreadWatcher.db.extend({siteID, boardID, threadID, val: newData});
-      if (line = $(`#watched-threads > [data-site-i-d='${siteID}'][data-full-i-d='${boardID}.${threadID}']`, ThreadWatcher.dialog)) {
-        const newLine = ThreadWatcher.makeLine(siteID, boardID, threadID, data);
-        $.replace(line, newLine);
-        return ThreadWatcher.refreshIcon();
-      } else {
-        return ThreadWatcher.refresh();
-      }
-    },
-
-    set404(boardID, threadID, cb) {
-      let data;
-      if (!(data = ThreadWatcher.db?.get({boardID, threadID}))) { return cb(); }
-      if (Conf['Auto Prune']) {
-        ThreadWatcher.db.delete({boardID, threadID});
-        return cb();
-      }
-      if (data.isDead && !((data.isArchived != null) || (data.page != null) || (data.lastPage != null) || (data.unread != null) || (data.quotingYou != null))) { return cb(); }
-      return ThreadWatcher.db.extend({boardID, threadID, val: {isDead: true, isArchived: undefined, page: undefined, lastPage: undefined, unread: undefined, quotingYou: undefined}}, cb);
-    },
-
-    toggle(thread, manual) {
-      const siteID   = g.SITE.ID;
-      const boardID  = thread.board.ID;
-      const threadID = thread.ID;
-      if (ThreadWatcher.db.get({boardID, threadID})) {
-        return ThreadWatcher.rm(siteID, boardID, threadID, undefined, manual);
-      } else {
-        return ThreadWatcher.add(thread, undefined, manual);
-      }
-    },
-
-    add(thread, cb, manual) {
-      const data     = {};
-      const siteID   = g.SITE.ID;
-      const boardID  = thread.board.ID;
-      const threadID = thread.ID;
-      if (thread.isDead) {
-        if (Conf['Auto Prune'] && ThreadWatcher.db.get({boardID, threadID})) {
-          ThreadWatcher.rm(siteID, boardID, threadID, cb);
-          return;
-        }
-        data.isDead = true;
-      }
-      if (thread.OP) { data.excerpt = Get.threadExcerpt(thread); }
-      return ThreadWatcher.addRaw(boardID, threadID, data, cb, manual);
-    },
-
-    addRaw(boardID, threadID, data, cb, manual) {
-      const oldData = ThreadWatcher.db.get({ boardID, threadID, defaultValue: dict() });
-      delete oldData.last;
-      delete oldData.modified;
-      $.extend(oldData, data);
-      ThreadWatcher.db.set({boardID, threadID, val: oldData}, cb);
-      ThreadWatcher.refresh(manual);
-      const thread = {siteID: g.SITE.ID, boardID, threadID, data, force: true};
-      if (Conf['Show Page'] && !data.isDead) {
-        return ThreadWatcher.fetchBoard([thread]);
-      } else if (ThreadWatcher.unreadEnabled && Conf['Show Unread Count']) {
-        return ThreadWatcher.fetchStatus(thread);
-      }
-    },
-
-    rm(siteID, boardID, threadID, cb, manual) {
-      ThreadWatcher.db.delete({siteID, boardID, threadID}, cb);
-      return ThreadWatcher.refresh(manual);
-    },
-
-    menu: {
-      init() {
-        if (!Conf['Thread Watcher']) { return; }
-        const menu = (this.menu = new UI.Menu('thread watcher'));
-        $.on($('.menu-button', ThreadWatcher.dialog), 'click', function(e) {
-          return menu.toggle(e, this, ThreadWatcher);
-        });
-        return this.addMenuEntries();
+          $.add(div, [x, $.tn(' '), link]);
+          return div;
       },
-
-      addHeaderMenuEntry() {
-        if (g.VIEW !== 'thread') { return; }
-        const entryEl = $.el('a',
-          {href: 'javascript:;'});
-        Header.menu.addEntry({
-          el: entryEl,
-          order: 60,
-          open() {
-            const [addClass, rmClass, text] = !!ThreadWatcher.db.get({boardID: g.BOARD.ID, threadID: g.THREADID}) ?
-              ['unwatch-thread', 'watch-thread', 'Unwatch thread']
-            :
-              ['watch-thread', 'unwatch-thread', 'Watch thread'];
-            $.addClass(entryEl, addClass);
-            $.rmClass(entryEl, rmClass);
-            entryEl.textContent = text;
-            return true;
+      setPrefixes(threads) {
+          const prefixes = dict();
+          for (var { siteID } of threads) {
+              if (siteID in prefixes) {
+                  continue;
+              }
+              var len = 0;
+              var prefix = '';
+              var conflicts = Object.keys(prefixes);
+              while (conflicts.length > 0) {
+                  len++;
+                  prefix = siteID.slice(0, len);
+                  var conflicts2 = [];
+                  for (var siteID2 of conflicts) {
+                      if (siteID2.slice(0, len) === prefix) {
+                          conflicts2.push(siteID2);
+                      }
+                      else if (prefixes[siteID2].length < len) {
+                          prefixes[siteID2] = siteID2.slice(0, len);
+                      }
+                  }
+                  conflicts = conflicts2;
+              }
+              prefixes[siteID] = prefix;
           }
-        });
-        return $.on(entryEl, 'click', () => ThreadWatcher.toggle(g.threads.get(`${g.BOARD}.${g.THREADID}`), true));
+          return ThreadWatcher.prefixes = prefixes;
       },
-
-      addMenuEntries() {
-        const toggleDisabledDead = function () {
-          this.el.classList.toggle('disabled', !$('.dead-thread', ThreadWatcher.list));
-          return true;
-        };
-
-        const entries = [
-          // `Open all` entry
-          {
-            text: 'Open all threads',
-            cb: ThreadWatcher.cb.openAll,
-            open() {
-              this.el.classList.toggle('disabled', !ThreadWatcher.list.firstElementChild);
-              return true;
-            }
-          },
-          {
-            text: 'Clear all threads',
-            cb: ThreadWatcher.cb.clear,
-            open() {
-              this.el.classList.toggle('disabled', !ThreadWatcher.list.firstElementChild);
-              return true;
-            }
-          },
-          // `Open Unread` entry
-          {
-            text: 'Open unread threads',
-            cb: ThreadWatcher.cb.openUnread,
-            open() {
-              this.el.classList.toggle('disabled', !$('.replies-unread', ThreadWatcher.list));
-              return true;
-            }
-          },
-          // `Open unread dead threads` entry
-          {
-            text: 'Open unread dead threads',
-            cb: ThreadWatcher.cb.openDeads,
-            open: toggleDisabledDead,
-          },
-          // `Prune all dead threads` entry
-          {
-            text: 'Prune all dead threads',
-            cb: ThreadWatcher.cb.pruneDeads,
-            open: toggleDisabledDead,
-          },
-          // `Prune read dead threads` entry
-          {
-            text: 'Prune read dead threads',
-            cb: ThreadWatcher.cb.pruneReadDeads,
-            open: toggleDisabledDead,
-          },
-          // `Dismiss posts quoting you` entry
-          {
-            text: 'Dismiss posts quoting you',
-            title: 'Unhighlight the thread watcher icon and threads until there are new replies quoting you.',
-            cb: ThreadWatcher.cb.dismiss,
-            open() {
-              this.el.classList.toggle('disabled', !$.hasClass(ThreadWatcher.shortcut, 'replies-quoting-you'));
-              return true;
-            }
-          },
-        ];
-
-        for (var {text, title, cb, open} of entries) {
-          var entry = {
-            el: $.el('a', {
-              textContent: text,
-              href: 'javascript:;'
-            })
-          };
-          if (title) { entry.el.title = title; }
-          $.on(entry.el, 'click', cb);
-          entry.open = open.bind(entry);
-          this.menu.addEntry(entry);
-        }
-
-        // Settings checkbox entries:
-        for (var name in Config.threadWatcher) {
-          var conf = Config.threadWatcher[name];
-          this.addCheckbox(name, conf[1]);
-        }
-
+      build() {
+          const nodes = [];
+          const threads = ThreadWatcher.getAll();
+          ThreadWatcher.setPrefixes(threads);
+          for (var { siteID, boardID, threadID, data } of threads) {
+              // Add missing excerpt for threads added by Auto Watch
+              var thread;
+              if ((data.excerpt == null) && (siteID === g.SITE.ID) && (thread = g.threads.get(`${boardID}.${threadID}`)) && thread.OP) {
+                  ThreadWatcher.db.extend({ boardID, threadID, val: { excerpt: Get.threadExcerpt(thread) } });
+              }
+              nodes.push(ThreadWatcher.makeLine(siteID, boardID, threadID, data));
+          }
+          const { list } = ThreadWatcher;
+          $.rmAll(list);
+          $.add(list, nodes);
+          return ThreadWatcher.refreshIcon();
       },
-
-      addCheckbox(name, desc) {
-        const entry = {
-          type: 'thread watcher',
-          el: UI.checkbox(name, name.replace(' Thread Watcher', ''))
-        };
-        entry.el.title = desc;
-        const input = entry.el.firstElementChild;
-        if ((name === 'Show Unread Count') && !ThreadWatcher.unreadEnabled) {
-          input.disabled = true;
-          $.addClass(entry.el, 'disabled');
-          entry.el.title += '\n[Remember Last Read Post is disabled.]';
-        }
-        $.on(input, 'change', $.cb.checked);
-        if (['Current Board', 'Show Page', 'Show Unread Count', 'Show Site Prefix'].includes(name))
-          $.on(input, 'change', () => ThreadWatcher.refresh());
-        if (['Show Page', 'Show Unread Count', 'Auto Update Thread Watcher'].includes(name))
-          $.on(input, 'change', ThreadWatcher.fetchAuto);
-        return this.menu.addEntry(entry);
+      refresh(manual) {
+          ThreadWatcher.build();
+          g.threads.forEach(function (thread) {
+              const isWatched = ThreadWatcher.isWatched(thread);
+              if (thread.OP) {
+                  for (var post of [thread.OP, ...thread.OP.clones]) {
+                      var toggler;
+                      if (toggler = $('.watch-thread-link', post.nodes.info)) {
+                          ThreadWatcher.setToggler(toggler, isWatched);
+                      }
+                  }
+              }
+              if (thread.catalogView) {
+                  return thread.catalogView.nodes.root.classList.toggle('watched', isWatched);
+              }
+          });
+          if (Conf['Pin Watched Threads']) {
+              return $.event('SortIndex', { deferred: !(manual && Conf['Index Mode'] === 'catalog') });
+          }
+      },
+      refreshIcon() {
+          for (var className of ['replies-unread', 'replies-quoting-you']) {
+              ThreadWatcher.shortcut.classList.toggle(className, !!$(`.${className}`, ThreadWatcher.dialog));
+          }
+      },
+      update(siteID, boardID, threadID, newData) {
+          let data, key, line, val;
+          if (!(data = ThreadWatcher.db?.get({ siteID, boardID, threadID }))) {
+              return;
+          }
+          if (newData.isDead && Conf['Auto Prune']) {
+              ThreadWatcher.rm(siteID, boardID, threadID);
+              return;
+          }
+          if (newData.isDead || (newData.last === -1)) {
+              for (key of ['isArchived', 'page', 'lastPage', 'unread', 'quotingyou']) {
+                  if (!(key in newData)) {
+                      newData[key] = undefined;
+                  }
+              }
+          }
+          if ((newData.last != null) && (newData.last < data.last)) {
+              newData.modified = undefined;
+          }
+          let n = 0;
+          for (key in newData) {
+              val = newData[key];
+              if (data[key] !== val) {
+                  n++;
+              }
+          }
+          if (!n) {
+              return;
+          }
+          ThreadWatcher.db.extend({ siteID, boardID, threadID, val: newData });
+          if (line = $(`#watched-threads > [data-site-i-d='${siteID}'][data-full-i-d='${boardID}.${threadID}']`, ThreadWatcher.dialog)) {
+              const newLine = ThreadWatcher.makeLine(siteID, boardID, threadID, data);
+              $.replace(line, newLine);
+              return ThreadWatcher.refreshIcon();
+          }
+          else {
+              return ThreadWatcher.refresh();
+          }
+      },
+      set404(boardID, threadID, cb) {
+          let data;
+          if (!(data = ThreadWatcher.db?.get({ boardID, threadID }))) {
+              return cb();
+          }
+          if (Conf['Auto Prune']) {
+              ThreadWatcher.db.delete({ boardID, threadID });
+              return cb();
+          }
+          if (data.isDead && !((data.isArchived != null) || (data.page != null) || (data.lastPage != null) || (data.unread != null) || (data.quotingYou != null))) {
+              return cb();
+          }
+          return ThreadWatcher.db.extend({ boardID, threadID, val: { isDead: true, isArchived: undefined, page: undefined, lastPage: undefined, unread: undefined, quotingYou: undefined } }, cb);
+      },
+      toggle(thread, manual) {
+          const siteID = g.SITE.ID;
+          const boardID = thread.board.ID;
+          const threadID = thread.ID;
+          if (ThreadWatcher.db.get({ boardID, threadID })) {
+              return ThreadWatcher.rm(siteID, boardID, threadID, undefined, manual);
+          }
+          else {
+              return ThreadWatcher.add(thread, undefined, manual);
+          }
+      },
+      add(thread, cb, manual) {
+          const data = {};
+          const siteID = g.SITE.ID;
+          const boardID = thread.board.ID;
+          const threadID = thread.ID;
+          if (thread.isDead) {
+              if (Conf['Auto Prune'] && ThreadWatcher.db.get({ boardID, threadID })) {
+                  ThreadWatcher.rm(siteID, boardID, threadID, cb);
+                  return;
+              }
+              data.isDead = true;
+          }
+          if (thread.OP) {
+              data.excerpt = Get.threadExcerpt(thread);
+          }
+          return ThreadWatcher.addRaw(boardID, threadID, data, cb, manual);
+      },
+      addRaw(boardID, threadID, data, cb, manual) {
+          const oldData = ThreadWatcher.db.get({ boardID, threadID, defaultValue: dict() });
+          delete oldData.last;
+          delete oldData.modified;
+          $.extend(oldData, data);
+          ThreadWatcher.db.set({ boardID, threadID, val: oldData }, cb);
+          ThreadWatcher.refresh(manual);
+          const thread = { siteID: g.SITE.ID, boardID, threadID, data, force: true };
+          if (Conf['Show Page'] && !data.isDead) {
+              return ThreadWatcher.fetchBoard([thread]);
+          }
+          else if (ThreadWatcher.unreadEnabled && Conf['Show Unread Count']) {
+              return ThreadWatcher.fetchStatus(thread);
+          }
+      },
+      rm(siteID, boardID, threadID, cb, manual) {
+          ThreadWatcher.db.delete({ siteID, boardID, threadID }, cb);
+          return ThreadWatcher.refresh(manual);
+      },
+      menu: {
+          init() {
+              if (!Conf['Thread Watcher']) {
+                  return;
+              }
+              const menu = (this.menu = new UI.Menu('thread watcher'));
+              $.on($('.menu-button', ThreadWatcher.dialog), 'click', function (e) {
+                  return menu.toggle(e, this, ThreadWatcher);
+              });
+              return this.addMenuEntries();
+          },
+          addHeaderMenuEntry() {
+              if (g.VIEW !== 'thread') {
+                  return;
+              }
+              const entryEl = $.el('a', { href: 'javascript:;' });
+              Header.menu.addEntry({
+                  el: entryEl,
+                  order: 60,
+                  open() {
+                      const [addClass, rmClass, text] = !!ThreadWatcher.db.get({ boardID: g.BOARD.ID, threadID: g.THREADID }) ?
+                          ['unwatch-thread', 'watch-thread', 'Unwatch thread']
+                          :
+                              ['watch-thread', 'unwatch-thread', 'Watch thread'];
+                      $.addClass(entryEl, addClass);
+                      $.rmClass(entryEl, rmClass);
+                      entryEl.textContent = text;
+                      return true;
+                  }
+              });
+              return $.on(entryEl, 'click', () => ThreadWatcher.toggle(g.threads.get(`${g.BOARD}.${g.THREADID}`), true));
+          },
+          addMenuEntries() {
+              const toggleDisabledDead = function () {
+                  this.el.classList.toggle('disabled', !$('.dead-thread', ThreadWatcher.list));
+                  return true;
+              };
+              const entries = [
+                  // `Open all` entry
+                  {
+                      text: 'Open all threads',
+                      cb: ThreadWatcher.cb.openAll,
+                      open() {
+                          this.el.classList.toggle('disabled', !ThreadWatcher.list.firstElementChild);
+                          return true;
+                      }
+                  },
+                  {
+                      text: 'Clear all threads',
+                      cb: ThreadWatcher.cb.clear,
+                      open() {
+                          this.el.classList.toggle('disabled', !ThreadWatcher.list.firstElementChild);
+                          return true;
+                      }
+                  },
+                  // `Open Unread` entry
+                  {
+                      text: 'Open unread threads',
+                      cb: ThreadWatcher.cb.openUnread,
+                      open() {
+                          this.el.classList.toggle('disabled', !$('.replies-unread', ThreadWatcher.list));
+                          return true;
+                      }
+                  },
+                  // `Open unread dead threads` entry
+                  {
+                      text: 'Open unread dead threads',
+                      cb: ThreadWatcher.cb.openDeads,
+                      open: toggleDisabledDead,
+                  },
+                  // `Prune all dead threads` entry
+                  {
+                      text: 'Prune all dead threads',
+                      cb: ThreadWatcher.cb.pruneDeads,
+                      open: toggleDisabledDead,
+                  },
+                  // `Prune read dead threads` entry
+                  {
+                      text: 'Prune read dead threads',
+                      cb: ThreadWatcher.cb.pruneReadDeads,
+                      open: toggleDisabledDead,
+                  },
+                  // `Dismiss posts quoting you` entry
+                  {
+                      text: 'Dismiss posts quoting you',
+                      title: 'Unhighlight the thread watcher icon and threads until there are new replies quoting you.',
+                      cb: ThreadWatcher.cb.dismiss,
+                      open() {
+                          this.el.classList.toggle('disabled', !$.hasClass(ThreadWatcher.shortcut, 'replies-quoting-you'));
+                          return true;
+                      }
+                  },
+              ];
+              for (var { text, title, cb, open } of entries) {
+                  var entry = {
+                      el: $.el('a', {
+                          textContent: text,
+                          href: 'javascript:;'
+                      })
+                  };
+                  if (title) {
+                      entry.el.title = title;
+                  }
+                  $.on(entry.el, 'click', cb);
+                  entry.open = open.bind(entry);
+                  this.menu.addEntry(entry);
+              }
+              // Settings checkbox entries:
+              for (var name in Config.threadWatcher) {
+                  var conf = Config.threadWatcher[name];
+                  this.addCheckbox(name, conf[1]);
+              }
+          },
+          addCheckbox(name, desc) {
+              const entry = {
+                  type: 'thread watcher',
+                  el: UI.checkbox(name, name.replace(' Thread Watcher', ''))
+              };
+              entry.el.title = desc;
+              const input = entry.el.firstElementChild;
+              if ((name === 'Show Unread Count') && !ThreadWatcher.unreadEnabled) {
+                  input.disabled = true;
+                  $.addClass(entry.el, 'disabled');
+                  entry.el.title += '\n[Remember Last Read Post is disabled.]';
+              }
+              $.on(input, 'change', $.cb.checked);
+              if (['Current Board', 'Show Page', 'Show Unread Count', 'Show Site Prefix'].includes(name))
+                  $.on(input, 'change', () => ThreadWatcher.refresh());
+              if (['Show Page', 'Show Unread Count', 'Auto Update Thread Watcher'].includes(name))
+                  $.on(input, 'change', ThreadWatcher.fetchAuto);
+              return this.menu.addEntry(entry);
+          }
       }
-    }
   };
 
   const parseArchivePost = (data) => {
@@ -11552,167 +11593,153 @@ svg.icon {
   };
 
   var ReplyPruning = {
-    init() {
-      if ((g.VIEW !== 'thread') || !Conf['Reply Pruning']) { return; }
-
-      this.container = $.frag();
-
-      this.summary = $.el('span', {
-        hidden:    true,
-        className: 'summary'
-      }
-      );
-      this.summary.style.cursor = 'pointer';
-      $.on(this.summary, 'click', () => {
-        this.inputs.enabled.checked = !this.inputs.enabled.checked;
-        return $.event('change', null, this.inputs.enabled);
-      });
-
-      const label = UI.checkbox('Prune Replies', 'Show Last', Conf['Prune All Threads']);
-      const el = $.el('span',
-        {title: 'Maximum number of replies to show.'}
-      ,
-        {innerHTML: " <input type=\"number\" name=\"Max Replies\" min=\"0\" step=\"1\" value=\"" + E(Conf["Max Replies"]) + "\" class=\"field\">"});
-      $.prepend(el, label);
-
-      this.inputs = {
-        enabled: label.firstElementChild,
-        replies: el.lastElementChild
-      };
-
-      this.setEnabled.call(this.inputs.enabled);
-      $.on(this.inputs.enabled, 'change', this.setEnabled);
-      $.on(this.inputs.replies, 'change', $.cb.value);
-
-      Header.menu.addEntry({
-        el,
-        order: 190
-      });
-
-      return Callbacks.Thread.push({
-        name: 'Reply Pruning',
-        cb:   this.node
-      });
-    },
-
-    position: 0,
-    hidden: 0,
-    hiddenFiles: 0,
-    total: 0,
-    totalFiles: 0,
-
-    setEnabled() {
-      const other = QuoteThreading.input;
-      if (this.checked && other?.checked) {
-        other.checked = false;
-        $.event('change', null, other);
-      }
-      return ReplyPruning.active = this.checked;
-    },
-
-    showIfHidden(id) {
-      if (ReplyPruning.container && $(`#${id}`, ReplyPruning.container)) {
-        ReplyPruning.inputs.enabled.checked = false;
-        return $.event('change', null, ReplyPruning.inputs.enabled);
-      }
-    },
-
-    node() {
-      let middle;
-      ReplyPruning.thread = this;
-
-      if (this.isSticky) {
-        ReplyPruning.active = (ReplyPruning.inputs.enabled.checked = true);
-        if (QuoteThreading.input) {
-          // Disable Quote Threading for this thread but don't save the setting.
-          Conf['Thread Quotes'] = (QuoteThreading.input.checked = false);
-        }
-      }
-
-      this.posts.forEach(function(post) {
-        if (post.isReply) {
-          ReplyPruning.total++;
-          if (post.file) { return ReplyPruning.totalFiles++; }
-        }
-      });
-
-      // If we're linked to a post that we would hide, don't hide the posts in the first place.
-      if (
-        ReplyPruning.active &&
-        /^#p\d+$/.test(location.hash) &&
-        (1 <= (middle = this.posts.keys.indexOf(location.hash.slice(2))) && middle < 1 + Math.max(ReplyPruning.total - +Conf["Max Replies"], 0))
-      ) {
-        ReplyPruning.active = (ReplyPruning.inputs.enabled.checked = false);
-      }
-
-      $.after(this.OP.nodes.root, ReplyPruning.summary);
-
-      $.on(ReplyPruning.inputs.enabled, 'change', ReplyPruning.update);
-      $.on(ReplyPruning.inputs.replies, 'change', ReplyPruning.update);
-      $.on(d, 'ThreadUpdate', ReplyPruning.updateCount);
-      $.on(d, 'ThreadUpdate', ReplyPruning.update);
-
-      return ReplyPruning.update();
-    },
-
-    updateCount(e) {
-      if (e.detail[404]) { return; }
-      for (var fullID of e.detail.newPosts) {
-        ReplyPruning.total++;
-        if (g.posts.get(fullID).file) { ReplyPruning.totalFiles++; }
-      }
-    },
-
-    update() {
-      let boardTop, node, post;
-      const hidden1 = ReplyPruning.hidden;
-      const hidden2 = ReplyPruning.active ?
-        Math.max(ReplyPruning.total - +Conf["Max Replies"], 0)
-      :
-        0;
-
-      // Record position from bottom of document
-      const oldPos = d.body.clientHeight - window.scrollY;
-
-      const {posts} = ReplyPruning.thread;
-
-      if (ReplyPruning.hidden < hidden2) {
-        while ((ReplyPruning.hidden < hidden2) && (ReplyPruning.position < posts.keys.length)) {
-          post = posts.get(posts.keys[ReplyPruning.position++]);
-          if (post.isReply && !post.isFetchedQuote) {
-            while ((node = ReplyPruning.summary.nextSibling) && (node !== post.nodes.root)) { $.add(ReplyPruning.container, node); }
-            $.add(ReplyPruning.container, post.nodes.root);
-            ReplyPruning.hidden++;
-            if (post.file) { ReplyPruning.hiddenFiles++; }
+      init() {
+          if ((g.VIEW !== 'thread') || !Conf['Reply Pruning']) {
+              return;
           }
-        }
-
-      } else if (ReplyPruning.hidden > hidden2) {
-        const frag = $.frag();
-        while ((ReplyPruning.hidden > hidden2) && (ReplyPruning.position > 0)) {
-          post = posts.get(posts.keys[--ReplyPruning.position]);
-          if (post.isReply && !post.isFetchedQuote) {
-            while ((node = ReplyPruning.container.lastChild) && (node !== post.nodes.root)) { $.prepend(frag, node); }
-            $.prepend(frag, post.nodes.root);
-            ReplyPruning.hidden--;
-            if (post.file) { ReplyPruning.hiddenFiles--; }
+          this.container = $.frag();
+          this.summary = $.el('span', {
+              hidden: true,
+              className: 'summary'
+          });
+          this.summary.style.cursor = 'pointer';
+          $.on(this.summary, 'click', () => {
+              this.inputs.enabled.checked = !this.inputs.enabled.checked;
+              return $.event('change', null, this.inputs.enabled);
+          });
+          const label = UI.checkbox('Prune Replies', 'Show Last', Conf['Prune All Threads']);
+          const el = $.el('span', { title: 'Maximum number of replies to show.' }, { innerHTML: " <input type=\"number\" name=\"Max Replies\" min=\"0\" step=\"1\" value=\"" + E(Conf["Max Replies"]) + "\" class=\"field\">" });
+          $.prepend(el, label);
+          this.inputs = {
+              enabled: label.firstElementChild,
+              replies: el.lastElementChild
+          };
+          this.setEnabled.call(this.inputs.enabled);
+          $.on(this.inputs.enabled, 'change', this.setEnabled);
+          $.on(this.inputs.replies, 'change', $.cb.value);
+          Header.menu.addEntry({
+              el,
+              order: 190
+          });
+          return Callbacks.Thread.push({
+              name: 'Reply Pruning',
+              cb: this.node
+          });
+      },
+      position: 0,
+      hidden: 0,
+      hiddenFiles: 0,
+      total: 0,
+      totalFiles: 0,
+      setEnabled() {
+          const other = QuoteThreading.input;
+          if (this.checked && other?.checked) {
+              other.checked = false;
+              $.event('change', null, other);
           }
-        }
-        $.after(ReplyPruning.summary, frag);
-        $.event('PostsInserted', null, ReplyPruning.summary.parentNode);
+          return ReplyPruning.active = this.checked;
+      },
+      showIfHidden(id) {
+          if (ReplyPruning.container && $(`#${id}`, ReplyPruning.container)) {
+              ReplyPruning.inputs.enabled.checked = false;
+              return $.event('change', null, ReplyPruning.inputs.enabled);
+          }
+      },
+      node() {
+          let middle;
+          ReplyPruning.thread = this;
+          if (this.isSticky) {
+              ReplyPruning.active = (ReplyPruning.inputs.enabled.checked = true);
+              if (QuoteThreading.input) {
+                  // Disable Quote Threading for this thread but don't save the setting.
+                  Conf['Thread Quotes'] = (QuoteThreading.input.checked = false);
+              }
+          }
+          this.posts.forEach(function (post) {
+              if (post.isReply) {
+                  ReplyPruning.total++;
+                  if (post.file) {
+                      return ReplyPruning.totalFiles++;
+                  }
+              }
+          });
+          // If we're linked to a post that we would hide, don't hide the posts in the first place.
+          if (ReplyPruning.active &&
+              /^#p\d+$/.test(location.hash) &&
+              (1 <= (middle = this.posts.keys.indexOf(location.hash.slice(2))) && middle < 1 + Math.max(ReplyPruning.total - +Conf["Max Replies"], 0))) {
+              ReplyPruning.active = (ReplyPruning.inputs.enabled.checked = false);
+          }
+          $.after(this.OP.nodes.root, ReplyPruning.summary);
+          $.on(ReplyPruning.inputs.enabled, 'change', ReplyPruning.update);
+          $.on(ReplyPruning.inputs.replies, 'change', ReplyPruning.update);
+          $.on(d, 'ThreadUpdate', ReplyPruning.updateCount);
+          $.on(d, 'ThreadUpdate', ReplyPruning.update);
+          return ReplyPruning.update();
+      },
+      updateCount(e) {
+          if (e.detail[404]) {
+              return;
+          }
+          for (var fullID of e.detail.newPosts) {
+              ReplyPruning.total++;
+              if (g.posts.get(fullID).file) {
+                  ReplyPruning.totalFiles++;
+              }
+          }
+      },
+      update() {
+          let boardTop, node, post;
+          const hidden1 = ReplyPruning.hidden;
+          const hidden2 = ReplyPruning.active ?
+              Math.max(ReplyPruning.total - +Conf["Max Replies"], 0)
+              :
+                  0;
+          // Record position from bottom of document
+          const oldPos = d.body.clientHeight - window.scrollY;
+          const { posts } = ReplyPruning.thread;
+          if (ReplyPruning.hidden < hidden2) {
+              while ((ReplyPruning.hidden < hidden2) && (ReplyPruning.position < posts.keys.length)) {
+                  post = posts.get(posts.keys[ReplyPruning.position++]);
+                  if (post.isReply && !post.isFetchedQuote) {
+                      while ((node = ReplyPruning.summary.nextSibling) && (node !== post.nodes.root)) {
+                          $.add(ReplyPruning.container, node);
+                      }
+                      $.add(ReplyPruning.container, post.nodes.root);
+                      ReplyPruning.hidden++;
+                      if (post.file) {
+                          ReplyPruning.hiddenFiles++;
+                      }
+                  }
+              }
+          }
+          else if (ReplyPruning.hidden > hidden2) {
+              const frag = $.frag();
+              while ((ReplyPruning.hidden > hidden2) && (ReplyPruning.position > 0)) {
+                  post = posts.get(posts.keys[--ReplyPruning.position]);
+                  if (post.isReply && !post.isFetchedQuote) {
+                      while ((node = ReplyPruning.container.lastChild) && (node !== post.nodes.root)) {
+                          $.prepend(frag, node);
+                      }
+                      $.prepend(frag, post.nodes.root);
+                      ReplyPruning.hidden--;
+                      if (post.file) {
+                          ReplyPruning.hiddenFiles--;
+                      }
+                  }
+              }
+              $.after(ReplyPruning.summary, frag);
+              $.event('PostsInserted', null, ReplyPruning.summary.parentNode);
+          }
+          ReplyPruning.summary.textContent = ReplyPruning.active ?
+              g.SITE.Build.summaryText('+', ReplyPruning.hidden, ReplyPruning.hiddenFiles)
+              :
+                  g.SITE.Build.summaryText('-', ReplyPruning.total, ReplyPruning.totalFiles);
+          ReplyPruning.summary.hidden = (ReplyPruning.total <= +Conf["Max Replies"]);
+          // Maintain position in thread when posts are added/removed above
+          if ((hidden1 !== hidden2) && ((boardTop = Header.getTopOf($('.board'))) < 0)) {
+              return window.scrollBy(0, Math.max(d.body.clientHeight - oldPos, window.scrollY + boardTop) - window.scrollY);
+          }
       }
-
-      ReplyPruning.summary.textContent = ReplyPruning.active ?
-        g.SITE.Build.summaryText('+', ReplyPruning.hidden, ReplyPruning.hiddenFiles)
-      :
-        g.SITE.Build.summaryText('-', ReplyPruning.total, ReplyPruning.totalFiles);
-      ReplyPruning.summary.hidden = (ReplyPruning.total <= +Conf["Max Replies"]);
-
-      // Maintain position in thread when posts are added/removed above
-      if ((hidden1 !== hidden2) && ((boardTop = Header.getTopOf($('.board'))) < 0)) {
-        return window.scrollBy(0, Math.max(d.body.clientHeight - oldPos, window.scrollY + boardTop) - window.scrollY);
-      }
-    }
   };
 
   /*
@@ -12202,84 +12229,78 @@ svg.icon {
   };
 
   var QuotePreview = {
-    init() {
-      if (!Conf['Quote Previewing']) { return; }
-
-      if (g.VIEW === 'archive') {
-        $.on(d, 'mouseover', function(e) {
-          if ((e.target.nodeName === 'A') && $.hasClass(e.target, 'quotelink')) {
-            return QuotePreview.mouseover.call(e.target, e);
+      init() {
+          if (!Conf['Quote Previewing']) {
+              return;
           }
-        });
+          if (g.VIEW === 'archive') {
+              $.on(d, 'mouseover', function (e) {
+                  if ((e.target.nodeName === 'A') && $.hasClass(e.target, 'quotelink')) {
+                      return QuotePreview.mouseover.call(e.target, e);
+                  }
+              });
+          }
+          if (!['index', 'thread'].includes(g.VIEW)) {
+              return;
+          }
+          if (Conf['Comment Expansion']) {
+              ExpandComment.callbacks.push(this.node);
+          }
+          return Callbacks.Post.push({
+              name: 'Quote Previewing',
+              cb: this.node
+          });
+      },
+      node() {
+          for (var link of this.nodes.quotelinks.concat([...this.nodes.backlinks], this.nodes.archivelinks)) {
+              $.on(link, 'mouseover', QuotePreview.mouseover);
+          }
+      },
+      mouseover(e) {
+          let origin;
+          if (($.hasClass(this, 'inlined') && !$.hasClass(doc, 'catalog-mode')) || !d.contains(this)) {
+              return;
+          }
+          const { boardID, threadID, postID } = Get.postDataFromLink(this);
+          const qp = $.el('div', {
+              id: 'qp',
+              className: 'dialog'
+          });
+          $.add(Header.hover, qp);
+          new Fetcher(boardID, threadID, postID, qp, Get.postFromNode(this));
+          UI.hover({
+              root: this,
+              el: qp,
+              latestEvent: e,
+              endEvents: 'mouseout click',
+              cb: QuotePreview.mouseout
+          });
+          if (Conf['Quote Highlighting'] && (origin = g.posts.get(`${boardID}.${postID}`))) {
+              const posts = [origin].concat(origin.clones);
+              // Remove the clone that's in the qp from the array.
+              posts.pop();
+              for (var post of posts) {
+                  $.addClass(post.nodes.post, 'qphl');
+              }
+          }
+      },
+      mouseout() {
+          // Stop if it only contains text.
+          let root;
+          if (!(root = this.el.firstElementChild)) {
+              return;
+          }
+          $.event('PostsRemoved', null, Header.hover);
+          const clone = Get.postFromRoot(root);
+          let post = clone.origin;
+          post.rmClone(root.dataset.clone);
+          if (!Conf['Quote Highlighting']) {
+              return;
+          }
+          for (post of [post].concat(post.clones)) {
+              $.rmClass(post.nodes.post, 'qphl');
+          }
       }
-
-      if (!['index', 'thread'].includes(g.VIEW)) { return; }
-
-      if (Conf['Comment Expansion']) {
-        ExpandComment.callbacks.push(this.node);
-      }
-
-      return Callbacks.Post.push({
-        name: 'Quote Previewing',
-        cb:   this.node
-      });
-    },
-
-    node() {
-      for (var link of this.nodes.quotelinks.concat([...this.nodes.backlinks], this.nodes.archivelinks)) {
-        $.on(link, 'mouseover', QuotePreview.mouseover);
-      }
-    },
-
-    mouseover(e) {
-      let origin;
-      if (($.hasClass(this, 'inlined') && !$.hasClass(doc, 'catalog-mode')) || !d.contains(this)) { return; }
-
-      const {boardID, threadID, postID} = Get.postDataFromLink(this);
-
-      const qp = $.el('div', {
-        id: 'qp',
-        className: 'dialog'
-      }
-      );
-
-      $.add(Header.hover, qp);
-      new Fetcher(boardID, threadID, postID, qp, Get.postFromNode(this));
-
-      UI.hover({
-        root: this,
-        el: qp,
-        latestEvent: e,
-        endEvents: 'mouseout click',
-        cb: QuotePreview.mouseout
-      });
-
-      if (Conf['Quote Highlighting'] && (origin = g.posts.get(`${boardID}.${postID}`))) {
-        const posts = [origin].concat(origin.clones);
-        // Remove the clone that's in the qp from the array.
-        posts.pop();
-        for (var post of posts) {
-          $.addClass(post.nodes.post, 'qphl');
-        }
-      }
-    },
-
-    mouseout() {
-      // Stop if it only contains text.
-      let root;
-      if (!(root = this.el.firstElementChild)) { return; }
-
-      $.event('PostsRemoved', null, Header.hover);
-
-      const clone = Get.postFromRoot(root);
-      let post  = clone.origin;
-      post.rmClone(root.dataset.clone);
-
-      if (!Conf['Quote Highlighting']) { return; }
-      for (post of [post].concat(post.clones)) {
-        $.rmClass(post.nodes.post, 'qphl');
-      }
-    }
   };
 
   var NavLinksPage = `<span class="brackets-wrap indexlink"><a href="#index">Index</a></span> 
@@ -12336,1605 +12357,1630 @@ svg.icon {
 </div>`;
 
   var Index = {
-    showHiddenThreads: false,
-    changed: {},
-
-    enabledOn({siteID, boardID}) {
-      return Conf['JSON Index'] && (g.sites[siteID].software === 'yotsuba') && (boardID !== 'f');
-    },
-
-    init() {
-      let input, inputs, name;
-      if (g.VIEW !== 'index') { return; }
-
-      // For IndexRefresh events
-      $.one(d, '4chanXInitFinished', this.cb.initFinished);
-      $.on(d, 'PostsInserted', this.cb.postsInserted);
-
-      if (!this.enabledOn(g.BOARD)) { return; }
-
-      this.enabled = true;
-
-      Callbacks.Post.push({
-        name: 'Index Page Numbers',
-        cb:   this.node
-      });
-      Callbacks.CatalogThread.push({
-        name: 'Catalog Features',
-        cb:   this.catalogNode
-      });
-
-      this.search = history.state?.searched || '';
-      if (history.state?.mode) {
-        Conf['Index Mode'] = history.state?.mode;
-      }
-      this.currentSort = history.state?.sort;
-      if (!this.currentSort) { this.currentSort = typeof Conf['Index Sort'] === 'object' ? (
-          Conf['Index Sort'][g.BOARD.ID] || 'bump'
-        ) : (
-          Conf['Index Sort']
-        ); }
-      this.currentPage = this.getCurrentPage();
-      this.processHash();
-
-      $.addClass(doc, 'index-loading', `${Conf['Index Mode'].replace(/\ /g, '-')}-mode`);
-      $.on(window, 'popstate', this.cb.popstate);
-      $.on(d, 'scroll', this.scroll);
-      $.on(d, 'SortIndex', this.cb.resort);
-
-      // Header refresh button
-      this.button = $.el('a', {
-        title: 'Refresh',
-        href: 'javascript:;',
-      });
-      Icon.set(this.button, 'refresh', 'Refresh');
-      $.on(this.button, 'click', () => Index.update());
-      Header.addShortcut('index-refresh', this.button, 590);
-
-      // Header "Index Navigation" submenu
-      const entries = [];
-      this.inputs = (inputs = dict());
-      for (name in Config.Index) {
-        var arr = Config.Index[name];
-        if (arr instanceof Array) {
-          var label = UI.checkbox(name, `${name[0]}${name.slice(1).toLowerCase()}`);
-          label.title = arr[1];
-          entries.push({el: label});
-          input = label.firstChild;
-          $.on(input, 'change', $.cb.checked);
-          inputs[name] = input;
-        }
-      }
-      $.on(inputs['Show Replies'], 'change', this.cb.replies);
-      $.on(inputs['Catalog Hover Expand'], 'change', this.cb.hover);
-      $.on(inputs['Pin Watched Threads'], 'change', this.cb.resort);
-      $.on(inputs['Anchor Hidden Threads'], 'change', this.cb.resort);
-
-      const watchSettings = function(e) {
-        if (input = $.getOwn(inputs, e.target.name)) {
-          input.checked = e.target.checked;
-          return $.event('change', null, input);
-        }
-      };
-      $.on(d, 'OpenSettings', () => $.on($.id('fourchanx-settings'), 'change', watchSettings));
-
-      const sortEntry = UI.checkbox('Per-Board Sort Type', 'Per-board sort type', (typeof Conf['Index Sort'] === 'object'));
-      sortEntry.title = 'Set the sorting order of each board independently.';
-      $.on(sortEntry.firstChild, 'change', this.cb.perBoardSort);
-      entries.splice(3, 0, {el: sortEntry});
-
-      Header.menu.addEntry({
-        el: $.el('span',
-          {textContent: 'Index Navigation'}),
-        order: 100,
-        subEntries: entries
-      });
-
-      // Navigation links at top of index
-      this.navLinks = $.el('div', {className: 'navLinks json-index'});
-      $.extend(this.navLinks, {innerHTML: NavLinksPage});
-      $('.cataloglink a', this.navLinks).href = CatalogLinks.catalog();
-      if (!BoardConfig.isArchived(g.BOARD.ID)) { $('.archlistlink', this.navLinks).hidden = true; }
-      $.on($('#index-last-refresh a', this.navLinks), 'click', this.cb.refreshFront);
-
-      // Search field
-      this.searchInput = $('#index-search', this.navLinks);
-      this.setupSearch();
-      $.on(this.searchInput, 'input', this.onSearchInput);
-      $.on($('#index-search-clear', this.navLinks), 'click', this.clearSearch);
-      Icon.set($('#index-search-clear', this.navLinks), 'xmark');
-
-      // Hidden threads toggle
-      this.hideLabel = $('#hidden-label', this.navLinks);
-      $.on($('#hidden-toggle a', this.navLinks), 'click', this.cb.toggleHiddenThreads);
-
-      // Drop-down menus and reverse sort toggle
-      this.selectRev   = $('#index-rev',  this.navLinks);
-      this.selectMode  = $('#index-mode', this.navLinks);
-      this.selectSort  = $('#index-sort', this.navLinks);
-      this.selectSize  = $('#index-size', this.navLinks);
-      $.on(this.selectRev,  'change', this.cb.sort);
-      $.on(this.selectMode, 'change', this.cb.mode);
-      $.on(this.selectSort, 'change', this.cb.sort);
-      $.on(this.selectSize, 'change', $.cb.value);
-      $.on(this.selectSize, 'change', this.cb.size);
-      for (var select of [this.selectMode, this.selectSize]) {
-        select.value = Conf[select.name];
-      }
-      this.selectRev.checked = /-rev$/.test(Index.currentSort);
-      this.selectSort.value  = Index.currentSort.replace(/-rev$/, '');
-
-      // Last Long Reply options
-      this.lastLongOptions = $('#lastlong-options', this.navLinks);
-      this.lastLongInputs = $$('input', this.lastLongOptions);
-      this.lastLongThresholds = [0, 0];
-      this.lastLongOptions.hidden = (this.selectSort.value !== 'lastlong');
-      for (let i = 0; i < this.lastLongInputs.length; i++) {
-        input = this.lastLongInputs[i];
-        $.on(input, 'change', this.cb.lastLongThresholds);
-        var tRaw = Conf[`Last Long Reply Thresholds ${i}`];
-        input.value = (this.lastLongThresholds[i] =
-          typeof tRaw === 'object' ? (tRaw[g.BOARD.ID] ?? 100) : tRaw);
-      }
-
-      // Thread container
-      this.root = $.el('div', {className: 'board json-index'});
-      $.on(this.root, 'click', this.cb.hoverToggle);
-      this.cb.size();
-      this.cb.hover();
-
-      // Page list
-      this.pagelist = $.el('div', {className: 'pagelist json-index'});
-      $.extend(this.pagelist, {innerHTML: PageList});
-      $('.cataloglink a', this.pagelist).href = CatalogLinks.catalog();
-      $.on(this.pagelist, 'click', this.cb.pageNav);
-
-      this.update(true);
-
-      $.onExists(doc, 'title + *', () => d.title = d.title.replace(/\ -\ Page\ \d+/, ''));
-
-      $.onExists(doc, '.board > .thread > .postContainer, .board + *', function() {
-        let el;
-        g.SITE.Build.hat = $('.board > .thread > img:first-child');
-        if (g.SITE.Build.hat) {
-          g.BOARD.threads.forEach(function(thread) {
-            if (thread.nodes.root) {
-              return $.prepend(thread.nodes.root, g.SITE.Build.hat.cloneNode(false));
-            }
-          });
-          $.addClass(doc, 'hats-enabled');
-          $.addStyle(`.catalog-thread::after {background-image: url(${g.SITE.Build.hat.src});}`);
-        }
-
-        const board = $('.board');
-        $.replace(board, Index.root);
-        if (Index.loaded) {
-          $.event('PostsInserted', null, Index.root);
-        }
-        // Hacks:
-        // - When removing an element from the document during page load,
-        //   its ancestors will still be correctly created inside of it.
-        // - Creating loadable elements inside of an origin-less document
-        //   will not download them.
-        // - Combine the two and you get a download canceller!
-        //   Does not work on Firefox unfortunately. bugzil.la/939713
-        try {
-          d.implementation.createDocument(null, null, null).appendChild(board);
-        } catch (error) {}
-
-        for (el of $$('.navLinks')) { $.rm(el); }
-        $.rm($.id('ctrl-top'));
-        const topNavPos = $.id('delform').previousElementSibling;
-        $.before(topNavPos, $.el('hr'));
-        $.before(topNavPos, Index.navLinks);
-        const timeEl = $('#index-last-refresh time', Index.navLinks);
-        if (timeEl.dataset.utc) { return RelativeDates.update(timeEl); }
-      });
-
-      return Main.ready(function() {
-        let pagelist;
-        if (pagelist = $('.pagelist')) {
-          $.replace(pagelist, Index.pagelist);
-        }
-        return $.rmClass(doc, 'index-loading');
-      });
-    },
-
-    scroll() {
-      if (Index.req || !Index.liveThreadData || (Conf['Index Mode'] !== 'infinite') || (window.scrollY <= (doc.scrollHeight - (300 + window.innerHeight)))) { return; }
-      if (Index.pageNum == null) { Index.pageNum = Index.currentPage; } // Avoid having to pushState to keep track of the current page
-
-      const pageNum = ++Index.pageNum;
-      if (pageNum > Index.pagesNum) { return Index.endNotice(); }
-
-      const threadIDs = Index.threadsOnPage(pageNum);
-      return Index.buildStructure(threadIDs);
-    },
-
-    endNotice: (function() {
-      let notify = false;
-      const reset = () => notify = false;
-      return function() {
-        if (notify) { return; }
-        notify = true;
-        new Notice('info', "Last page reached.", 2);
-        return setTimeout(reset, 3 * SECOND);
-      };
-    })(),
-
-    menu: {
+      showHiddenThreads: false,
+      changed: {},
+      enabledOn({ siteID, boardID }) {
+          return Conf['JSON Index'] && (g.sites[siteID].software === 'yotsuba') && (boardID !== 'f');
+      },
       init() {
-        if ((g.VIEW !== 'index') || !Conf['Menu'] || !Conf['Thread Hiding Link'] || !Index.enabledOn(g.BOARD)) { return; }
-
-        return Menu.menu.addEntry({
-          el: $.el('a', {
-            href:      'javascript:;',
-            className: 'has-shortcut-text'
+          let input, inputs, name;
+          if (g.VIEW !== 'index') {
+              return;
           }
-          , {innerHTML: "<span></span><span class=\"shortcut-text\">Shift+click</span>"}),
-          order: 20,
-          open({thread}) {
-            if (Conf['Index Mode'] !== 'catalog') { return false; }
-            this.el.firstElementChild.textContent = thread.isHidden ?
-              'Unhide'
-            :
-              'Hide';
-            if (this.cb) { $.off(this.el, 'click', this.cb); }
-            this.cb = function() {
-              $.event('CloseMenu');
-              return Index.toggleHide(thread);
-            };
-            $.on(this.el, 'click', this.cb);
-            return true;
+          // For IndexRefresh events
+          $.one(d, '4chanXInitFinished', this.cb.initFinished);
+          $.on(d, 'PostsInserted', this.cb.postsInserted);
+          if (!this.enabledOn(g.BOARD)) {
+              return;
           }
-        });
-      }
-    },
-
-    node() {
-      if (this.isReply || this.isClone || (Index.threadPosition[this.ID] == null)) { return; }
-      return this.thread.setPage(Math.floor(Index.threadPosition[this.ID] / Index.threadsNumPerPage) + 1);
-    },
-
-    catalogNode() {
-      return $.on(this.nodes.root, 'click', e => {
-        if ((e.button !== 0) || !e.shiftKey) return;
-        e.preventDefault();
-        getSelection().removeAllRanges();
-        if (Conf['MD5 Quick Filter in the Catalog'] && e.target.classList.contains('catalog-thumb')) {
-          Filter.quickFilterMD5.call(this.thread.OP);
-        } else {
-          Index.toggleHide(this.thread);
-        }
-      });
-    },
-
-    toggleHide(thread) {
-      if (Index.showHiddenThreads) {
-        ThreadHiding.show(thread);
-        if (!ThreadHiding.db.get({boardID: thread.board.ID, threadID: thread.ID})) { return; }
-        // Don't save when un-hiding filtered threads.
-      } else {
-        ThreadHiding.hide(thread);
-      }
-      return ThreadHiding.saveHiddenState(thread);
-    },
-
-    cycleSortType() {
-      let i;
-      const types = Index.selectSort.options.filter(option => !option.disabled);
-      for (i = 0; i < types.length; i++) {
-        var type = types[i];
-        if (type.selected) { break; }
-      }
-      types[(i + 1) % types.length].selected = true;
-      return $.event('change', null, Index.selectSort);
-    },
-
-    cb: {
-      initFinished() {
-        Index.initFinishedFired = true;
-        return $.queueTask(() => Index.cb.postsInserted());
-      },
-
-      postsInserted() {
-        if (!Index.initFinishedFired) { return; }
-        let n = 0;
-        g.posts.forEach(function(post) {
-          if (!post.isFetchedQuote && !post.indexRefreshSeen && doc.contains(post.nodes.root)) {
-            post.indexRefreshSeen = true;
-            return n++;
-          }
-        });
-        if (n) { return $.event('IndexRefresh'); }
-      },
-
-      toggleHiddenThreads() {
-        $('#hidden-toggle a', Index.navLinks).textContent = (Index.showHiddenThreads = !Index.showHiddenThreads) ?
-          'Hide'
-        :
-          'Show';
-        Index.sort();
-        return Index.buildIndex();
-      },
-
-      mode() {
-        Index.pushState({mode: this.value});
-        return Index.pageLoad(false);
-      },
-
-      sort() {
-        const value = Index.selectRev.checked ? Index.selectSort.value + "-rev" : Index.selectSort.value;
-        Index.pushState({sort: value});
-        return Index.pageLoad(false);
-      },
-
-      resort(e) {
-        Index.changed.order = true;
-        if (!e?.detail?.deferred) { return Index.pageLoad(false); }
-      },
-
-      perBoardSort() {
-        Conf['Index Sort'] = this.checked ? dict() : '';
-        Index.saveSort();
-        for (let i = 0; i < 2; i++) {
-          Conf[`Last Long Reply Thresholds ${i}`] = this.checked ? dict() : '';
-          Index.saveLastLongThresholds(i);
-        }
-      },
-
-      lastLongThresholds() {
-        const i = [...this.parentNode.children].indexOf(this);
-        const value = +this.value;
-        if (!Number.isFinite(value)) {
-          this.value = Index.lastLongThresholds[i];
-          return;
-        }
-        Index.lastLongThresholds[i] = value;
-        Index.saveLastLongThresholds(i);
-        Index.changed.order = true;
-        return Index.pageLoad(false);
-      },
-
-      size(e) {
-        if (Conf['Index Mode'] !== 'catalog') {
-          $.rmClass(Index.root, 'catalog-small');
-          $.rmClass(Index.root, 'catalog-large');
-        } else if (Conf['Index Size'] === 'small') {
-          $.addClass(Index.root, 'catalog-small');
-          $.rmClass(Index.root,  'catalog-large');
-        } else {
-          $.addClass(Index.root, 'catalog-large');
-          $.rmClass(Index.root,  'catalog-small');
-        }
-        if (e) { return Index.buildIndex(); }
-      },
-
-      replies() {
-        return Index.buildIndex();
-      },
-
-      hover() {
-        return doc.classList.toggle('catalog-hover-expand', Conf['Catalog Hover Expand']);
-      },
-
-      hoverToggle(e) {
-        if (Conf['Catalog Hover Toggle'] && $.hasClass(doc, 'catalog-mode') && !$.modifiedClick(e) && !$.x('ancestor-or-self::a', e.target)) {
-          let thread;
-          const input = Index.inputs['Catalog Hover Expand'];
-          input.checked = !input.checked;
-          $.event('change', null, input);
-          if (thread = Get.threadFromNode(e.target)) {
-            Index.cb.catalogReplies.call(thread);
-            return Index.cb.hoverAdjust.call(thread.OP.nodes);
-          }
-        }
-      },
-
-      popstate(e) {
-        if (e?.state) {
-          const {searched, mode, sort} = e.state;
-          const page = Index.getCurrentPage();
-          Index.setState({search: searched, mode, sort, page});
-          return Index.pageLoad(false);
-        } else {
-          // page load or hash change
-          const nCommands = Index.processHash();
-          if (Conf['Refreshed Navigation'] && nCommands) {
-            return Index.update();
-          } else {
-            return Index.pageLoad();
-          }
-        }
-      },
-
-      pageNav(e) {
-        let a;
-        if ($.modifiedClick(e)) { return; }
-        switch (e.target.nodeName) {
-          case 'BUTTON':
-            e.target.blur();
-            a = e.target.parentNode;
-            break;
-          case 'A':
-            a = e.target;
-            break;
-          default:
-            return;
-        }
-        if (a.textContent === 'Catalog') { return; }
-        e.preventDefault();
-        return Index.userPageNav(+a.pathname.split(/\/+/)[2] || 1);
-      },
-
-      refreshFront() {
-        Index.pushState({page: 1});
-        return Index.update();
-      },
-
-      catalogReplies() {
-        if (Conf['Show Replies'] && $.hasClass(doc, 'catalog-hover-expand') && !this.catalogView.nodes.replies) {
-          return Index.buildCatalogReplies(this);
-        }
-      },
-
-      hoverAdjust() {
-        // Prevent hovered catalog threads from going offscreen.
-        let x;
-        if (!$.hasClass(doc, 'catalog-hover-expand')) { return; }
-        const rect = this.post.getBoundingClientRect();
-        if (x = $.minmax(0, -rect.left, doc.clientWidth - rect.right)) {
-          const {style} = this.post;
-          style.left = `${x}px`;
-          style.right = `${-x}px`;
-          return $.one(this.root, 'mouseleave', () => style.left = (style.right = null));
-        }
-      }
-    },
-
-    scrollToIndex() {
-      // Scroll to navlinks, or top of board if navlinks are hidden.
-      return Header.scrollToIfNeeded((Index.navLinks.getBoundingClientRect().height ? Index.navLinks : Index.root));
-    },
-
-    getCurrentPage() {
-      return +window.location.pathname.split(/\/+/)[2] || 1;
-    },
-
-    userPageNav(page) {
-      Index.pushState({page});
-      if (Conf['Refreshed Navigation']) {
-        return Index.update();
-      } else {
-        return Index.pageLoad();
-      }
-    },
-
-    hashCommands: {
-      mode: {
-        'paged':         'paged',
-        'infinite-scrolling': 'infinite',
-        'infinite':      'infinite',
-        'all-threads':   'all pages',
-        'all-pages':     'all pages',
-        'catalog':       'catalog'
-      },
-      sort: {
-        'bump-order':        'bump',
-        'last-reply':        'lastreply',
-        'last-long-reply':   'lastlong',
-        'creation-date':     'birth',
-        'reply-count':       'replycount',
-        'file-count':        'filecount',
-        'posts-per-minute':  'activity'
-      }
-    },
-
-    processHash() {
-      // XXX https://bugzilla.mozilla.org/show_bug.cgi?id=483304
-      let hash = location.href.match(/#.*/)?.[0] || '';
-      const state =
-        {replace: true};
-      const commands = hash.slice(1).split('/');
-      const leftover = [];
-      for (var command of commands) {
-        var mode, sort;
-        if (mode = $.getOwn(Index.hashCommands.mode, command)) {
-          state.mode = mode;
-        } else if (command === 'index') {
-          state.mode = Conf['Previous Index Mode'];
-          state.page = 1;
-        } else if (sort = $.getOwn(Index.hashCommands.sort, command.replace(/-rev$/, ''))) {
-          state.sort = sort;
-          if (/-rev$/.test(command)) { state.sort += '-rev'; }
-        } else if (/^s=/.test(command)) {
-          state.search = decodeURIComponent(command.slice(2)).replace(/\+/g, ' ').trim();
-        } else {
-          leftover.push(command);
-        }
-      }
-      hash = leftover.join('/');
-      if (hash) { state.hash = `#${hash}`; }
-      Index.pushState(state);
-      return commands.length - leftover.length;
-    },
-
-    pushState(state) {
-      let {search, hash, replace} = state;
-      let pageBeforeSearch = history.state?.oldpage;
-      if ((search != null) && (search !== Index.search)) {
-        state.page = search ? 1 : (pageBeforeSearch || 1);
-        if (!search) {
-          pageBeforeSearch = undefined;
-        } else if (!Index.search) {
-          pageBeforeSearch = Index.currentPage;
-        }
-      }
-      Index.setState(state);
-      const pathname = Index.currentPage === 1 ? `/${g.BOARD}/` : `/${g.BOARD}/${Index.currentPage}`;
-      if (!hash) { hash = ''; }
-      return history[replace ? 'replaceState' : 'pushState']({
-        mode:     Conf['Index Mode'],
-        sort:     Index.currentSort,
-        searched: Index.search,
-        oldpage:  pageBeforeSearch
-      }
-      , '', `${location.protocol}//${location.host}${pathname}${hash}`);
-    },
-
-    setState({search, mode, sort, page, hash}) {
-      if ((search != null) && (search !== Index.search)) {
-        Index.changed.search = true;
-        Index.search = search;
-      }
-      if ((mode != null) && (mode !== Conf['Index Mode'])) {
-        Index.changed.mode = true;
-        Conf['Index Mode'] = mode;
-        $.set('Index Mode', mode);
-        if ((mode !== 'catalog') && (Conf['Previous Index Mode'] !== mode)) {
-          Conf['Previous Index Mode'] = mode;
-          $.set('Previous Index Mode', mode);
-        }
-      }
-      if ((sort != null) && (sort !== Index.currentSort)) {
-        Index.changed.sort = true;
-        Index.currentSort = sort;
-        Index.saveSort();
-      }
-      if (['all pages', 'catalog'].includes(Conf['Index Mode'])) { page = 1; }
-      if ((page != null) && (page !== Index.currentPage)) {
-        Index.changed.page = true;
-        Index.currentPage = page;
-      }
-      if (hash != null) {
-        return Index.changed.hash = true;
-      }
-    },
-
-    savePerBoard(key, value) {
-      if (typeof Conf[key] === 'object') {
-        Conf[key][g.BOARD.ID] = value;
-      } else {
-        Conf[key] = value;
-      }
-      return $.set(key, Conf[key]);
-    },
-
-    saveSort() {
-      return Index.savePerBoard('Index Sort', Index.currentSort);
-    },
-
-    saveLastLongThresholds(i) {
-      return Index.savePerBoard(`Last Long Reply Thresholds ${i}`, Index.lastLongThresholds[i]);
-    },
-
-    pageLoad(scroll=true) {
-      if (!Index.liveThreadData) { return; }
-      let {threads, order, search, mode, sort, page, hash} = Index.changed;
-      if (!threads) { threads = search; }
-      if (!order) { order = sort; }
-      if (threads || order) { Index.sort(); }
-      if (threads) { Index.buildPagelist(); }
-      if (search) { Index.setupSearch(); }
-      if (mode) { Index.setupMode(); }
-      if (sort) { Index.setupSort(); }
-      if (threads || mode || page || order) { Index.buildIndex(); }
-      if (threads || page) { Index.setPage(); }
-      if (scroll && !hash) { Index.scrollToIndex(); }
-      return Index.changed = {};
-    },
-
-    setupMode() {
-      for (var mode of ['paged', 'infinite', 'all pages', 'catalog']) {
-        $[mode === Conf['Index Mode'] ? 'addClass' : 'rmClass'](doc, `${mode.replace(/\ /g, '-')}-mode`);
-      }
-      Index.selectMode.value = Conf['Index Mode'];
-      Index.cb.size();
-      Index.showHiddenThreads = false;
-      return $('#hidden-toggle a', Index.navLinks).textContent = 'Show';
-    },
-
-    setupSort() {
-      Index.selectRev.checked = /-rev$/.test(Index.currentSort);
-      Index.selectSort.value  = Index.currentSort.replace(/-rev$/, '');
-      return Index.lastLongOptions.hidden = (Index.selectSort.value !== 'lastlong');
-    },
-
-    getPagesNum() {
-      if (Index.search) {
-        return Math.ceil(Index.sortedThreadIDs.length / Index.threadsNumPerPage);
-      } else {
-        return Index.pagesNum;
-      }
-    },
-
-    getMaxPageNum() {
-      return Math.max(1, Index.getPagesNum());
-    },
-
-    buildPagelist() {
-      const pagesRoot = $('.pages', Index.pagelist);
-      const maxPageNum = Index.getMaxPageNum();
-      if (pagesRoot.childElementCount !== maxPageNum) {
-        const nodes = [];
-        for (let i = 1, end = maxPageNum; i <= end; i++) {
-          var a = $.el('a', {
-            textContent: i,
-            href: i === 1 ? './' : i
-          }
-          );
-          nodes.push($.tn('['), a, $.tn('] '));
-        }
-        $.rmAll(pagesRoot);
-        return $.add(pagesRoot, nodes);
-      }
-    },
-
-    setPage() {
-      let a, strong;
-      const pageNum    = Index.currentPage;
-      const maxPageNum = Index.getMaxPageNum();
-      const pagesRoot  = $('.pages', Index.pagelist);
-
-      // Previous/Next buttons
-      const prev = pagesRoot.previousElementSibling.firstElementChild;
-      const next = pagesRoot.nextElementSibling.firstElementChild;
-      let href = Math.max(pageNum - 1, 1);
-      prev.href = href === 1 ? './' : href;
-      prev.firstElementChild.disabled = href === pageNum;
-      href = Math.min(pageNum + 1, maxPageNum);
-      next.href = href === 1 ? './' : href;
-      next.firstElementChild.disabled = href === pageNum;
-
-      // <strong> current page
-      if (strong = $('strong', pagesRoot)) {
-        if (+strong.textContent === pageNum) { return; }
-        $.replace(strong, strong.firstChild);
-      } else {
-        strong = $.el('strong');
-      }
-
-      if (a = pagesRoot.children[pageNum - 1]) {
-        $.before(a, strong);
-        return $.add(strong, a);
-      }
-    },
-
-    updateHideLabel() {
-      if (!Index.hideLabel) { return; }
-      let hiddenCount = 0;
-      for (var threadID of Index.liveThreadIDs) {
-        if (Index.isHidden(threadID)) {
-          hiddenCount++;
-        }
-      }
-      if (!hiddenCount) {
-        Index.hideLabel.hidden = true;
-        if (Index.showHiddenThreads) { Index.cb.toggleHiddenThreads(); }
-        return;
-      }
-      Index.hideLabel.hidden = false;
-      return $('#hidden-count', Index.navLinks).textContent = hiddenCount === 1 ?
-        '1 hidden thread'
-      :
-        `${hiddenCount} hidden threads`;
-    },
-
-    update(firstTime) {
-      let oldReq;
-      if (oldReq = Index.req) {
-        delete Index.req;
-        oldReq.abort();
-      }
-
-      if (Conf['Index Refresh Notifications']) {
-        // Optional notification for manual refreshes
-        if (!Index.notice) { Index.notice = new Notice('info', 'Refreshing index...'); }
-        if (!Index.nTimeout) { Index.nTimeout = setTimeout(() => {
-            if (Index.notice) {
-              Index.notice.el.lastElementChild.textContent += ' (disable JSON Index if this takes too long)';
-            }
-          }
-          , 3 * SECOND); }
-      } else {
-        // Also display notice if Index Refresh is taking too long
-        if (!Index.nTimeout) { Index.nTimeout = setTimeout(() => Index.notice || (Index.notice = new Notice('info', 'Refreshing index... (disable JSON Index if this takes too long)'))
-        , 3 * SECOND); }
-      }
-
-      // Hard refresh in case of incomplete page load.
-      if (!firstTime && (d.readyState !== 'loading') && !$('.board + *')) {
-        location.reload();
-        return;
-      }
-
-      Index.req = $.whenModified(
-        g.SITE.urls.catalogJSON({boardID: g.BOARD.ID}),
-        'Index',
-        Index.load
-      );
-      return $.addClass(Index.button, 'spin');
-    },
-
-    load() {
-      let err;
-      if (this !== Index.req) { return; } // aborted
-
-      $.rmClass(Index.button, 'spin');
-      const {notice, nTimeout} = Index;
-      if (nTimeout) { clearTimeout(nTimeout); }
-      delete Index.nTimeout;
-      delete Index.req;
-      delete Index.notice;
-
-      if (![200, 304].includes(this.status)) {
-        err = `Index refresh failed. ${this.status ? `Error ${this.statusText} (${this.status})` : 'Connection Error'}`;
-        if (notice) {
-          notice.setType('warning');
-          notice.el.lastElementChild.textContent = err;
-          setTimeout(notice.close, SECOND);
-        } else {
-          new Notice('warning', err, 1);
-        }
-        return;
-      }
-
-      try {
-        if (this.status === 200) {
-          Index.parse(this.response);
-        } else if (this.status === 304) {
-          Index.pageLoad();
-        }
-      } catch (error) {
-        err = error;
-        c.error(`Index failure: ${err.message}`, err.stack);
-        if (notice) {
-          notice.setType('error');
-          notice.el.lastElementChild.textContent = 'Index refresh failed.';
-          setTimeout(notice.close, SECOND);
-        } else {
-          new Notice('error', 'Index refresh failed.', 1);
-        }
-        return;
-      }
-
-      if (notice) {
-        if (Conf['Index Refresh Notifications']) {
-          notice.setType('success');
-          notice.el.lastElementChild.textContent = 'Index refreshed!';
-          setTimeout(notice.close, SECOND);
-        } else {
-          notice.close();
-        }
-      }
-
-      const timeEl = $('#index-last-refresh time', Index.navLinks);
-      timeEl.dataset.utc = Date.parse(this.getResponseHeader('Last-Modified'));
-      return RelativeDates.update(timeEl);
-    },
-
-    parse(pages) {
-      $.cleanCache(url => /^https?:\/\/a\.4cdn\.org\//.test(url));
-      Index.parseThreadList(pages);
-      Index.changed.threads = true;
-      return Index.pageLoad();
-    },
-
-    parseThreadList(pages) {
-      Index.pagesNum          = pages.length;
-      Index.threadsNumPerPage = pages[0]?.threads.length || 1;
-      Index.liveThreadData    = pages.reduce(((arr, next) => arr.concat(next.threads)), []);
-      Index.liveThreadIDs     = Index.liveThreadData.map(data => data.no);
-      Index.liveThreadDict    = dict();
-      Index.threadPosition    = dict();
-      Index.parsedThreads     = dict();
-      Index.replyData         = dict();
-      for (let i = 0; i < Index.liveThreadData.length; i++) {
-        var obj, results;
-        var data = Index.liveThreadData[i];
-        Index.liveThreadDict[data.no] = data;
-        Index.threadPosition[data.no] = i;
-        Index.parsedThreads[data.no] = (obj = g.SITE.Build.parseJSON(data, g.BOARD));
-        results = Filter.test(obj);
-        obj.isOnTop  = results.top;
-        obj.isHidden = results.hide || ThreadHiding.isHidden(obj.boardID, obj.threadID);
-        if (data.last_replies) {
-          for (var reply of data.last_replies) {
-            Index.replyData[`${g.BOARD}.${reply.no}`] = reply;
-          }
-        }
-      }
-      if (Index.liveThreadData[0]) {
-        g.SITE.Build.spoilerRange[g.BOARD.ID] = Index.liveThreadData[0].custom_spoiler;
-      }
-      g.BOARD.threads.forEach(function(thread) {
-        if (!Index.liveThreadIDs.includes(thread.ID)) { return thread.collect(); }
-      });
-      $.event('IndexUpdate',
-        {threads: ((Index.liveThreadIDs.map((ID) => `${g.BOARD}.${ID}`)))});
-    },
-
-    isHidden(threadID) {
-      let thread;
-      if ((thread = g.BOARD.threads.get(threadID)) && thread.OP && !thread.OP.isFetchedQuote) {
-        return thread.isHidden;
-      } else {
-        return Index.parsedThreads[threadID].isHidden;
-      }
-    },
-
-    isHiddenReply(threadID, replyData) {
-      return PostHiding.isHidden(g.BOARD.ID, threadID, replyData.no) || Filter.isHidden(g.SITE.Build.parseJSON(replyData, g.BOARD));
-    },
-
-    buildThreads(threadIDs, isCatalog, withReplies) {
-      let errors;
-      const threads    = [];
-      const newThreads = [];
-      let newPosts   = [];
-      for (var ID of threadIDs) {
-        var opRoot, thread;
-        try {
-          var OP;
-          var threadData = Index.liveThreadDict[ID];
-
-          if (thread = g.BOARD.threads.get(ID)) {
-            var isStale = (thread.json !== threadData) && (JSON.stringify(thread.json) !== JSON.stringify(threadData));
-            if (isStale) {
-              thread.setCount('post', threadData.replies + 1,                threadData.bumplimit);
-              thread.setCount('file', threadData.images  + !!threadData.ext, threadData.imagelimit);
-              thread.setStatus('Sticky', !!threadData.sticky);
-              thread.setStatus('Closed', !!threadData.closed);
-            }
-            if (thread.catalogView) {
-              $.rm(thread.catalogView.nodes.replies);
-              thread.catalogView.nodes.replies = null;
-            }
-          } else {
-            thread = new Thread(ID, g.BOARD);
-            newThreads.push(thread);
-          }
-          var lastPost = threadData.last_replies && threadData.last_replies.length ? threadData.last_replies[threadData.last_replies.length - 1].no : ID;
-          if (lastPost > thread.lastPost) { thread.lastPost = lastPost; }
-          thread.json = threadData;
-          threads.push(thread);
-
-          if ((OP = thread.OP) && !OP.isFetchedQuote) {
-            OP.setCatalogOP(isCatalog);
-            thread.setPage(Math.floor(Index.threadPosition[ID] / Index.threadsNumPerPage) + 1);
-          } else {
-            var obj = Index.parsedThreads[ID];
-            opRoot = g.SITE.Build.post(obj);
-            OP = new Post(opRoot, thread, g.BOARD);
-            OP.filterResults = obj.filterResults;
-            newPosts.push(OP);
-          }
-
-          if (!isCatalog || !thread.nodes.root) {
-            g.SITE.Build.thread(thread, threadData, withReplies);
-          }
-        } catch (err) {
-          // Skip posts that we failed to parse.
-          if (!errors) { errors = []; }
-          errors.push({
-            message: `Parsing of Thread No.${thread} failed. Thread will be skipped.`,
-            error: err,
-            html: opRoot?.outerHTML
+          this.enabled = true;
+          Callbacks.Post.push({
+              name: 'Index Page Numbers',
+              cb: this.node
           });
-        }
-      }
-      if (errors) { Main.handleErrors(errors); }
-
-      if (withReplies) {
-        newPosts = newPosts.concat(Index.buildReplies(threads));
-      }
-
-      Main.callbackNodes('Thread', newThreads);
-      Main.callbackNodes('Post',   newPosts);
-      Index.updateHideLabel();
-      $.event('IndexRefreshInternal', {threadIDs: (threads.map((t) => t.fullID)), isCatalog});
-
-      return threads;
-    },
-
-    buildReplies(threads) {
-      let errors;
-      const posts = [];
-      for (var thread of threads) {
-        var lastReplies;
-        if (!(lastReplies = Index.liveThreadDict[thread.ID].last_replies)) { continue; }
-        var nodes = [];
-        for (var data of lastReplies) {
-          var node, post;
-          if ((post = thread.posts.get(data.no)) && !post.isFetchedQuote) {
-            nodes.push(post.nodes.root);
-            continue;
+          Callbacks.CatalogThread.push({
+              name: 'Catalog Features',
+              cb: this.catalogNode
+          });
+          this.search = history.state?.searched || '';
+          if (history.state?.mode) {
+              Conf['Index Mode'] = history.state?.mode;
           }
-          nodes.push(node = g.SITE.Build.postFromObject(data, thread.board.ID));
-          try {
-            posts.push(new Post(node, thread, thread.board));
-          } catch (err) {
-            // Skip posts that we failed to parse.
-            if (!errors) { errors = []; }
-            errors.push({
-              message: `Parsing of Post No.${data.no} failed. Post will be skipped.`,
-              error: err,
-              html: node?.outerHTML
-            });
+          this.currentSort = history.state?.sort;
+          if (!this.currentSort) {
+              this.currentSort = typeof Conf['Index Sort'] === 'object' ? (Conf['Index Sort'][g.BOARD.ID] || 'bump') : (Conf['Index Sort']);
           }
-        }
-        $.add(thread.nodes.root, nodes);
-      }
-
-      if (errors) { Main.handleErrors(errors); }
-      return posts;
-    },
-
-    buildCatalogViews(threads) {
-      const catalogThreads = [];
-      for (var thread of threads) {
-        if (!thread.catalogView) {
-          var {ID} = thread;
-          var page = Math.floor(Index.threadPosition[ID] / Index.threadsNumPerPage) + 1;
-          var root = g.SITE.Build.catalogThread(thread, Index.liveThreadDict[ID], page);
-          catalogThreads.push(new CatalogThread(root, thread));
-        }
-      }
-      Main.callbackNodes('CatalogThread', catalogThreads);
-    },
-
-    sizeCatalogViews(threads) {
-      // XXX When browsers support CSS3 attr(), use it instead.
-      const size = Conf['Index Size'] === 'small' ? 150 : 250;
-      for (var thread of threads) {
-        var {thumb} = thread.catalogView.nodes;
-        var {width, height} = thumb.dataset;
-        if (!width) { continue; }
-        var ratio = size / Math.max(width, height);
-        thumb.style.width  = (width  * ratio) + 'px';
-        thumb.style.height = (height * ratio) + 'px';
-      }
-    },
-
-    buildCatalogReplies(thread) {
-      let lastReplies;
-      const {nodes} = thread.catalogView;
-      if (!(lastReplies = Index.liveThreadDict[thread.ID].last_replies)) { return; }
-
-      const replies = [];
-      for (var data of lastReplies) {
-        if (Index.isHiddenReply(thread.ID, data)) { continue; }
-        var reply = g.SITE.Build.catalogReply(thread, data);
-        RelativeDates.update($('time', reply));
-        $.on($('.catalog-reply-preview', reply), 'mouseover', QuotePreview.mouseover);
-        replies.push(reply);
-      }
-
-      nodes.replies = $.el('div', {className: 'catalog-replies'});
-      $.add(nodes.replies, replies);
-      $.add(thread.OP.nodes.post, nodes.replies);
-    },
-
-    sort() {
-      let threadIDs;
-      const {liveThreadIDs, liveThreadData} = Index;
-      if (!liveThreadData) { return; }
-      const tmp_time = new Date().getTime()/1000;
-      const sortType = Index.currentSort.replace(/-rev$/, '');
-      Index.sortedThreadIDs = (() => { switch (sortType) {
-        case 'lastreply': case 'lastlong':
-          var repliesAvailable = liveThreadData.some(thread => thread.last_replies?.length);
-          var lastlong = function(thread) {
-            if (!repliesAvailable) {
-              return thread.last_modified;
-            }
-            const iterable = thread.last_replies || [];
-            for (let i = iterable.length - 1; i >= 0; i--) {
-              var r = iterable[i];
-              if (Index.isHiddenReply(thread.no, r)) { continue; }
-              if (sortType === 'lastreply') {
-                return r;
+          this.currentPage = this.getCurrentPage();
+          this.processHash();
+          $.addClass(doc, 'index-loading', `${Conf['Index Mode'].replace(/\ /g, '-')}-mode`);
+          $.on(window, 'popstate', this.cb.popstate);
+          $.on(d, 'scroll', this.scroll);
+          $.on(d, 'SortIndex', this.cb.resort);
+          // Header refresh button
+          this.button = $.el('a', {
+              title: 'Refresh',
+              href: 'javascript:;',
+          });
+          Icon.set(this.button, 'refresh', 'Refresh');
+          $.on(this.button, 'click', () => Index.update());
+          Header.addShortcut('index-refresh', this.button, 590);
+          // Header "Index Navigation" submenu
+          const entries = [];
+          this.inputs = (inputs = dict());
+          for (name in Config.Index) {
+              var arr = Config.Index[name];
+              if (arr instanceof Array) {
+                  var label = UI.checkbox(name, `${name[0]}${name.slice(1).toLowerCase()}`);
+                  label.title = arr[1];
+                  entries.push({ el: label });
+                  input = label.firstChild;
+                  $.on(input, 'change', $.cb.checked);
+                  inputs[name] = input;
               }
-              var len = r.com ? g.SITE.Build.parseComment(r.com).replace(/[^a-z]/ig, '').length : 0;
-              if (len >= Index.lastLongThresholds[+!!r.ext]) {
-                return r;
+          }
+          $.on(inputs['Show Replies'], 'change', this.cb.replies);
+          $.on(inputs['Catalog Hover Expand'], 'change', this.cb.hover);
+          $.on(inputs['Pin Watched Threads'], 'change', this.cb.resort);
+          $.on(inputs['Anchor Hidden Threads'], 'change', this.cb.resort);
+          const watchSettings = function (e) {
+              if (input = $.getOwn(inputs, e.target.name)) {
+                  input.checked = e.target.checked;
+                  return $.event('change', null, input);
               }
-            }
-            if (thread.omitted_posts && thread.last_replies?.length) { return thread.last_replies[0]; } else { return thread; }
           };
-          var lastlongD = dict();
-          for (var thread of liveThreadData) {
-            lastlongD[thread.no] = lastlong(thread).no;
+          $.on(d, 'OpenSettings', () => $.on($.id('fourchanx-settings'), 'change', watchSettings));
+          const sortEntry = UI.checkbox('Per-Board Sort Type', 'Per-board sort type', (typeof Conf['Index Sort'] === 'object'));
+          sortEntry.title = 'Set the sorting order of each board independently.';
+          $.on(sortEntry.firstChild, 'change', this.cb.perBoardSort);
+          entries.splice(3, 0, { el: sortEntry });
+          Header.menu.addEntry({
+              el: $.el('span', { textContent: 'Index Navigation' }),
+              order: 100,
+              subEntries: entries
+          });
+          // Navigation links at top of index
+          this.navLinks = $.el('div', { className: 'navLinks json-index' });
+          $.extend(this.navLinks, { innerHTML: NavLinksPage });
+          $('.cataloglink a', this.navLinks).href = CatalogLinks.catalog();
+          if (!BoardConfig.isArchived(g.BOARD.ID)) {
+              $('.archlistlink', this.navLinks).hidden = true;
           }
-          return [...liveThreadData].sort((a, b) => lastlongD[b.no] - lastlongD[a.no]).map(post => post.no);
-        case 'bump':       return liveThreadIDs;
-        case 'birth':      return [...liveThreadIDs ].sort((a, b) => b - a);
-        case 'replycount': return [...liveThreadData].sort((a, b) => b.replies - a.replies).map(post => post.no);
-        case 'filecount':  return [...liveThreadData].sort((a, b) => b.images  - a.images).map(post => post.no);
-        case 'activity':   return [...liveThreadData].sort((a, b) => ((tmp_time-a.time)/(a.replies+1)) - ((tmp_time-b.time)/(b.replies+1))).map(post => post.no);
-        default: return liveThreadIDs;
-      } })();
-      if (/-rev$/.test(Index.currentSort)) {
-        Index.sortedThreadIDs.reverse();
-      }
-      if (Index.search && (threadIDs = Index.querySearch(Index.search))) {
-        Index.sortedThreadIDs = threadIDs;
-      }
-      // Sticky threads
-      Index.sortOnTop(obj => obj.isSticky);
-      // Highlighted threads
-      Index.sortOnTop(obj => obj.isOnTop || (Conf['Pin Watched Threads'] && ThreadWatcher.isWatchedRaw(obj.boardID, obj.threadID)));
-      // Non-hidden threads
-      if (Conf['Anchor Hidden Threads']) { return Index.sortOnTop(obj => !Index.isHidden(obj.threadID)); }
-    },
-
-    sortOnTop(match) {
-      const topThreads    = [];
-      const bottomThreads = [];
-      for (var ID of Index.sortedThreadIDs) {
-        (match(Index.parsedThreads[ID]) ? topThreads : bottomThreads).push(ID);
-      }
-      return Index.sortedThreadIDs = topThreads.concat(bottomThreads);
-    },
-
-    buildIndex() {
-      let threadIDs;
-      if (!Index.liveThreadData) { return; }
-      switch (Conf['Index Mode']) {
-        case 'all pages':
-          threadIDs = Index.sortedThreadIDs;
-          break;
-        case 'catalog':
-          threadIDs = Index.sortedThreadIDs.filter(ID => !Index.isHidden(ID) !== Index.showHiddenThreads);
-          break;
-        default:
-          threadIDs = Index.threadsOnPage(Index.currentPage);
-      }
-      delete Index.pageNum;
-      $.rmAll(Index.root);
-      $.rmAll(Header.hover);
-      if (Index.loaded && Index.root.parentNode) {
-        $.event('PostsRemoved', null, Index.root);
-      }
-      if (Conf['Index Mode'] === 'catalog') {
-        Index.buildCatalog(threadIDs);
-      } else {
-        Index.buildStructure(threadIDs);
-      }
-    },
-
-    threadsOnPage(pageNum) {
-      const nodesPerPage = Index.threadsNumPerPage;
-      const offset = nodesPerPage * (pageNum - 1);
-      return Index.sortedThreadIDs.slice(offset ,  offset + nodesPerPage);
-    },
-
-    buildStructure(threadIDs) {
-      const threads = Index.buildThreads(threadIDs, false, Conf['Show Replies']);
-      const nodes = [];
-      for (var thread of threads) {
-        nodes.push(thread.nodes.root, $.el('hr'));
-      }
-      $.add(Index.root, nodes);
-      if (Index.root.parentNode) {
-        $.event('PostsInserted', null, Index.root);
-      }
-      Index.loaded = true;
-    },
-
-    buildCatalog(threadIDs) {
-      let i = 0;
-      const n = threadIDs.length;
-      let node0 = null;
-      var fn = function() {
-        if (node0 && !node0.parentNode) { return; } // Index.root cleared
-        const j = (i > 0) && Index.root.parentNode ? n : i + 30;
-        node0 = Index.buildCatalogPart(threadIDs.slice(i, j))[0];
-        i = j;
-        if (i < n) {
-          return $.queueTask(fn);
-        } else {
+          $.on($('#index-last-refresh a', this.navLinks), 'click', this.cb.refreshFront);
+          // Search field
+          this.searchInput = $('#index-search', this.navLinks);
+          this.setupSearch();
+          $.on(this.searchInput, 'input', this.onSearchInput);
+          $.on($('#index-search-clear', this.navLinks), 'click', this.clearSearch);
+          Icon.set($('#index-search-clear', this.navLinks), 'xmark');
+          // Hidden threads toggle
+          this.hideLabel = $('#hidden-label', this.navLinks);
+          $.on($('#hidden-toggle a', this.navLinks), 'click', this.cb.toggleHiddenThreads);
+          // Drop-down menus and reverse sort toggle
+          this.selectRev = $('#index-rev', this.navLinks);
+          this.selectMode = $('#index-mode', this.navLinks);
+          this.selectSort = $('#index-sort', this.navLinks);
+          this.selectSize = $('#index-size', this.navLinks);
+          $.on(this.selectRev, 'change', this.cb.sort);
+          $.on(this.selectMode, 'change', this.cb.mode);
+          $.on(this.selectSort, 'change', this.cb.sort);
+          $.on(this.selectSize, 'change', $.cb.value);
+          $.on(this.selectSize, 'change', this.cb.size);
+          for (var select of [this.selectMode, this.selectSize]) {
+              select.value = Conf[select.name];
+          }
+          this.selectRev.checked = /-rev$/.test(Index.currentSort);
+          this.selectSort.value = Index.currentSort.replace(/-rev$/, '');
+          // Last Long Reply options
+          this.lastLongOptions = $('#lastlong-options', this.navLinks);
+          this.lastLongInputs = $$('input', this.lastLongOptions);
+          this.lastLongThresholds = [0, 0];
+          this.lastLongOptions.hidden = (this.selectSort.value !== 'lastlong');
+          for (let i = 0; i < this.lastLongInputs.length; i++) {
+              input = this.lastLongInputs[i];
+              $.on(input, 'change', this.cb.lastLongThresholds);
+              var tRaw = Conf[`Last Long Reply Thresholds ${i}`];
+              input.value = (this.lastLongThresholds[i] =
+                  typeof tRaw === 'object' ? (tRaw[g.BOARD.ID] ?? 100) : tRaw);
+          }
+          // Thread container
+          this.root = $.el('div', { className: 'board json-index' });
+          $.on(this.root, 'click', this.cb.hoverToggle);
+          this.cb.size();
+          this.cb.hover();
+          // Page list
+          this.pagelist = $.el('div', { className: 'pagelist json-index' });
+          $.extend(this.pagelist, { innerHTML: PageList });
+          $('.cataloglink a', this.pagelist).href = CatalogLinks.catalog();
+          $.on(this.pagelist, 'click', this.cb.pageNav);
+          this.update(true);
+          $.onExists(doc, 'title + *', () => d.title = d.title.replace(/\ -\ Page\ \d+/, ''));
+          $.onExists(doc, '.board > .thread > .postContainer, .board + *', function () {
+              let el;
+              g.SITE.Build.hat = $('.board > .thread > img:first-child');
+              if (g.SITE.Build.hat) {
+                  g.BOARD.threads.forEach(function (thread) {
+                      if (thread.nodes.root) {
+                          return $.prepend(thread.nodes.root, g.SITE.Build.hat.cloneNode(false));
+                      }
+                  });
+                  $.addClass(doc, 'hats-enabled');
+                  $.addStyle(`.catalog-thread::after {background-image: url(${g.SITE.Build.hat.src});}`);
+              }
+              const board = $('.board');
+              $.replace(board, Index.root);
+              if (Index.loaded) {
+                  $.event('PostsInserted', null, Index.root);
+              }
+              // Hacks:
+              // - When removing an element from the document during page load,
+              //   its ancestors will still be correctly created inside of it.
+              // - Creating loadable elements inside of an origin-less document
+              //   will not download them.
+              // - Combine the two and you get a download canceller!
+              //   Does not work on Firefox unfortunately. bugzil.la/939713
+              try {
+                  d.implementation.createDocument(null, null, null).appendChild(board);
+              }
+              catch (error) { }
+              for (el of $$('.navLinks')) {
+                  $.rm(el);
+              }
+              $.rm($.id('ctrl-top'));
+              const topNavPos = $.id('delform').previousElementSibling;
+              $.before(topNavPos, $.el('hr'));
+              $.before(topNavPos, Index.navLinks);
+              const timeEl = $('#index-last-refresh time', Index.navLinks);
+              if (timeEl.dataset.utc) {
+                  return RelativeDates.update(timeEl);
+              }
+          });
+          return Main.ready(function () {
+              let pagelist;
+              if (pagelist = $('.pagelist')) {
+                  $.replace(pagelist, Index.pagelist);
+              }
+              return $.rmClass(doc, 'index-loading');
+          });
+      },
+      scroll() {
+          if (Index.req || !Index.liveThreadData || (Conf['Index Mode'] !== 'infinite') || (window.scrollY <= (doc.scrollHeight - (300 + window.innerHeight)))) {
+              return;
+          }
+          if (Index.pageNum == null) {
+              Index.pageNum = Index.currentPage;
+          } // Avoid having to pushState to keep track of the current page
+          const pageNum = ++Index.pageNum;
+          if (pageNum > Index.pagesNum) {
+              return Index.endNotice();
+          }
+          const threadIDs = Index.threadsOnPage(pageNum);
+          return Index.buildStructure(threadIDs);
+      },
+      endNotice: (function () {
+          let notify = false;
+          const reset = () => notify = false;
+          return function () {
+              if (notify) {
+                  return;
+              }
+              notify = true;
+              new Notice('info', "Last page reached.", 2);
+              return setTimeout(reset, 3 * SECOND);
+          };
+      })(),
+      menu: {
+          init() {
+              if ((g.VIEW !== 'index') || !Conf['Menu'] || !Conf['Thread Hiding Link'] || !Index.enabledOn(g.BOARD)) {
+                  return;
+              }
+              return Menu.menu.addEntry({
+                  el: $.el('a', {
+                      href: 'javascript:;',
+                      className: 'has-shortcut-text'
+                  }, { innerHTML: "<span></span><span class=\"shortcut-text\">Shift+click</span>" }),
+                  order: 20,
+                  open({ thread }) {
+                      if (Conf['Index Mode'] !== 'catalog') {
+                          return false;
+                      }
+                      this.el.firstElementChild.textContent = thread.isHidden ?
+                          'Unhide'
+                          :
+                              'Hide';
+                      if (this.cb) {
+                          $.off(this.el, 'click', this.cb);
+                      }
+                      this.cb = function () {
+                          $.event('CloseMenu');
+                          return Index.toggleHide(thread);
+                      };
+                      $.on(this.el, 'click', this.cb);
+                      return true;
+                  }
+              });
+          }
+      },
+      node() {
+          if (this.isReply || this.isClone || (Index.threadPosition[this.ID] == null)) {
+              return;
+          }
+          return this.thread.setPage(Math.floor(Index.threadPosition[this.ID] / Index.threadsNumPerPage) + 1);
+      },
+      catalogNode() {
+          return $.on(this.nodes.root, 'click', e => {
+              if ((e.button !== 0) || !e.shiftKey)
+                  return;
+              e.preventDefault();
+              getSelection().removeAllRanges();
+              if (Conf['MD5 Quick Filter in the Catalog'] && e.target.classList.contains('catalog-thumb')) {
+                  Filter.quickFilterMD5.call(this.thread.OP);
+              }
+              else {
+                  Index.toggleHide(this.thread);
+              }
+          });
+      },
+      toggleHide(thread) {
+          if (Index.showHiddenThreads) {
+              ThreadHiding.show(thread);
+              if (!ThreadHiding.db.get({ boardID: thread.board.ID, threadID: thread.ID })) {
+                  return;
+              }
+              // Don't save when un-hiding filtered threads.
+          }
+          else {
+              ThreadHiding.hide(thread);
+          }
+          return ThreadHiding.saveHiddenState(thread);
+      },
+      cycleSortType() {
+          let i;
+          const types = Index.selectSort.options.filter(option => !option.disabled);
+          for (i = 0; i < types.length; i++) {
+              var type = types[i];
+              if (type.selected) {
+                  break;
+              }
+          }
+          types[(i + 1) % types.length].selected = true;
+          return $.event('change', null, Index.selectSort);
+      },
+      cb: {
+          initFinished() {
+              Index.initFinishedFired = true;
+              return $.queueTask(() => Index.cb.postsInserted());
+          },
+          postsInserted() {
+              if (!Index.initFinishedFired) {
+                  return;
+              }
+              let n = 0;
+              g.posts.forEach(function (post) {
+                  if (!post.isFetchedQuote && !post.indexRefreshSeen && doc.contains(post.nodes.root)) {
+                      post.indexRefreshSeen = true;
+                      return n++;
+                  }
+              });
+              if (n) {
+                  return $.event('IndexRefresh');
+              }
+          },
+          toggleHiddenThreads() {
+              $('#hidden-toggle a', Index.navLinks).textContent = (Index.showHiddenThreads = !Index.showHiddenThreads) ?
+                  'Hide'
+                  :
+                      'Show';
+              Index.sort();
+              return Index.buildIndex();
+          },
+          mode() {
+              Index.pushState({ mode: this.value });
+              return Index.pageLoad(false);
+          },
+          sort() {
+              const value = Index.selectRev.checked ? Index.selectSort.value + "-rev" : Index.selectSort.value;
+              Index.pushState({ sort: value });
+              return Index.pageLoad(false);
+          },
+          resort(e) {
+              Index.changed.order = true;
+              if (!e?.detail?.deferred) {
+                  return Index.pageLoad(false);
+              }
+          },
+          perBoardSort() {
+              Conf['Index Sort'] = this.checked ? dict() : '';
+              Index.saveSort();
+              for (let i = 0; i < 2; i++) {
+                  Conf[`Last Long Reply Thresholds ${i}`] = this.checked ? dict() : '';
+                  Index.saveLastLongThresholds(i);
+              }
+          },
+          lastLongThresholds() {
+              const i = [...this.parentNode.children].indexOf(this);
+              const value = +this.value;
+              if (!Number.isFinite(value)) {
+                  this.value = Index.lastLongThresholds[i];
+                  return;
+              }
+              Index.lastLongThresholds[i] = value;
+              Index.saveLastLongThresholds(i);
+              Index.changed.order = true;
+              return Index.pageLoad(false);
+          },
+          size(e) {
+              if (Conf['Index Mode'] !== 'catalog') {
+                  $.rmClass(Index.root, 'catalog-small');
+                  $.rmClass(Index.root, 'catalog-large');
+              }
+              else if (Conf['Index Size'] === 'small') {
+                  $.addClass(Index.root, 'catalog-small');
+                  $.rmClass(Index.root, 'catalog-large');
+              }
+              else {
+                  $.addClass(Index.root, 'catalog-large');
+                  $.rmClass(Index.root, 'catalog-small');
+              }
+              if (e) {
+                  return Index.buildIndex();
+              }
+          },
+          replies() {
+              return Index.buildIndex();
+          },
+          hover() {
+              return doc.classList.toggle('catalog-hover-expand', Conf['Catalog Hover Expand']);
+          },
+          hoverToggle(e) {
+              if (Conf['Catalog Hover Toggle'] && $.hasClass(doc, 'catalog-mode') && !$.modifiedClick(e) && !$.x('ancestor-or-self::a', e.target)) {
+                  let thread;
+                  const input = Index.inputs['Catalog Hover Expand'];
+                  input.checked = !input.checked;
+                  $.event('change', null, input);
+                  if (thread = Get.threadFromNode(e.target)) {
+                      Index.cb.catalogReplies.call(thread);
+                      return Index.cb.hoverAdjust.call(thread.OP.nodes);
+                  }
+              }
+          },
+          popstate(e) {
+              if (e?.state) {
+                  const { searched, mode, sort } = e.state;
+                  const page = Index.getCurrentPage();
+                  Index.setState({ search: searched, mode, sort, page });
+                  return Index.pageLoad(false);
+              }
+              else {
+                  // page load or hash change
+                  const nCommands = Index.processHash();
+                  if (Conf['Refreshed Navigation'] && nCommands) {
+                      return Index.update();
+                  }
+                  else {
+                      return Index.pageLoad();
+                  }
+              }
+          },
+          pageNav(e) {
+              let a;
+              if ($.modifiedClick(e)) {
+                  return;
+              }
+              switch (e.target.nodeName) {
+                  case 'BUTTON':
+                      e.target.blur();
+                      a = e.target.parentNode;
+                      break;
+                  case 'A':
+                      a = e.target;
+                      break;
+                  default:
+                      return;
+              }
+              if (a.textContent === 'Catalog') {
+                  return;
+              }
+              e.preventDefault();
+              return Index.userPageNav(+a.pathname.split(/\/+/)[2] || 1);
+          },
+          refreshFront() {
+              Index.pushState({ page: 1 });
+              return Index.update();
+          },
+          catalogReplies() {
+              if (Conf['Show Replies'] && $.hasClass(doc, 'catalog-hover-expand') && !this.catalogView.nodes.replies) {
+                  return Index.buildCatalogReplies(this);
+              }
+          },
+          hoverAdjust() {
+              // Prevent hovered catalog threads from going offscreen.
+              let x;
+              if (!$.hasClass(doc, 'catalog-hover-expand')) {
+                  return;
+              }
+              const rect = this.post.getBoundingClientRect();
+              if (x = $.minmax(0, -rect.left, doc.clientWidth - rect.right)) {
+                  const { style } = this.post;
+                  style.left = `${x}px`;
+                  style.right = `${-x}px`;
+                  return $.one(this.root, 'mouseleave', () => style.left = (style.right = null));
+              }
+          }
+      },
+      scrollToIndex() {
+          // Scroll to navlinks, or top of board if navlinks are hidden.
+          return Header.scrollToIfNeeded((Index.navLinks.getBoundingClientRect().height ? Index.navLinks : Index.root));
+      },
+      getCurrentPage() {
+          return +window.location.pathname.split(/\/+/)[2] || 1;
+      },
+      userPageNav(page) {
+          Index.pushState({ page });
+          if (Conf['Refreshed Navigation']) {
+              return Index.update();
+          }
+          else {
+              return Index.pageLoad();
+          }
+      },
+      hashCommands: {
+          mode: {
+              'paged': 'paged',
+              'infinite-scrolling': 'infinite',
+              'infinite': 'infinite',
+              'all-threads': 'all pages',
+              'all-pages': 'all pages',
+              'catalog': 'catalog'
+          },
+          sort: {
+              'bump-order': 'bump',
+              'last-reply': 'lastreply',
+              'last-long-reply': 'lastlong',
+              'creation-date': 'birth',
+              'reply-count': 'replycount',
+              'file-count': 'filecount',
+              'posts-per-minute': 'activity'
+          }
+      },
+      processHash() {
+          // XXX https://bugzilla.mozilla.org/show_bug.cgi?id=483304
+          let hash = location.href.match(/#.*/)?.[0] || '';
+          const state = { replace: true };
+          const commands = hash.slice(1).split('/');
+          const leftover = [];
+          for (var command of commands) {
+              var mode, sort;
+              if (mode = $.getOwn(Index.hashCommands.mode, command)) {
+                  state.mode = mode;
+              }
+              else if (command === 'index') {
+                  state.mode = Conf['Previous Index Mode'];
+                  state.page = 1;
+              }
+              else if (sort = $.getOwn(Index.hashCommands.sort, command.replace(/-rev$/, ''))) {
+                  state.sort = sort;
+                  if (/-rev$/.test(command)) {
+                      state.sort += '-rev';
+                  }
+              }
+              else if (/^s=/.test(command)) {
+                  state.search = decodeURIComponent(command.slice(2)).replace(/\+/g, ' ').trim();
+              }
+              else {
+                  leftover.push(command);
+              }
+          }
+          hash = leftover.join('/');
+          if (hash) {
+              state.hash = `#${hash}`;
+          }
+          Index.pushState(state);
+          return commands.length - leftover.length;
+      },
+      pushState(state) {
+          let { search, hash, replace } = state;
+          let pageBeforeSearch = history.state?.oldpage;
+          if ((search != null) && (search !== Index.search)) {
+              state.page = search ? 1 : (pageBeforeSearch || 1);
+              if (!search) {
+                  pageBeforeSearch = undefined;
+              }
+              else if (!Index.search) {
+                  pageBeforeSearch = Index.currentPage;
+              }
+          }
+          Index.setState(state);
+          const pathname = Index.currentPage === 1 ? `/${g.BOARD}/` : `/${g.BOARD}/${Index.currentPage}`;
+          if (!hash) {
+              hash = '';
+          }
+          return history[replace ? 'replaceState' : 'pushState']({
+              mode: Conf['Index Mode'],
+              sort: Index.currentSort,
+              searched: Index.search,
+              oldpage: pageBeforeSearch
+          }, '', `${location.protocol}//${location.host}${pathname}${hash}`);
+      },
+      setState({ search, mode, sort, page, hash }) {
+          if ((search != null) && (search !== Index.search)) {
+              Index.changed.search = true;
+              Index.search = search;
+          }
+          if ((mode != null) && (mode !== Conf['Index Mode'])) {
+              Index.changed.mode = true;
+              Conf['Index Mode'] = mode;
+              $.set('Index Mode', mode);
+              if ((mode !== 'catalog') && (Conf['Previous Index Mode'] !== mode)) {
+                  Conf['Previous Index Mode'] = mode;
+                  $.set('Previous Index Mode', mode);
+              }
+          }
+          if ((sort != null) && (sort !== Index.currentSort)) {
+              Index.changed.sort = true;
+              Index.currentSort = sort;
+              Index.saveSort();
+          }
+          if (['all pages', 'catalog'].includes(Conf['Index Mode'])) {
+              page = 1;
+          }
+          if ((page != null) && (page !== Index.currentPage)) {
+              Index.changed.page = true;
+              Index.currentPage = page;
+          }
+          if (hash != null) {
+              return Index.changed.hash = true;
+          }
+      },
+      savePerBoard(key, value) {
+          if (typeof Conf[key] === 'object') {
+              Conf[key][g.BOARD.ID] = value;
+          }
+          else {
+              Conf[key] = value;
+          }
+          return $.set(key, Conf[key]);
+      },
+      saveSort() {
+          return Index.savePerBoard('Index Sort', Index.currentSort);
+      },
+      saveLastLongThresholds(i) {
+          return Index.savePerBoard(`Last Long Reply Thresholds ${i}`, Index.lastLongThresholds[i]);
+      },
+      pageLoad(scroll = true) {
+          if (!Index.liveThreadData) {
+              return;
+          }
+          let { threads, order, search, mode, sort, page, hash } = Index.changed;
+          if (!threads) {
+              threads = search;
+          }
+          if (!order) {
+              order = sort;
+          }
+          if (threads || order) {
+              Index.sort();
+          }
+          if (threads) {
+              Index.buildPagelist();
+          }
+          if (search) {
+              Index.setupSearch();
+          }
+          if (mode) {
+              Index.setupMode();
+          }
+          if (sort) {
+              Index.setupSort();
+          }
+          if (threads || mode || page || order) {
+              Index.buildIndex();
+          }
+          if (threads || page) {
+              Index.setPage();
+          }
+          if (scroll && !hash) {
+              Index.scrollToIndex();
+          }
+          return Index.changed = {};
+      },
+      setupMode() {
+          for (var mode of ['paged', 'infinite', 'all pages', 'catalog']) {
+              $[mode === Conf['Index Mode'] ? 'addClass' : 'rmClass'](doc, `${mode.replace(/\ /g, '-')}-mode`);
+          }
+          Index.selectMode.value = Conf['Index Mode'];
+          Index.cb.size();
+          Index.showHiddenThreads = false;
+          return $('#hidden-toggle a', Index.navLinks).textContent = 'Show';
+      },
+      setupSort() {
+          Index.selectRev.checked = /-rev$/.test(Index.currentSort);
+          Index.selectSort.value = Index.currentSort.replace(/-rev$/, '');
+          return Index.lastLongOptions.hidden = (Index.selectSort.value !== 'lastlong');
+      },
+      getPagesNum() {
+          if (Index.search) {
+              return Math.ceil(Index.sortedThreadIDs.length / Index.threadsNumPerPage);
+          }
+          else {
+              return Index.pagesNum;
+          }
+      },
+      getMaxPageNum() {
+          return Math.max(1, Index.getPagesNum());
+      },
+      buildPagelist() {
+          const pagesRoot = $('.pages', Index.pagelist);
+          const maxPageNum = Index.getMaxPageNum();
+          if (pagesRoot.childElementCount !== maxPageNum) {
+              const nodes = [];
+              for (let i = 1, end = maxPageNum; i <= end; i++) {
+                  var a = $.el('a', {
+                      textContent: i,
+                      href: i === 1 ? './' : i
+                  });
+                  nodes.push($.tn('['), a, $.tn('] '));
+              }
+              $.rmAll(pagesRoot);
+              return $.add(pagesRoot, nodes);
+          }
+      },
+      setPage() {
+          let a, strong;
+          const pageNum = Index.currentPage;
+          const maxPageNum = Index.getMaxPageNum();
+          const pagesRoot = $('.pages', Index.pagelist);
+          // Previous/Next buttons
+          const prev = pagesRoot.previousElementSibling.firstElementChild;
+          const next = pagesRoot.nextElementSibling.firstElementChild;
+          let href = Math.max(pageNum - 1, 1);
+          prev.href = href === 1 ? './' : href;
+          prev.firstElementChild.disabled = href === pageNum;
+          href = Math.min(pageNum + 1, maxPageNum);
+          next.href = href === 1 ? './' : href;
+          next.firstElementChild.disabled = href === pageNum;
+          // <strong> current page
+          if (strong = $('strong', pagesRoot)) {
+              if (+strong.textContent === pageNum) {
+                  return;
+              }
+              $.replace(strong, strong.firstChild);
+          }
+          else {
+              strong = $.el('strong');
+          }
+          if (a = pagesRoot.children[pageNum - 1]) {
+              $.before(a, strong);
+              return $.add(strong, a);
+          }
+      },
+      updateHideLabel() {
+          if (!Index.hideLabel) {
+              return;
+          }
+          let hiddenCount = 0;
+          for (var threadID of Index.liveThreadIDs) {
+              if (Index.isHidden(threadID)) {
+                  hiddenCount++;
+              }
+          }
+          if (!hiddenCount) {
+              Index.hideLabel.hidden = true;
+              if (Index.showHiddenThreads) {
+                  Index.cb.toggleHiddenThreads();
+              }
+              return;
+          }
+          Index.hideLabel.hidden = false;
+          return $('#hidden-count', Index.navLinks).textContent = hiddenCount === 1 ?
+              '1 hidden thread'
+              :
+                  `${hiddenCount} hidden threads`;
+      },
+      update(firstTime) {
+          let oldReq;
+          if (oldReq = Index.req) {
+              delete Index.req;
+              oldReq.abort();
+          }
+          if (Conf['Index Refresh Notifications']) {
+              // Optional notification for manual refreshes
+              if (!Index.notice) {
+                  Index.notice = new Notice('info', 'Refreshing index...');
+              }
+              if (!Index.nTimeout) {
+                  Index.nTimeout = setTimeout(() => {
+                      if (Index.notice) {
+                          Index.notice.el.lastElementChild.textContent += ' (disable JSON Index if this takes too long)';
+                      }
+                  }, 3 * SECOND);
+              }
+          }
+          else {
+              // Also display notice if Index Refresh is taking too long
+              if (!Index.nTimeout) {
+                  Index.nTimeout = setTimeout(() => Index.notice || (Index.notice = new Notice('info', 'Refreshing index... (disable JSON Index if this takes too long)')), 3 * SECOND);
+              }
+          }
+          // Hard refresh in case of incomplete page load.
+          if (!firstTime && (d.readyState !== 'loading') && !$('.board + *')) {
+              location.reload();
+              return;
+          }
+          Index.req = $.whenModified(g.SITE.urls.catalogJSON({ boardID: g.BOARD.ID }), 'Index', Index.load);
+          return $.addClass(Index.button, 'spin');
+      },
+      load() {
+          let err;
+          if (this !== Index.req) {
+              return;
+          } // aborted
+          $.rmClass(Index.button, 'spin');
+          const { notice, nTimeout } = Index;
+          if (nTimeout) {
+              clearTimeout(nTimeout);
+          }
+          delete Index.nTimeout;
+          delete Index.req;
+          delete Index.notice;
+          if (![200, 304].includes(this.status)) {
+              err = `Index refresh failed. ${this.status ? `Error ${this.statusText} (${this.status})` : 'Connection Error'}`;
+              if (notice) {
+                  notice.setType('warning');
+                  notice.el.lastElementChild.textContent = err;
+                  setTimeout(notice.close, SECOND);
+              }
+              else {
+                  new Notice('warning', err, 1);
+              }
+              return;
+          }
+          try {
+              if (this.status === 200) {
+                  Index.parse(this.response);
+              }
+              else if (this.status === 304) {
+                  Index.pageLoad();
+              }
+          }
+          catch (error) {
+              err = error;
+              c.error(`Index failure: ${err.message}`, err.stack);
+              if (notice) {
+                  notice.setType('error');
+                  notice.el.lastElementChild.textContent = 'Index refresh failed.';
+                  setTimeout(notice.close, SECOND);
+              }
+              else {
+                  new Notice('error', 'Index refresh failed.', 1);
+              }
+              return;
+          }
+          if (notice) {
+              if (Conf['Index Refresh Notifications']) {
+                  notice.setType('success');
+                  notice.el.lastElementChild.textContent = 'Index refreshed!';
+                  setTimeout(notice.close, SECOND);
+              }
+              else {
+                  notice.close();
+              }
+          }
+          const timeEl = $('#index-last-refresh time', Index.navLinks);
+          timeEl.dataset.utc = Date.parse(this.getResponseHeader('Last-Modified'));
+          return RelativeDates.update(timeEl);
+      },
+      parse(pages) {
+          $.cleanCache(url => /^https?:\/\/a\.4cdn\.org\//.test(url));
+          Index.parseThreadList(pages);
+          Index.changed.threads = true;
+          return Index.pageLoad();
+      },
+      parseThreadList(pages) {
+          Index.pagesNum = pages.length;
+          Index.threadsNumPerPage = pages[0]?.threads.length || 1;
+          Index.liveThreadData = pages.reduce(((arr, next) => arr.concat(next.threads)), []);
+          Index.liveThreadIDs = Index.liveThreadData.map(data => data.no);
+          Index.liveThreadDict = dict();
+          Index.threadPosition = dict();
+          Index.parsedThreads = dict();
+          Index.replyData = dict();
+          for (let i = 0; i < Index.liveThreadData.length; i++) {
+              var obj, results;
+              var data = Index.liveThreadData[i];
+              Index.liveThreadDict[data.no] = data;
+              Index.threadPosition[data.no] = i;
+              Index.parsedThreads[data.no] = (obj = g.SITE.Build.parseJSON(data, g.BOARD));
+              results = Filter.test(obj);
+              obj.isOnTop = results.top;
+              obj.isHidden = results.hide || ThreadHiding.isHidden(obj.boardID, obj.threadID);
+              if (data.last_replies) {
+                  for (var reply of data.last_replies) {
+                      Index.replyData[`${g.BOARD}.${reply.no}`] = reply;
+                  }
+              }
+          }
+          if (Index.liveThreadData[0]) {
+              g.SITE.Build.spoilerRange[g.BOARD.ID] = Index.liveThreadData[0].custom_spoiler;
+          }
+          g.BOARD.threads.forEach(function (thread) {
+              if (!Index.liveThreadIDs.includes(thread.ID)) {
+                  return thread.collect();
+              }
+          });
+          $.event('IndexUpdate', { threads: ((Index.liveThreadIDs.map((ID) => `${g.BOARD}.${ID}`))) });
+      },
+      isHidden(threadID) {
+          let thread;
+          if ((thread = g.BOARD.threads.get(threadID)) && thread.OP && !thread.OP.isFetchedQuote) {
+              return thread.isHidden;
+          }
+          else {
+              return Index.parsedThreads[threadID].isHidden;
+          }
+      },
+      isHiddenReply(threadID, replyData) {
+          return PostHiding.isHidden(g.BOARD.ID, threadID, replyData.no) || Filter.isHidden(g.SITE.Build.parseJSON(replyData, g.BOARD));
+      },
+      buildThreads(threadIDs, isCatalog, withReplies) {
+          let errors;
+          const threads = [];
+          const newThreads = [];
+          let newPosts = [];
+          for (var ID of threadIDs) {
+              var opRoot, thread;
+              try {
+                  var OP;
+                  var threadData = Index.liveThreadDict[ID];
+                  if (thread = g.BOARD.threads.get(ID)) {
+                      var isStale = (thread.json !== threadData) && (JSON.stringify(thread.json) !== JSON.stringify(threadData));
+                      if (isStale) {
+                          thread.setCount('post', threadData.replies + 1, threadData.bumplimit);
+                          thread.setCount('file', threadData.images + !!threadData.ext, threadData.imagelimit);
+                          thread.setStatus('Sticky', !!threadData.sticky);
+                          thread.setStatus('Closed', !!threadData.closed);
+                      }
+                      if (thread.catalogView) {
+                          $.rm(thread.catalogView.nodes.replies);
+                          thread.catalogView.nodes.replies = null;
+                      }
+                  }
+                  else {
+                      thread = new Thread(ID, g.BOARD);
+                      newThreads.push(thread);
+                  }
+                  var lastPost = threadData.last_replies && threadData.last_replies.length ? threadData.last_replies[threadData.last_replies.length - 1].no : ID;
+                  if (lastPost > thread.lastPost) {
+                      thread.lastPost = lastPost;
+                  }
+                  thread.json = threadData;
+                  threads.push(thread);
+                  if ((OP = thread.OP) && !OP.isFetchedQuote) {
+                      OP.setCatalogOP(isCatalog);
+                      thread.setPage(Math.floor(Index.threadPosition[ID] / Index.threadsNumPerPage) + 1);
+                  }
+                  else {
+                      var obj = Index.parsedThreads[ID];
+                      opRoot = g.SITE.Build.post(obj);
+                      OP = new Post(opRoot, thread, g.BOARD);
+                      OP.filterResults = obj.filterResults;
+                      newPosts.push(OP);
+                  }
+                  if (!isCatalog || !thread.nodes.root) {
+                      g.SITE.Build.thread(thread, threadData, withReplies);
+                  }
+              }
+              catch (err) {
+                  // Skip posts that we failed to parse.
+                  if (!errors) {
+                      errors = [];
+                  }
+                  errors.push({
+                      message: `Parsing of Thread No.${thread} failed. Thread will be skipped.`,
+                      error: err,
+                      html: opRoot?.outerHTML
+                  });
+              }
+          }
+          if (errors) {
+              Main.handleErrors(errors);
+          }
+          if (withReplies) {
+              newPosts = newPosts.concat(Index.buildReplies(threads));
+          }
+          Main.callbackNodes('Thread', newThreads);
+          Main.callbackNodes('Post', newPosts);
+          Index.updateHideLabel();
+          $.event('IndexRefreshInternal', { threadIDs: (threads.map((t) => t.fullID)), isCatalog });
+          return threads;
+      },
+      buildReplies(threads) {
+          let errors;
+          const posts = [];
+          for (var thread of threads) {
+              var lastReplies;
+              if (!(lastReplies = Index.liveThreadDict[thread.ID].last_replies)) {
+                  continue;
+              }
+              var nodes = [];
+              for (var data of lastReplies) {
+                  var node, post;
+                  if ((post = thread.posts.get(data.no)) && !post.isFetchedQuote) {
+                      nodes.push(post.nodes.root);
+                      continue;
+                  }
+                  nodes.push(node = g.SITE.Build.postFromObject(data, thread.board.ID));
+                  try {
+                      posts.push(new Post(node, thread, thread.board));
+                  }
+                  catch (err) {
+                      // Skip posts that we failed to parse.
+                      if (!errors) {
+                          errors = [];
+                      }
+                      errors.push({
+                          message: `Parsing of Post No.${data.no} failed. Post will be skipped.`,
+                          error: err,
+                          html: node?.outerHTML
+                      });
+                  }
+              }
+              $.add(thread.nodes.root, nodes);
+          }
+          if (errors) {
+              Main.handleErrors(errors);
+          }
+          return posts;
+      },
+      buildCatalogViews(threads) {
+          const catalogThreads = [];
+          for (var thread of threads) {
+              if (!thread.catalogView) {
+                  var { ID } = thread;
+                  var page = Math.floor(Index.threadPosition[ID] / Index.threadsNumPerPage) + 1;
+                  var root = g.SITE.Build.catalogThread(thread, Index.liveThreadDict[ID], page);
+                  catalogThreads.push(new CatalogThread(root, thread));
+              }
+          }
+          Main.callbackNodes('CatalogThread', catalogThreads);
+      },
+      sizeCatalogViews(threads) {
+          // XXX When browsers support CSS3 attr(), use it instead.
+          const size = Conf['Index Size'] === 'small' ? 150 : 250;
+          for (var thread of threads) {
+              var { thumb } = thread.catalogView.nodes;
+              var { width, height } = thumb.dataset;
+              if (!width) {
+                  continue;
+              }
+              var ratio = size / Math.max(width, height);
+              thumb.style.width = (width * ratio) + 'px';
+              thumb.style.height = (height * ratio) + 'px';
+          }
+      },
+      buildCatalogReplies(thread) {
+          let lastReplies;
+          const { nodes } = thread.catalogView;
+          if (!(lastReplies = Index.liveThreadDict[thread.ID].last_replies)) {
+              return;
+          }
+          const replies = [];
+          for (var data of lastReplies) {
+              if (Index.isHiddenReply(thread.ID, data)) {
+                  continue;
+              }
+              var reply = g.SITE.Build.catalogReply(thread, data);
+              RelativeDates.update($('time', reply));
+              $.on($('.catalog-reply-preview', reply), 'mouseover', QuotePreview.mouseover);
+              replies.push(reply);
+          }
+          nodes.replies = $.el('div', { className: 'catalog-replies' });
+          $.add(nodes.replies, replies);
+          $.add(thread.OP.nodes.post, nodes.replies);
+      },
+      sort() {
+          let threadIDs;
+          const { liveThreadIDs, liveThreadData } = Index;
+          if (!liveThreadData) {
+              return;
+          }
+          const tmp_time = new Date().getTime() / 1000;
+          const sortType = Index.currentSort.replace(/-rev$/, '');
+          Index.sortedThreadIDs = (() => {
+              switch (sortType) {
+                  case 'lastreply':
+                  case 'lastlong':
+                      var repliesAvailable = liveThreadData.some(thread => thread.last_replies?.length);
+                      var lastlong = function (thread) {
+                          if (!repliesAvailable) {
+                              return thread.last_modified;
+                          }
+                          const iterable = thread.last_replies || [];
+                          for (let i = iterable.length - 1; i >= 0; i--) {
+                              var r = iterable[i];
+                              if (Index.isHiddenReply(thread.no, r)) {
+                                  continue;
+                              }
+                              if (sortType === 'lastreply') {
+                                  return r;
+                              }
+                              var len = r.com ? g.SITE.Build.parseComment(r.com).replace(/[^a-z]/ig, '').length : 0;
+                              if (len >= Index.lastLongThresholds[+!!r.ext]) {
+                                  return r;
+                              }
+                          }
+                          if (thread.omitted_posts && thread.last_replies?.length) {
+                              return thread.last_replies[0];
+                          }
+                          else {
+                              return thread;
+                          }
+                      };
+                      var lastlongD = dict();
+                      for (var thread of liveThreadData) {
+                          lastlongD[thread.no] = lastlong(thread).no;
+                      }
+                      return [...liveThreadData].sort((a, b) => lastlongD[b.no] - lastlongD[a.no]).map(post => post.no);
+                  case 'bump': return liveThreadIDs;
+                  case 'birth': return [...liveThreadIDs].sort((a, b) => b - a);
+                  case 'replycount': return [...liveThreadData].sort((a, b) => b.replies - a.replies).map(post => post.no);
+                  case 'filecount': return [...liveThreadData].sort((a, b) => b.images - a.images).map(post => post.no);
+                  case 'activity': return [...liveThreadData].sort((a, b) => ((tmp_time - a.time) / (a.replies + 1)) - ((tmp_time - b.time) / (b.replies + 1))).map(post => post.no);
+                  default: return liveThreadIDs;
+              }
+          })();
+          if (/-rev$/.test(Index.currentSort)) {
+              Index.sortedThreadIDs.reverse();
+          }
+          if (Index.search && (threadIDs = Index.querySearch(Index.search))) {
+              Index.sortedThreadIDs = threadIDs;
+          }
+          // Sticky threads
+          Index.sortOnTop(obj => obj.isSticky);
+          // Highlighted threads
+          Index.sortOnTop(obj => obj.isOnTop || (Conf['Pin Watched Threads'] && ThreadWatcher.isWatchedRaw(obj.boardID, obj.threadID)));
+          // Non-hidden threads
+          if (Conf['Anchor Hidden Threads']) {
+              return Index.sortOnTop(obj => !Index.isHidden(obj.threadID));
+          }
+      },
+      sortOnTop(match) {
+          const topThreads = [];
+          const bottomThreads = [];
+          for (var ID of Index.sortedThreadIDs) {
+              (match(Index.parsedThreads[ID]) ? topThreads : bottomThreads).push(ID);
+          }
+          return Index.sortedThreadIDs = topThreads.concat(bottomThreads);
+      },
+      buildIndex() {
+          let threadIDs;
+          if (!Index.liveThreadData) {
+              return;
+          }
+          switch (Conf['Index Mode']) {
+              case 'all pages':
+                  threadIDs = Index.sortedThreadIDs;
+                  break;
+              case 'catalog':
+                  threadIDs = Index.sortedThreadIDs.filter(ID => !Index.isHidden(ID) !== Index.showHiddenThreads);
+                  break;
+              default:
+                  threadIDs = Index.threadsOnPage(Index.currentPage);
+          }
+          delete Index.pageNum;
+          $.rmAll(Index.root);
+          $.rmAll(Header.hover);
+          if (Index.loaded && Index.root.parentNode) {
+              $.event('PostsRemoved', null, Index.root);
+          }
+          if (Conf['Index Mode'] === 'catalog') {
+              Index.buildCatalog(threadIDs);
+          }
+          else {
+              Index.buildStructure(threadIDs);
+          }
+      },
+      threadsOnPage(pageNum) {
+          const nodesPerPage = Index.threadsNumPerPage;
+          const offset = nodesPerPage * (pageNum - 1);
+          return Index.sortedThreadIDs.slice(offset, offset + nodesPerPage);
+      },
+      buildStructure(threadIDs) {
+          const threads = Index.buildThreads(threadIDs, false, Conf['Show Replies']);
+          const nodes = [];
+          for (var thread of threads) {
+              nodes.push(thread.nodes.root, $.el('hr'));
+          }
+          $.add(Index.root, nodes);
           if (Index.root.parentNode) {
-            $.event('PostsInserted', null, Index.root);
+              $.event('PostsInserted', null, Index.root);
           }
-          return Index.loaded = true;
-        }
-      };
-      fn();
-    },
-
-    buildCatalogPart(threadIDs) {
-      const threads = Index.buildThreads(threadIDs, true);
-      Index.buildCatalogViews(threads);
-      Index.sizeCatalogViews(threads);
-      const nodes = [];
-      for (var thread of threads) {
-        thread.OP.setCatalogOP(true);
-        $.add(thread.catalogView.nodes.root, thread.OP.nodes.root);
-        nodes.push(thread.catalogView.nodes.root);
-        $.on(thread.catalogView.nodes.root, 'mouseenter', Index.cb.catalogReplies.bind(thread));
-        $.on(thread.OP.nodes.root, 'mouseenter', Index.cb.hoverAdjust.bind(thread.OP.nodes));
+          Index.loaded = true;
+      },
+      buildCatalog(threadIDs) {
+          let i = 0;
+          const n = threadIDs.length;
+          let node0 = null;
+          var fn = function () {
+              if (node0 && !node0.parentNode) {
+                  return;
+              } // Index.root cleared
+              const j = (i > 0) && Index.root.parentNode ? n : i + 30;
+              node0 = Index.buildCatalogPart(threadIDs.slice(i, j))[0];
+              i = j;
+              if (i < n) {
+                  return $.queueTask(fn);
+              }
+              else {
+                  if (Index.root.parentNode) {
+                      $.event('PostsInserted', null, Index.root);
+                  }
+                  return Index.loaded = true;
+              }
+          };
+          fn();
+      },
+      buildCatalogPart(threadIDs) {
+          const threads = Index.buildThreads(threadIDs, true);
+          Index.buildCatalogViews(threads);
+          Index.sizeCatalogViews(threads);
+          const nodes = [];
+          for (var thread of threads) {
+              thread.OP.setCatalogOP(true);
+              $.add(thread.catalogView.nodes.root, thread.OP.nodes.root);
+              nodes.push(thread.catalogView.nodes.root);
+              $.on(thread.catalogView.nodes.root, 'mouseenter', Index.cb.catalogReplies.bind(thread));
+              $.on(thread.OP.nodes.root, 'mouseenter', Index.cb.hoverAdjust.bind(thread.OP.nodes));
+          }
+          $.add(Index.root, nodes);
+          return nodes;
+      },
+      clearSearch() {
+          Index.searchInput.value = '';
+          Index.onSearchInput();
+          return Index.searchInput.focus();
+      },
+      setupSearch() {
+          Index.searchInput.value = Index.search;
+          if (Index.search) {
+              return Index.searchInput.dataset.searching = 1;
+          }
+          else {
+              // XXX https://bugzilla.mozilla.org/show_bug.cgi?id=1021289
+              return Index.searchInput.removeAttribute('data-searching');
+          }
+      },
+      onSearchInput() {
+          const search = Index.searchInput.value.trim();
+          if (search === Index.search) {
+              return;
+          }
+          Index.pushState({
+              search,
+              replace: !!search === !!Index.search
+          });
+          return Index.pageLoad(false);
+      },
+      querySearch(query) {
+          let keywords, match;
+          if (match = query.match(/^([\w+]+):\/(.*)\/(\w*)$/)) {
+              let regexp;
+              try {
+                  regexp = RegExp(match[2], match[3]);
+              }
+              catch (error) {
+                  return [];
+              }
+              return Index.sortedThreadIDs.filter(ID => regexp.test(Filter.values(match[1], Index.parsedThreads[ID]).join('\n')));
+          }
+          if (!(keywords = query.toLowerCase().match(/\S+/g))) {
+              return;
+          }
+          return Index.sortedThreadIDs.filter(ID => Index.searchMatch(Index.parsedThreads[ID], keywords));
+      },
+      searchMatch(obj, keywords) {
+          const { info, file } = obj;
+          if (info.comment == null) {
+              info.comment = g.SITE.Build.parseComment(info.commentHTML.innerHTML);
+          }
+          let text = [];
+          for (var key of ['comment', 'subject', 'name', 'tripcode']) {
+              if (key in info) {
+                  text.push(info[key]);
+              }
+          }
+          if (file) {
+              text.push(file.name);
+          }
+          text = text.join(' ').toLowerCase();
+          for (var keyword of keywords) {
+              if (-1 === text.indexOf(keyword)) {
+                  return false;
+              }
+          }
+          return true;
       }
-      $.add(Index.root, nodes);
-      return nodes;
-    },
-
-    clearSearch() {
-      Index.searchInput.value = '';
-      Index.onSearchInput();
-      return Index.searchInput.focus();
-    },
-
-    setupSearch() {
-      Index.searchInput.value = Index.search;
-      if (Index.search) {
-        return Index.searchInput.dataset.searching = 1;
-      } else {
-        // XXX https://bugzilla.mozilla.org/show_bug.cgi?id=1021289
-        return Index.searchInput.removeAttribute('data-searching');
-      }
-    },
-
-    onSearchInput() {
-      const search = Index.searchInput.value.trim();
-      if (search === Index.search) { return; }
-      Index.pushState({
-        search,
-        replace: !!search === !!Index.search
-      });
-      return Index.pageLoad(false);
-    },
-
-    querySearch(query) {
-      let keywords, match;
-      if (match = query.match(/^([\w+]+):\/(.*)\/(\w*)$/)) {
-        let regexp;
-        try {
-          regexp = RegExp(match[2], match[3]);
-        } catch (error) {
-          return [];
-        }
-        return Index.sortedThreadIDs.filter(ID => regexp.test(Filter.values(match[1], Index.parsedThreads[ID]).join('\n')));
-      }
-      if (!(keywords = query.toLowerCase().match(/\S+/g))) { return; }
-      return Index.sortedThreadIDs.filter(ID => Index.searchMatch(Index.parsedThreads[ID], keywords));
-    },
-
-    searchMatch(obj, keywords) {
-      const {info, file} = obj;
-      if (info.comment == null) { info.comment = g.SITE.Build.parseComment(info.commentHTML.innerHTML); }
-      let text = [];
-      for (var key of ['comment', 'subject', 'name', 'tripcode']) {
-        if (key in info) { text.push(info[key]); }
-      }
-      if (file) { text.push(file.name); }
-      text = text.join(' ').toLowerCase();
-      for (var keyword of keywords) {
-        if (-1 === text.indexOf(keyword)) { return false; }
-      }
-      return true;
-    }
   };
 
   var ThreadHiding = {
-    init() {
-      if (!['index', 'catalog'].includes(g.VIEW) || (!Conf['Thread Hiding Buttons'] && !(Conf['Menu'] && Conf['Thread Hiding Link']) && !Conf['JSON Index'])) { return; }
-      this.db = new DataBoard('hiddenThreads');
-      if (g.VIEW === 'catalog') { return this.catalogWatch(); }
-      this.catalogSet(g.BOARD);
-      $.on(d, 'IndexRefreshInternal', this.onIndexRefresh);
-      if (Conf['Thread Hiding Buttons']) {
-        $.addClass(doc, 'thread-hide');
-      }
-      return Callbacks.Post.push({
-        name: 'Thread Hiding',
-        cb:   this.node
-      });
-    },
-
-    catalogSet(board) {
-      if (!$.hasStorage || (g.SITE.software !== 'yotsuba')) { return; }
-      const hiddenThreads = ThreadHiding.db.get({
-        boardID: board.ID,
-        defaultValue: dict()
-      });
-      for (var threadID in hiddenThreads) { hiddenThreads[threadID] = true; }
-      return localStorage.setItem(`4chan-hide-t-${board}`, JSON.stringify(hiddenThreads));
-    },
-
-    catalogWatch() {
-      if (!$.hasStorage || (g.SITE.software !== 'yotsuba')) { return; }
-      this.hiddenThreads = JSON.parse(localStorage.getItem(`4chan-hide-t-${g.BOARD}`)) || {};
-      return Main.ready(() => // 4chan's catalog sets the style to "display: none;" when hiding or unhiding a thread.
-      new MutationObserver(ThreadHiding.catalogSave).observe($.id('threads'), {
-        attributes: true,
-        subtree: true,
-        attributeFilter: ['style']
-      }));
-    },
-
-    catalogSave() {
-      let threadID;
-      const hiddenThreads2 = JSON.parse(localStorage.getItem(`4chan-hide-t-${g.BOARD}`)) || {};
-      for (threadID in hiddenThreads2) {
-        if (!$.hasOwn(ThreadHiding.hiddenThreads, threadID)) {
-          ThreadHiding.db.set({
-            boardID:  g.BOARD.ID,
-            threadID,
-            val:      {makeStub: Conf['Stubs']}});
-        }
-      }
-      for (threadID in ThreadHiding.hiddenThreads) {
-        if (!$.hasOwn(hiddenThreads2, threadID)) {
-          ThreadHiding.db.delete({
-            boardID:  g.BOARD.ID,
-            threadID
-          });
-        }
-      }
-      return ThreadHiding.hiddenThreads = hiddenThreads2;
-    },
-
-    isHidden(boardID, threadID) {
-      return !!(ThreadHiding.db && ThreadHiding.db.get({boardID, threadID}));
-    },
-
-    node() {
-      let data;
-      if (this.isReply || this.isClone || this.isFetchedQuote) { return; }
-
-      if (Conf['Thread Hiding Buttons']) {
-        $.prepend(this.nodes.root, ThreadHiding.makeButton(this.thread, 'hide'));
-      }
-
-      if (data = ThreadHiding.db.get({boardID: this.board.ID, threadID: this.ID})) {
-        ThreadHiding.hide(this.thread, data.makeStub, 'Hidden manually');
-      }
-    },
-
-    onIndexRefresh() {
-      return g.BOARD.threads.forEach(function(thread) {
-        const {root} = thread.nodes;
-        if (thread.isHidden && thread.stub && !root.contains(thread.stub)) {
-          ThreadHiding.makeStub(thread, root);
-        }
-      });
-    },
-
-    menu: {
       init() {
-        if ((g.VIEW !== 'index') || !Conf['Menu'] || !Conf['Thread Hiding Link']) { return; }
-
-        let div = $.el('div', {
-          className: 'hide-thread-link',
-          textContent: 'Hide'
-        }
-        );
-
-        const apply = $.el('a', {
-          textContent: 'Apply',
-          href: 'javascript:;'
-        }
-        );
-        $.on(apply, 'click', ThreadHiding.menu.hide);
-
-        const makeStub = UI.checkbox('Stubs', 'Make stub');
-
-        Menu.menu.addEntry({
-          el: div,
-          order: 20,
-          open({thread, isReply}) {
-            if (isReply || thread.isHidden || (Conf['JSON Index'] && (Conf['Index Mode'] === 'catalog'))) {
-              return false;
-            }
-            ThreadHiding.menu.thread = thread;
-            return true;
+          if (!['index', 'catalog'].includes(g.VIEW) || (!Conf['Thread Hiding Buttons'] && !(Conf['Menu'] && Conf['Thread Hiding Link']) && !Conf['JSON Index'])) {
+              return;
+          }
+          this.db = new DataBoard('hiddenThreads');
+          if (g.VIEW === 'catalog') {
+              return this.catalogWatch();
+          }
+          this.catalogSet(g.BOARD);
+          $.on(d, 'IndexRefreshInternal', this.onIndexRefresh);
+          if (Conf['Thread Hiding Buttons']) {
+              $.addClass(doc, 'thread-hide');
+          }
+          return Callbacks.Post.push({
+              name: 'Thread Hiding',
+              cb: this.node
+          });
+      },
+      catalogSet(board) {
+          if (!$.hasStorage || (g.SITE.software !== 'yotsuba')) {
+              return;
+          }
+          const hiddenThreads = ThreadHiding.db.get({
+              boardID: board.ID,
+              defaultValue: dict()
+          });
+          for (var threadID in hiddenThreads) {
+              hiddenThreads[threadID] = true;
+          }
+          return localStorage.setItem(`4chan-hide-t-${board}`, JSON.stringify(hiddenThreads));
+      },
+      catalogWatch() {
+          if (!$.hasStorage || (g.SITE.software !== 'yotsuba')) {
+              return;
+          }
+          this.hiddenThreads = JSON.parse(localStorage.getItem(`4chan-hide-t-${g.BOARD}`)) || {};
+          return Main.ready(() => // 4chan's catalog sets the style to "display: none;" when hiding or unhiding a thread.
+           new MutationObserver(ThreadHiding.catalogSave).observe($.id('threads'), {
+              attributes: true,
+              subtree: true,
+              attributeFilter: ['style']
+          }));
+      },
+      catalogSave() {
+          let threadID;
+          const hiddenThreads2 = JSON.parse(localStorage.getItem(`4chan-hide-t-${g.BOARD}`)) || {};
+          for (threadID in hiddenThreads2) {
+              if (!$.hasOwn(ThreadHiding.hiddenThreads, threadID)) {
+                  ThreadHiding.db.set({
+                      boardID: g.BOARD.ID,
+                      threadID,
+                      val: { makeStub: Conf['Stubs'] }
+                  });
+              }
+          }
+          for (threadID in ThreadHiding.hiddenThreads) {
+              if (!$.hasOwn(hiddenThreads2, threadID)) {
+                  ThreadHiding.db.delete({
+                      boardID: g.BOARD.ID,
+                      threadID
+                  });
+              }
+          }
+          return ThreadHiding.hiddenThreads = hiddenThreads2;
+      },
+      isHidden(boardID, threadID) {
+          return !!(ThreadHiding.db && ThreadHiding.db.get({ boardID, threadID }));
+      },
+      node() {
+          let data;
+          if (this.isReply || this.isClone || this.isFetchedQuote) {
+              return;
+          }
+          if (Conf['Thread Hiding Buttons']) {
+              $.prepend(this.nodes.root, ThreadHiding.makeButton(this.thread, 'hide'));
+          }
+          if (data = ThreadHiding.db.get({ boardID: this.board.ID, threadID: this.ID })) {
+              ThreadHiding.hide(this.thread, data.makeStub, 'Hidden manually');
+          }
+      },
+      onIndexRefresh() {
+          return g.BOARD.threads.forEach(function (thread) {
+              const { root } = thread.nodes;
+              if (thread.isHidden && thread.stub && !root.contains(thread.stub)) {
+                  ThreadHiding.makeStub(thread, root);
+              }
+          });
+      },
+      menu: {
+          init() {
+              if ((g.VIEW !== 'index') || !Conf['Menu'] || !Conf['Thread Hiding Link']) {
+                  return;
+              }
+              let div = $.el('div', {
+                  className: 'hide-thread-link',
+                  textContent: 'Hide'
+              });
+              const apply = $.el('a', {
+                  textContent: 'Apply',
+                  href: 'javascript:;'
+              });
+              $.on(apply, 'click', ThreadHiding.menu.hide);
+              const makeStub = UI.checkbox('Stubs', 'Make stub');
+              Menu.menu.addEntry({
+                  el: div,
+                  order: 20,
+                  open({ thread, isReply }) {
+                      if (isReply || thread.isHidden || (Conf['JSON Index'] && (Conf['Index Mode'] === 'catalog'))) {
+                          return false;
+                      }
+                      ThreadHiding.menu.thread = thread;
+                      return true;
+                  },
+                  subEntries: [{ el: apply }, { el: makeStub }]
+              });
+              div = $.el('a', {
+                  className: 'show-thread-link',
+                  textContent: 'Show',
+                  href: 'javascript:;'
+              });
+              $.on(div, 'click', ThreadHiding.menu.show);
+              Menu.menu.addEntry({
+                  el: div,
+                  order: 20,
+                  open({ thread, isReply }) {
+                      if (isReply || !thread.isHidden || (Conf['JSON Index'] && (Conf['Index Mode'] === 'catalog'))) {
+                          return false;
+                      }
+                      ThreadHiding.menu.thread = thread;
+                      return true;
+                  }
+              });
+              const hideStubLink = $.el('a', {
+                  textContent: 'Hide stub',
+                  href: 'javascript:;'
+              });
+              $.on(hideStubLink, 'click', ThreadHiding.menu.hideStub);
+              return Menu.menu.addEntry({
+                  el: hideStubLink,
+                  order: 15,
+                  open({ thread, isReply }) {
+                      if (isReply || !thread.isHidden || (Conf['JSON Index'] && (Conf['Index Mode'] === 'catalog'))) {
+                          return false;
+                      }
+                      return ThreadHiding.menu.thread = thread;
+                  }
+              });
           },
-          subEntries: [{el: apply}, {el: makeStub}]});
-
-        div = $.el('a', {
-          className: 'show-thread-link',
-          textContent: 'Show',
-          href: 'javascript:;'
-        }
-        );
-        $.on(div, 'click', ThreadHiding.menu.show);
-
-        Menu.menu.addEntry({
-          el: div,
-          order: 20,
-          open({thread, isReply}) {
-            if (isReply || !thread.isHidden || (Conf['JSON Index'] && (Conf['Index Mode'] === 'catalog'))) {
-              return false;
-            }
-            ThreadHiding.menu.thread = thread;
-            return true;
+          hide() {
+              const makeStub = $('input', this.parentNode).checked;
+              const { thread } = ThreadHiding.menu;
+              ThreadHiding.hide(thread, makeStub, 'Hidden manually');
+              ThreadHiding.saveHiddenState(thread, makeStub);
+              return $.event('CloseMenu');
+          },
+          show() {
+              const { thread } = ThreadHiding.menu;
+              ThreadHiding.show(thread);
+              ThreadHiding.saveHiddenState(thread);
+              return $.event('CloseMenu');
+          },
+          hideStub() {
+              const { thread } = ThreadHiding.menu;
+              ThreadHiding.show(thread);
+              ThreadHiding.hide(thread, false);
+              ThreadHiding.saveHiddenState(thread, false);
+              $.event('CloseMenu');
           }
-        });
-
-        const hideStubLink = $.el('a', {
-          textContent: 'Hide stub',
-          href: 'javascript:;'
-        }
-        );
-        $.on(hideStubLink, 'click', ThreadHiding.menu.hideStub);
-
-        return Menu.menu.addEntry({
-          el: hideStubLink,
-          order: 15,
-          open({thread, isReply}) {
-            if (isReply || !thread.isHidden || (Conf['JSON Index'] && (Conf['Index Mode'] === 'catalog'))) {
-              return false;
-            }
-            return ThreadHiding.menu.thread = thread;
+      },
+      makeButton(thread, type) {
+          const span = $.el('span', {
+              className: 'stub-icon',
+          });
+          const a = $.el('a', {
+              className: `${type}-post-button ${type}-thread-button`,
+              href: 'javascript:;'
+          });
+          Icon.set(span, type === 'hide' ? 'squareMinus' : 'squarePlus');
+          $.add(a, span);
+          a.dataset.fullID = thread.fullID;
+          $.on(a, 'click', ThreadHiding.toggle);
+          return a;
+      },
+      makeStub(thread, root, reason) {
+          let summary, threadDivider;
+          let numReplies = $$(g.SITE.selectors.replyOriginal, root).length;
+          if (summary = $(g.SITE.selectors.summary, root)) {
+              numReplies += +summary.textContent.match(/\d+/);
           }
-        });
-      },
-
-      hide() {
-        const makeStub = $('input', this.parentNode).checked;
-        const {thread} = ThreadHiding.menu;
-        ThreadHiding.hide(thread, makeStub, 'Hidden manually');
-        ThreadHiding.saveHiddenState(thread, makeStub);
-        return $.event('CloseMenu');
-      },
-
-      show() {
-        const {thread} = ThreadHiding.menu;
-        ThreadHiding.show(thread);
-        ThreadHiding.saveHiddenState(thread);
-        return $.event('CloseMenu');
-      },
-
-      hideStub() {
-        const {thread} = ThreadHiding.menu;
-        ThreadHiding.show(thread);
-        ThreadHiding.hide(thread, false);
-        ThreadHiding.saveHiddenState(thread, false);
-        $.event('CloseMenu');
-      }
-    },
-
-    makeButton(thread, type) {
-      const span = $.el('span', {
-        className: 'stub-icon',
-      });
-      const a = $.el('a', {
-        className: `${type}-post-button ${type}-thread-button`,
-        href:      'javascript:;'
-      });
-      Icon.set(span, type === 'hide' ? 'squareMinus' : 'squarePlus');
-      $.add(a, span);
-      a.dataset.fullID = thread.fullID;
-      $.on(a, 'click', ThreadHiding.toggle);
-      return a;
-    },
-
-    makeStub(thread, root, reason) {
-      let summary, threadDivider;
-      let numReplies  = $$(g.SITE.selectors.replyOriginal, root).length;
-      if (summary = $(g.SITE.selectors.summary, root)) { numReplies += +summary.textContent.match(/\d+/); }
-
-      const a = ThreadHiding.makeButton(thread, 'show');
-      const { nameBlock, subject } = thread.OP.info;
-
-      if (subject) {
-        $.add(a, $.el('span', {
-          className: 'stub-subject',
-          textContent: subject
-        }));
-      }
-      $.add(a, $.el('span', {
-        className: 'stub-name',
-        textContent: nameBlock
-      }));
-      $.add(a, $.el('span', {
-        className: 'stub-replies',
-        textContent: `(${numReplies} repl${numReplies === 1 ? 'y' : 'ies'})`
-      }));
-
-      let reasons = thread.OP.filterResults?.reasons || [];
-      if (reason) reasons = [...reasons, reason];
-
-      if (Conf['Filter Reason'] && reasons.length) {
-        const reasonsSpan = $.el('span', { className: 'stub-reasons' });
-        $.add(reasonsSpan, reasons.map(re => $.el('span', { className: 'stub-reason', textContent: re })));
-        a.appendChild(reasonsSpan);
-      }
-
-      thread.stub = $.el('div', {className: 'stub'});
-
-      if (Conf['Menu']) {
-        $.add(thread.stub, [a, Menu.makeButton(thread.OP)]);
-      } else {
-        $.add(thread.stub, a);
-      }
-      if (!Conf['Filter Reason'] && reasons) thread.stub.title = reasons.join(' & ');
-      $.prepend(root, thread.stub);
-
-      // Prevent hiding of thread divider on sites that put it inside the thread
-      if (threadDivider = $(g.SITE.selectors.threadDivider, root)) {
-        return $.addClass(threadDivider, 'threadDivider');
-      }
-    },
-
-    saveHiddenState(thread, makeStub) {
-      if (thread.isHidden) {
-        ThreadHiding.db.set({
-          boardID:  thread.board.ID,
-          threadID: thread.ID,
-          val: {makeStub}});
-      } else {
-        ThreadHiding.db.delete({
-          boardID:  thread.board.ID,
-          threadID: thread.ID
-        });
-      }
-      return ThreadHiding.catalogSet(thread.board);
-    },
-
-    toggle(thread) {
-      if (!(thread instanceof Thread)) {
-        thread = g.threads.get(this.dataset.fullID);
-      }
-      if (thread.isHidden) {
-        ThreadHiding.show(thread);
-      } else {
-        ThreadHiding.hide(thread, undefined, 'Hidden manually');
-      }
-      return ThreadHiding.saveHiddenState(thread);
-    },
-
-    hide(thread, makeStub=Conf['Stubs'], reason) {
-      if (thread.isHidden) { return; }
-      const threadRoot = thread.nodes.root;
-      thread.isHidden = true;
-      Index.updateHideLabel();
-      if (thread.catalogView && !Index.showHiddenThreads) {
-        $.rm(thread.catalogView.nodes.root);
-        $.event('PostsRemoved', null, Index.root);
-      }
-
-      if (!makeStub) { return threadRoot.hidden = true; }
-
-      ThreadHiding.makeStub(thread, threadRoot, reason);
-    },
-
-    show(thread) {
-      if (thread.stub) {
-        $.rm(thread.stub);
-        delete thread.stub;
-      }
-      const threadRoot = thread.nodes.root;
-      threadRoot.hidden = (thread.isHidden = false);
-      Index.updateHideLabel();
-      if (thread.catalogView && Conf['Index Mode'] === 'catalog') {
-        const { root } = thread.catalogView.nodes;
-
-        if (Index.showHiddenThreads) {
-          $.rm(root);
-          $.event('PostsRemoved', null, Index.root);
-        } else {
-          let i = Index.sortedThreadIDs.indexOf(thread.ID) - 1;
-
-          while (true) {
-            if (i < 0) {
-              $('.board').insertAdjacentElement('afterbegin', root);
-              break;
-            }
-            const rootPrevious = d.getElementById(`t${Index.sortedThreadIDs[i]}`);
-            if (rootPrevious) {
-              rootPrevious.insertAdjacentElement('afterend', root);
-              break;
-            }
-            --i;
+          const a = ThreadHiding.makeButton(thread, 'show');
+          const { nameBlock, subject } = thread.OP.info;
+          if (subject) {
+              $.add(a, $.el('span', {
+                  className: 'stub-subject',
+                  textContent: subject
+              }));
           }
-
-          $.event('PostsInserted', null, Index.root);
-        }
+          $.add(a, $.el('span', {
+              className: 'stub-name',
+              textContent: nameBlock
+          }));
+          $.add(a, $.el('span', {
+              className: 'stub-replies',
+              textContent: `(${numReplies} repl${numReplies === 1 ? 'y' : 'ies'})`
+          }));
+          let reasons = thread.OP.filterResults?.reasons || [];
+          if (reason)
+              reasons = [...reasons, reason];
+          if (Conf['Filter Reason'] && reasons.length) {
+              const reasonsSpan = $.el('span', { className: 'stub-reasons' });
+              $.add(reasonsSpan, reasons.map(re => $.el('span', { className: 'stub-reason', textContent: re })));
+              a.appendChild(reasonsSpan);
+          }
+          thread.stub = $.el('div', { className: 'stub' });
+          if (Conf['Menu']) {
+              $.add(thread.stub, [a, Menu.makeButton(thread.OP)]);
+          }
+          else {
+              $.add(thread.stub, a);
+          }
+          if (!Conf['Filter Reason'] && reasons)
+              thread.stub.title = reasons.join(' & ');
+          $.prepend(root, thread.stub);
+          // Prevent hiding of thread divider on sites that put it inside the thread
+          if (threadDivider = $(g.SITE.selectors.threadDivider, root)) {
+              return $.addClass(threadDivider, 'threadDivider');
+          }
+      },
+      saveHiddenState(thread, makeStub) {
+          if (thread.isHidden) {
+              ThreadHiding.db.set({
+                  boardID: thread.board.ID,
+                  threadID: thread.ID,
+                  val: { makeStub }
+              });
+          }
+          else {
+              ThreadHiding.db.delete({
+                  boardID: thread.board.ID,
+                  threadID: thread.ID
+              });
+          }
+          return ThreadHiding.catalogSet(thread.board);
+      },
+      toggle(thread) {
+          if (!(thread instanceof Thread)) {
+              thread = g.threads.get(this.dataset.fullID);
+          }
+          if (thread.isHidden) {
+              ThreadHiding.show(thread);
+          }
+          else {
+              ThreadHiding.hide(thread, undefined, 'Hidden manually');
+          }
+          return ThreadHiding.saveHiddenState(thread);
+      },
+      hide(thread, makeStub = Conf['Stubs'], reason) {
+          if (thread.isHidden) {
+              return;
+          }
+          const threadRoot = thread.nodes.root;
+          thread.isHidden = true;
+          Index.updateHideLabel();
+          if (thread.catalogView && !Index.showHiddenThreads) {
+              $.rm(thread.catalogView.nodes.root);
+              $.event('PostsRemoved', null, Index.root);
+          }
+          if (!makeStub) {
+              return threadRoot.hidden = true;
+          }
+          ThreadHiding.makeStub(thread, threadRoot, reason);
+      },
+      show(thread) {
+          if (thread.stub) {
+              $.rm(thread.stub);
+              delete thread.stub;
+          }
+          const threadRoot = thread.nodes.root;
+          threadRoot.hidden = (thread.isHidden = false);
+          Index.updateHideLabel();
+          if (thread.catalogView && Conf['Index Mode'] === 'catalog') {
+              const { root } = thread.catalogView.nodes;
+              if (Index.showHiddenThreads) {
+                  $.rm(root);
+                  $.event('PostsRemoved', null, Index.root);
+              }
+              else {
+                  let i = Index.sortedThreadIDs.indexOf(thread.ID) - 1;
+                  while (true) {
+                      if (i < 0) {
+                          $('.board').insertAdjacentElement('afterbegin', root);
+                          break;
+                      }
+                      const rootPrevious = d.getElementById(`t${Index.sortedThreadIDs[i]}`);
+                      if (rootPrevious) {
+                          rootPrevious.insertAdjacentElement('afterend', root);
+                          break;
+                      }
+                      --i;
+                  }
+                  $.event('PostsInserted', null, Index.root);
+              }
+          }
       }
-    }
   };
 
   var FappeTyme = {
-    init() {
-      if ((!Conf['Fappe Tyme'] && !Conf['Werk Tyme']) || !['index', 'thread', 'archive'].includes(g.VIEW)) { return; }
-
-      this.nodes = {};
-      this.enabled = {
-        fappe: false,
-        werk:  Conf['werk']
-      };
-
-      for (var type of ["Fappe", "Werk"]) {
-        if (Conf[`${type} Tyme`]) {
-          var lc = type.toLowerCase();
-          var el = UI.checkbox(lc, `${type} Tyme`, false);
-          el.title = `${type} Tyme`;
-
-          this.nodes[lc] = el.firstElementChild;
-          if (Conf[lc]) { this.set(lc, true); }
-          $.on(this.nodes[lc], 'change', this.toggle.bind(this, lc));
-
-          Header.menu.addEntry({
-            el,
-            order: 97
-          });
-
-          var indicator = $.el('span', {
-            className: 'indicator',
-            textContent: type[0],
-            title: `${type} Tyme active`
+      init() {
+          if ((!Conf['Fappe Tyme'] && !Conf['Werk Tyme']) || !['index', 'thread', 'archive'].includes(g.VIEW)) {
+              return;
           }
-          );
-          $.on(indicator, 'click', function() {
-            const check = $.getOwn(FappeTyme.nodes, this.parentNode.id.replace('shortcut-', ''));
-            check.checked = !check.checked;
-            return $.event('change', null, check);
+          this.nodes = {};
+          this.enabled = {
+              fappe: false,
+              werk: Conf['werk']
+          };
+          for (var type of ["Fappe", "Werk"]) {
+              if (Conf[`${type} Tyme`]) {
+                  var lc = type.toLowerCase();
+                  var el = UI.checkbox(lc, `${type} Tyme`, false);
+                  el.title = `${type} Tyme`;
+                  this.nodes[lc] = el.firstElementChild;
+                  if (Conf[lc]) {
+                      this.set(lc, true);
+                  }
+                  $.on(this.nodes[lc], 'change', this.toggle.bind(this, lc));
+                  Header.menu.addEntry({
+                      el,
+                      order: 97
+                  });
+                  var indicator = $.el('span', {
+                      className: 'indicator',
+                      textContent: type[0],
+                      title: `${type} Tyme active`
+                  });
+                  $.on(indicator, 'click', function () {
+                      const check = $.getOwn(FappeTyme.nodes, this.parentNode.id.replace('shortcut-', ''));
+                      check.checked = !check.checked;
+                      return $.event('change', null, check);
+                  });
+                  Header.addShortcut(lc, indicator, 410);
+              }
+          }
+          if (Conf['Werk Tyme']) {
+              $.sync('werk', this.set.bind(this, 'werk'));
+          }
+          Callbacks.Post.push({
+              name: 'Fappe Tyme',
+              cb: this.node
           });
-          Header.addShortcut(lc, indicator, 410);
-        }
+          return Callbacks.CatalogThread.push({
+              name: 'Werk Tyme',
+              cb: this.catalogNode
+          });
+      },
+      node() {
+          return this.nodes.root.classList.toggle('noFile', !this.files.length);
+      },
+      catalogNode() {
+          const file = this.thread.OP.files[0];
+          if (!file) {
+              return;
+          }
+          const filename = $.el('div', {
+              textContent: file.name,
+              className: 'werkTyme-filename'
+          });
+          return $.add(this.nodes.thumb.parentNode, filename);
+      },
+      set(type, enabled) {
+          this.enabled[type] = (this.nodes[type].checked = enabled);
+          return $[`${enabled ? 'add' : 'rm'}Class`](doc, `${type}Tyme`);
+      },
+      toggle(type) {
+          this.set(type, !this.enabled[type]);
+          if (type === 'werk') {
+              return $.cb.checked.call(this.nodes[type]);
+          }
       }
-
-      if (Conf['Werk Tyme']) {
-        $.sync('werk', this.set.bind(this, 'werk'));
-      }
-
-      Callbacks.Post.push({
-        name: 'Fappe Tyme',
-        cb:   this.node
-      });
-
-      return Callbacks.CatalogThread.push({
-        name: 'Werk Tyme',
-        cb:   this.catalogNode
-      });
-    },
-
-    node() {
-      return this.nodes.root.classList.toggle('noFile', !this.files.length);
-    },
-
-    catalogNode() {
-      const file = this.thread.OP.files[0];
-      if (!file) { return; }
-      const filename = $.el('div', {
-        textContent: file.name,
-        className:   'werkTyme-filename'
-      }
-      );
-      return $.add(this.nodes.thumb.parentNode, filename);
-    },
-
-    set(type, enabled) {
-      this.enabled[type] = (this.nodes[type].checked = enabled);
-      return $[`${enabled ? 'add' : 'rm'}Class`](doc, `${type}Tyme`);
-    },
-
-    toggle(type) {
-      this.set(type, !this.enabled[type]);
-      if (type === 'werk') { return $.cb.checked.call(this.nodes[type]); }
-    }
   };
 
   var galleryPage = `<div class="gal-viewport">
@@ -13960,679 +14006,693 @@ svg.icon {
 <div class="gal-thumbnails"></div>`;
 
   var Sauce = {
-    init() {
-      let link;
-      if (!['index', 'thread'].includes(g.VIEW) || !Conf['Sauce']) { return; }
-      $.addClass(doc, 'show-sauce');
-
-      const links = [];
-      for (link of Conf['sauces'].split('\n')) {
-        var linkData;
-        if ((link[0] !== '#') && (linkData = this.parseLink(link))) {
-          links.push(linkData);
-        }
-      }
-      if (!links.length) { return; }
-
-      this.links = links;
-      this.link  = $.el('a', {
-        target:    '_blank',
-        className: 'sauce'
-      }
-      );
-      return Callbacks.Post.push({
-        name: 'Sauce',
-        cb:   this.node
-      });
-    },
-
-    parseLink(link) {
-      if (!(link = link.trim())) { return null; }
-      const parts = dict();
-      const iterable = link.split(/;(?=(?:text|boards|types|regexp|sandbox):?)/);
-      for (let i = 0; i < iterable.length; i++) {
-        var part = iterable[i];
-        if (i === 0) {
-          parts['url'] = part;
-        } else {
-          var m = part.match(/^(\w*):?(.*)$/);
-          parts[m[1]] = m[2];
-        }
-      }
-      if (!parts['text']) { parts['text'] = parts['url'].match(/(\w+)\.\w+\//)?.[1] || '?'; }
-      if ('boards' in parts) {
-        parts['boards'] = Filter.parseBoards(parts['boards']);
-      }
-      if ('regexp' in parts) {
-        try {
-          let regexp;
-          if (regexp = parts['regexp'].match(/^\/(.*)\/(\w*)$/)) {
-            parts['regexp'] = RegExp(regexp[1], regexp[2]);
-          } else {
-            parts['regexp'] = RegExp(parts['regexp']);
+      init() {
+          let link;
+          if (!['index', 'thread'].includes(g.VIEW) || !Conf['Sauce']) {
+              return;
           }
-        } catch (err) {
-          new Notice('warning', [
-            $.tn("Invalid regexp for Sauce link:"),
-            $.el('br'),
-            $.tn(link),
-            $.el('br'),
-            $.tn(err.message)
-          ], 60);
-          return null;
-        }
-      }
-      return parts;
-    },
-
-    createSauceLink(link, post, file) {
-      let a, matches, needle;
-      const ext = file.url.match(/[^.]*$/)[0];
-      const parts = dict();
-      $.extend(parts, link);
-
-      if (!!parts['boards'] && !parts['boards'][`${post.siteID}/${post.boardID}`] && !parts['boards'][`${post.siteID}/*`]) { return null; }
-      if (!!parts['types']  && (needle = ext, !parts['types'].split(',').includes(needle))) { return null; }
-      if (!!parts['regexp'] && (!(matches = file.name.match(parts['regexp'])))) { return null; }
-
-      const missing = [];
-      for (var key of ['url', 'text']) {
-        parts[key] = parts[key].replace(/%(T?URL|IMG|[sh]?MD5|board|name|%|semi|\$\d+)/g, function(orig, parameter) {
-          let type;
-          if (parameter[0] === '$') {
-            if (!matches) { return orig; }
-            type = matches[parameter.slice(1)] || '';
-          } else {
-            type = Sauce.formatters[parameter](post, file, ext);
-            if ((type == null)) {
-              missing.push(parameter);
-              return '';
-            }
-          }
-
-          if ((key === 'url') && !['%', 'semi'].includes(parameter)) {
-            if (/^javascript:/i.test(parts['url'])) { type = JSON.stringify(type); }
-            type = encodeURIComponent(type);
-          }
-          return type;
-        });
-      }
-
-      if (g.SITE.areMD5sDeferred?.(post.board) && missing.length && !missing.filter(x => !/^.?MD5$/.test(x)).length) {
-        a = Sauce.link.cloneNode(false);
-        a.dataset.skip = '1';
-        return a;
-      }
-
-      if (missing.length) { return null; }
-
-      a = Sauce.link.cloneNode(false);
-      a.href = parts['url'];
-      a.textContent = parts['text'];
-      if (/^javascript:/i.test(parts['url'])) { a.removeAttribute('target'); }
-      return a;
-    },
-
-    node() {
-      if (this.isClone) { return; }
-      for (var file of this.files) {
-        Sauce.file(this, file);
-      }
-    },
-
-    file(post, file) {
-      let link, node;
-      const nodes = [];
-      const skipped = [];
-      for (link of Sauce.links) {
-        if (node = Sauce.createSauceLink(link, post, file)) {
-          nodes.push($.tn(' '), node);
-          if (node.dataset.skip) { skipped.push([link, node]); }
-        }
-      }
-      $.add(file.text, nodes);
-
-      if (skipped.length) {
-        var observer = new MutationObserver(function() {
-          if (file.text.dataset.md5) {
-            for ([link, node] of skipped) {
-              var node2;
-              if (node2 = Sauce.createSauceLink(link, post, file)) {
-                $.replace(node, node2);
+          $.addClass(doc, 'show-sauce');
+          const links = [];
+          for (link of Conf['sauces'].split('\n')) {
+              var linkData;
+              if ((link[0] !== '#') && (linkData = this.parseLink(link))) {
+                  links.push(linkData);
               }
-            }
-            return observer.disconnect();
           }
-        });
-        return observer.observe(file.text, {attributes: true});
-      }
-    },
-
-    formatters: {
-      TURL(post, file) { return file.thumbURL; },
-      URL(post, file) { return file.url; },
-      IMG(post, file, ext) { if (['gif', 'jpg', 'jpeg', 'png'].includes(ext)) { return file.url; } else { return file.thumbURL; } },
-      MD5(post, file) { return file.MD5; },
-      sMD5(post, file) { return file.MD5?.replace(/[+/=]/g, c => ({'+': '-', '/': '_', '=': ''})[c]); },
-      hMD5(post, file) {
-        if (file.MD5) {
-          return Array.from(atob(file.MD5), c => c.charCodeAt(0).toString(16).padStart(2,'0')).join('');
-        }
+          if (!links.length) {
+              return;
+          }
+          this.links = links;
+          this.link = $.el('a', {
+              target: '_blank',
+              className: 'sauce'
+          });
+          return Callbacks.Post.push({
+              name: 'Sauce',
+              cb: this.node
+          });
       },
-      board(post) { return post.board.ID; },
-      name(post, file) { return file.name; },
-      '%'() { return '%'; },
-      semi() { return ';'; }
-    }
+      parseLink(link) {
+          if (!(link = link.trim())) {
+              return null;
+          }
+          const parts = dict();
+          const iterable = link.split(/;(?=(?:text|boards|types|regexp|sandbox):?)/);
+          for (let i = 0; i < iterable.length; i++) {
+              var part = iterable[i];
+              if (i === 0) {
+                  parts['url'] = part;
+              }
+              else {
+                  var m = part.match(/^(\w*):?(.*)$/);
+                  parts[m[1]] = m[2];
+              }
+          }
+          if (!parts['text']) {
+              parts['text'] = parts['url'].match(/(\w+)\.\w+\//)?.[1] || '?';
+          }
+          if ('boards' in parts) {
+              parts['boards'] = Filter.parseBoards(parts['boards']);
+          }
+          if ('regexp' in parts) {
+              try {
+                  let regexp;
+                  if (regexp = parts['regexp'].match(/^\/(.*)\/(\w*)$/)) {
+                      parts['regexp'] = RegExp(regexp[1], regexp[2]);
+                  }
+                  else {
+                      parts['regexp'] = RegExp(parts['regexp']);
+                  }
+              }
+              catch (err) {
+                  new Notice('warning', [
+                      $.tn("Invalid regexp for Sauce link:"),
+                      $.el('br'),
+                      $.tn(link),
+                      $.el('br'),
+                      $.tn(err.message)
+                  ], 60);
+                  return null;
+              }
+          }
+          return parts;
+      },
+      createSauceLink(link, post, file) {
+          let a, matches, needle;
+          const ext = file.url.match(/[^.]*$/)[0];
+          const parts = dict();
+          $.extend(parts, link);
+          if (!!parts['boards'] && !parts['boards'][`${post.siteID}/${post.boardID}`] && !parts['boards'][`${post.siteID}/*`]) {
+              return null;
+          }
+          if (!!parts['types'] && (needle = ext, !parts['types'].split(',').includes(needle))) {
+              return null;
+          }
+          if (!!parts['regexp'] && (!(matches = file.name.match(parts['regexp'])))) {
+              return null;
+          }
+          const missing = [];
+          for (var key of ['url', 'text']) {
+              parts[key] = parts[key].replace(/%(T?URL|IMG|[sh]?MD5|board|name|%|semi|\$\d+)/g, function (orig, parameter) {
+                  let type;
+                  if (parameter[0] === '$') {
+                      if (!matches) {
+                          return orig;
+                      }
+                      type = matches[parameter.slice(1)] || '';
+                  }
+                  else {
+                      type = Sauce.formatters[parameter](post, file, ext);
+                      if ((type == null)) {
+                          missing.push(parameter);
+                          return '';
+                      }
+                  }
+                  if ((key === 'url') && !['%', 'semi'].includes(parameter)) {
+                      if (/^javascript:/i.test(parts['url'])) {
+                          type = JSON.stringify(type);
+                      }
+                      type = encodeURIComponent(type);
+                  }
+                  return type;
+              });
+          }
+          if (g.SITE.areMD5sDeferred?.(post.board) && missing.length && !missing.filter(x => !/^.?MD5$/.test(x)).length) {
+              a = Sauce.link.cloneNode(false);
+              a.dataset.skip = '1';
+              return a;
+          }
+          if (missing.length) {
+              return null;
+          }
+          a = Sauce.link.cloneNode(false);
+          a.href = parts['url'];
+          a.textContent = parts['text'];
+          if (/^javascript:/i.test(parts['url'])) {
+              a.removeAttribute('target');
+          }
+          return a;
+      },
+      node() {
+          if (this.isClone) {
+              return;
+          }
+          for (var file of this.files) {
+              Sauce.file(this, file);
+          }
+      },
+      file(post, file) {
+          let link, node;
+          const nodes = [];
+          const skipped = [];
+          for (link of Sauce.links) {
+              if (node = Sauce.createSauceLink(link, post, file)) {
+                  nodes.push($.tn(' '), node);
+                  if (node.dataset.skip) {
+                      skipped.push([link, node]);
+                  }
+              }
+          }
+          $.add(file.text, nodes);
+          if (skipped.length) {
+              var observer = new MutationObserver(function () {
+                  if (file.text.dataset.md5) {
+                      for ([link, node] of skipped) {
+                          var node2;
+                          if (node2 = Sauce.createSauceLink(link, post, file)) {
+                              $.replace(node, node2);
+                          }
+                      }
+                      return observer.disconnect();
+                  }
+              });
+              return observer.observe(file.text, { attributes: true });
+          }
+      },
+      formatters: {
+          TURL(post, file) { return file.thumbURL; },
+          URL(post, file) { return file.url; },
+          IMG(post, file, ext) { if (['gif', 'jpg', 'jpeg', 'png'].includes(ext)) {
+              return file.url;
+          }
+          else {
+              return file.thumbURL;
+          } },
+          MD5(post, file) { return file.MD5; },
+          sMD5(post, file) { return file.MD5?.replace(/[+/=]/g, c => ({ '+': '-', '/': '_', '=': '' })[c]); },
+          hMD5(post, file) {
+              if (file.MD5) {
+                  return Array.from(atob(file.MD5), c => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
+              }
+          },
+          board(post) { return post.board.ID; },
+          name(post, file) { return file.name; },
+          '%'() { return '%'; },
+          semi() { return ';'; }
+      }
   };
 
   var Gallery = {
-    init() {
-      if (!(this.enabled = Conf['Gallery'] && ['index', 'thread'].includes(g.VIEW))) { return; }
-
-      this.delay = Conf['Slide Delay'];
-
-      const el = $.el('a', {
-        href: 'javascript:;',
-        title: 'Gallery',
-      });
-      Icon.set(el, 'image', 'Gallery');
-
-      $.on(el, 'click', this.cb.toggle);
-
-      Header.addShortcut('gallery', el, 530);
-
-      return Callbacks.Post.push({
-        name: 'Gallery',
-        cb:   this.node
-      });
-    },
-
-    node() {
-      return (() => {
-        const result = [];
-        for (var file of this.files) {
-          if (file.thumb) {
-            if (Gallery.nodes) {
-              Gallery.generateThumb(this, file);
-              Gallery.nodes.total.textContent = Gallery.images.length;
-            }
-
-            if (!Conf['Image Expansion'] && ((g.SITE.software !== 'tinyboard') || !Main.jsEnabled)) {
-              result.push($.on(file.thumbLink, 'click', Gallery.cb.image));
-            } else {
-              result.push(undefined);
-            }
-          }
-        }
-        return result;
-      })();
-    },
-
-    build(image) {
-      let dialog, thumb;
-      const {cb} = Gallery;
-
-      if (Conf['Fullscreen Gallery']) {
-        $.one(d, 'fullscreenchange mozfullscreenchange webkitfullscreenchange', () => $.on(d, 'fullscreenchange mozfullscreenchange webkitfullscreenchange', cb.close));
-        doc.mozRequestFullScreen?.();
-        doc.webkitRequestFullScreen?.(Element.ALLOW_KEYBOARD_INPUT);
-      }
-
-      Gallery.images  = [];
-      const nodes = (Gallery.nodes = {});
-      Gallery.fileIDs = dict();
-      Gallery.slideshow = false;
-
-      nodes.el = (dialog = $.el('div',
-        {id: 'a-gallery'}));
-      $.extend(dialog, {innerHTML: galleryPage });
-
-      const object = {
-        buttons: '.gal-buttons',
-        frame:   '.gal-image',
-        name:    '.gal-name',
-        count:   '.count',
-        total:   '.total',
-        sauce:   '.gal-sauce',
-        thumbs:  '.gal-thumbnails',
-        next:    '.gal-image a',
-        current: '.gal-image img'
-      };
-      for (var key in object) { var value = object[key]; nodes[key] = $(value, dialog); }
-
-      const menuButton = $('.menu-button', dialog);
-      nodes.menu = new UI.Menu('gallery');
-
-      $.on(nodes.frame, 'click', cb.blank);
-      if (Conf['Mouse Wheel Volume']) { $.on(nodes.frame, 'wheel', Volume.wheel); }
-      $.on(nodes.next,  'click', cb.click);
-      $.on(nodes.name,  'click', ImageCommon.download);
-
-      const prev =  $('.gal-prev',  dialog);
-      const next =  $('.gal-next',  dialog);
-      const start = $('.gal-start', dialog);
-      const stop =  $('.gal-stop',  dialog);
-      const close = $('.gal-close', dialog);
-
-      $.on(prev,  'click', cb.prev);
-      $.on(next,  'click', cb.next);
-      $.on(start, 'click', cb.start);
-      $.on(stop,  'click', cb.stop);
-      $.on(close, 'click', cb.close);
-
-      $.on(menuButton, 'click', function(e) {
-        return nodes.menu.toggle(e, this, g);
-      });
-
-      Icon.set(menuButton, 'caretDown');
-      Icon.set(start, 'play');
-      Icon.set(stop, 'stop');
-      Icon.set(close, 'xmark');
-      Icon.set(prev, 'caretLeft');
-      Icon.set(next, 'caretRight');
-
-      for (var entry of Gallery.menu.createSubEntries()) {
-        entry.order = 0;
-        nodes.menu.addEntry(entry);
-      }
-
-      $.on(d, 'keydown', cb.keybinds);
-      if (Conf['Keybinds']) { $.off(d, 'keydown', Keybinds.keydown); }
-
-      $.on(window, 'resize', Gallery.cb.setHeight);
-
-      for (var postThumb of $$(g.SITE.selectors.file.thumb)) {
-        var post;
-        if (!(post = Get.postFromNode(postThumb))) { continue; }
-        for (var file of post.files) {
-          if (file.thumb) {
-            Gallery.generateThumb(post, file);
-            // If no image to open is given, pick image we have scrolled to.
-            if (!image && Gallery.fileIDs[`${post.fullID}.${file.index}`]) {
-              var candidate = file.thumbLink;
-              if ((Header.getTopOf(candidate) + candidate.getBoundingClientRect().height) >= 0) {
-                image = candidate;
-              }
-            }
-          }
-        }
-      }
-      $.addClass(doc, 'gallery-open');
-
-      $.add(d.body, dialog);
-
-      nodes.thumbs.scrollTop = 0;
-      nodes.current.parentElement.scrollTop = 0;
-
-      if (image) { thumb = $(`[href='${image.href}']`, nodes.thumbs); }
-      if (!thumb) { thumb = Gallery.images[Gallery.images.length-1]; }
-      if (thumb) { Gallery.open(thumb); }
-
-      doc.style.overflow = 'hidden';
-      return nodes.total.textContent = Gallery.images.length;
-    },
-
-    generateThumb(post, file) {
-      if (post.isClone || post.isHidden) { return; }
-      if (!file || !file.thumb || (!file.isImage && !file.isVideo && !Conf['PDF in Gallery'])) { return; }
-      if (Gallery.fileIDs[`${post.fullID}.${file.index}`]) { return; }
-
-      Gallery.fileIDs[`${post.fullID}.${file.index}`] = true;
-
-      const thumb = $.el('a', {
-        className: 'gal-thumb',
-        href:      file.url,
-        target:    '_blank',
-        title:     file.name
-      }
-      );
-
-      thumb.dataset.id   = Gallery.images.length;
-      thumb.dataset.post = post.fullID;
-      thumb.dataset.file = file.index;
-
-      const thumbImg = file.thumb.cloneNode(false);
-      thumbImg.style.cssText = '';
-      $.add(thumb, thumbImg);
-
-      $.on(thumb, 'click', Gallery.cb.open);
-
-      Gallery.images.push(thumb);
-      return $.add(Gallery.nodes.thumbs, thumb);
-    },
-
-    load(thumb, errorCB) {
-      const ext = thumb.href.match(/\w*$/);
-      const elType = $.getOwn({'webm': 'video', 'mp4': 'video', 'ogv': 'video', 'pdf': 'iframe'}, ext) || 'img';
-      const file = $.el(elType);
-      $.extend(file.dataset, thumb.dataset);
-      $.on(file, 'error', errorCB);
-      file.src = thumb.href;
-      return file;
-    },
-
-    open(thumb) {
-      let el, file, post;
-      const {nodes} = Gallery;
-      const oldID = +nodes.current.dataset.id;
-      const newID = +thumb.dataset.id;
-
-      // Highlight, center selected thumbnail
-      if (el = Gallery.images[oldID]) { $.rmClass(el,    'gal-highlight'); }
-      $.addClass(thumb, 'gal-highlight');
-      nodes.thumbs.scrollTop = (thumb.offsetTop + (thumb.offsetHeight/2)) - (nodes.thumbs.clientHeight/2);
-
-      // Load image or use preloaded image
-      if (Gallery.cache?.dataset.id === (''+newID)) {
-        file = Gallery.cache;
-        $.off(file, 'error', Gallery.cacheError);
-        $.on(file, 'error', Gallery.error);
-      } else {
-        file = Gallery.load(thumb, Gallery.error);
-      }
-
-      // Replace old image with new one
-      $.off(nodes.current, 'error', Gallery.error);
-      ImageCommon.pause(nodes.current);
-      $.replace(nodes.current, file);
-      nodes.current = file;
-
-      if (file.nodeName === 'VIDEO') {
-        file.loop = true;
-        Volume.setup(file);
-        if (Conf['Autoplay']) { file.play(); }
-        if (Conf['Show Controls']) file.controls = true;
-      }
-
-      doc.classList.toggle('gal-pdf', file.nodeName === 'IFRAME');
-      Gallery.cb.setHeight();
-      nodes.count.textContent = +thumb.dataset.id + 1;
-      nodes.name.download     = (nodes.name.textContent = thumb.title);
-      nodes.name.href         = thumb.href;
-      nodes.frame.scrollTop   = 0;
-      nodes.next.focus();
-
-      // Set sauce links
-      $.rmAll(nodes.sauce);
-      if (Conf['Sauce'] && Sauce.links && (post = g.posts.get(file.dataset.post))) {
-        const sauces = [];
-        for (var link of Sauce.links) {
-          var node;
-          if (node = Sauce.createSauceLink(link, post, post.files[+file.dataset.file])) {
-            sauces.push($.tn(' '), node);
-          }
-        }
-        $.add(nodes.sauce, sauces);
-      }
-
-      // Continue slideshow if moving forward, stop otherwise
-      if (Gallery.slideshow && ((newID > oldID) || ((oldID === (Gallery.images.length-1)) && (newID === 0)))) {
-        Gallery.setupTimer();
-      } else {
-        Gallery.cb.stop();
-      }
-
-      // Scroll to post
-      if (Conf['Scroll to Post'] && (post = g.posts.get(file.dataset.post))) {
-        Header.scrollTo(post.nodes.root);
-      }
-
-      // Preload next image
-      if (isNaN(oldID) || (newID === ((oldID + 1) % Gallery.images.length))) {
-        return Gallery.cache = Gallery.load(Gallery.images[(newID + 1) % Gallery.images.length], Gallery.cacheError);
-      }
-    },
-
-    error() {
-      if (this.error?.code === MediaError.MEDIA_ERR_DECODE) {
-        return new Notice('error', 'Corrupt or unplayable video', 30);
-      }
-      if (ImageCommon.isFromArchive(this)) { return; }
-      const post = g.posts.get(this.dataset.post);
-      const file = post.files[+this.dataset.file];
-      return ImageCommon.error(this, post, file, null, url => {
-        if (!url) { return; }
-        Gallery.images[+this.dataset.id].href = url;
-        if (Gallery.nodes.current === this) { return this.src = url; }
-      });
-    },
-
-    cacheError() {
-      return delete Gallery.cache;
-    },
-
-    cleanupTimer() {
-      clearTimeout(Gallery.timeoutID);
-      const {current} = Gallery.nodes;
-      $.off(current, 'canplaythrough load', Gallery.startTimer);
-      return $.off(current, 'ended', Gallery.cb.next);
-    },
-
-    startTimer() {
-      return Gallery.timeoutID = setTimeout(Gallery.checkTimer, Gallery.delay * SECOND);
-    },
-
-    setupTimer() {
-      Gallery.cleanupTimer();
-      const {current} = Gallery.nodes;
-      const isVideo = current.nodeName === 'VIDEO';
-      if (isVideo) { current.play(); }
-      if ((isVideo ? current.readyState >= 4 : current.complete) || (current.nodeName === 'IFRAME')) {
-        return Gallery.startTimer();
-      } else {
-        return $.on(current, (isVideo ? 'canplaythrough' : 'load'), Gallery.startTimer);
-      }
-    },
-
-    checkTimer() {
-      const {current} = Gallery.nodes;
-      if ((current.nodeName === 'VIDEO') && !current.paused) {
-        $.on(current, 'ended', Gallery.cb.next);
-        return current.loop = false;
-      } else {
-        return Gallery.cb.next();
-      }
-    },
-
-    cb: {
-      keybinds(e) {
-        let key;
-        if (!(key = Keybinds.keyCode(e))) { return; }
-
-        const cb = (() => { switch (key) {
-          case Conf['Close']: case Conf['Open Gallery']:
-            return Gallery.cb.close;
-          case Conf['Next Gallery Image']:
-            return Gallery.cb.next;
-          case Conf['Advance Gallery']:
-            return Gallery.cb.advance;
-          case Conf['Previous Gallery Image']:
-            return Gallery.cb.prev;
-          case Conf['Pause']:
-            return Gallery.cb.pause;
-          case Conf['Slideshow']:
-            return Gallery.cb.toggleSlideshow;
-          case Conf['Rotate image anticlockwise']:
-            return Gallery.cb.rotateLeft;
-          case Conf['Rotate image clockwise']:
-            return Gallery.cb.rotateRight;
-          case Conf['Download Gallery Image']:
-            return Gallery.cb.download;
-        } })();
-
-        if (!cb) { return; }
-        e.stopPropagation();
-        e.preventDefault();
-        return cb();
-      },
-
-      open(e) {
-        if (e) { e.preventDefault(); }
-        if (this) { return Gallery.open(this); }
-      },
-
-      image(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        return Gallery.build(this);
-      },
-
-      prev() {
-        return Gallery.cb.open.call(
-          Gallery.images[+Gallery.nodes.current.dataset.id - 1] || Gallery.images[Gallery.images.length - 1]
-        );
-      },
-      next() {
-        return Gallery.cb.open.call(
-          Gallery.images[+Gallery.nodes.current.dataset.id + 1] || Gallery.images[0]
-        );
-      },
-
-      click(e) {
-        if (ImageCommon.onControls(e)) { return; }
-        e.preventDefault();
-        return Gallery.cb.advance();
-      },
-
-      advance() { if (!Conf['Autoplay'] && Gallery.nodes.current.paused) { return Gallery.nodes.current.play(); } else { return Gallery.cb.next(); } },
-      toggle() { return (Gallery.nodes ? Gallery.cb.close : Gallery.build)(); },
-      blank(e) { if (e.target === this) { return Gallery.cb.close(); } },
-      toggleSlideshow() {  return Gallery.cb[Gallery.slideshow ? 'stop' : 'start'](); },
-
-      download() {
-        const name = $('.gal-name');
-        return name.click();
-      },
-
-      pause() {
-        Gallery.cb.stop();
-        const {current} = Gallery.nodes;
-        if (current.nodeName === 'VIDEO') { return current[current.paused ? 'play' : 'pause'](); }
-      },
-
-      start() {
-        $.addClass(Gallery.nodes.buttons, 'gal-playing');
-        Gallery.slideshow = true;
-        return Gallery.setupTimer();
-      },
-
-      stop() {
-        if (!Gallery.slideshow) { return; }
-        Gallery.cleanupTimer();
-        const {current} = Gallery.nodes;
-        if (current.nodeName === 'VIDEO') { current.loop = true; }
-        $.rmClass(Gallery.nodes.buttons, 'gal-playing');
-        return Gallery.slideshow = false;
-      },
-
-      rotateLeft() { return Gallery.cb.rotate(270); },
-      rotateRight() { return Gallery.cb.rotate(90); },
-
-      rotate: debounce(100, function(delta) {
-        const {current} = Gallery.nodes;
-        if (current.nodeName === 'IFRAME') { return; }
-        current.dataRotate = ((current.dataRotate || 0) + delta) % 360;
-        current.style.transform = `rotate(${current.dataRotate}deg)`;
-        return Gallery.cb.setHeight();
-      }),
-
-      close() {
-        $.off(Gallery.nodes.current, 'error', Gallery.error);
-        ImageCommon.pause(Gallery.nodes.current);
-        $.rm(Gallery.nodes.el);
-        $.rmClass(doc, 'gallery-open');
-        if (Conf['Fullscreen Gallery']) {
-          $.off(d, 'fullscreenchange mozfullscreenchange webkitfullscreenchange', Gallery.cb.close);
-          d.mozCancelFullScreen?.();
-          d.webkitExitFullscreen?.();
-        }
-        delete Gallery.nodes;
-        delete Gallery.fileIDs;
-        doc.style.overflow = '';
-
-        $.off(d, 'keydown', Gallery.cb.keybinds);
-        if (Conf['Keybinds']) { $.on(d, 'keydown', Keybinds.keydown); }
-        $.off(window, 'resize', Gallery.cb.setHeight);
-        return clearTimeout(Gallery.timeoutID);
-      },
-
-      setFitness() {
-        return (this.checked ? $.addClass : $.rmClass)(doc, `gal-${this.name.toLowerCase().replace(/\s+/g, '-')}`);
-      },
-
-      setHeight: debounce(100, function () {
-        let dim, margin, minHeight;
-        const {current, frame} = Gallery.nodes;
-        const {style} = current;
-
-        if (Conf['Stretch to Fit'] && (dim = g.posts.get(current.dataset.post)?.files[+current.dataset.file].dimensions)) {
-          const [width, height] = dim.split('x');
-          let containerWidth = frame.clientWidth;
-          let containerHeight = doc.clientHeight - 25;
-          if (((current.dataRotate || 0) % 180) === 90) {
-            [containerWidth, containerHeight] = [containerHeight, containerWidth];
-          }
-          minHeight = Math.min(containerHeight, (height / width) * containerWidth);
-          style.minHeight = minHeight + 'px';
-          style.minWidth = ((width / height) * minHeight) + 'px';
-        } else {
-          style.minHeight = (style.minWidth = '');
-        }
-
-        if (((current.dataRotate || 0) % 180) === 90) {
-          style.maxWidth  = Conf['Fit Height'] ? `${doc.clientHeight - 25}px` : 'none';
-          style.maxHeight = Conf['Fit Width']  ? `${frame.clientWidth}px`     : 'none';
-          margin = (current.clientWidth - current.clientHeight)/2;
-          return style.margin = `${margin}px ${-margin}px`;
-        } else {
-          return style.maxWidth = (style.maxHeight = (style.margin = ''));
-        }
-      }),
-
-      setDelay() { return Gallery.delay = +this.value; }
-    },
-
-    menu: {
       init() {
-        if (!Gallery.enabled) { return; }
-
-        const el = $.el('span', {
-          textContent: 'Gallery',
-          className: 'gallery-link'
-        }
-        );
-
-        return Header.menu.addEntry({
-          el,
-          order: 105,
-          subEntries: Gallery.menu.createSubEntries()
-        });
+          if (!(this.enabled = Conf['Gallery'] && ['index', 'thread'].includes(g.VIEW))) {
+              return;
+          }
+          this.delay = Conf['Slide Delay'];
+          const el = $.el('a', {
+              href: 'javascript:;',
+              title: 'Gallery',
+          });
+          Icon.set(el, 'image', 'Gallery');
+          $.on(el, 'click', this.cb.toggle);
+          Header.addShortcut('gallery', el, 530);
+          return Callbacks.Post.push({
+              name: 'Gallery',
+              cb: this.node
+          });
       },
-
-      createSubEntry(name) {
-        const label = UI.checkbox(name, name);
-        const input = label.firstElementChild;
-        if (['Hide Thumbnails', 'Fit Width', 'Fit Height'].includes(name)) { $.on(input, 'change', Gallery.cb.setFitness); }
-        $.event('change', null, input);
-        $.on(input, 'change', $.cb.checked);
-        if (['Hide Thumbnails', 'Fit Width', 'Fit Height', 'Stretch to Fit'].includes(name)) { $.on(input, 'change', Gallery.cb.setHeight); }
-        return {el: label};
+      node() {
+          return (() => {
+              const result = [];
+              for (var file of this.files) {
+                  if (file.thumb) {
+                      if (Gallery.nodes) {
+                          Gallery.generateThumb(this, file);
+                          Gallery.nodes.total.textContent = Gallery.images.length;
+                      }
+                      if (!Conf['Image Expansion'] && ((g.SITE.software !== 'tinyboard') || !Main.jsEnabled)) {
+                          result.push($.on(file.thumbLink, 'click', Gallery.cb.image));
+                      }
+                      else {
+                          result.push(undefined);
+                      }
+                  }
+              }
+              return result;
+          })();
       },
-
-      createSubEntries() {
-        const subEntries = (['Hide Thumbnails', 'Fit Width', 'Fit Height', 'Stretch to Fit', 'Scroll to Post'].map((item) => Gallery.menu.createSubEntry(item)));
-
-        const delayLabel = $.el('label', {innerHTML: 'Slide Delay: <input type="number" name="Slide Delay" min="0" step="any" class="field">'});
-        const delayInput = delayLabel.firstElementChild;
-        delayInput.value = Gallery.delay;
-        $.on(delayInput, 'change', Gallery.cb.setDelay);
-        $.on(delayInput, 'change', $.cb.value);
-        subEntries.push({el: delayLabel});
-
-        return subEntries;
+      build(image) {
+          let dialog, thumb;
+          const { cb } = Gallery;
+          if (Conf['Fullscreen Gallery']) {
+              $.one(d, 'fullscreenchange mozfullscreenchange webkitfullscreenchange', () => $.on(d, 'fullscreenchange mozfullscreenchange webkitfullscreenchange', cb.close));
+              doc.mozRequestFullScreen?.();
+              doc.webkitRequestFullScreen?.(Element.ALLOW_KEYBOARD_INPUT);
+          }
+          Gallery.images = [];
+          const nodes = (Gallery.nodes = {});
+          Gallery.fileIDs = dict();
+          Gallery.slideshow = false;
+          nodes.el = (dialog = $.el('div', { id: 'a-gallery' }));
+          $.extend(dialog, { innerHTML: galleryPage });
+          const object = {
+              buttons: '.gal-buttons',
+              frame: '.gal-image',
+              name: '.gal-name',
+              count: '.count',
+              total: '.total',
+              sauce: '.gal-sauce',
+              thumbs: '.gal-thumbnails',
+              next: '.gal-image a',
+              current: '.gal-image img'
+          };
+          for (var key in object) {
+              var value = object[key];
+              nodes[key] = $(value, dialog);
+          }
+          const menuButton = $('.menu-button', dialog);
+          nodes.menu = new UI.Menu('gallery');
+          $.on(nodes.frame, 'click', cb.blank);
+          if (Conf['Mouse Wheel Volume']) {
+              $.on(nodes.frame, 'wheel', Volume.wheel);
+          }
+          $.on(nodes.next, 'click', cb.click);
+          $.on(nodes.name, 'click', ImageCommon.download);
+          const prev = $('.gal-prev', dialog);
+          const next = $('.gal-next', dialog);
+          const start = $('.gal-start', dialog);
+          const stop = $('.gal-stop', dialog);
+          const close = $('.gal-close', dialog);
+          $.on(prev, 'click', cb.prev);
+          $.on(next, 'click', cb.next);
+          $.on(start, 'click', cb.start);
+          $.on(stop, 'click', cb.stop);
+          $.on(close, 'click', cb.close);
+          $.on(menuButton, 'click', function (e) {
+              return nodes.menu.toggle(e, this, g);
+          });
+          Icon.set(menuButton, 'caretDown');
+          Icon.set(start, 'play');
+          Icon.set(stop, 'stop');
+          Icon.set(close, 'xmark');
+          Icon.set(prev, 'caretLeft');
+          Icon.set(next, 'caretRight');
+          for (var entry of Gallery.menu.createSubEntries()) {
+              entry.order = 0;
+              nodes.menu.addEntry(entry);
+          }
+          $.on(d, 'keydown', cb.keybinds);
+          if (Conf['Keybinds']) {
+              $.off(d, 'keydown', Keybinds.keydown);
+          }
+          $.on(window, 'resize', Gallery.cb.setHeight);
+          for (var postThumb of $$(g.SITE.selectors.file.thumb)) {
+              var post;
+              if (!(post = Get.postFromNode(postThumb))) {
+                  continue;
+              }
+              for (var file of post.files) {
+                  if (file.thumb) {
+                      Gallery.generateThumb(post, file);
+                      // If no image to open is given, pick image we have scrolled to.
+                      if (!image && Gallery.fileIDs[`${post.fullID}.${file.index}`]) {
+                          var candidate = file.thumbLink;
+                          if ((Header.getTopOf(candidate) + candidate.getBoundingClientRect().height) >= 0) {
+                              image = candidate;
+                          }
+                      }
+                  }
+              }
+          }
+          $.addClass(doc, 'gallery-open');
+          $.add(d.body, dialog);
+          nodes.thumbs.scrollTop = 0;
+          nodes.current.parentElement.scrollTop = 0;
+          if (image) {
+              thumb = $(`[href='${image.href}']`, nodes.thumbs);
+          }
+          if (!thumb) {
+              thumb = Gallery.images[Gallery.images.length - 1];
+          }
+          if (thumb) {
+              Gallery.open(thumb);
+          }
+          doc.style.overflow = 'hidden';
+          return nodes.total.textContent = Gallery.images.length;
+      },
+      generateThumb(post, file) {
+          if (post.isClone || post.isHidden) {
+              return;
+          }
+          if (!file || !file.thumb || (!file.isImage && !file.isVideo && !Conf['PDF in Gallery'])) {
+              return;
+          }
+          if (Gallery.fileIDs[`${post.fullID}.${file.index}`]) {
+              return;
+          }
+          Gallery.fileIDs[`${post.fullID}.${file.index}`] = true;
+          const thumb = $.el('a', {
+              className: 'gal-thumb',
+              href: file.url,
+              target: '_blank',
+              title: file.name
+          });
+          thumb.dataset.id = Gallery.images.length;
+          thumb.dataset.post = post.fullID;
+          thumb.dataset.file = file.index;
+          const thumbImg = file.thumb.cloneNode(false);
+          thumbImg.style.cssText = '';
+          $.add(thumb, thumbImg);
+          $.on(thumb, 'click', Gallery.cb.open);
+          Gallery.images.push(thumb);
+          return $.add(Gallery.nodes.thumbs, thumb);
+      },
+      load(thumb, errorCB) {
+          const ext = thumb.href.match(/\w*$/);
+          const elType = $.getOwn({ 'webm': 'video', 'mp4': 'video', 'ogv': 'video', 'pdf': 'iframe' }, ext) || 'img';
+          const file = $.el(elType);
+          $.extend(file.dataset, thumb.dataset);
+          $.on(file, 'error', errorCB);
+          file.src = thumb.href;
+          return file;
+      },
+      open(thumb) {
+          let el, file, post;
+          const { nodes } = Gallery;
+          const oldID = +nodes.current.dataset.id;
+          const newID = +thumb.dataset.id;
+          // Highlight, center selected thumbnail
+          if (el = Gallery.images[oldID]) {
+              $.rmClass(el, 'gal-highlight');
+          }
+          $.addClass(thumb, 'gal-highlight');
+          nodes.thumbs.scrollTop = (thumb.offsetTop + (thumb.offsetHeight / 2)) - (nodes.thumbs.clientHeight / 2);
+          // Load image or use preloaded image
+          if (Gallery.cache?.dataset.id === ('' + newID)) {
+              file = Gallery.cache;
+              $.off(file, 'error', Gallery.cacheError);
+              $.on(file, 'error', Gallery.error);
+          }
+          else {
+              file = Gallery.load(thumb, Gallery.error);
+          }
+          // Replace old image with new one
+          $.off(nodes.current, 'error', Gallery.error);
+          ImageCommon.pause(nodes.current);
+          $.replace(nodes.current, file);
+          nodes.current = file;
+          if (file.nodeName === 'VIDEO') {
+              file.loop = true;
+              Volume.setup(file);
+              if (Conf['Autoplay']) {
+                  file.play();
+              }
+              if (Conf['Show Controls'])
+                  file.controls = true;
+          }
+          doc.classList.toggle('gal-pdf', file.nodeName === 'IFRAME');
+          Gallery.cb.setHeight();
+          nodes.count.textContent = +thumb.dataset.id + 1;
+          nodes.name.download = (nodes.name.textContent = thumb.title);
+          nodes.name.href = thumb.href;
+          nodes.frame.scrollTop = 0;
+          nodes.next.focus();
+          // Set sauce links
+          $.rmAll(nodes.sauce);
+          if (Conf['Sauce'] && Sauce.links && (post = g.posts.get(file.dataset.post))) {
+              const sauces = [];
+              for (var link of Sauce.links) {
+                  var node;
+                  if (node = Sauce.createSauceLink(link, post, post.files[+file.dataset.file])) {
+                      sauces.push($.tn(' '), node);
+                  }
+              }
+              $.add(nodes.sauce, sauces);
+          }
+          // Continue slideshow if moving forward, stop otherwise
+          if (Gallery.slideshow && ((newID > oldID) || ((oldID === (Gallery.images.length - 1)) && (newID === 0)))) {
+              Gallery.setupTimer();
+          }
+          else {
+              Gallery.cb.stop();
+          }
+          // Scroll to post
+          if (Conf['Scroll to Post'] && (post = g.posts.get(file.dataset.post))) {
+              Header.scrollTo(post.nodes.root);
+          }
+          // Preload next image
+          if (isNaN(oldID) || (newID === ((oldID + 1) % Gallery.images.length))) {
+              return Gallery.cache = Gallery.load(Gallery.images[(newID + 1) % Gallery.images.length], Gallery.cacheError);
+          }
+      },
+      error() {
+          if (this.error?.code === MediaError.MEDIA_ERR_DECODE) {
+              return new Notice('error', 'Corrupt or unplayable video', 30);
+          }
+          if (ImageCommon.isFromArchive(this)) {
+              return;
+          }
+          const post = g.posts.get(this.dataset.post);
+          const file = post.files[+this.dataset.file];
+          return ImageCommon.error(this, post, file, null, url => {
+              if (!url) {
+                  return;
+              }
+              Gallery.images[+this.dataset.id].href = url;
+              if (Gallery.nodes.current === this) {
+                  return this.src = url;
+              }
+          });
+      },
+      cacheError() {
+          return delete Gallery.cache;
+      },
+      cleanupTimer() {
+          clearTimeout(Gallery.timeoutID);
+          const { current } = Gallery.nodes;
+          $.off(current, 'canplaythrough load', Gallery.startTimer);
+          return $.off(current, 'ended', Gallery.cb.next);
+      },
+      startTimer() {
+          return Gallery.timeoutID = setTimeout(Gallery.checkTimer, Gallery.delay * SECOND);
+      },
+      setupTimer() {
+          Gallery.cleanupTimer();
+          const { current } = Gallery.nodes;
+          const isVideo = current.nodeName === 'VIDEO';
+          if (isVideo) {
+              current.play();
+          }
+          if ((isVideo ? current.readyState >= 4 : current.complete) || (current.nodeName === 'IFRAME')) {
+              return Gallery.startTimer();
+          }
+          else {
+              return $.on(current, (isVideo ? 'canplaythrough' : 'load'), Gallery.startTimer);
+          }
+      },
+      checkTimer() {
+          const { current } = Gallery.nodes;
+          if ((current.nodeName === 'VIDEO') && !current.paused) {
+              $.on(current, 'ended', Gallery.cb.next);
+              return current.loop = false;
+          }
+          else {
+              return Gallery.cb.next();
+          }
+      },
+      cb: {
+          keybinds(e) {
+              let key;
+              if (!(key = Keybinds.keyCode(e))) {
+                  return;
+              }
+              const cb = (() => {
+                  switch (key) {
+                      case Conf['Close']:
+                      case Conf['Open Gallery']:
+                          return Gallery.cb.close;
+                      case Conf['Next Gallery Image']:
+                          return Gallery.cb.next;
+                      case Conf['Advance Gallery']:
+                          return Gallery.cb.advance;
+                      case Conf['Previous Gallery Image']:
+                          return Gallery.cb.prev;
+                      case Conf['Pause']:
+                          return Gallery.cb.pause;
+                      case Conf['Slideshow']:
+                          return Gallery.cb.toggleSlideshow;
+                      case Conf['Rotate image anticlockwise']:
+                          return Gallery.cb.rotateLeft;
+                      case Conf['Rotate image clockwise']:
+                          return Gallery.cb.rotateRight;
+                      case Conf['Download Gallery Image']:
+                          return Gallery.cb.download;
+                  }
+              })();
+              if (!cb) {
+                  return;
+              }
+              e.stopPropagation();
+              e.preventDefault();
+              return cb();
+          },
+          open(e) {
+              if (e) {
+                  e.preventDefault();
+              }
+              if (this) {
+                  return Gallery.open(this);
+              }
+          },
+          image(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              return Gallery.build(this);
+          },
+          prev() {
+              return Gallery.cb.open.call(Gallery.images[+Gallery.nodes.current.dataset.id - 1] || Gallery.images[Gallery.images.length - 1]);
+          },
+          next() {
+              return Gallery.cb.open.call(Gallery.images[+Gallery.nodes.current.dataset.id + 1] || Gallery.images[0]);
+          },
+          click(e) {
+              if (ImageCommon.onControls(e)) {
+                  return;
+              }
+              e.preventDefault();
+              return Gallery.cb.advance();
+          },
+          advance() { if (!Conf['Autoplay'] && Gallery.nodes.current.paused) {
+              return Gallery.nodes.current.play();
+          }
+          else {
+              return Gallery.cb.next();
+          } },
+          toggle() { return (Gallery.nodes ? Gallery.cb.close : Gallery.build)(); },
+          blank(e) { if (e.target === this) {
+              return Gallery.cb.close();
+          } },
+          toggleSlideshow() { return Gallery.cb[Gallery.slideshow ? 'stop' : 'start'](); },
+          download() {
+              const name = $('.gal-name');
+              return name.click();
+          },
+          pause() {
+              Gallery.cb.stop();
+              const { current } = Gallery.nodes;
+              if (current.nodeName === 'VIDEO') {
+                  return current[current.paused ? 'play' : 'pause']();
+              }
+          },
+          start() {
+              $.addClass(Gallery.nodes.buttons, 'gal-playing');
+              Gallery.slideshow = true;
+              return Gallery.setupTimer();
+          },
+          stop() {
+              if (!Gallery.slideshow) {
+                  return;
+              }
+              Gallery.cleanupTimer();
+              const { current } = Gallery.nodes;
+              if (current.nodeName === 'VIDEO') {
+                  current.loop = true;
+              }
+              $.rmClass(Gallery.nodes.buttons, 'gal-playing');
+              return Gallery.slideshow = false;
+          },
+          rotateLeft() { return Gallery.cb.rotate(270); },
+          rotateRight() { return Gallery.cb.rotate(90); },
+          rotate: debounce(100, function (delta) {
+              const { current } = Gallery.nodes;
+              if (current.nodeName === 'IFRAME') {
+                  return;
+              }
+              current.dataRotate = ((current.dataRotate || 0) + delta) % 360;
+              current.style.transform = `rotate(${current.dataRotate}deg)`;
+              return Gallery.cb.setHeight();
+          }),
+          close() {
+              $.off(Gallery.nodes.current, 'error', Gallery.error);
+              ImageCommon.pause(Gallery.nodes.current);
+              $.rm(Gallery.nodes.el);
+              $.rmClass(doc, 'gallery-open');
+              if (Conf['Fullscreen Gallery']) {
+                  $.off(d, 'fullscreenchange mozfullscreenchange webkitfullscreenchange', Gallery.cb.close);
+                  d.mozCancelFullScreen?.();
+                  d.webkitExitFullscreen?.();
+              }
+              delete Gallery.nodes;
+              delete Gallery.fileIDs;
+              doc.style.overflow = '';
+              $.off(d, 'keydown', Gallery.cb.keybinds);
+              if (Conf['Keybinds']) {
+                  $.on(d, 'keydown', Keybinds.keydown);
+              }
+              $.off(window, 'resize', Gallery.cb.setHeight);
+              return clearTimeout(Gallery.timeoutID);
+          },
+          setFitness() {
+              return (this.checked ? $.addClass : $.rmClass)(doc, `gal-${this.name.toLowerCase().replace(/\s+/g, '-')}`);
+          },
+          setHeight: debounce(100, function () {
+              let dim, margin, minHeight;
+              const { current, frame } = Gallery.nodes;
+              const { style } = current;
+              if (Conf['Stretch to Fit'] && (dim = g.posts.get(current.dataset.post)?.files[+current.dataset.file].dimensions)) {
+                  const [width, height] = dim.split('x');
+                  let containerWidth = frame.clientWidth;
+                  let containerHeight = doc.clientHeight - 25;
+                  if (((current.dataRotate || 0) % 180) === 90) {
+                      [containerWidth, containerHeight] = [containerHeight, containerWidth];
+                  }
+                  minHeight = Math.min(containerHeight, (height / width) * containerWidth);
+                  style.minHeight = minHeight + 'px';
+                  style.minWidth = ((width / height) * minHeight) + 'px';
+              }
+              else {
+                  style.minHeight = (style.minWidth = '');
+              }
+              if (((current.dataRotate || 0) % 180) === 90) {
+                  style.maxWidth = Conf['Fit Height'] ? `${doc.clientHeight - 25}px` : 'none';
+                  style.maxHeight = Conf['Fit Width'] ? `${frame.clientWidth}px` : 'none';
+                  margin = (current.clientWidth - current.clientHeight) / 2;
+                  return style.margin = `${margin}px ${-margin}px`;
+              }
+              else {
+                  return style.maxWidth = (style.maxHeight = (style.margin = ''));
+              }
+          }),
+          setDelay() { return Gallery.delay = +this.value; }
+      },
+      menu: {
+          init() {
+              if (!Gallery.enabled) {
+                  return;
+              }
+              const el = $.el('span', {
+                  textContent: 'Gallery',
+                  className: 'gallery-link'
+              });
+              return Header.menu.addEntry({
+                  el,
+                  order: 105,
+                  subEntries: Gallery.menu.createSubEntries()
+              });
+          },
+          createSubEntry(name) {
+              const label = UI.checkbox(name, name);
+              const input = label.firstElementChild;
+              if (['Hide Thumbnails', 'Fit Width', 'Fit Height'].includes(name)) {
+                  $.on(input, 'change', Gallery.cb.setFitness);
+              }
+              $.event('change', null, input);
+              $.on(input, 'change', $.cb.checked);
+              if (['Hide Thumbnails', 'Fit Width', 'Fit Height', 'Stretch to Fit'].includes(name)) {
+                  $.on(input, 'change', Gallery.cb.setHeight);
+              }
+              return { el: label };
+          },
+          createSubEntries() {
+              const subEntries = (['Hide Thumbnails', 'Fit Width', 'Fit Height', 'Stretch to Fit', 'Scroll to Post'].map((item) => Gallery.menu.createSubEntry(item)));
+              const delayLabel = $.el('label', { innerHTML: 'Slide Delay: <input type="number" name="Slide Delay" min="0" step="any" class="field">' });
+              const delayInput = delayLabel.firstElementChild;
+              delayInput.value = Gallery.delay;
+              $.on(delayInput, 'change', Gallery.cb.setDelay);
+              $.on(delayInput, 'change', $.cb.value);
+              subEntries.push({ el: delayLabel });
+              return subEntries;
+          }
       }
-    }
   };
 
   var EmbeddingPage = `<div class="move">
@@ -14642,111 +14702,114 @@ svg.icon {
 <div id="media-embed"><div></div></div>`;
 
   var Linkify = {
-    init() {
-      if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf['Linkify']) { return; }
-
-      if (Conf['Comment Expansion']) {
-        ExpandComment.callbacks.push(this.node);
-      }
-
-      Callbacks.Post.push({
-        name: 'Linkify',
-        cb:   this.node
-      });
-
-      return Embedding.init();
-    },
-
-    node() {
-      let link;
-      if (this.isClone) { return Embedding.events(this); }
-      if (!Linkify.regString.test(this.info.comment)) { return; }
-      for (link of $$('a', this.nodes.comment)) {
-        if (g.SITE.isLinkified?.(link)) {
-          $.addClass(link, 'linkify');
-          if (ImageHost.useFaster) { ImageHost.fixLinks([link]); }
-          Embedding.process(link, this);
-        }
-      }
-      const links = Linkify.process(this.nodes.comment);
-      if (ImageHost.useFaster) { ImageHost.fixLinks(links); }
-      for (link of links) { Embedding.process(link, this); }
-    },
-
-    process(node) {
-      let length;
-      const test     = /[^\s"]+/g;
-      const space    = /[\s"]/;
-      const snapshot = $.X('.//br|.//text()', node);
-      let i = 0;
-      const links = [];
-      while ((node = snapshot.snapshotItem(i++))) {
-        var result;
-        var {data} = node;
-        if (!data || (node.parentElement.nodeName === "A")) { continue; }
-
-        while ((result = test.exec(data))) {
-          var {index} = result;
-          var endNode = node;
-          var word    = result[0];
-          // End of node, not necessarily end of space-delimited string
-          if ((length = index + word.length) === data.length) {
-            var saved;
-            test.lastIndex = 0;
-
-            while (saved = snapshot.snapshotItem(i++)) {
-              var end;
-              if ((saved.nodeName === 'BR') || ((saved.parentElement.nodeName === 'P') && !saved.previousSibling)) {
-                var part1, part2;
-                if (
-                  // link deliberately split
-                  (part1 = word.match(/(https?:\/\/)?([a-z\d-]+\.)*[a-z\d-]+$/i)) &&
-                  (part2 = snapshot.snapshotItem(i)?.data?.match(/^(\.[a-z\d-]+)*\//i)) &&
-                  ((part1[0] + part2[0]).search(Linkify.regString) === 0)
-                ) {
+      init() {
+          if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf['Linkify']) {
+              return;
+          }
+          if (Conf['Comment Expansion']) {
+              ExpandComment.callbacks.push(this.node);
+          }
+          Callbacks.Post.push({
+              name: 'Linkify',
+              cb: this.node
+          });
+          return Embedding.init();
+      },
+      node() {
+          let link;
+          if (this.isClone) {
+              return Embedding.events(this);
+          }
+          if (!Linkify.regString.test(this.info.comment)) {
+              return;
+          }
+          for (link of $$('a', this.nodes.comment)) {
+              if (g.SITE.isLinkified?.(link)) {
+                  $.addClass(link, 'linkify');
+                  if (ImageHost.useFaster) {
+                      ImageHost.fixLinks([link]);
+                  }
+                  Embedding.process(link, this);
+              }
+          }
+          const links = Linkify.process(this.nodes.comment);
+          if (ImageHost.useFaster) {
+              ImageHost.fixLinks(links);
+          }
+          for (link of links) {
+              Embedding.process(link, this);
+          }
+      },
+      process(node) {
+          let length;
+          const test = /[^\s"]+/g;
+          const space = /[\s"]/;
+          const snapshot = $.X('.//br|.//text()', node);
+          let i = 0;
+          const links = [];
+          while ((node = snapshot.snapshotItem(i++))) {
+              var result;
+              var { data } = node;
+              if (!data || (node.parentElement.nodeName === "A")) {
                   continue;
-                } else {
-                  break;
-                }
               }
+              while ((result = test.exec(data))) {
+                  var { index } = result;
+                  var endNode = node;
+                  var word = result[0];
+                  // End of node, not necessarily end of space-delimited string
+                  if ((length = index + word.length) === data.length) {
+                      var saved;
+                      test.lastIndex = 0;
+                      while (saved = snapshot.snapshotItem(i++)) {
+                          var end;
+                          if ((saved.nodeName === 'BR') || ((saved.parentElement.nodeName === 'P') && !saved.previousSibling)) {
+                              var part1, part2;
+                              if (
+                              // link deliberately split
+                              (part1 = word.match(/(https?:\/\/)?([a-z\d-]+\.)*[a-z\d-]+$/i)) &&
+                                  (part2 = snapshot.snapshotItem(i)?.data?.match(/^(\.[a-z\d-]+)*\//i)) &&
+                                  ((part1[0] + part2[0]).search(Linkify.regString) === 0)) {
+                                  continue;
+                              }
+                              else {
+                                  break;
+                              }
+                          }
+                          if ((saved.parentElement.nodeName === "A") && !Linkify.regString.test(word)) {
+                              break;
+                          }
+                          endNode = saved;
+                          ({ data } = saved);
+                          if (end = space.exec(data)) {
+                              // Set our snapshot and regex to start on this node at this position when the loop resumes
+                              word += data.slice(0, end.index);
+                              test.lastIndex = (length = end.index);
+                              i--;
+                              break;
+                          }
+                          else {
+                              ({ length } = data);
+                              word += data;
+                          }
+                      }
+                  }
+                  if (Linkify.regString.test(word)) {
+                      links.push(Linkify.makeRange(node, endNode, index, length));
 
-              if ((saved.parentElement.nodeName === "A") && !Linkify.regString.test(word)) {
-                break;
+                  }
+                  if (!test.lastIndex || (node !== endNode)) {
+                      break;
+                  }
               }
-
-              endNode  = saved;
-              ({data}   = saved);
-
-              if (end = space.exec(data)) {
-                // Set our snapshot and regex to start on this node at this position when the loop resumes
-                word += data.slice(0, end.index);
-                test.lastIndex = (length = end.index);
-                i--;
-                break;
-              } else {
-                ({length} = data);
-                word    += data;
-              }
-            }
           }
-
-          if (Linkify.regString.test(word)) {
-            links.push(Linkify.makeRange(node, endNode, index, length));
-
+          i = links.length;
+          while (i--) {
+              links[i] = Linkify.makeLink(links[i]);
           }
-
-          if (!test.lastIndex || (node !== endNode)) { break; }
-        }
-      }
-
-      i = links.length;
-      while (i--) {
-        links[i] = Linkify.makeLink(links[i]);
-      }
-      return links;
-    },
-
-    regString: new RegExp(`(\
+          return links;
+      },
+      regString: new RegExp(`(\
 \
 (https?|mailto|git|magnet|ftp|irc):(\
 [a-z\\d%/?]\
@@ -14760,76 +14823,73 @@ aero|asia|biz|cat|com|coop|dance|info|int|jobs|mobi|moe|museum|name|net|org|post
 |\
 [-\\w\\d.@]+@[a-z\\d.-]+\\.[a-z\\d]\
 )`, 'i'),
-
-    makeRange(startNode, endNode, startOffset, endOffset) {
-      const range = document.createRange();
-      range.setStart(startNode, startOffset);
-      range.setEnd(endNode,   endOffset);
-      return range;
-    },
-
-    makeLink(range) {
-      let t;
-      let encodedDomain;
-      let text = range.toString();
-
-      // Clean start of range
-      let i = text.search(Linkify.regString);
-
-      if (i > 0) {
-        text = text.slice(i);
-        while ((range.startOffset + i) >= range.startContainer.data.length) { i--; }
-
-        if (i) { range.setStart(range.startContainer, range.startOffset + i); }
+      makeRange(startNode, endNode, startOffset, endOffset) {
+          const range = document.createRange();
+          range.setStart(startNode, startOffset);
+          range.setEnd(endNode, endOffset);
+          return range;
+      },
+      makeLink(range) {
+          let t;
+          let encodedDomain;
+          let text = range.toString();
+          // Clean start of range
+          let i = text.search(Linkify.regString);
+          if (i > 0) {
+              text = text.slice(i);
+              while ((range.startOffset + i) >= range.startContainer.data.length) {
+                  i--;
+              }
+              if (i) {
+                  range.setStart(range.startContainer, range.startOffset + i);
+              }
+          }
+          // Clean end of range
+          i = 0;
+          while (/[)\]}>.,]/.test(t = text.charAt(text.length - (1 + i)))) {
+              if (!/[.,]/.test(t) && !((text.match(/[()\[\]{}<>]/g)).length % 2)) {
+                  break;
+              }
+              i++;
+          }
+          if (i) {
+              text = text.slice(0, -i);
+              while ((range.endOffset - i) < 0) {
+                  i--;
+              }
+              if (i) {
+                  range.setEnd(range.endContainer, range.endOffset - i);
+              }
+          }
+          // Make our link 'valid' if it is formatted incorrectly.
+          if (!/((mailto|magnet):|.+:\/\/)/.test(text)) {
+              text = (/@/.test(text) ?
+                  'mailto:'
+                  :
+                      'http://') + text;
+          }
+          // Decode percent-encoded characters in domain so that they behave consistently across browsers.
+          if (encodedDomain = text.match(/^(https?:\/\/[^/]*%[0-9a-f]{2})(.*)$/i)) {
+              text = encodedDomain[1].replace(/%([0-9a-f]{2})/ig, function (x, y) {
+                  if (y === '25') {
+                      return x;
+                  }
+                  else {
+                      return String.fromCharCode(parseInt(y, 16));
+                  }
+              }) + encodedDomain[2];
+          }
+          const a = $.el('a', {
+              className: 'linkify',
+              rel: 'noreferrer noopener',
+              target: '_blank',
+              href: text
+          });
+          // Insert the range into the anchor, the anchor into the range's DOM location, and destroy the range.
+          $.add(a, range.extractContents());
+          range.insertNode(a);
+          return a;
       }
-
-      // Clean end of range
-      i = 0;
-      while (/[)\]}>.,]/.test(t = text.charAt(text.length - (1 + i)))) {
-        if (!/[.,]/.test(t) && !((text.match(/[()\[\]{}<>]/g)).length % 2)) { break; }
-        i++;
-      }
-
-      if (i) {
-        text = text.slice(0, -i);
-        while ((range.endOffset - i) < 0) { i--; }
-
-        if (i) {
-          range.setEnd(range.endContainer, range.endOffset - i);
-        }
-      }
-
-      // Make our link 'valid' if it is formatted incorrectly.
-      if (!/((mailto|magnet):|.+:\/\/)/.test(text)) {
-        text = (
-          /@/.test(text) ?
-            'mailto:'
-          :
-            'http://'
-        ) + text;
-      }
-
-      // Decode percent-encoded characters in domain so that they behave consistently across browsers.
-      if (encodedDomain = text.match(/^(https?:\/\/[^/]*%[0-9a-f]{2})(.*)$/i)) {
-        text = encodedDomain[1].replace(/%([0-9a-f]{2})/ig, function(x, y) {
-          if (y === '25') { return x; } else { return String.fromCharCode(parseInt(y, 16)); }
-        }) + encodedDomain[2];
-      }
-
-      const a = $.el('a', {
-        className: 'linkify',
-        rel:       'noreferrer noopener',
-        target:    '_blank',
-        href:      text
-      }
-      );
-
-      // Insert the range into the anchor, the anchor into the range's DOM location, and destroy the range.
-      $.add(a, range.extractContents());
-      range.insertNode(a);
-
-      return a;
-    }
   };
 
   var Time = {
@@ -16218,803 +16278,814 @@ aero|asia|biz|cat|com|coop|dance|info|int|jobs|mobi|moe|museum|name|net|org|post
   };
 
   var Keybinds = {
-    init() {
-      if (!Conf['Keybinds']) { return; }
-
-      for (var hotkey in Config.hotkeys) {
-        $.sync(hotkey, Keybinds.sync);
-      }
-
-      var init = function() {
-        $.off(d, '4chanXInitFinished', init);
-        $.on(d, 'keydown', Keybinds.keydown);
-        for (var node of $$('[accesskey]')) {
-          node.removeAttribute('accesskey');
-        }
-      };
-      return $.on(d, '4chanXInitFinished', init);
-    },
-
-    sync(key, hotkey) {
-      return Conf[hotkey] = key;
-    },
-
-    keydown(e) {
-      let key, thread, threadRoot;
-      let catalog, notifications;
-      if (!(key = Keybinds.keyCode(e))) { return; }
-      const {target} = e;
-      if (['INPUT', 'TEXTAREA'].includes(target.nodeName)) {
-        if (!/(Esc|Alt|Ctrl|Meta|Shift\+\w{2,})/.test(key) || !!/^Alt\+(\d|Up|Down|Left|Right)$/.test(key)) { return; }
-      }
-      if (['index', 'thread'].includes(g.VIEW)) {
-        threadRoot = Nav.getThread();
-        thread = Get.threadFromRoot(threadRoot);
-      }
-      let hasAction = false;
-      // QR & Options
-      if (key === Conf['Toggle board list'] && Conf['Custom Board Navigation']) {
-        Header.toggleBoardList();
-        hasAction = true;
-      }
-      if (key === Conf['Toggle header']) {
-        Header.toggleBarVisibility();
-        hasAction = true;
-      }
-      if (key === Conf['Open empty QR'] && QR.postingIsEnabled) {
-        Keybinds.qr();
-        hasAction = true;
-      }
-      if (key === Conf['Open QR'] && QR.postingIsEnabled && threadRoot) {
-        Keybinds.qr(threadRoot);
-        hasAction = true;
-      }
-      if (key === Conf['Open settings']) {
-        Settings.open();
-        hasAction = true;
-      }
-      if (key === Conf['Close']) {
-        if (Settings.dialog) {
-          Settings.close();
-        } else if ((notifications = $$('.notification')).length) {
-          for (var notification of notifications) {
-            $('.close', notification).click();
+      init() {
+          if (!Conf['Keybinds']) {
+              return;
           }
-        } else if (QR.nodes?.preview) {
-          QR.closePreview();
-        } else if (QR.nodes && !(QR.nodes.el.hidden || (window.getComputedStyle(QR.nodes.form).display === 'none'))) {
-          if (Conf['Persistent QR']) {
-            QR.hide();
-          } else {
-            QR.close();
+          for (var hotkey in Config.hotkeys) {
+              $.sync(hotkey, Keybinds.sync);
           }
-        } else if (Embedding.lastEmbed) {
-          Embedding.closeFloat();
-        }
-        hasAction = true;
-      }
-      if (key === Conf['Spoiler tags'] && target.nodeName === 'TEXTAREA') {
-        Keybinds.tags('spoiler', target);
-        hasAction = true;
-      }
-      if (key === Conf['Code tags'] && target.nodeName === 'TEXTAREA') {
-        Keybinds.tags('code', target);
-        hasAction = true;
-      }
-      if (key === Conf['Eqn tags'] && target.nodeName === 'TEXTAREA') {
-        Keybinds.tags('eqn', target);
-        hasAction = true;
-      }
-      if (key === Conf['Math tags'] && target.nodeName === 'TEXTAREA') {
-        Keybinds.tags('math', target);
-        hasAction = true;
-      }
-      if (key === Conf['SJIS tags'] && target.nodeName === 'TEXTAREA') {
-        Keybinds.tags('sjis', target);
-        hasAction = true;
-      }
-      if (key === Conf['Toggle sage'] && QR.nodes && !QR.nodes.el.hidden) {
-        Keybinds.sage();
-        hasAction = true;
-      }
-      if (key === Conf['Toggle Cooldown'] && QR.nodes && !QR.nodes.el.hidden
-        && $.hasClass(QR.nodes.fileSubmit, 'custom-cooldown')) {
-        QR.toggleCustomCooldown();
-        hasAction = true;
-      }
-      if (key === Conf['Post from URL'] && QR.postingIsEnabled) {
-        QR.handleUrl('');
-        hasAction = true;
-      }
-      if (key === Conf['Add new post'] && QR.postingIsEnabled) {
-        QR.addPost();
-        hasAction = true;
-      }
-      if (key === Conf['Submit QR'] && QR.nodes && !QR.nodes.el.hidden && !QR.status()) {
-        QR.submit();
-        hasAction = true;
-      }
-      // Index/Thread related
-      if (key === Conf['Update']) {
-        switch (g.VIEW) {
-          case 'thread':
-            if (ThreadUpdater.enabled) ThreadUpdater.update();
-            hasAction = true;
-          break;
-          case 'index':
-            if (Index.enabled) Index.update();
-            hasAction = true;
-        }
-      }
-      if (key === Conf['Watch'] && ThreadWatcher.enabled && thread) {
-        ThreadWatcher.toggle(thread);
-        hasAction = true;
-      }
-      if (key === Conf['Update thread watcher'] && ThreadWatcher.enabled) {
-        ThreadWatcher.buttonFetchAll();
-        hasAction = true;
-      }
-      if (key === Conf['Toggle thread watcher'] && ThreadWatcher.enabled) {
-        ThreadWatcher.toggleWatcher();
-        hasAction = true;
-      }
-      if (key === Conf['Toggle threading'] && QuoteThreading.ready) {
-        QuoteThreading.toggleThreading();
-        hasAction = true;
-      }
-      if (key === Conf['Mark thread read'] && g.VIEW === 'index' && thread && UnreadIndex.enabled) {
-        UnreadIndex.markRead.call(threadRoot);
-        hasAction = true;
-      }
-      // Images
-      if (key === Conf['Expand image'] && ImageExpand.enabled && threadRoot) {
-        var post = Get.postFromNode(Keybinds.post(threadRoot));
-        if (post.file) {
-          ImageExpand.toggle(post);
-          hasAction = true;
-        }
-      }
-      if (key === Conf['Expand images'] && ImageExpand.enabled) {
-        ImageExpand.cb.toggleAll();
-        hasAction = true;
-      }
-      if (key === Conf['Open Gallery'] && Gallery.enabled) {
-        Gallery.cb.toggle();
-        hasAction = true;
-      }
-      if (key === Conf['fappeTyme'] && FappeTyme.nodes?.fappe) {
-        FappeTyme.toggle('fappe');
-        hasAction = true;
-      }
-      if (key === Conf['werkTyme'] && FappeTyme.nodes?.werk) {
-        FappeTyme.toggle('werk');
-        hasAction = true;
-      }
-      // Board Navigation
-      if (key === Conf['Front page']) {
-        if (Index.enabled) {
-          Index.userPageNav(1);
-        } else {
-          location.href = `/${g.BOARD}/`;
-        }
-        hasAction = true;
-      }
-      if (key === Conf['Open front page']) {
-        $.open(`${location.origin}/${g.BOARD}/`);
-        hasAction = true;
-      }
-      if (key === Conf['Next page'] && g.VIEW === 'index' && !g.SITE.isOnePage?.(g.BOARD)) {
-        if (Index.enabled) {
-          if (!['paged', 'infinite'].includes(Conf['Index Mode'])) { return; }
-          $('.next button', Index.pagelist).click();
-        } else {
-          $(g.SITE.selectors.nav.next)?.click();
-        }
-        hasAction = true;
-      }
-      if (key === Conf['Previous page'] && g.VIEW === 'index' && !g.SITE.isOnePage?.(g.BOARD)) {
-        if (Index.enabled) {
-          if (!['paged', 'infinite'].includes(Conf['Index Mode'])) { return; }
-          $('.prev button', Index.pagelist).click();
-        } else {
-          $(g.SITE.selectors.nav.prev)?.click();
-        }
-        hasAction = true;
-      }
-      if (key === Conf['Search form'] && g.VIEW === 'index') {
-        var searchInput = Index.enabled ?
-          Index.searchInput
-        : g.SITE.selectors.searchBox ?
-          $(g.SITE.selectors.searchBox)
-        :
-          undefined;
-        if (searchInput) {
-          Header.scrollToIfNeeded(searchInput);
-          searchInput.focus();
-          hasAction = true;
-        }
-      }
-      if (key === Conf['Paged mode'] && Index.enabledOn(g.BOARD)) {
-        location.href = g.VIEW === 'index' ? '#paged' : `/${g.BOARD}/#paged`;
-      }
-      if (key === Conf['Infinite scrolling mode'] && Index.enabledOn(g.BOARD)) {
-        location.href = g.VIEW === 'index' ? '#infinite' : `/${g.BOARD}/#infinite`;
-      }
-      if (key === Conf['All pages mode'] && Index.enabledOn(g.BOARD)) {
-        location.href = g.VIEW === 'index' ? '#all-pages' : `/${g.BOARD}/#all-pages`;
-      }
-      if (key === Conf['Open catalog'] && (catalog = CatalogLinks.catalog())) {
-        location.href = catalog;
-      }
-      if (key === Conf['Cycle sort type'] && Index.enabled) {
-        Index.cycleSortType();
-        hasAction = true;
-      }
-      // Thread Navigation
-      if (key === Conf['Next thread'] && g.VIEW === 'index' && threadRoot) {
-        Nav.scroll(+1);
-        hasAction = true;
-      }
-      if (key === Conf['Previous thread'] && g.VIEW === 'index' && threadRoot) {
-        Nav.scroll(-1);
-        hasAction = true;
-      }
-      if (key === Conf['Expand thread'] && g.VIEW === 'index' && threadRoot) {
-        ExpandThread.toggle(thread);
-        // Keep thread from moving off screen when contracted.
-        Header.scrollTo(threadRoot);
-        hasAction = true;
-      }
-      if (key === Conf['Open thread'] && g.VIEW === 'index' && threadRoot) {
-        Keybinds.open(thread);
-        hasAction = true;
-      }
-      if (key === Conf['Open thread tab'] && g.VIEW === 'index' && threadRoot) {
-        Keybinds.open(thread, true);
-        hasAction = true;
-      }
-      // Reply Navigation
-      if (key === Conf['Next reply'] && threadRoot) {
-        Keybinds.hl(+1, threadRoot);
-        hasAction = true;
-      }
-      if (key === Conf['Previous reply'] && threadRoot) {
-        Keybinds.hl(-1, threadRoot);
-        hasAction = true;
-      }
-      if (key === Conf['Deselect reply'] && threadRoot) {
-        Keybinds.hl(0, threadRoot);
-        hasAction = true;
-      }
-      if (key === Conf['Hide'] && thread && ThreadHiding.db) {
-        Header.scrollTo(threadRoot);
-        ThreadHiding.toggle(thread);
-        hasAction = true;
-      }
-      if (key === Conf['Quick Filter MD5'] && threadRoot) {
-        post = Keybinds.post(threadRoot);
-        Keybinds.hl(+1, threadRoot);
-        Filter.quickFilterMD5.call(post, e);
-        hasAction = true;
-      }
-      if (key === Conf['Previous Post Quoting You'] && threadRoot && QuoteYou.db) {
-        QuoteYou.cb.seek('preceding');
-        hasAction = true;
-      }
-      if (key === Conf['Next Post Quoting You'] && threadRoot && QuoteYou.db) {
-        QuoteYou.cb.seek('following');
-        hasAction = true;
-      }
-      if (hasAction) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    },
-
-    keyCode(e) {
-      let key = (() => { let kc;
-      switch ((kc = e.keyCode)) {
-        case 8: // return
-          return '';
-        case 13:
-          return 'Enter';
-        case 27:
-          return 'Esc';
-        case 32:
-          return 'Space';
-        case 37:
-          return 'Left';
-        case 38:
-          return 'Up';
-        case 39:
-          return 'Right';
-        case 40:
-          return 'Down';
-        case 188:
-          return 'Comma';
-        case 190:
-          return 'Period';
-        case 191:
-          return 'Slash';
-        case 59: case 186:
-          return 'Semicolon';
-        default:
-          if ((48 <= kc && kc <= 57) || (65 <= kc && kc <= 90)) { // 0-9, A-Z
-            return String.fromCharCode(kc).toLowerCase();
-          } else if (96 <= kc && kc <= 105) { // numpad 0-9
-            return String.fromCharCode(kc - 48);
-          } else {
-            return null;
+          var init = function () {
+              $.off(d, '4chanXInitFinished', init);
+              $.on(d, 'keydown', Keybinds.keydown);
+              for (var node of $$('[accesskey]')) {
+                  node.removeAttribute('accesskey');
+              }
+          };
+          return $.on(d, '4chanXInitFinished', init);
+      },
+      sync(key, hotkey) {
+          return Conf[hotkey] = key;
+      },
+      keydown(e) {
+          let key, thread, threadRoot;
+          let catalog, notifications;
+          if (!(key = Keybinds.keyCode(e))) {
+              return;
           }
-      } })();
-      if (key) {
-        if (e.altKey) {   key = 'Alt+'   + key; }
-        if (e.ctrlKey) {  key = 'Ctrl+'  + key; }
-        if (e.metaKey) {  key = 'Meta+'  + key; }
-        if (e.shiftKey) { key = 'Shift+' + key; }
+          const { target } = e;
+          if (['INPUT', 'TEXTAREA'].includes(target.nodeName)) {
+              if (!/(Esc|Alt|Ctrl|Meta|Shift\+\w{2,})/.test(key) || !!/^Alt\+(\d|Up|Down|Left|Right)$/.test(key)) {
+                  return;
+              }
+          }
+          if (['index', 'thread'].includes(g.VIEW)) {
+              threadRoot = Nav.getThread();
+              thread = Get.threadFromRoot(threadRoot);
+          }
+          let hasAction = false;
+          // QR & Options
+          if (key === Conf['Toggle board list'] && Conf['Custom Board Navigation']) {
+              Header.toggleBoardList();
+              hasAction = true;
+          }
+          if (key === Conf['Toggle header']) {
+              Header.toggleBarVisibility();
+              hasAction = true;
+          }
+          if (key === Conf['Open empty QR'] && QR.postingIsEnabled) {
+              Keybinds.qr();
+              hasAction = true;
+          }
+          if (key === Conf['Open QR'] && QR.postingIsEnabled && threadRoot) {
+              Keybinds.qr(threadRoot);
+              hasAction = true;
+          }
+          if (key === Conf['Open settings']) {
+              Settings.open();
+              hasAction = true;
+          }
+          if (key === Conf['Close']) {
+              if (Settings.dialog) {
+                  Settings.close();
+              }
+              else if ((notifications = $$('.notification')).length) {
+                  for (var notification of notifications) {
+                      $('.close', notification).click();
+                  }
+              }
+              else if (QR.nodes?.preview) {
+                  QR.closePreview();
+              }
+              else if (QR.nodes && !(QR.nodes.el.hidden || (window.getComputedStyle(QR.nodes.form).display === 'none'))) {
+                  if (Conf['Persistent QR']) {
+                      QR.hide();
+                  }
+                  else {
+                      QR.close();
+                  }
+              }
+              else if (Embedding.lastEmbed) {
+                  Embedding.closeFloat();
+              }
+              hasAction = true;
+          }
+          if (key === Conf['Spoiler tags'] && target.nodeName === 'TEXTAREA') {
+              Keybinds.tags('spoiler', target);
+              hasAction = true;
+          }
+          if (key === Conf['Code tags'] && target.nodeName === 'TEXTAREA') {
+              Keybinds.tags('code', target);
+              hasAction = true;
+          }
+          if (key === Conf['Eqn tags'] && target.nodeName === 'TEXTAREA') {
+              Keybinds.tags('eqn', target);
+              hasAction = true;
+          }
+          if (key === Conf['Math tags'] && target.nodeName === 'TEXTAREA') {
+              Keybinds.tags('math', target);
+              hasAction = true;
+          }
+          if (key === Conf['SJIS tags'] && target.nodeName === 'TEXTAREA') {
+              Keybinds.tags('sjis', target);
+              hasAction = true;
+          }
+          if (key === Conf['Toggle sage'] && QR.nodes && !QR.nodes.el.hidden) {
+              Keybinds.sage();
+              hasAction = true;
+          }
+          if (key === Conf['Toggle Cooldown'] && QR.nodes && !QR.nodes.el.hidden
+              && $.hasClass(QR.nodes.fileSubmit, 'custom-cooldown')) {
+              QR.toggleCustomCooldown();
+              hasAction = true;
+          }
+          if (key === Conf['Post from URL'] && QR.postingIsEnabled) {
+              QR.handleUrl('');
+              hasAction = true;
+          }
+          if (key === Conf['Add new post'] && QR.postingIsEnabled) {
+              QR.addPost();
+              hasAction = true;
+          }
+          if (key === Conf['Submit QR'] && QR.nodes && !QR.nodes.el.hidden && !QR.status()) {
+              QR.submit();
+              hasAction = true;
+          }
+          // Index/Thread related
+          if (key === Conf['Update']) {
+              switch (g.VIEW) {
+                  case 'thread':
+                      if (ThreadUpdater.enabled)
+                          ThreadUpdater.update();
+                      hasAction = true;
+                      break;
+                  case 'index':
+                      if (Index.enabled)
+                          Index.update();
+                      hasAction = true;
+              }
+          }
+          if (key === Conf['Watch'] && ThreadWatcher.enabled && thread) {
+              ThreadWatcher.toggle(thread);
+              hasAction = true;
+          }
+          if (key === Conf['Update thread watcher'] && ThreadWatcher.enabled) {
+              ThreadWatcher.buttonFetchAll();
+              hasAction = true;
+          }
+          if (key === Conf['Toggle thread watcher'] && ThreadWatcher.enabled) {
+              ThreadWatcher.toggleWatcher();
+              hasAction = true;
+          }
+          if (key === Conf['Toggle threading'] && QuoteThreading.ready) {
+              QuoteThreading.toggleThreading();
+              hasAction = true;
+          }
+          if (key === Conf['Mark thread read'] && g.VIEW === 'index' && thread && UnreadIndex.enabled) {
+              UnreadIndex.markRead.call(threadRoot);
+              hasAction = true;
+          }
+          // Images
+          if (key === Conf['Expand image'] && ImageExpand.enabled && threadRoot) {
+              var post = Get.postFromNode(Keybinds.post(threadRoot));
+              if (post.file) {
+                  ImageExpand.toggle(post);
+                  hasAction = true;
+              }
+          }
+          if (key === Conf['Expand images'] && ImageExpand.enabled) {
+              ImageExpand.cb.toggleAll();
+              hasAction = true;
+          }
+          if (key === Conf['Open Gallery'] && Gallery.enabled) {
+              Gallery.cb.toggle();
+              hasAction = true;
+          }
+          if (key === Conf['fappeTyme'] && FappeTyme.nodes?.fappe) {
+              FappeTyme.toggle('fappe');
+              hasAction = true;
+          }
+          if (key === Conf['werkTyme'] && FappeTyme.nodes?.werk) {
+              FappeTyme.toggle('werk');
+              hasAction = true;
+          }
+          // Board Navigation
+          if (key === Conf['Front page']) {
+              if (Index.enabled) {
+                  Index.userPageNav(1);
+              }
+              else {
+                  location.href = `/${g.BOARD}/`;
+              }
+              hasAction = true;
+          }
+          if (key === Conf['Open front page']) {
+              $.open(`${location.origin}/${g.BOARD}/`);
+              hasAction = true;
+          }
+          if (key === Conf['Next page'] && g.VIEW === 'index' && !g.SITE.isOnePage?.(g.BOARD)) {
+              if (Index.enabled) {
+                  if (!['paged', 'infinite'].includes(Conf['Index Mode'])) {
+                      return;
+                  }
+                  $('.next button', Index.pagelist).click();
+              }
+              else {
+                  $(g.SITE.selectors.nav.next)?.click();
+              }
+              hasAction = true;
+          }
+          if (key === Conf['Previous page'] && g.VIEW === 'index' && !g.SITE.isOnePage?.(g.BOARD)) {
+              if (Index.enabled) {
+                  if (!['paged', 'infinite'].includes(Conf['Index Mode'])) {
+                      return;
+                  }
+                  $('.prev button', Index.pagelist).click();
+              }
+              else {
+                  $(g.SITE.selectors.nav.prev)?.click();
+              }
+              hasAction = true;
+          }
+          if (key === Conf['Search form'] && g.VIEW === 'index') {
+              var searchInput = Index.enabled ?
+                  Index.searchInput
+                  : g.SITE.selectors.searchBox ?
+                      $(g.SITE.selectors.searchBox)
+                      :
+                          undefined;
+              if (searchInput) {
+                  Header.scrollToIfNeeded(searchInput);
+                  searchInput.focus();
+                  hasAction = true;
+              }
+          }
+          if (key === Conf['Paged mode'] && Index.enabledOn(g.BOARD)) {
+              location.href = g.VIEW === 'index' ? '#paged' : `/${g.BOARD}/#paged`;
+          }
+          if (key === Conf['Infinite scrolling mode'] && Index.enabledOn(g.BOARD)) {
+              location.href = g.VIEW === 'index' ? '#infinite' : `/${g.BOARD}/#infinite`;
+          }
+          if (key === Conf['All pages mode'] && Index.enabledOn(g.BOARD)) {
+              location.href = g.VIEW === 'index' ? '#all-pages' : `/${g.BOARD}/#all-pages`;
+          }
+          if (key === Conf['Open catalog'] && (catalog = CatalogLinks.catalog())) {
+              location.href = catalog;
+          }
+          if (key === Conf['Cycle sort type'] && Index.enabled) {
+              Index.cycleSortType();
+              hasAction = true;
+          }
+          // Thread Navigation
+          if (key === Conf['Next thread'] && g.VIEW === 'index' && threadRoot) {
+              Nav.scroll(1);
+              hasAction = true;
+          }
+          if (key === Conf['Previous thread'] && g.VIEW === 'index' && threadRoot) {
+              Nav.scroll(-1);
+              hasAction = true;
+          }
+          if (key === Conf['Expand thread'] && g.VIEW === 'index' && threadRoot) {
+              ExpandThread.toggle(thread);
+              // Keep thread from moving off screen when contracted.
+              Header.scrollTo(threadRoot);
+              hasAction = true;
+          }
+          if (key === Conf['Open thread'] && g.VIEW === 'index' && threadRoot) {
+              Keybinds.open(thread);
+              hasAction = true;
+          }
+          if (key === Conf['Open thread tab'] && g.VIEW === 'index' && threadRoot) {
+              Keybinds.open(thread, true);
+              hasAction = true;
+          }
+          // Reply Navigation
+          if (key === Conf['Next reply'] && threadRoot) {
+              Keybinds.hl(1, threadRoot);
+              hasAction = true;
+          }
+          if (key === Conf['Previous reply'] && threadRoot) {
+              Keybinds.hl(-1, threadRoot);
+              hasAction = true;
+          }
+          if (key === Conf['Deselect reply'] && threadRoot) {
+              Keybinds.hl(0, threadRoot);
+              hasAction = true;
+          }
+          if (key === Conf['Hide'] && thread && ThreadHiding.db) {
+              Header.scrollTo(threadRoot);
+              ThreadHiding.toggle(thread);
+              hasAction = true;
+          }
+          if (key === Conf['Quick Filter MD5'] && threadRoot) {
+              post = Keybinds.post(threadRoot);
+              Keybinds.hl(1, threadRoot);
+              Filter.quickFilterMD5.call(post, e);
+              hasAction = true;
+          }
+          if (key === Conf['Previous Post Quoting You'] && threadRoot && QuoteYou.db) {
+              QuoteYou.cb.seek('preceding');
+              hasAction = true;
+          }
+          if (key === Conf['Next Post Quoting You'] && threadRoot && QuoteYou.db) {
+              QuoteYou.cb.seek('following');
+              hasAction = true;
+          }
+          if (hasAction) {
+              e.preventDefault();
+              e.stopPropagation();
+          }
+      },
+      keyCode(e) {
+          let key = (() => {
+              let kc;
+              switch ((kc = e.keyCode)) {
+                  case 8: // return
+                      return '';
+                  case 13:
+                      return 'Enter';
+                  case 27:
+                      return 'Esc';
+                  case 32:
+                      return 'Space';
+                  case 37:
+                      return 'Left';
+                  case 38:
+                      return 'Up';
+                  case 39:
+                      return 'Right';
+                  case 40:
+                      return 'Down';
+                  case 188:
+                      return 'Comma';
+                  case 190:
+                      return 'Period';
+                  case 191:
+                      return 'Slash';
+                  case 59:
+                  case 186:
+                      return 'Semicolon';
+                  default:
+                      if ((48 <= kc && kc <= 57) || (65 <= kc && kc <= 90)) { // 0-9, A-Z
+                          return String.fromCharCode(kc).toLowerCase();
+                      }
+                      else if (96 <= kc && kc <= 105) { // numpad 0-9
+                          return String.fromCharCode(kc - 48);
+                      }
+                      else {
+                          return null;
+                      }
+              }
+          })();
+          if (key) {
+              if (e.altKey) {
+                  key = 'Alt+' + key;
+              }
+              if (e.ctrlKey) {
+                  key = 'Ctrl+' + key;
+              }
+              if (e.metaKey) {
+                  key = 'Meta+' + key;
+              }
+              if (e.shiftKey) {
+                  key = 'Shift+' + key;
+              }
+          }
+          return key;
+      },
+      post(thread) {
+          const s = g.SITE.selectors;
+          return ($(`${s.postContainer}${s.highlightable.reply}.${g.SITE.classes.highlight}`, thread) ||
+              $(`${g.SITE.isOPContainerThread ? s.thread : s.postContainer}${s.highlightable.op}`, thread));
+      },
+      qr(thread) {
+          QR.open();
+          if (thread != null) {
+              QR.quote.call(Keybinds.post(thread));
+          }
+          return QR.nodes.com.focus();
+      },
+      tags(tag, ta) {
+          BoardConfig.ready(function () {
+              const { config } = g.BOARD;
+              const supported = (() => {
+                  switch (tag) {
+                      case 'spoiler': return !!config.spoilers;
+                      case 'code': return !!config.code_tags;
+                      case 'math':
+                      case 'eqn': return !!config.math_tags;
+                      case 'sjis': return !!config.sjis_tags;
+                  }
+              })();
+              if (!supported) {
+                  return new Notice('warning', `[${tag}] tags are not supported on /${g.BOARD}/.`, 20);
+              }
+          });
+          const { value } = ta;
+          const selStart = ta.selectionStart;
+          const selEnd = ta.selectionEnd;
+          ta.value =
+              value.slice(0, selStart) +
+                  `[${tag}]` + value.slice(selStart, selEnd) + `[/${tag}]` +
+                  value.slice(selEnd);
+          // Move the caret to the end of the selection.
+          const range = (`[${tag}]`).length + selEnd;
+          ta.setSelectionRange(range, range);
+          // Fire the 'input' event
+          return $.event('input', null, ta);
+      },
+      sage() {
+          const isSage = /sage/i.test(QR.nodes.email.value);
+          return QR.nodes.email.value = isSage ?
+              ""
+              : "sage";
+      },
+      open(thread, tab) {
+          if (g.VIEW !== 'index') {
+              return;
+          }
+          const url = Get.url('thread', thread);
+          if (tab) {
+              return $.open(url);
+          }
+          else {
+              return location.href = url;
+          }
+      },
+      hl(delta, thread) {
+          const replySelector = `${g.SITE.selectors.postContainer}${g.SITE.selectors.highlightable.reply}`;
+          const { highlight } = g.SITE.classes;
+          const postEl = $(`${replySelector}.${highlight}`, thread);
+          if (!delta) {
+              if (postEl) {
+                  $.rmClass(postEl, highlight);
+              }
+              return;
+          }
+          if (postEl) {
+              const { height } = postEl.getBoundingClientRect();
+              if ((Header.getTopOf(postEl) >= -height) && (Header.getBottomOf(postEl) >= -height)) { // We're at least partially visible
+                  let next;
+                  const { root } = Get.postFromNode(postEl).nodes;
+                  const axis = delta === 1 ?
+                      'following'
+                      :
+                          'preceding';
+                  if (!(next = $.x(`${axis}-sibling::${g.SITE.xpath.replyContainer}[not(@hidden) and not(child::div[@class='stub'])][1]`, root))) {
+                      return;
+                  }
+                  if (!next.matches(replySelector)) {
+                      next = $(replySelector, next);
+                  }
+                  Header.scrollToIfNeeded(next, delta === 1);
+                  $.addClass(next, highlight);
+                  $.rmClass(postEl, highlight);
+                  return;
+              }
+              $.rmClass(postEl, highlight);
+          }
+          const replies = $$(replySelector, thread);
+          if (delta === -1) {
+              replies.reverse();
+          }
+          for (var reply of replies) {
+              if (((delta === 1) && (Header.getTopOf(reply) > 0)) || ((delta === -1) && (Header.getBottomOf(reply) > 0))) {
+                  $.addClass(reply, highlight);
+                  return;
+              }
+          }
       }
-      return key;
-    },
-
-    post(thread) {
-      const s = g.SITE.selectors;
-      return (
-        $(`${s.postContainer}${s.highlightable.reply}.${g.SITE.classes.highlight}`, thread) ||
-        $(`${g.SITE.isOPContainerThread ? s.thread : s.postContainer}${s.highlightable.op}`, thread)
-      );
-    },
-
-    qr(thread) {
-      QR.open();
-      if (thread != null) {
-        QR.quote.call(Keybinds.post(thread));
-      }
-      return QR.nodes.com.focus();
-    },
-
-    tags(tag, ta) {
-      BoardConfig.ready(function() {
-        const {config} = g.BOARD;
-        const supported = (() => { switch (tag) {
-          case 'spoiler':     return !!config.spoilers;
-          case 'code':        return !!config.code_tags;
-          case 'math': case 'eqn': return !!config.math_tags;
-          case 'sjis':        return !!config.sjis_tags;
-        } })();
-        if (!supported) { return new Notice('warning', `[${tag}] tags are not supported on /${g.BOARD}/.`, 20); }
-      });
-
-      const {
-        value
-      } = ta;
-      const selStart = ta.selectionStart;
-      const selEnd   = ta.selectionEnd;
-
-      ta.value =
-        value.slice(0, selStart) +
-        `[${tag}]` + value.slice(selStart, selEnd) + `[/${tag}]` +
-        value.slice(selEnd);
-
-      // Move the caret to the end of the selection.
-      const range = (`[${tag}]`).length + selEnd;
-      ta.setSelectionRange(range, range);
-
-      // Fire the 'input' event
-      return $.event('input', null, ta);
-    },
-
-    sage() {
-      const isSage  = /sage/i.test(QR.nodes.email.value);
-      return QR.nodes.email.value = isSage ?
-        ""
-      : "sage";
-    },
-
-    open(thread, tab) {
-      if (g.VIEW !== 'index') { return; }
-      const url = Get.url('thread', thread);
-      if (tab) {
-        return $.open(url);
-      } else {
-        return location.href = url;
-      }
-    },
-
-    hl(delta, thread) {
-      const replySelector = `${g.SITE.selectors.postContainer}${g.SITE.selectors.highlightable.reply}`;
-      const {highlight} = g.SITE.classes;
-
-      const postEl = $(`${replySelector}.${highlight}`, thread);
-
-      if (!delta) {
-        if (postEl) { $.rmClass(postEl, highlight); }
-        return;
-      }
-
-      if (postEl) {
-        const {height} = postEl.getBoundingClientRect();
-        if ((Header.getTopOf(postEl) >= -height) && (Header.getBottomOf(postEl) >= -height)) { // We're at least partially visible
-          let next;
-          const {root} = Get.postFromNode(postEl).nodes;
-          const axis = delta === +1 ?
-            'following'
-          :
-            'preceding';
-          if (!(next = $.x(`${axis}-sibling::${g.SITE.xpath.replyContainer}[not(@hidden) and not(child::div[@class='stub'])][1]`, root))) { return; }
-          if (!next.matches(replySelector)) { next = $(replySelector, next); }
-          Header.scrollToIfNeeded(next, delta === +1);
-          $.addClass(next, highlight);
-          $.rmClass(postEl, highlight);
-          return;
-        }
-        $.rmClass(postEl, highlight);
-      }
-
-      const replies = $$(replySelector, thread);
-      if (delta === -1) { replies.reverse(); }
-      for (var reply of replies) {
-        if (((delta === +1) && (Header.getTopOf(reply) > 0)) || ((delta === -1) && (Header.getBottomOf(reply) > 0))) {
-          $.addClass(reply, highlight);
-          return;
-        }
-      }
-    }
   };
 
   const Captcha = {
-    cache: {
-      init() {
-        $.on(d, 'SaveCaptcha', e => {
-          return this.saveAPI(e.detail);
-        });
-        return $.on(d, 'NoCaptcha', e => {
-          return this.noCaptcha(e.detail);
-        });
-      },
-
-      captchas: [],
-
-      getCount() {
-        return this.captchas.length;
-      },
-
-      neededRaw() {
-        return !(
-          this.haveCookie() || this.captchas.length || QR.req || this.submitCB
-        ) && (
-            (QR.posts.length > 1) || Conf['Auto-load captcha'] || !QR.posts[0].isOnlyQuotes() || QR.posts[0].file
-          );
-      },
-
-      needed() {
-        return this.neededRaw() && $.event('LoadCaptcha');
-      },
-
-      haveCookie() {
-        return /\b_ct=/.test(d.cookie) && (QR.posts[0].thread !== 'new');
-      },
-
-      getOne() {
-        let captcha;
-        delete this.prerequested;
-        this.clear();
-        if (captcha = this.captchas.shift()) {
-          this.count();
-          return captcha;
-        } else {
-          return null;
-        }
-      },
-
-      request(isReply) {
-        if (!this.submitCB) {
-          if ($.event('RequestCaptcha', { isReply })) { return; }
-        }
-        return cb => {
-          this.submitCB = cb;
-          return this.updateCount();
-        };
-      },
-
-      abort() {
-        if (this.submitCB) {
-          delete this.submitCB;
-          $.event('AbortCaptcha');
-          return this.updateCount();
-        }
-      },
-
-      saveAPI(captcha) {
-        let cb;
-        if (cb = this.submitCB) {
-          delete this.submitCB;
-          cb(captcha);
-          return this.updateCount();
-        } else {
-          return this.save(captcha);
-        }
-      },
-
-      noCaptcha(detail) {
-        let cb;
-        if (cb = this.submitCB) {
-          if (!this.haveCookie() || detail?.error) {
-            QR.error(detail?.error || 'Failed to retrieve captcha.');
-            QR.captcha.setup(d.activeElement === QR.nodes.status);
+      cache: {
+          init() {
+              $.on(d, 'SaveCaptcha', e => {
+                  return this.saveAPI(e.detail);
+              });
+              return $.on(d, 'NoCaptcha', e => {
+                  return this.noCaptcha(e.detail);
+              });
+          },
+          captchas: [],
+          getCount() {
+              return this.captchas.length;
+          },
+          neededRaw() {
+              return !(this.haveCookie() || this.captchas.length || QR.req || this.submitCB) && ((QR.posts.length > 1) || Conf['Auto-load captcha'] || !QR.posts[0].isOnlyQuotes() || QR.posts[0].file);
+          },
+          needed() {
+              return this.neededRaw() && $.event('LoadCaptcha');
+          },
+          haveCookie() {
+              return /\b_ct=/.test(d.cookie) && (QR.posts[0].thread !== 'new');
+          },
+          getOne() {
+              let captcha;
+              delete this.prerequested;
+              this.clear();
+              if (captcha = this.captchas.shift()) {
+                  this.count();
+                  return captcha;
+              }
+              else {
+                  return null;
+              }
+          },
+          request(isReply) {
+              if (!this.submitCB) {
+                  if ($.event('RequestCaptcha', { isReply })) {
+                      return;
+                  }
+              }
+              return cb => {
+                  this.submitCB = cb;
+                  return this.updateCount();
+              };
+          },
+          abort() {
+              if (this.submitCB) {
+                  delete this.submitCB;
+                  $.event('AbortCaptcha');
+                  return this.updateCount();
+              }
+          },
+          saveAPI(captcha) {
+              let cb;
+              if (cb = this.submitCB) {
+                  delete this.submitCB;
+                  cb(captcha);
+                  return this.updateCount();
+              }
+              else {
+                  return this.save(captcha);
+              }
+          },
+          noCaptcha(detail) {
+              let cb;
+              if (cb = this.submitCB) {
+                  if (!this.haveCookie() || detail?.error) {
+                      QR.error(detail?.error || 'Failed to retrieve captcha.');
+                      QR.captcha.setup(d.activeElement === QR.nodes.status);
+                  }
+                  delete this.submitCB;
+                  cb();
+                  return this.updateCount();
+              }
+          },
+          save(captcha) {
+              let cb;
+              if (cb = this.submitCB) {
+                  this.abort();
+                  cb(captcha);
+                  return;
+              }
+              this.captchas.push(captcha);
+              this.captchas.sort((a, b) => a.timeout - b.timeout);
+              return this.count();
+          },
+          clear() {
+              if (this.captchas.length) {
+                  let i;
+                  const now = Date.now();
+                  for (i = 0; i < this.captchas.length; i++) {
+                      var captcha = this.captchas[i];
+                      if (captcha.timeout > now) {
+                          break;
+                      }
+                  }
+                  if (i) {
+                      this.captchas = this.captchas.slice(i);
+                      return this.count();
+                  }
+              }
+          },
+          count() {
+              clearTimeout(this.timer);
+              if (this.captchas.length) {
+                  this.timer = setTimeout(this.clear.bind(this), this.captchas[0].timeout - Date.now());
+              }
+              return this.updateCount();
+          },
+          updateCount() {
+              return $.event('CaptchaCount', this.captchas.length);
           }
-          delete this.submitCB;
-          cb();
-          return this.updateCount();
-        }
       },
-
-      save(captcha) {
-        let cb;
-        if (cb = this.submitCB) {
-          this.abort();
-          cb(captcha);
-          return;
-        }
-        this.captchas.push(captcha);
-        this.captchas.sort((a, b) => a.timeout - b.timeout);
-        return this.count();
-      },
-
-      clear() {
-        if (this.captchas.length) {
-          let i;
-          const now = Date.now();
-          for (i = 0; i < this.captchas.length; i++) {
-            var captcha = this.captchas[i];
-            if (captcha.timeout > now) { break; }
+      replace: CaptchaReplace,
+      t: CaptchaT,
+      v2: {
+          lifetime: 2 * MINUTE,
+          init() {
+              if (d.cookie.indexOf('pass_enabled=1') >= 0) {
+                  return;
+              }
+              if (!(this.isEnabled = !!$('#g-recaptcha, #captcha-forced-noscript') || !$.id('postForm'))) {
+                  return;
+              }
+              if (this.noscript = Conf['Force Noscript Captcha'] || !Main.jsEnabled) {
+                  $.addClass(QR.nodes.el, 'noscript-captcha');
+              }
+              Captcha.cache.init();
+              $.on(d, 'CaptchaCount', this.count.bind(this));
+              const root = $.el('div', { className: 'captcha-root' });
+              $.extend(root, {
+                  innerHTML: '<div class="captcha-counter"><a href="javascript:;"></a></div>'
+              });
+              const counter = $('.captcha-counter > a', root);
+              this.nodes = { root, counter };
+              this.count();
+              $.addClass(QR.nodes.el, 'has-captcha', 'captcha-v2');
+              $.after(QR.nodes.com.parentNode, root);
+              $.on(counter, 'click', this.toggle.bind(this));
+              $.on(counter, 'keydown', e => {
+                  if (Keybinds.keyCode(e) !== 'Space') {
+                      return;
+                  }
+                  this.toggle();
+                  e.preventDefault();
+                  return e.stopPropagation();
+              });
+              return $.on(window, 'captcha:success', () => {
+                  // XXX Greasemonkey 1.x workaround to gain access to GM_* functions.
+                  return $.queueTask(() => this.save(false));
+              });
+          },
+          timeouts: {},
+          prevNeeded: 0,
+          noscriptURL() {
+              let lang;
+              let url = `https://www.google.com/recaptcha/api/fallback?k=${meta.recaptchaKey}`;
+              if (lang = Conf['captchaLanguage'].trim()) {
+                  url += `&hl=${encodeURIComponent(lang)}`;
+              }
+              return url;
+          },
+          moreNeeded() {
+              // Post count temporarily off by 1 when called from QR.post.rm, QR.close, or QR.submit
+              return $.queueTask(() => {
+                  const needed = Captcha.cache.needed();
+                  if (needed && !this.prevNeeded) {
+                      this.setup(QR.cooldown.auto && (d.activeElement === QR.nodes.status));
+                  }
+                  return this.prevNeeded = needed;
+              });
+          },
+          toggle() {
+              if (this.nodes.container && !this.timeouts.destroy) {
+                  return this.destroy();
+              }
+              else {
+                  return this.setup(true, true);
+              }
+          },
+          setup(focus, force) {
+              if (!this.isEnabled || (!Captcha.cache.needed() && !force)) {
+                  return;
+              }
+              if (focus) {
+                  $.addClass(QR.nodes.el, 'focus');
+                  this.nodes.counter.focus();
+              }
+              if (this.timeouts.destroy) {
+                  clearTimeout(this.timeouts.destroy);
+                  delete this.timeouts.destroy;
+                  return this.reload();
+              }
+              if (this.nodes.container) {
+                  // XXX https://bugzilla.mozilla.org/show_bug.cgi?id=1226835
+                  $.queueTask(() => {
+                      let iframe;
+                      if (this.nodes.container && (d.activeElement === this.nodes.counter) && (iframe = $('iframe[src^="https://www.google.com/recaptcha/"]', this.nodes.container))) {
+                          iframe.focus();
+                          return QR.focus();
+                      }
+                  }); // Event handler not fired in Firefox
+                  return;
+              }
+              this.nodes.container = $.el('div', { className: 'captcha-container' });
+              $.prepend(this.nodes.root, this.nodes.container);
+              new MutationObserver(this.afterSetup.bind(this)).observe(this.nodes.container, {
+                  childList: true,
+                  subtree: true
+              });
+              if (this.noscript) {
+                  return this.setupNoscript();
+              }
+              else {
+                  return this.setupJS();
+              }
+          },
+          setupNoscript() {
+              const iframe = $.el('iframe', {
+                  id: 'qr-captcha-iframe',
+                  scrolling: 'no',
+                  src: this.noscriptURL()
+              });
+              const div = $.el('div');
+              const textarea = $.el('textarea');
+              $.add(div, textarea);
+              return $.add(this.nodes.container, [iframe, div]);
+          },
+          setupJS() {
+              $.global('setupCaptcha', { recaptchaKey: meta.recaptchaKey });
+          },
+          afterSetup(mutations) {
+              for (var mutation of mutations) {
+                  for (var node of mutation.addedNodes) {
+                      var iframe, textarea;
+                      if (iframe = $.x('./descendant-or-self::iframe[starts-with(@src, "https://www.google.com/recaptcha/")]', node)) {
+                          this.setupIFrame(iframe);
+                      }
+                      if (textarea = $.x('./descendant-or-self::textarea', node)) {
+                          this.setupTextArea(textarea);
+                      }
+                  }
+              }
+          },
+          setupIFrame(iframe) {
+              let needle;
+              if (!doc.contains(iframe)) {
+                  return;
+              }
+              Captcha.replace.iframe(iframe);
+              $.addClass(QR.nodes.el, 'captcha-open');
+              this.fixQRPosition();
+              $.on(iframe, 'load', this.fixQRPosition);
+              if (d.activeElement === this.nodes.counter) {
+                  iframe.focus();
+              }
+              // XXX Make sure scroll on space prevention (see src/css/style.css) doesn't cause scrolling of div
+              if (['blink', 'edge'].includes($.engine) && (needle = iframe.parentNode, $$('#qr .captcha-container > div > div:first-of-type').includes(needle))) {
+                  return $.on(iframe.parentNode, 'scroll', function () { return this.scrollTop = 0; });
+              }
+          },
+          fixQRPosition() {
+              if (QR.nodes.el.getBoundingClientRect().bottom > doc.clientHeight) {
+                  QR.nodes.el.style.top = '';
+                  return QR.nodes.el.style.bottom = '0px';
+              }
+          },
+          setupTextArea(textarea) {
+              return $.one(textarea, 'input', () => this.save(true));
+          },
+          destroy() {
+              if (!this.isEnabled) {
+                  return;
+              }
+              delete this.timeouts.destroy;
+              $.rmClass(QR.nodes.el, 'captcha-open');
+              if (this.nodes.container) {
+                  $.global('resetCaptcha');
+                  $.rm(this.nodes.container);
+                  return delete this.nodes.container;
+              }
+          },
+          getOne(isReply) {
+              return Captcha.cache.getOne(isReply);
+          },
+          save(pasted, token) {
+              Captcha.cache.save({
+                  response: token || $('textarea', this.nodes.container).value,
+                  timeout: Date.now() + this.lifetime
+              });
+              const focus = (d.activeElement?.nodeName === 'IFRAME') && /https?:\/\/www\.google\.com\/recaptcha\//.test(d.activeElement.src);
+              if (Captcha.cache.needed()) {
+                  if (focus) {
+                      if (QR.cooldown.auto || Conf['Post on Captcha Completion']) {
+                          this.nodes.counter.focus();
+                      }
+                      else {
+                          QR.nodes.status.focus();
+                      }
+                  }
+                  this.reload();
+              }
+              else {
+                  if (pasted) {
+                      this.destroy();
+                  }
+                  else {
+                      if (this.timeouts.destroy == null) {
+                          this.timeouts.destroy = setTimeout(this.destroy.bind(this), 3 * SECOND);
+                      }
+                  }
+                  if (focus) {
+                      QR.nodes.status.focus();
+                  }
+              }
+              if (Conf['Post on Captcha Completion'] && !QR.cooldown.auto) {
+                  return QR.submit();
+              }
+          },
+          count() {
+              const count = Captcha.cache.getCount();
+              const loading = Captcha.cache.submitCB ? '...' : '';
+              this.nodes.counter.textContent = `Captchas: ${count}${loading}`;
+              return this.moreNeeded();
+          },
+          reload() {
+              if ($('iframe[src^="https://www.google.com/recaptcha/api/fallback?"]', this.nodes.container)) {
+                  this.destroy();
+                  return this.setup(false, true);
+              }
+              else {
+                  $.global('resetCaptcha');
+              }
+          },
+          occupied() {
+              return !!this.nodes.container && !this.timeouts.destroy;
           }
-          if (i) {
-            this.captchas = this.captchas.slice(i);
-            return this.count();
-          }
-        }
-      },
-
-      count() {
-        clearTimeout(this.timer);
-        if (this.captchas.length) {
-          this.timer = setTimeout(this.clear.bind(this), this.captchas[0].timeout - Date.now());
-        }
-        return this.updateCount();
-      },
-
-      updateCount() {
-        return $.event('CaptchaCount', this.captchas.length);
       }
-    },
-    replace: CaptchaReplace,
-    t: CaptchaT,
-    v2: {
-      lifetime: 2 * MINUTE,
-
-      init() {
-        if (d.cookie.indexOf('pass_enabled=1') >= 0) { return; }
-        if (!(this.isEnabled = !!$('#g-recaptcha, #captcha-forced-noscript') || !$.id('postForm'))) { return; }
-
-        if (this.noscript = Conf['Force Noscript Captcha'] || !Main.jsEnabled) {
-          $.addClass(QR.nodes.el, 'noscript-captcha');
-        }
-
-        Captcha.cache.init();
-        $.on(d, 'CaptchaCount', this.count.bind(this));
-
-        const root = $.el('div', { className: 'captcha-root' });
-        $.extend(root, {
-          innerHTML:
-            '<div class="captcha-counter"><a href="javascript:;"></a></div>'
-        }
-        );
-        const counter = $('.captcha-counter > a', root);
-        this.nodes = { root, counter };
-        this.count();
-        $.addClass(QR.nodes.el, 'has-captcha', 'captcha-v2');
-        $.after(QR.nodes.com.parentNode, root);
-
-        $.on(counter, 'click', this.toggle.bind(this));
-        $.on(counter, 'keydown', e => {
-          if (Keybinds.keyCode(e) !== 'Space') { return; }
-          this.toggle();
-          e.preventDefault();
-          return e.stopPropagation();
-        });
-        return $.on(window, 'captcha:success', () => {
-          // XXX Greasemonkey 1.x workaround to gain access to GM_* functions.
-          return $.queueTask(() => this.save(false));
-        });
-      },
-
-      timeouts: {},
-      prevNeeded: 0,
-
-      noscriptURL() {
-        let lang;
-        let url = `https://www.google.com/recaptcha/api/fallback?k=${meta.recaptchaKey}`;
-        if (lang = Conf['captchaLanguage'].trim()) {
-          url += `&hl=${encodeURIComponent(lang)}`;
-        }
-        return url;
-      },
-
-      moreNeeded() {
-        // Post count temporarily off by 1 when called from QR.post.rm, QR.close, or QR.submit
-        return $.queueTask(() => {
-          const needed = Captcha.cache.needed();
-          if (needed && !this.prevNeeded) {
-            this.setup(QR.cooldown.auto && (d.activeElement === QR.nodes.status));
-          }
-          return this.prevNeeded = needed;
-        });
-      },
-
-      toggle() {
-        if (this.nodes.container && !this.timeouts.destroy) {
-          return this.destroy();
-        } else {
-          return this.setup(true, true);
-        }
-      },
-
-      setup(focus, force) {
-        if (!this.isEnabled || (!Captcha.cache.needed() && !force)) { return; }
-
-        if (focus) {
-          $.addClass(QR.nodes.el, 'focus');
-          this.nodes.counter.focus();
-        }
-
-        if (this.timeouts.destroy) {
-          clearTimeout(this.timeouts.destroy);
-          delete this.timeouts.destroy;
-          return this.reload();
-        }
-
-        if (this.nodes.container) {
-          // XXX https://bugzilla.mozilla.org/show_bug.cgi?id=1226835
-          $.queueTask(() => {
-            let iframe;
-            if (this.nodes.container && (d.activeElement === this.nodes.counter) && (iframe = $('iframe[src^="https://www.google.com/recaptcha/"]', this.nodes.container))) {
-              iframe.focus();
-              return QR.focus();
-            }
-          }); // Event handler not fired in Firefox
-          return;
-        }
-
-        this.nodes.container = $.el('div', { className: 'captcha-container' });
-        $.prepend(this.nodes.root, this.nodes.container);
-        new MutationObserver(this.afterSetup.bind(this)).observe(this.nodes.container, {
-          childList: true,
-          subtree: true
-        }
-        );
-
-        if (this.noscript) {
-          return this.setupNoscript();
-        } else {
-          return this.setupJS();
-        }
-      },
-
-      setupNoscript() {
-        const iframe = $.el('iframe', {
-          id: 'qr-captcha-iframe',
-          scrolling: 'no',
-          src: this.noscriptURL()
-        }
-        );
-        const div = $.el('div');
-        const textarea = $.el('textarea');
-        $.add(div, textarea);
-        return $.add(this.nodes.container, [iframe, div]);
-      },
-
-      setupJS() {
-        $.global('setupCaptcha', { recaptchaKey: meta.recaptchaKey });
-      },
-
-      afterSetup(mutations) {
-        for (var mutation of mutations) {
-          for (var node of mutation.addedNodes) {
-            var iframe, textarea;
-            if (iframe = $.x('./descendant-or-self::iframe[starts-with(@src, "https://www.google.com/recaptcha/")]', node)) { this.setupIFrame(iframe); }
-            if (textarea = $.x('./descendant-or-self::textarea', node)) { this.setupTextArea(textarea); }
-          }
-        }
-      },
-
-      setupIFrame(iframe) {
-        let needle;
-        if (!doc.contains(iframe)) { return; }
-        Captcha.replace.iframe(iframe);
-        $.addClass(QR.nodes.el, 'captcha-open');
-        this.fixQRPosition();
-        $.on(iframe, 'load', this.fixQRPosition);
-        if (d.activeElement === this.nodes.counter) { iframe.focus(); }
-        // XXX Make sure scroll on space prevention (see src/css/style.css) doesn't cause scrolling of div
-        if (['blink', 'edge'].includes($.engine) && (needle = iframe.parentNode, $$('#qr .captcha-container > div > div:first-of-type').includes(needle))) {
-          return $.on(iframe.parentNode, 'scroll', function () { return this.scrollTop = 0; });
-        }
-      },
-
-      fixQRPosition() {
-        if (QR.nodes.el.getBoundingClientRect().bottom > doc.clientHeight) {
-          QR.nodes.el.style.top = '';
-          return QR.nodes.el.style.bottom = '0px';
-        }
-      },
-
-      setupTextArea(textarea) {
-        return $.one(textarea, 'input', () => this.save(true));
-      },
-
-      destroy() {
-        if (!this.isEnabled) { return; }
-        delete this.timeouts.destroy;
-        $.rmClass(QR.nodes.el, 'captcha-open');
-        if (this.nodes.container) {
-          $.global('resetCaptcha');
-          $.rm(this.nodes.container);
-          return delete this.nodes.container;
-        }
-      },
-
-      getOne(isReply) {
-        return Captcha.cache.getOne(isReply);
-      },
-
-      save(pasted, token) {
-        Captcha.cache.save({
-          response: token || $('textarea', this.nodes.container).value,
-          timeout: Date.now() + this.lifetime
-        });
-
-        const focus = (d.activeElement?.nodeName === 'IFRAME') && /https?:\/\/www\.google\.com\/recaptcha\//.test(d.activeElement.src);
-        if (Captcha.cache.needed()) {
-          if (focus) {
-            if (QR.cooldown.auto || Conf['Post on Captcha Completion']) {
-              this.nodes.counter.focus();
-            } else {
-              QR.nodes.status.focus();
-            }
-          }
-          this.reload();
-        } else {
-          if (pasted) {
-            this.destroy();
-          } else {
-            if (this.timeouts.destroy == null) { this.timeouts.destroy = setTimeout(this.destroy.bind(this), 3 * SECOND); }
-          }
-          if (focus) { QR.nodes.status.focus(); }
-        }
-
-        if (Conf['Post on Captcha Completion'] && !QR.cooldown.auto) { return QR.submit(); }
-      },
-
-      count() {
-        const count = Captcha.cache.getCount();
-        const loading = Captcha.cache.submitCB ? '...' : '';
-        this.nodes.counter.textContent = `Captchas: ${count}${loading}`;
-        return this.moreNeeded();
-      },
-
-      reload() {
-        if ($('iframe[src^="https://www.google.com/recaptcha/api/fallback?"]', this.nodes.container)) {
-          this.destroy();
-          return this.setup(false, true);
-        } else {
-          $.global('resetCaptcha');
-        }
-      },
-
-      occupied() {
-        return !!this.nodes.container && !this.timeouts.destroy;
-      }
-    }
   };
 
   var QR = {
@@ -19414,131 +19485,149 @@ aero|asia|biz|cat|com|coop|dance|info|int|jobs|mobi|moe|museum|name|net|org|post
   };
 
   var ImageCommon = {
-    // Pause and mute video in preparation for removing the element from the document.
-    pause(video) {
-      if (video.nodeName !== 'VIDEO') { return; }
-      video.pause();
-      $.off(video, 'volumechange', Volume.change);
-      return video.muted = true;
-    },
-
-    rewind(el) {
-      if (el.nodeName === 'VIDEO') {
-        if (el.readyState >= el.HAVE_METADATA) { return el.currentTime = 0; }
-      } else if (/\.gif$/.test(el.src)) {
-        return $.queueTask(() => el.src = el.src);
-      }
-    },
-
-    pushCache(el) {
-      ImageCommon.cache = el;
-      return $.on(el, 'error', ImageCommon.cacheError);
-    },
-
-    popCache() {
-      const el = ImageCommon.cache;
-      $.off(el, 'error', ImageCommon.cacheError);
-      delete ImageCommon.cache;
-      return el;
-    },
-
-    cacheError() {
-      if (ImageCommon.cache === this) { return delete ImageCommon.cache; }
-    },
-
-    decodeError(file, fileObj) {
-      let message;
-      if (file.error?.code !== MediaError.MEDIA_ERR_DECODE) { return false; }
-      if (!(message = $('.warning', fileObj.thumb.parentNode))) {
-        message = $.el('div', {className:   'warning'});
-        $.after(fileObj.thumb, message);
-      }
-      message.textContent = 'Error: Corrupt or unplayable video';
-      return true;
-    },
-
-    isFromArchive(file) {
-      return (g.SITE.software === 'yotsuba') && !ImageHost.test(file.src.split('/')[2]);
-    },
-
-    error(file, post, fileObj, delay, cb) {
-      let timeoutID;
-      const src = fileObj.url.split('/');
-      let url = null;
-      if ((g.SITE.software === 'yotsuba') && Conf['404 Redirect']) {
-        url = Redirect.to('file', {
-          boardID:  post.board.ID,
-          filename: src[src.length - 1]
-        });
-      }
-      if (!url || !Redirect.securityCheck(url)) { url = null; }
-
-      if ((post.isDead || fileObj.isDead) && !ImageCommon.isFromArchive(file)) { return cb(url); }
-
-      if (delay != null) { timeoutID = setTimeout((() => cb(url)), delay); }
-      if (post.isDead || fileObj.isDead) { return; }
-      const redirect = function() {
-        if (!ImageCommon.isFromArchive(file)) {
-          if (delay != null) { clearTimeout(timeoutID); }
-          return cb(url);
-        }
-      };
-
-      const threadJSON = g.SITE.urls.threadJSON?.(post);
-      if (!threadJSON) { return; }
-      var parseJSON = function(isArchiveURL) {
-        let needle, postObj;
-        if (this.status === 404) {
-          let archivedThreadJSON;
-          if (!isArchiveURL && (archivedThreadJSON = g.SITE.urls.archivedThreadJSON?.(post))) {
-            $.ajax(archivedThreadJSON, {onloadend() { return parseJSON.call(this, true); }});
-          } else {
-            post.kill(!post.isClone, fileObj.index);
+      // Pause and mute video in preparation for removing the element from the document.
+      pause(video) {
+          if (video.nodeName !== 'VIDEO') {
+              return;
           }
-        }
-        if (this.status !== 200) { return redirect(); }
-        for (postObj of this.response.posts) {
-          if (postObj.no === post.ID) { break; }
-        }
-        if (postObj.no !== post.ID) {
-          post.kill();
-          return redirect();
-        } else if ((needle = fileObj.docIndex, g.SITE.Build.parseJSON(postObj, post.board).filesDeleted.includes(needle))) {
-          post.kill(true);
-          return redirect();
-        } else {
-          return url = fileObj.url;
-        }
-      };
-      return $.ajax(threadJSON, {onloadend() { return parseJSON.call(this); }});
-    },
-
-    // XXX Estimate whether clicks are on the video controls and should be ignored.
-    onControls(e) {
-      return (Conf['Show Controls'] && Conf['Click Passthrough'] && (e.target.nodeName === 'VIDEO')) ||
-        (e.target.controls && ((e.target.getBoundingClientRect().bottom - e.clientY) < 35));
-    },
-
-    download(e) {
-      if (this.protocol === 'blob:') { return true; }
-      e.preventDefault();
-      const {href, download} = this;
-      return CrossOrigin.file(href, function(blob) {
-        if (blob) {
-          const a = $.el('a', {
-            href: URL.createObjectURL(blob),
-            download,
-            hidden: true
+          video.pause();
+          $.off(video, 'volumechange', Volume.change);
+          return video.muted = true;
+      },
+      rewind(el) {
+          if (el.nodeName === 'VIDEO') {
+              if (el.readyState >= el.HAVE_METADATA) {
+                  return el.currentTime = 0;
+              }
           }
-          );
-          $.add(d.body, a);
-          a.click();
-          return $.rm(a);
-        } else {
-          return new Notice('warning', `Could not download ${href}`, 20);
-        }
-      });
-    }
+          else if (/\.gif$/.test(el.src)) {
+              return $.queueTask(() => el.src = el.src);
+          }
+      },
+      pushCache(el) {
+          ImageCommon.cache = el;
+          return $.on(el, 'error', ImageCommon.cacheError);
+      },
+      popCache() {
+          const el = ImageCommon.cache;
+          $.off(el, 'error', ImageCommon.cacheError);
+          delete ImageCommon.cache;
+          return el;
+      },
+      cacheError() {
+          if (ImageCommon.cache === this) {
+              return delete ImageCommon.cache;
+          }
+      },
+      decodeError(file, fileObj) {
+          let message;
+          if (file.error?.code !== MediaError.MEDIA_ERR_DECODE) {
+              return false;
+          }
+          if (!(message = $('.warning', fileObj.thumb.parentNode))) {
+              message = $.el('div', { className: 'warning' });
+              $.after(fileObj.thumb, message);
+          }
+          message.textContent = 'Error: Corrupt or unplayable video';
+          return true;
+      },
+      isFromArchive(file) {
+          return (g.SITE.software === 'yotsuba') && !ImageHost.test(file.src.split('/')[2]);
+      },
+      error(file, post, fileObj, delay, cb) {
+          let timeoutID;
+          const src = fileObj.url.split('/');
+          let url = null;
+          if ((g.SITE.software === 'yotsuba') && Conf['404 Redirect']) {
+              url = Redirect.to('file', {
+                  boardID: post.board.ID,
+                  filename: src[src.length - 1]
+              });
+          }
+          if (!url || !Redirect.securityCheck(url)) {
+              url = null;
+          }
+          if ((post.isDead || fileObj.isDead) && !ImageCommon.isFromArchive(file)) {
+              return cb(url);
+          }
+          if (delay != null) {
+              timeoutID = setTimeout((() => cb(url)), delay);
+          }
+          if (post.isDead || fileObj.isDead) {
+              return;
+          }
+          const redirect = function () {
+              if (!ImageCommon.isFromArchive(file)) {
+                  if (delay != null) {
+                      clearTimeout(timeoutID);
+                  }
+                  return cb(url);
+              }
+          };
+          const threadJSON = g.SITE.urls.threadJSON?.(post);
+          if (!threadJSON) {
+              return;
+          }
+          var parseJSON = function (isArchiveURL) {
+              let needle, postObj;
+              if (this.status === 404) {
+                  let archivedThreadJSON;
+                  if (!isArchiveURL && (archivedThreadJSON = g.SITE.urls.archivedThreadJSON?.(post))) {
+                      $.ajax(archivedThreadJSON, { onloadend() { return parseJSON.call(this, true); } });
+                  }
+                  else {
+                      post.kill(!post.isClone, fileObj.index);
+                  }
+              }
+              if (this.status !== 200) {
+                  return redirect();
+              }
+              for (postObj of this.response.posts) {
+                  if (postObj.no === post.ID) {
+                      break;
+                  }
+              }
+              if (postObj.no !== post.ID) {
+                  post.kill();
+                  return redirect();
+              }
+              else if ((needle = fileObj.docIndex, g.SITE.Build.parseJSON(postObj, post.board).filesDeleted.includes(needle))) {
+                  post.kill(true);
+                  return redirect();
+              }
+              else {
+                  return url = fileObj.url;
+              }
+          };
+          return $.ajax(threadJSON, { onloadend() { return parseJSON.call(this); } });
+      },
+      // XXX Estimate whether clicks are on the video controls and should be ignored.
+      onControls(e) {
+          return (Conf['Show Controls'] && Conf['Click Passthrough'] && (e.target.nodeName === 'VIDEO')) ||
+              (e.target.controls && ((e.target.getBoundingClientRect().bottom - e.clientY) < 35));
+      },
+      download(e) {
+          if (this.protocol === 'blob:') {
+              return true;
+          }
+          e.preventDefault();
+          const { href, download } = this;
+          return CrossOrigin.file(href, function (blob) {
+              if (blob) {
+                  const a = $.el('a', {
+                      href: URL.createObjectURL(blob),
+                      download,
+                      hidden: true
+                  });
+                  $.add(d.body, a);
+                  a.click();
+                  return $.rm(a);
+              }
+              else {
+                  return new Notice('warning', `Could not download ${href}`, 20);
+              }
+          });
+      }
   };
 
   const passMessagePage = h("div", { class: "box-inner" },
@@ -19552,27 +19641,27 @@ aero|asia|biz|cat|com|coop|dance|info|int|jobs|mobi|moe|museum|name|net|org|post
       "."));
 
   const PassMessage = {
-    init() {
-      if (Conf['passMessageClosed']) { return; }
-      const msg = $.el('div',
-        {className: 'box-outer top-box'}
-      ,
-        passMessagePage);
-      msg.style.cssText = 'padding-bottom: 0;';
-      const close = $('a', msg);
-      $.on(close, 'click', function() {
-        $.rm(msg);
-        return $.set('passMessageClosed', true);
-      });
-      return $.ready(function() {
-        let hd;
-        if (hd = $.id('hd')) {
-          return $.after(hd, msg);
-        } else {
-          return $.prepend(d.body, msg);
-        }
-      });
-    }
+      init() {
+          if (Conf['passMessageClosed']) {
+              return;
+          }
+          const msg = $.el('div', { className: 'box-outer top-box' }, passMessagePage);
+          msg.style.cssText = 'padding-bottom: 0;';
+          const close = $('a', msg);
+          $.on(close, 'click', function () {
+              $.rm(msg);
+              return $.set('passMessageClosed', true);
+          });
+          return $.ready(function () {
+              let hd;
+              if (hd = $.id('hd')) {
+                  return $.after(hd, msg);
+              }
+              else {
+                  return $.prepend(d.body, msg);
+              }
+          });
+      }
   };
 
   var ReportPage = `<legend><label><input id="archive-report-enabled" type="checkbox">Report illegal content to archives</label></legend>
@@ -19581,157 +19670,156 @@ aero|asia|biz|cat|com|coop|dance|info|int|jobs|mobi|moe|museum|name|net|org|post
 <button id="archive-report-submit" hidden>Submit</button>`;
 
   var Report = {
-    init() {
-      let match;
-      if (!(match = location.search.match(/\bno=(\d+)/))) { return; }
-      Captcha.replace.init();
-      this.postID = +match[1];
-      return $.ready(this.ready);
-    },
-
-    ready() {
-      $.addStyle(CSS.report);
-
-      if (Conf['Archive Report']) { Report.archive(); }
-
-      new MutationObserver(function() {
-        Report.fit('iframe[src^="https://www.google.com/recaptcha/api2/frame"]');
-        return Report.fit('body');
-      }).observe(d.body, {
-        childList:  true,
-        attributes: true,
-        subtree:    true
-      }
-      );
-      return Report.fit('body');
-    },
-
-    fit(selector) {
-      let el;
-      if (!((el = $(selector, doc)) && (getComputedStyle(el).visibility !== 'hidden'))) { return; }
-      const dy = (el.getBoundingClientRect().bottom - doc.clientHeight) + 8;
-      if (dy > 0) { return window.resizeBy(0, dy); }
-    },
-
-    archive() {
-      let match, urls;
-      if (!(urls = Redirect.report(g.BOARD.ID)).length) { return; }
-
-      const form    = $('form');
-      const types   = $.id('reportTypes');
-      const message = $('h3');
-
-      const fieldset = $.el('fieldset', {
-        id: 'archive-report',
-        hidden: true
-      }
-      ,
-        { innerHTML: ReportPage });
-      const enabled = $('#archive-report-enabled', fieldset);
-      const reason  = $('#archive-report-reason',  fieldset);
-      const submit  = $('#archive-report-submit',  fieldset);
-
-      $.on(enabled, 'change', function() {
-        return reason.disabled = !this.checked;
-      });
-
-      if (form && types) {
-        fieldset.hidden = !$('[value="31"]', types).checked;
-        $.on(types, 'change', function(e) {
-          fieldset.hidden = (e.target.value !== '31');
-          return Report.fit('body');
-        });
-        $.after(types, fieldset);
-        Report.fit('body');
-        $.one(form, 'submit', function(e) {
-          if (!fieldset.hidden && enabled.checked) {
-            e.preventDefault();
-            return Report.archiveSubmit(urls, reason.value, results => {
-              this.action = '#archiveresults=' + encodeURIComponent(JSON.stringify(results));
-              return this.submit();
-            });
+      init() {
+          let match;
+          if (!(match = location.search.match(/\bno=(\d+)/))) {
+              return;
           }
-        });
-      } else if (message) {
-        fieldset.hidden = /Report submitted!/.test(message.textContent);
-        $.on(enabled, 'change', function() {
-          return submit.hidden = !this.checked;
-        });
-        $.after(message, fieldset);
-        $.on(submit, 'click', () => Report.archiveSubmit(urls, reason.value, Report.archiveResults));
-      }
-
-      if (match = location.hash.match(/^#archiveresults=(.*)$/)) {
-        try {
-          return Report.archiveResults(JSON.parse(decodeURIComponent(match[1])));
-        } catch (error) {}
-      }
-    },
-
-    archiveSubmit(urls, reason, cb) {
-      const form = $.formData({
-        board:  g.BOARD.ID,
-        num:    Report.postID,
-        reason
-      });
-      const results = [];
-      for (var [name, url] of urls) {
-        (function(name, url) {
-          return $.ajax(url, {
-            onloadend() {
-              results.push([name, this.response || {error: ''}]);
-              if (results.length === urls.length) {
-                return cb(results);
-              }
-            },
-            form
+          Captcha.replace.init();
+          this.postID = +match[1];
+          return $.ready(this.ready);
+      },
+      ready() {
+          $.addStyle(CSS.report);
+          if (Conf['Archive Report']) {
+              Report.archive();
+          }
+          new MutationObserver(function () {
+              Report.fit('iframe[src^="https://www.google.com/recaptcha/api2/frame"]');
+              return Report.fit('body');
+          }).observe(d.body, {
+              childList: true,
+              attributes: true,
+              subtree: true
           });
-        })(name, url);
+          return Report.fit('body');
+      },
+      fit(selector) {
+          let el;
+          if (!((el = $(selector, doc)) && (getComputedStyle(el).visibility !== 'hidden'))) {
+              return;
+          }
+          const dy = (el.getBoundingClientRect().bottom - doc.clientHeight) + 8;
+          if (dy > 0) {
+              return window.resizeBy(0, dy);
+          }
+      },
+      archive() {
+          let match, urls;
+          if (!(urls = Redirect.report(g.BOARD.ID)).length) {
+              return;
+          }
+          const form = $('form');
+          const types = $.id('reportTypes');
+          const message = $('h3');
+          const fieldset = $.el('fieldset', {
+              id: 'archive-report',
+              hidden: true
+          }, { innerHTML: ReportPage });
+          const enabled = $('#archive-report-enabled', fieldset);
+          const reason = $('#archive-report-reason', fieldset);
+          const submit = $('#archive-report-submit', fieldset);
+          $.on(enabled, 'change', function () {
+              return reason.disabled = !this.checked;
+          });
+          if (form && types) {
+              fieldset.hidden = !$('[value="31"]', types).checked;
+              $.on(types, 'change', function (e) {
+                  fieldset.hidden = (e.target.value !== '31');
+                  return Report.fit('body');
+              });
+              $.after(types, fieldset);
+              Report.fit('body');
+              $.one(form, 'submit', function (e) {
+                  if (!fieldset.hidden && enabled.checked) {
+                      e.preventDefault();
+                      return Report.archiveSubmit(urls, reason.value, results => {
+                          this.action = '#archiveresults=' + encodeURIComponent(JSON.stringify(results));
+                          return this.submit();
+                      });
+                  }
+              });
+          }
+          else if (message) {
+              fieldset.hidden = /Report submitted!/.test(message.textContent);
+              $.on(enabled, 'change', function () {
+                  return submit.hidden = !this.checked;
+              });
+              $.after(message, fieldset);
+              $.on(submit, 'click', () => Report.archiveSubmit(urls, reason.value, Report.archiveResults));
+          }
+          if (match = location.hash.match(/^#archiveresults=(.*)$/)) {
+              try {
+                  return Report.archiveResults(JSON.parse(decodeURIComponent(match[1])));
+              }
+              catch (error) { }
+          }
+      },
+      archiveSubmit(urls, reason, cb) {
+          const form = $.formData({
+              board: g.BOARD.ID,
+              num: Report.postID,
+              reason
+          });
+          const results = [];
+          for (var [name, url] of urls) {
+              (function (name, url) {
+                  return $.ajax(url, {
+                      onloadend() {
+                          results.push([name, this.response || { error: '' }]);
+                          if (results.length === urls.length) {
+                              return cb(results);
+                          }
+                      },
+                      form
+                  });
+              })(name, url);
+          }
+      },
+      archiveResults(results) {
+          const fieldset = $.id('archive-report');
+          for (var [name, response] of results) {
+              var line = $.el('h3', { className: 'archive-report-response' });
+              if ('success' in response) {
+                  $.addClass(line, 'archive-report-success');
+                  line.textContent = `${name}: ${response.success}`;
+              }
+              else {
+                  $.addClass(line, 'archive-report-error');
+                  line.textContent = `${name}: ${response.error || 'Error reporting post.'}`;
+              }
+              if (fieldset) {
+                  $.before(fieldset, line);
+              }
+              else {
+                  $.add(d.body, line);
+              }
+          }
       }
-    },
-
-    archiveResults(results) {
-      const fieldset = $.id('archive-report');
-      for (var [name, response] of results) {
-        var line = $.el('h3',
-          {className: 'archive-report-response'});
-        if ('success' in response) {
-          $.addClass(line, 'archive-report-success');
-          line.textContent = `${name}: ${response.success}`;
-        } else {
-          $.addClass(line, 'archive-report-error');
-          line.textContent = `${name}: ${response.error || 'Error reporting post.'}`;
-        }
-        if (fieldset) {
-          $.before(fieldset, line);
-        } else {
-          $.add(d.body, line);
-        }
-      }
-    }
   };
 
   const PostSuccessful = {
-    init() {
-      if (!Conf['Remember Your Posts']) { return; }
-      return $.ready(this.ready);
-    },
-
-    ready() {
-      if (d.title !== 'Post successful!') { return; }
-
-      let [_, threadID, postID] = $('h1').nextSibling.textContent.match(/thread:(\d+),no:(\d+)/);
-      postID   = +postID;
-      threadID = +threadID || postID;
-
-      const db = new DataBoard('yourPosts');
-      return db.set({
-        boardID: g.BOARD.ID,
-        threadID,
-        postID,
-        val: true
-      });
-    }
+      init() {
+          if (!Conf['Remember Your Posts']) {
+              return;
+          }
+          return $.ready(this.ready);
+      },
+      ready() {
+          if (d.title !== 'Post successful!') {
+              return;
+          }
+          let [_, threadID, postID] = $('h1').nextSibling.textContent.match(/thread:(\d+),no:(\d+)/);
+          postID = +postID;
+          threadID = +threadID || postID;
+          const db = new DataBoard('yourPosts');
+          return db.set({
+              boardID: g.BOARD.ID,
+              threadID,
+              postID,
+              val: true
+          });
+      }
   };
 
   function generatePostInfoHtml(ID, o, subject, capcode, email, name, tripcode, pass, capcodeLC, capcodePlural, staticPath, gifIcon, capcodeDescription, uniqueID, flag, flagCode, flagCodeTroll, dateUTC, dateText, postLink, quoteLink, boardID, threadID) {
@@ -20514,167 +20602,181 @@ $\
   };
 
   const SWTinyboard = {
-    isOPContainerThread: true,
-    mayLackJSON: true,
-    threadModTimeIgnoresSage: true,
-
-    disabledFeatures: [
-      'Resurrect Quotes',
-      'Quick Reply Personas',
-      'Quick Reply',
-      'Cooldown',
-      'Report Link',
-      'Delete Link',
-      'Edit Link',
-      'Quote Inlining',
-      'Quote Previewing',
-      'Quote Backlinks',
-      'File Info Formatting',
-      'Image Expansion',
-      'Image Expansion (Menu)',
-      'Comment Expansion',
-      'Thread Expansion',
-      'Favicon',
-      'Quote Threading',
-      'Thread Updater',
-      'Banner',
-      'Flash Features',
-      'Reply Pruning'
-    ],
-
-    detect() {
-      for (var script of $$('script:not([src])', d.head)) {
-        var m;
-        if (m = script.textContent.match(/\bvar configRoot=(".*?")/)) {
-          var properties = dict();
-          try {
-            var root = JSON.parse(m[1]);
-            if (root[0] === '/') {
-              properties.root = location.origin + root;
-            } else if (/^https?:/.test(root)) {
-              properties.root = root;
-            }
-          } catch (error) {}
-          return properties;
-        }
-      }
-      return false;
-    },
-
-    awaitBoard(cb) {
-      if ($.id('react-ui')) {
-        const s = (this.selectors = Object.create(this.selectors));
-        s.boardFor = {index: '.page-container'};
-        s.thread = 'div[id^="thread_"]';
-        return Main.mounted(cb);
-      } else {
-        return cb();
-      }
-    },
-
-    urls: {
-      thread({siteID, boardID, threadID}, isArchived) {
-        return `${Conf['siteProperties'][siteID]?.root || `http://${siteID}/`}${boardID}/${isArchived ? 'archive/' : ''}res/${threadID}.html`;
+      isOPContainerThread: true,
+      mayLackJSON: true,
+      threadModTimeIgnoresSage: true,
+      disabledFeatures: [
+          'Resurrect Quotes',
+          'Quick Reply Personas',
+          'Quick Reply',
+          'Cooldown',
+          'Report Link',
+          'Delete Link',
+          'Edit Link',
+          'Quote Inlining',
+          'Quote Previewing',
+          'Quote Backlinks',
+          'File Info Formatting',
+          'Image Expansion',
+          'Image Expansion (Menu)',
+          'Comment Expansion',
+          'Thread Expansion',
+          'Favicon',
+          'Quote Threading',
+          'Thread Updater',
+          'Banner',
+          'Flash Features',
+          'Reply Pruning'
+      ],
+      detect() {
+          for (var script of $$('script:not([src])', d.head)) {
+              var m;
+              if (m = script.textContent.match(/\bvar configRoot=(".*?")/)) {
+                  var properties = dict();
+                  try {
+                      var root = JSON.parse(m[1]);
+                      if (root[0] === '/') {
+                          properties.root = location.origin + root;
+                      }
+                      else if (/^https?:/.test(root)) {
+                          properties.root = root;
+                      }
+                  }
+                  catch (error) { }
+                  return properties;
+              }
+          }
+          return false;
       },
-      post({postID})                   { return `#${postID}`; },
-      index({siteID, boardID})          { return `${Conf['siteProperties'][siteID]?.root || `http://${siteID}/`}${boardID}/`; },
-      catalog({siteID, boardID})          { return `${Conf['siteProperties'][siteID]?.root || `http://${siteID}/`}${boardID}/catalog.html`; },
-      threadJSON({siteID, boardID, threadID}, isArchived) {
-        const root = Conf['siteProperties'][siteID]?.root;
-        if (root) { return `${root}${boardID}/${isArchived ? 'archive/' : ''}res/${threadID}.json`; } else { return ''; }
+      awaitBoard(cb) {
+          if ($.id('react-ui')) {
+              const s = (this.selectors = Object.create(this.selectors));
+              s.boardFor = { index: '.page-container' };
+              s.thread = 'div[id^="thread_"]';
+              return Main.mounted(cb);
+          }
+          else {
+              return cb();
+          }
       },
-      archivedThreadJSON(thread) {
-        return SWTinyboard.urls.threadJSON(thread, true);
+      urls: {
+          thread({ siteID, boardID, threadID }, isArchived) {
+              return `${Conf['siteProperties'][siteID]?.root || `http://${siteID}/`}${boardID}/${isArchived ? 'archive/' : ''}res/${threadID}.html`;
+          },
+          post({ postID }) { return `#${postID}`; },
+          index({ siteID, boardID }) { return `${Conf['siteProperties'][siteID]?.root || `http://${siteID}/`}${boardID}/`; },
+          catalog({ siteID, boardID }) { return `${Conf['siteProperties'][siteID]?.root || `http://${siteID}/`}${boardID}/catalog.html`; },
+          threadJSON({ siteID, boardID, threadID }, isArchived) {
+              const root = Conf['siteProperties'][siteID]?.root;
+              if (root) {
+                  return `${root}${boardID}/${isArchived ? 'archive/' : ''}res/${threadID}.json`;
+              }
+              else {
+                  return '';
+              }
+          },
+          archivedThreadJSON(thread) {
+              return SWTinyboard.urls.threadJSON(thread, true);
+          },
+          threadsListJSON({ siteID, boardID }) {
+              const root = Conf['siteProperties'][siteID]?.root;
+              if (root) {
+                  return `${root}${boardID}/threads.json`;
+              }
+              else {
+                  return '';
+              }
+          },
+          archiveListJSON({ siteID, boardID }) {
+              const root = Conf['siteProperties'][siteID]?.root;
+              if (root) {
+                  return `${root}${boardID}/archive/archive.json`;
+              }
+              else {
+                  return '';
+              }
+          },
+          catalogJSON({ siteID, boardID }) {
+              const root = Conf['siteProperties'][siteID]?.root;
+              if (root) {
+                  return `${root}${boardID}/catalog.json`;
+              }
+              else {
+                  return '';
+              }
+          },
+          file({ siteID, boardID }, filename) {
+              return `${Conf['siteProperties'][siteID]?.root || `http://${siteID}/`}${boardID}/${filename}`;
+          },
+          thumb(board, filename) {
+              return SWTinyboard.urls.file(board, filename);
+          }
       },
-      threadsListJSON({siteID, boardID}) {
-        const root = Conf['siteProperties'][siteID]?.root;
-        if (root) { return `${root}${boardID}/threads.json`; } else { return ''; }
+      selectors: {
+          board: 'form[name="postcontrols"]',
+          thread: 'input[name="board"] ~ div[id^="thread_"]',
+          threadDivider: 'div[id^="thread_"] > hr:last-child',
+          summary: '.omitted',
+          postContainer: 'div[id^="reply_"]:not(.hidden)', // postContainer is thread for OP
+          opBottom: '.op',
+          replyOriginal: 'div[id^="reply_"]:not(.hidden)',
+          infoRoot: '.intro',
+          info: {
+              subject: '.subject',
+              name: '.name',
+              email: '.email',
+              tripcode: '.trip',
+              uniqueID: '.poster_id',
+              capcode: '.capcode',
+              flag: '.flag',
+              date: 'time',
+              nameBlock: 'label',
+              quote: 'a[href*="#q"]',
+              reply: 'a[href*="/res/"]:not([href*="#"])'
+          },
+          icons: {
+              isSticky: '.fa-thumb-tack',
+              isClosed: '.fa-lock'
+          },
+          file: {
+              text: '.fileinfo',
+              link: '.fileinfo > a',
+              thumb: 'a > .post-image'
+          },
+          thumbLink: '.file > a',
+          multifile: '.files > .file',
+          highlightable: {
+              op: ' > .op',
+              reply: '.reply',
+              catalog: ' > .thread'
+          },
+          comment: '.body',
+          spoiler: '.spoiler',
+          quotelink: 'a[onclick*="highlightReply("]',
+          catalog: {
+              board: '#Grid',
+              thread: '.mix',
+              thumb: '.thread-image'
+          },
+          boardList: '.boardlist',
+          boardListBottom: '.boardlist.bottom',
+          styleSheet: '#stylesheet',
+          psa: '.blotter',
+          nav: {
+              prev: '.pages > form > [value=Previous]',
+              next: '.pages > form > [value=Next]'
+          }
       },
-      archiveListJSON({siteID, boardID}) {
-        const root = Conf['siteProperties'][siteID]?.root;
-        if (root) { return `${root}${boardID}/archive/archive.json`; } else { return ''; }
+      classes: {
+          highlight: 'highlighted'
       },
-      catalogJSON({siteID, boardID}) {
-        const root = Conf['siteProperties'][siteID]?.root;
-        if (root) { return `${root}${boardID}/catalog.json`; } else { return ''; }
+      xpath: {
+          thread: 'div[starts-with(@id,"thread_")]',
+          postContainer: 'div[starts-with(@id,"reply_") or starts-with(@id,"thread_")]',
+          replyContainer: 'div[starts-with(@id,"reply_")]'
       },
-      file({siteID, boardID}, filename) {
-        return `${Conf['siteProperties'][siteID]?.root || `http://${siteID}/`}${boardID}/${filename}`;
-      },
-      thumb(board, filename) {
-        return SWTinyboard.urls.file(board, filename);
-      }
-    },
-
-    selectors: {
-      board:         'form[name="postcontrols"]',
-      thread:        'input[name="board"] ~ div[id^="thread_"]',
-      threadDivider: 'div[id^="thread_"] > hr:last-child',
-      summary:       '.omitted',
-      postContainer: 'div[id^="reply_"]:not(.hidden)', // postContainer is thread for OP
-      opBottom:      '.op',
-      replyOriginal: 'div[id^="reply_"]:not(.hidden)',
-      infoRoot:      '.intro',
-      info: {
-        subject:   '.subject',
-        name:      '.name',
-        email:     '.email',
-        tripcode:  '.trip',
-        uniqueID:  '.poster_id',
-        capcode:   '.capcode',
-        flag:      '.flag',
-        date:      'time',
-        nameBlock: 'label',
-        quote:     'a[href*="#q"]',
-        reply:     'a[href*="/res/"]:not([href*="#"])'
-      },
-      icons: {
-        isSticky:   '.fa-thumb-tack',
-        isClosed:   '.fa-lock'
-      },
-      file: {
-        text:  '.fileinfo',
-        link:  '.fileinfo > a',
-        thumb: 'a > .post-image'
-      },
-      thumbLink: '.file > a',
-      multifile: '.files > .file',
-      highlightable: {
-        op:      ' > .op',
-        reply:   '.reply',
-        catalog: ' > .thread'
-      },
-      comment:   '.body',
-      spoiler:   '.spoiler',
-      quotelink: 'a[onclick*="highlightReply("]',
-      catalog: {
-        board:  '#Grid',
-        thread: '.mix',
-        thumb:  '.thread-image'
-      },
-      boardList: '.boardlist',
-      boardListBottom: '.boardlist.bottom',
-      styleSheet: '#stylesheet',
-      psa:       '.blotter',
-      nav: {
-        prev: '.pages > form > [value=Previous]',
-        next: '.pages > form > [value=Next]'
-      }
-    },
-
-    classes: {
-      highlight: 'highlighted'
-    },
-
-    xpath: {
-      thread:         'div[starts-with(@id,"thread_")]',
-      postContainer:  'div[starts-with(@id,"reply_") or starts-with(@id,"thread_")]',
-      replyContainer: 'div[starts-with(@id,"reply_")]'
-    },
-
-    regexp: {
-      quotelink:
-        new RegExp(`\
+      regexp: {
+          quotelink: new RegExp(`\
 /\
 ([^/]+)\
 /res/\
@@ -20683,127 +20785,127 @@ $\
 (\\d+)\
 $\
 `),
-      quotelinkHTML:
-        /<a [^>]*\bhref="[^"]*\/([^\/]+)\/res\/(\d+)(?:\.\w+)?#(\d+)"/g
-    },
-
-    Build: {
-      parseJSON(data, board) {
-        const o = SWYotsuba.Build.parseJSON(data, board);
-        if (data.ext === 'deleted') {
-          delete o.file;
-          $.extend(o, {
-            files: [],
-            fileDeleted: true,
-            filesDeleted: [0]
-          });
-        }
-        if (data.extra_files) {
-          let file;
-          for (let i = 0; i < data.extra_files.length; i++) {
-            var extra_file = data.extra_files[i];
-            if (extra_file.ext === 'deleted') {
-              o.filesDeleted.push(i);
-            } else {
-              file = SWYotsuba.Build.parseJSONFile(data, board);
-              o.files.push(file);
-            }
-          }
-          if (o.files.length) {
-            o.file = o.files[0];
-          }
-        }
-        return o;
+          quotelinkHTML: /<a [^>]*\bhref="[^"]*\/([^\/]+)\/res\/(\d+)(?:\.\w+)?#(\d+)"/g
       },
-
-      parseComment(html) {
-        html = html
-          .replace(/<br\b[^<]*>/gi, '\n')
-          .replace(/<[^>]*>/g, '');
-        return $.unescape(html);
+      Build: {
+          parseJSON(data, board) {
+              const o = SWYotsuba.Build.parseJSON(data, board);
+              if (data.ext === 'deleted') {
+                  delete o.file;
+                  $.extend(o, {
+                      files: [],
+                      fileDeleted: true,
+                      filesDeleted: [0]
+                  });
+              }
+              if (data.extra_files) {
+                  let file;
+                  for (let i = 0; i < data.extra_files.length; i++) {
+                      var extra_file = data.extra_files[i];
+                      if (extra_file.ext === 'deleted') {
+                          o.filesDeleted.push(i);
+                      }
+                      else {
+                          file = SWYotsuba.Build.parseJSONFile(data, board);
+                          o.files.push(file);
+                      }
+                  }
+                  if (o.files.length) {
+                      o.file = o.files[0];
+                  }
+              }
+              return o;
+          },
+          parseComment(html) {
+              html = html
+                  .replace(/<br\b[^<]*>/gi, '\n')
+                  .replace(/<[^>]*>/g, '');
+              return $.unescape(html);
+          }
+      },
+      bgColoredEl() {
+          return $.el('div', { className: 'post reply' });
+      },
+      isFileURL(url) {
+          return /\/src\/[^\/]+/.test(url.pathname);
+      },
+      preParsingFixes(board) {
+          // fixes effects of unclosed link in announcement
+          let broken;
+          if (broken = $('a > input[name="board"]', board)) {
+              return $.before(broken.parentNode, broken);
+          }
+      },
+      parseNodes(post, nodes) {
+          // Add vichan's span.poster_id around the ID if not already present.
+          let m;
+          if (nodes.uniqueID) {
+              return;
+          }
+          let text = '';
+          let node = nodes.nameBlock.nextSibling;
+          while (node && (node.nodeType === 3)) {
+              text += node.textContent;
+              node = node.nextSibling;
+          }
+          if (m = text.match(/(\s*ID:\s*)(\S+)/)) {
+              let uniqueID;
+              nodes.info.normalize();
+              let { nextSibling } = nodes.nameBlock;
+              nextSibling = nextSibling.splitText(m[1].length);
+              nextSibling.splitText(m[2].length);
+              nodes.uniqueID = (uniqueID = $.el('span', { className: 'poster_id' }));
+              $.replace(nextSibling, uniqueID);
+              return $.add(uniqueID, nextSibling);
+          }
+      },
+      parseDate(node) {
+          let date = Date.parse(node.getAttribute('datetime')?.trim());
+          if (!isNaN(date)) {
+              return new Date(date);
+          }
+          date = Date.parse(node.textContent.trim() + ' UTC'); // e.g. onesixtwo.club
+          if (!isNaN(date)) {
+              return new Date(date);
+          }
+          return undefined;
+      },
+      parseFile(post, file) {
+          let info, infoNode;
+          const { text, link, thumb } = file;
+          if ($.x(`ancestor::${this.xpath.postContainer}[1]`, text) !== post.nodes.root) {
+              return false;
+          } // file belongs to a reply
+          if (!(infoNode = link.nextSibling?.textContent.includes('(') ? link.nextSibling : link.nextElementSibling)) {
+              return false;
+          }
+          if (!(info = infoNode.textContent.match(/\((.*,\s*)?([\d.]+ ?[KMG]?B).*\)/))) {
+              return false;
+          }
+          const nameNode = $('.postfilename', text);
+          $.extend(file, {
+              name: nameNode ? (nameNode.title || nameNode.textContent) : link.pathname.match(/[^/]*$/)[0],
+              size: info[2],
+              dimensions: info[0].match(/\d+x\d+/)?.[0]
+          });
+          if (thumb) {
+              $.extend(file, {
+                  thumbURL: /\/static\//.test(thumb.src) && $.isImage(link.href) ? link.href : thumb.src,
+                  isSpoiler: /^Spoiler/i.test(info[1] || '') || (link.textContent === 'Spoiler Image')
+              });
+          }
+          return true;
+      },
+      isThumbExpanded(file) {
+          // Detect old Tinyboard image expansion that changes src attribute on thumbnail.
+          return $.hasClass(file.thumb.parentNode, 'expanded') || (file.thumb.parentNode.dataset.expanded === 'true');
+      },
+      isLinkified(link) {
+          return /\bnofollow\b/.test(link.rel);
+      },
+      catalogPin(threadRoot) {
+          return threadRoot.dataset.sticky = 'true';
       }
-    },
-
-    bgColoredEl() {
-      return $.el('div', {className: 'post reply'});
-    },
-
-    isFileURL(url) {
-      return /\/src\/[^\/]+/.test(url.pathname);
-    },
-
-    preParsingFixes(board) {
-      // fixes effects of unclosed link in announcement
-      let broken;
-      if (broken = $('a > input[name="board"]', board)) {
-        return $.before(broken.parentNode, broken);
-      }
-    },
-
-    parseNodes(post, nodes) {
-      // Add vichan's span.poster_id around the ID if not already present.
-      let m;
-      if (nodes.uniqueID) { return; }
-      let text = '';
-      let node = nodes.nameBlock.nextSibling;
-      while (node && (node.nodeType === 3)) {
-        text += node.textContent;
-        node = node.nextSibling;
-      }
-      if (m = text.match(/(\s*ID:\s*)(\S+)/)) {
-        let uniqueID;
-        nodes.info.normalize();
-        let {nextSibling} = nodes.nameBlock;
-        nextSibling = nextSibling.splitText(m[1].length);
-        nextSibling.splitText(m[2].length);
-        nodes.uniqueID = (uniqueID = $.el('span', {className: 'poster_id'}));
-        $.replace(nextSibling, uniqueID);
-        return $.add(uniqueID, nextSibling);
-      }
-    },
-
-    parseDate(node) {
-      let date = Date.parse(node.getAttribute('datetime')?.trim());
-      if (!isNaN(date)) { return new Date(date); }
-      date = Date.parse(node.textContent.trim() + ' UTC'); // e.g. onesixtwo.club
-      if (!isNaN(date)) { return new Date(date); }
-      return undefined;
-    },
-
-    parseFile(post, file) {
-      let info, infoNode;
-      const {text, link, thumb} = file;
-      if ($.x(`ancestor::${this.xpath.postContainer}[1]`, text) !== post.nodes.root) { return false; } // file belongs to a reply
-      if (!(infoNode = link.nextSibling?.textContent.includes('(') ? link.nextSibling : link.nextElementSibling)) { return false; }
-      if (!(info = infoNode.textContent.match(/\((.*,\s*)?([\d.]+ ?[KMG]?B).*\)/))) { return false; }
-      const nameNode = $('.postfilename', text);
-      $.extend(file, {
-        name:       nameNode ? (nameNode.title || nameNode.textContent) : link.pathname.match(/[^/]*$/)[0],
-        size:       info[2],
-        dimensions: info[0].match(/\d+x\d+/)?.[0]
-      });
-      if (thumb) {
-        $.extend(file, {
-          thumbURL:  /\/static\//.test(thumb.src) && $.isImage(link.href) ? link.href : thumb.src,
-          isSpoiler: /^Spoiler/i.test(info[1] || '') || (link.textContent === 'Spoiler Image')
-        }
-        );
-      }
-      return true;
-    },
-
-    isThumbExpanded(file) {
-      // Detect old Tinyboard image expansion that changes src attribute on thumbnail.
-      return $.hasClass(file.thumb.parentNode, 'expanded') || (file.thumb.parentNode.dataset.expanded === 'true');
-    },
-
-    isLinkified(link) {
-      return /\bnofollow\b/.test(link.rel);
-    },
-
-    catalogPin(threadRoot) {
-      return threadRoot.dataset.sticky = 'true';
-    }
   };
 
   const SW = { tinyboard: SWTinyboard, yotsuba: SWYotsuba };
@@ -22226,237 +22328,244 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
   };
 
   var Site = {
-    defaultProperties: {
-      '4chan.org':    {software: 'yotsuba'},
-      '4channel.org': {canonical: '4chan.org'},
-      '4cdn.org':     {canonical: '4chan.org'},
-      'notso.smuglo.li': {canonical: 'smuglo.li'},
-      'smugloli.net':    {canonical: 'smuglo.li'},
-      'smug.nepu.moe':   {canonical: 'smuglo.li'}
-    },
-
-    init(cb) {
-      $.extend(Conf['siteProperties'], Site.defaultProperties);
-      let hostname = Site.resolve();
-      if (hostname && $.hasOwn(SW, Conf['siteProperties'][hostname].software)) {
-        this.set(hostname);
-        cb();
-      }
-      $.onExists(doc, 'body', () => {
-        for (var software in SW) {
-          var changes;
-          if (changes = SW[software].detect?.()) {
-            changes.software = software;
-            hostname = location.hostname.replace(/^www\./, '');
-            var properties = (Conf['siteProperties'][hostname] || (Conf['siteProperties'][hostname] = dict()));
-            var changed = 0;
-            for (var key in changes) {
-              if (properties[key] !== changes[key]) {
-                properties[key] = changes[key];
-                changed++;
-              }
-            }
-            if (changed) {
-              $.set('siteProperties', Conf['siteProperties']);
-            }
-            if (!g.SITE) {
+      defaultProperties: {
+          '4chan.org': { software: 'yotsuba' },
+          '4channel.org': { canonical: '4chan.org' },
+          '4cdn.org': { canonical: '4chan.org' },
+          'notso.smuglo.li': { canonical: 'smuglo.li' },
+          'smugloli.net': { canonical: 'smuglo.li' },
+          'smug.nepu.moe': { canonical: 'smuglo.li' }
+      },
+      init(cb) {
+          $.extend(Conf['siteProperties'], Site.defaultProperties);
+          let hostname = Site.resolve();
+          if (hostname && $.hasOwn(SW, Conf['siteProperties'][hostname].software)) {
               this.set(hostname);
               cb();
-            }
-            return;
           }
-        }
-      });
-    },
-
-    resolve(url=location) {
-      let {hostname} = url;
-      while (hostname && !$.hasOwn(Conf['siteProperties'], hostname)) {
-        hostname = hostname.replace(/^[^.]*\.?/, '');
+          $.onExists(doc, 'body', () => {
+              for (var software in SW) {
+                  var changes;
+                  if (changes = SW[software].detect?.()) {
+                      changes.software = software;
+                      hostname = location.hostname.replace(/^www\./, '');
+                      var properties = (Conf['siteProperties'][hostname] || (Conf['siteProperties'][hostname] = dict()));
+                      var changed = 0;
+                      for (var key in changes) {
+                          if (properties[key] !== changes[key]) {
+                              properties[key] = changes[key];
+                              changed++;
+                          }
+                      }
+                      if (changed) {
+                          $.set('siteProperties', Conf['siteProperties']);
+                      }
+                      if (!g.SITE) {
+                          this.set(hostname);
+                          cb();
+                      }
+                      return;
+                  }
+              }
+          });
+      },
+      resolve(url = location) {
+          let { hostname } = url;
+          while (hostname && !$.hasOwn(Conf['siteProperties'], hostname)) {
+              hostname = hostname.replace(/^[^.]*\.?/, '');
+          }
+          if (hostname) {
+              let canonical;
+              if (canonical = Conf['siteProperties'][hostname].canonical) {
+                  hostname = canonical;
+              }
+          }
+          return hostname;
+      },
+      parseURL(url) {
+          const siteID = Site.resolve(url);
+          return Main.parseURL(g.sites[siteID], url);
+      },
+      set(hostname) {
+          for (var ID in Conf['siteProperties']) {
+              var site;
+              var properties = Conf['siteProperties'][ID];
+              if (properties.canonical) {
+                  continue;
+              }
+              var { software } = properties;
+              if (!software || !$.hasOwn(SW, software)) {
+                  continue;
+              }
+              g.sites[ID] = (site = Object.create(SW[software]));
+              $.extend(site, { ID, siteID: ID, properties, software });
+          }
+          return g.SITE = g.sites[hostname];
       }
-      if (hostname) {
-        let canonical;
-        if (canonical = Conf['siteProperties'][hostname].canonical) { hostname = canonical; }
-      }
-      return hostname;
-    },
-
-    parseURL(url) {
-      const siteID = Site.resolve(url);
-      return Main.parseURL(g.sites[siteID], url);
-    },
-
-    set(hostname) {
-      for (var ID in Conf['siteProperties']) {
-        var site;
-        var properties = Conf['siteProperties'][ID];
-        if (properties.canonical) { continue; }
-        var {
-          software
-        } = properties;
-        if (!software || !$.hasOwn(SW, software)) { continue; }
-        g.sites[ID] = (site = Object.create(SW[software]));
-        $.extend(site, {ID, siteID: ID, properties, software});
-      }
-      return g.SITE = g.sites[hostname];
-    }
   };
 
   var CatalogLinks = {
-    init() {
-      if ((g.SITE.software === 'yotsuba') && (Conf['External Catalog'] || Conf['JSON Index']) && !(Conf['JSON Index'] && (g.VIEW === 'index'))) {
-        const selector = (() => { switch (g.VIEW) {
-          case 'thread': case 'archive': return '.navLinks.desktop > a';
-          case 'catalog':           return '.navLinks > :first-child > a';
-          case 'index':             return '#ctrl-top > a, .cataloglink > a';
-        } })();
-        $.ready(function() {
-          for (var link of $$(selector)) {
-            var catalogURL;
-            switch (link.pathname.replace(/\/+/g, '/')) {
-              case `/${g.BOARD}/`:
-                if (Conf['JSON Index']) { link.textContent = 'Index'; }
-                link.href = CatalogLinks.index();
-                break;
-              case `/${g.BOARD}/catalog`:
-                link.href = CatalogLinks.catalog();
-                break;
-            }
-            if ((g.VIEW === 'catalog') && ((catalogURL = CatalogLinks.catalog()) !== g.SITE.urls.catalog?.(g.BOARD))) {
-              var catalogLink = link.parentNode.cloneNode(true);
-              var link2 = catalogLink.firstElementChild;
-              link2.href = catalogURL;
-              link2.textContent = link2.hostname === location.hostname ? `${meta.name} Catalog` : 'External Catalog';
-              $.after(link.parentNode, [$.tn(' '), catalogLink]);
-            }
+      init() {
+          if ((g.SITE.software === 'yotsuba') && (Conf['External Catalog'] || Conf['JSON Index']) && !(Conf['JSON Index'] && (g.VIEW === 'index'))) {
+              const selector = (() => {
+                  switch (g.VIEW) {
+                      case 'thread':
+                      case 'archive': return '.navLinks.desktop > a';
+                      case 'catalog': return '.navLinks > :first-child > a';
+                      case 'index': return '#ctrl-top > a, .cataloglink > a';
+                  }
+              })();
+              $.ready(function () {
+                  for (var link of $$(selector)) {
+                      var catalogURL;
+                      switch (link.pathname.replace(/\/+/g, '/')) {
+                          case `/${g.BOARD}/`:
+                              if (Conf['JSON Index']) {
+                                  link.textContent = 'Index';
+                              }
+                              link.href = CatalogLinks.index();
+                              break;
+                          case `/${g.BOARD}/catalog`:
+                              link.href = CatalogLinks.catalog();
+                              break;
+                      }
+                      if ((g.VIEW === 'catalog') && ((catalogURL = CatalogLinks.catalog()) !== g.SITE.urls.catalog?.(g.BOARD))) {
+                          var catalogLink = link.parentNode.cloneNode(true);
+                          var link2 = catalogLink.firstElementChild;
+                          link2.href = catalogURL;
+                          link2.textContent = link2.hostname === location.hostname ? `${meta.name} Catalog` : 'External Catalog';
+                          $.after(link.parentNode, [$.tn(' '), catalogLink]);
+                      }
+                  }
+              });
           }
-        });
-      }
-
-      if ((g.SITE.software === 'yotsuba') && Conf['JSON Index'] && Conf[`Use ${meta.name} Catalog`]) {
-        Callbacks.Post.push({
-          name: 'Catalog Link Rewrite',
-          cb:   this.node
-        });
-      }
-
-      if (this.enabled = Conf['Catalog Links']) {
-        let el;
-        CatalogLinks.el = (el = UI.checkbox('Header catalog links', 'Catalog Links'));
-        el.id = 'toggleCatalog';
-        const input = $('input', el);
-        $.on(input, 'change', this.toggle);
-        $.sync('Header catalog links', CatalogLinks.set);
-        return Header.menu.addEntry({
-          el,
-          order: 95
-        });
-      }
-    },
-
-    node() {
-      for (var a of $$('a', this.nodes.comment)) {
-        var m;
-        if (m = a.href.match(/^https?:\/\/(boards\.4chan(?:nel)?\.org\/[^\/]+)\/catalog(#s=.*)?/)) {
-          a.href = `//${m[1]}/${m[2] || '#catalog'}`;
-        }
-      }
-    },
-
-    toggle() {
-      $.event('CloseMenu');
-      $.set('Header catalog links', this.checked);
-      return CatalogLinks.set(this.checked);
-    },
-
-    set(useCatalog) {
-      Conf['Header catalog links'] = useCatalog;
-      CatalogLinks.setLinks(Header.boardList);
-      CatalogLinks.setLinks(Header.bottomBoardList);
-      CatalogLinks.el.title = `Turn catalog links ${useCatalog ? 'off' : 'on'}.`;
-      return $('input', CatalogLinks.el).checked = useCatalog;
-    },
-
-    // Also called by Header when board lists are loaded / generated.
-    setLinks(list) {
-      if ((!(CatalogLinks.enabled ?? Conf['Catalog Links'])) || !list) { return; }
-
-      // do not transform links unless they differ from the expected value at most by this tail
-      const tail = /(?:index)?(?:\.\w+)?$/;
-
-      for (var a of $$('a:not([data-only])', list)) {
-        var {siteID, boardID} = a.dataset;
-        if (!siteID || !boardID) {
-          var VIEW;
-          ({siteID, boardID, VIEW} = Site.parseURL(a));
-          if (
-            !siteID || !boardID ||
-            !['index', 'catalog'].includes(VIEW) ||
-            (!a.dataset.indexOptions && (a.href.replace(tail, '') !== (Get.url(VIEW, {siteID, boardID}) || '').replace(tail, '')))
-          ) { continue; }
-          $.extend(a.dataset, {siteID, boardID});
-        }
-
-        var board = {siteID, boardID};
-        var url = Conf['Header catalog links'] ? CatalogLinks.catalog(board) : Get.url('index', board);
-        if (url) {
-          a.href = url;
-          if (a.dataset.indexOptions && (url.split('#')[0] === Get.url('index', board))) {
-            a.href += (a.hash ? '/' : '#') + a.dataset.indexOptions;
+          if ((g.SITE.software === 'yotsuba') && Conf['JSON Index'] && Conf[`Use ${meta.name} Catalog`]) {
+              Callbacks.Post.push({
+                  name: 'Catalog Link Rewrite',
+                  cb: this.node
+              });
           }
-        }
-      }
-    },
-
-    externalParse() {
-      CatalogLinks.externalList = dict();
-      for (var line of Conf['externalCatalogURLs'].split('\n')) {
-        if (line[0] === '#') { continue; }
-        var url = line.split(';')[0];
-        var boards   = Filter.parseBoards(line.match(/;boards:([^;]+)/)?.[1] || '*');
-        var excludes = Filter.parseBoards(line.match(/;exclude:([^;]+)/)?.[1]) || dict();
-        for (var board in boards) {
-          if (!excludes[board] && !excludes[board.split('/')[0] + '/*']) {
-            CatalogLinks.externalList[board] = url;
+          if (this.enabled = Conf['Catalog Links']) {
+              let el;
+              CatalogLinks.el = (el = UI.checkbox('Header catalog links', 'Catalog Links'));
+              el.id = 'toggleCatalog';
+              const input = $('input', el);
+              $.on(input, 'change', this.toggle);
+              $.sync('Header catalog links', CatalogLinks.set);
+              return Header.menu.addEntry({
+                  el,
+                  order: 95
+              });
           }
-        }
+      },
+      node() {
+          for (var a of $$('a', this.nodes.comment)) {
+              var m;
+              if (m = a.href.match(/^https?:\/\/(boards\.4chan(?:nel)?\.org\/[^\/]+)\/catalog(#s=.*)?/)) {
+                  a.href = `//${m[1]}/${m[2] || '#catalog'}`;
+              }
+          }
+      },
+      toggle() {
+          $.event('CloseMenu');
+          $.set('Header catalog links', this.checked);
+          return CatalogLinks.set(this.checked);
+      },
+      set(useCatalog) {
+          Conf['Header catalog links'] = useCatalog;
+          CatalogLinks.setLinks(Header.boardList);
+          CatalogLinks.setLinks(Header.bottomBoardList);
+          CatalogLinks.el.title = `Turn catalog links ${useCatalog ? 'off' : 'on'}.`;
+          return $('input', CatalogLinks.el).checked = useCatalog;
+      },
+      // Also called by Header when board lists are loaded / generated.
+      setLinks(list) {
+          if ((!(CatalogLinks.enabled ?? Conf['Catalog Links'])) || !list) {
+              return;
+          }
+          // do not transform links unless they differ from the expected value at most by this tail
+          const tail = /(?:index)?(?:\.\w+)?$/;
+          for (var a of $$('a:not([data-only])', list)) {
+              var { siteID, boardID } = a.dataset;
+              if (!siteID || !boardID) {
+                  var VIEW;
+                  ({ siteID, boardID, VIEW } = Site.parseURL(a));
+                  if (!siteID || !boardID ||
+                      !['index', 'catalog'].includes(VIEW) ||
+                      (!a.dataset.indexOptions && (a.href.replace(tail, '') !== (Get.url(VIEW, { siteID, boardID }) || '').replace(tail, '')))) {
+                      continue;
+                  }
+                  $.extend(a.dataset, { siteID, boardID });
+              }
+              var board = { siteID, boardID };
+              var url = Conf['Header catalog links'] ? CatalogLinks.catalog(board) : Get.url('index', board);
+              if (url) {
+                  a.href = url;
+                  if (a.dataset.indexOptions && (url.split('#')[0] === Get.url('index', board))) {
+                      a.href += (a.hash ? '/' : '#') + a.dataset.indexOptions;
+                  }
+              }
+          }
+      },
+      externalParse() {
+          CatalogLinks.externalList = dict();
+          for (var line of Conf['externalCatalogURLs'].split('\n')) {
+              if (line[0] === '#') {
+                  continue;
+              }
+              var url = line.split(';')[0];
+              var boards = Filter.parseBoards(line.match(/;boards:([^;]+)/)?.[1] || '*');
+              var excludes = Filter.parseBoards(line.match(/;exclude:([^;]+)/)?.[1]) || dict();
+              for (var board in boards) {
+                  if (!excludes[board] && !excludes[board.split('/')[0] + '/*']) {
+                      CatalogLinks.externalList[board] = url;
+                  }
+              }
+          }
+      },
+      external({ siteID, boardID }) {
+          if (!CatalogLinks.externalList) {
+              CatalogLinks.externalParse();
+          }
+          const external = (CatalogLinks.externalList[`${siteID}/${boardID}`] || CatalogLinks.externalList[`${siteID}/*`]);
+          if (external) {
+              return external.replace(/%board/g, boardID);
+          }
+          else {
+              return undefined;
+          }
+      },
+      jsonIndex(board, hash) {
+          if ((g.SITE.ID === board.siteID) && (g.BOARD.ID === board.boardID) && (g.VIEW === 'index')) {
+              return hash;
+          }
+          else {
+              return Get.url('index', board) + hash;
+          }
+      },
+      catalog(board = g.BOARD) {
+          let external, nativeCatalog;
+          if (Conf['External Catalog'] && (external = CatalogLinks.external(board))) {
+              return external;
+          }
+          else if (Index.enabledOn(board) && Conf[`Use ${meta.name} Catalog`]) {
+              return CatalogLinks.jsonIndex(board, '#catalog');
+          }
+          else if (nativeCatalog = Get.url('catalog', board)) {
+              return nativeCatalog;
+          }
+          else {
+              return CatalogLinks.external(board);
+          }
+      },
+      index(board = g.BOARD) {
+          if (Index.enabledOn(board)) {
+              return CatalogLinks.jsonIndex(board, '#index');
+          }
+          else {
+              return Get.url('index', board);
+          }
       }
-    },
-
-    external({siteID, boardID}) {
-      if (!CatalogLinks.externalList) { CatalogLinks.externalParse(); }
-      const external = (CatalogLinks.externalList[`${siteID}/${boardID}`] || CatalogLinks.externalList[`${siteID}/*`]);
-      if (external) { return external.replace(/%board/g, boardID); } else { return undefined; }
-    },
-
-    jsonIndex(board, hash) {
-      if ((g.SITE.ID === board.siteID) && (g.BOARD.ID === board.boardID) && (g.VIEW === 'index')) {
-        return hash;
-      } else {
-        return Get.url('index', board) + hash;
-      }
-    },
-
-    catalog(board=g.BOARD) {
-      let external, nativeCatalog;
-      if (Conf['External Catalog'] && (external = CatalogLinks.external(board))) {
-        return external;
-      } else if (Index.enabledOn(board) && Conf[`Use ${meta.name} Catalog`]) {
-        return CatalogLinks.jsonIndex(board, '#catalog');
-      } else if (nativeCatalog = Get.url('catalog', board)) {
-        return nativeCatalog;
-      } else {
-        return CatalogLinks.external(board);
-      }
-    },
-
-    index(board=g.BOARD) {
-      if (Index.enabledOn(board)) {
-        return CatalogLinks.jsonIndex(board, '#index');
-      } else {
-        return Get.url('index', board);
-      }
-    }
   };
 
   var Header = {
@@ -23054,56 +23163,55 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
   };
 
   class Notice {
-    constructor(type, content, timeout, onclose) {
-      this.add = this.add.bind(this);
-      this.close = this.close.bind(this);
-      this.timeout = timeout;
-      this.onclose = onclose;
-      this.el = $.el('div', {
-        innerHTML: `<a href="javascript:;" class="close" title="Close">${Icon.get('xmark')}</a><div class="message"></div>`
-      });
-      this.el.style.opacity = 0;
-      this.setType(type);
-      $.on(this.el.firstElementChild, 'click', this.close);
-      if (typeof content === 'string') {
-        content = $.tn(content);
+      constructor(type, content, timeout, onclose) {
+          this.add = this.add.bind(this);
+          this.close = this.close.bind(this);
+          this.timeout = timeout;
+          this.onclose = onclose;
+          this.el = $.el('div', {
+              innerHTML: `<a href="javascript:;" class="close" title="Close">${Icon.get('xmark')}</a><div class="message"></div>`
+          });
+          this.el.style.opacity = 0;
+          this.setType(type);
+          $.on(this.el.firstElementChild, 'click', this.close);
+          if (typeof content === 'string') {
+              content = $.tn(content);
+          }
+          $.add(this.el.lastElementChild, content);
+          $.ready(this.add);
       }
-      $.add(this.el.lastElementChild, content);
-
-      $.ready(this.add);
-    }
-
-    setType(type) {
-      this.el.className = `notification ${type}`;
-    }
-
-    add() {
-      if (this.closed) return;
-      if (d.hidden) {
-        $.on(d, 'visibilitychange', this.add);
-        return;
+      setType(type) {
+          this.el.className = `notification ${type}`;
       }
-      $.off(d, 'visibilitychange', this.add);
-      $.add(Header.noticesRoot, this.el);
-      this.el.clientHeight; // force reflow
-      this.el.style.opacity = 1;
-      if (this.timeout) { this.timeoutId = setTimeout(this.close, this.timeout * SECOND); }
-    }
-
-    close() {
-      if (this.timeoutId) clearTimeout(this.timeoutId);
-      this.closed = true;
-      $.off(d, 'visibilitychange', this.add);
-      $.rm(this.el);
-      this.onclose?.();
-    }
-
-    resetTimer() {
-      if (this.timeout) {
-        clearTimeout(this.timeoutId);
-        this.timeoutId = setTimeout(this.close, this.timeout * SECOND);
+      add() {
+          if (this.closed)
+              return;
+          if (d.hidden) {
+              $.on(d, 'visibilitychange', this.add);
+              return;
+          }
+          $.off(d, 'visibilitychange', this.add);
+          $.add(Header.noticesRoot, this.el);
+          this.el.clientHeight; // force reflow
+          this.el.style.opacity = 1;
+          if (this.timeout) {
+              this.timeoutId = setTimeout(this.close, this.timeout * SECOND);
+          }
       }
-    }
+      close() {
+          if (this.timeoutId)
+              clearTimeout(this.timeoutId);
+          this.closed = true;
+          $.off(d, 'visibilitychange', this.add);
+          $.rm(this.el);
+          this.onclose?.();
+      }
+      resetTimer() {
+          if (this.timeout) {
+              clearTimeout(this.timeoutId);
+              this.timeoutId = setTimeout(this.close, this.timeout * SECOND);
+          }
+      }
   }
 
   var archives = [{
@@ -23458,2987 +23566,3030 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
   };
 
   class CatalogThreadNative {
-    toString() { return this.ID; }
-
-    constructor(root) {
-      this.nodes = {
-        root,
-        thumb: $(g.SITE.selectors.catalog.thumb, root)
-      };
-      this.siteID  = g.SITE.ID;
-      this.boardID = this.nodes.thumb.parentNode.pathname.split(/\/+/)[1];
-      this.board = g.boards[this.boardID] || new Board(this.boardID);
-      this.ID = (this.threadID = +(root.dataset.id || root.id).match(/\d*$/)[0]);
-      this.thread = this.board.threads.get(this.ID) || new Thread(this.ID, this.board);
-    }
+      toString() { return this.ID; }
+      constructor(root) {
+          this.nodes = {
+              root,
+              thumb: $(g.SITE.selectors.catalog.thumb, root)
+          };
+          this.siteID = g.SITE.ID;
+          this.boardID = this.nodes.thumb.parentNode.pathname.split(/\/+/)[1];
+          this.board = g.boards[this.boardID] || new Board(this.boardID);
+          this.ID = (this.threadID = +(root.dataset.id || root.id).match(/\d*$/)[0]);
+          this.thread = this.board.threads.get(this.ID) || new Thread(this.ID, this.board);
+      }
   }
 
   const Anonymize = {
-    init() {
-      if (!Conf['Anonymize']) { return; }
-      return $.addClass(doc, 'anonymize');
-    }
+      init() {
+          if (!Conf['Anonymize']) {
+              return;
+          }
+          return $.addClass(doc, 'anonymize');
+      }
   };
 
   var ImageHover = {
-    init() {
-      if (!['index', 'thread'].includes(g.VIEW)) { return; }
-      if (Conf['Image Hover']) {
-        Callbacks.Post.push({
-          name: 'Image Hover',
-          cb:   this.node
-        });
+      init() {
+          if (!['index', 'thread'].includes(g.VIEW)) {
+              return;
+          }
+          if (Conf['Image Hover']) {
+              Callbacks.Post.push({
+                  name: 'Image Hover',
+                  cb: this.node
+              });
+          }
+          if (Conf['Image Hover in Catalog']) {
+              return Callbacks.CatalogThread.push({
+                  name: 'Image Hover',
+                  cb: this.catalogNode
+              });
+          }
+      },
+      node() {
+          return this.files.filter((file) => (file.isImage || file.isVideo) && file.thumb).map((file) => $.on(file.thumb, 'mouseover', ImageHover.mouseover(this, file)));
+      },
+      catalogNode() {
+          const file = this.thread.OP.files[0];
+          if (!file || (!file.isImage && !file.isVideo)) {
+              return;
+          }
+          return $.on(this.nodes.thumb, 'mouseover', ImageHover.mouseover(this.thread.OP, file));
+      },
+      mouseover(post, file) {
+          return function (e) {
+              let el, height, width;
+              if (!doc.contains(this)) {
+                  return;
+              }
+              const { isVideo } = file;
+              if (file.isExpanding || file.isExpanded || g.SITE.isThumbExpanded?.(file)) {
+                  return;
+              }
+              const error = ImageHover.error(post, file);
+              if (ImageCommon.cache?.dataset.fileID === `${post.fullID}.${file.index}`) {
+                  el = ImageCommon.popCache();
+                  $.on(el, 'error', error);
+              }
+              else {
+                  el = $.el((isVideo ? 'video' : 'img'));
+                  el.dataset.fileID = `${post.fullID}.${file.index}`;
+                  $.on(el, 'error', error);
+                  el.src = file.url;
+              }
+              if (Conf['Restart when Opened']) {
+                  ImageCommon.rewind(el);
+                  ImageCommon.rewind(this);
+              }
+              el.id = 'ihover';
+              $.add(Header.hover, el);
+              if (isVideo) {
+                  el.loop = true;
+                  el.controls = false;
+                  Volume.setup(el);
+                  if (Conf['Autoplay']) {
+                      el.play();
+                      if (this.nodeName === 'VIDEO') {
+                          this.currentTime = el.currentTime;
+                      }
+                  }
+              }
+              if (file.dimensions) {
+                  [width, height] = file.dimensions.split('x').map((x) => +x);
+                  const maxWidth = doc.clientWidth;
+                  const maxHeight = doc.clientHeight - UI.hover.padding;
+                  const scale = Math.min(1, maxWidth / width, maxHeight / height);
+                  width *= scale;
+                  height *= scale;
+                  el.style.maxWidth = `${width}px`;
+                  el.style.maxHeight = `${height}px`;
+              }
+              return UI.hover({
+                  root: this,
+                  el,
+                  latestEvent: e,
+                  endEvents: 'mouseout click',
+                  height,
+                  width,
+                  noRemove: true,
+                  cb() {
+                      $.off(el, 'error', error);
+                      ImageCommon.pushCache(el);
+                      ImageCommon.pause(el);
+                      $.rm(el);
+                      return el.removeAttribute('style');
+                  }
+              });
+          };
+      },
+      error(post, file) {
+          return function () {
+              if (ImageCommon.decodeError(this, file)) {
+                  return;
+              }
+              return ImageCommon.error(this, post, file, 3 * SECOND, URL => {
+                  if (URL) {
+                      return this.src = URL + (this.src === URL ? '?' + Date.now() : '');
+                  }
+                  else {
+                      return $.rm(this);
+                  }
+              });
+          };
       }
-      if (Conf['Image Hover in Catalog']) {
-        return Callbacks.CatalogThread.push({
-          name: 'Image Hover',
-          cb:   this.catalogNode
-        });
-      }
-    },
-
-    node() {
-      return this.files.filter((file) => (file.isImage || file.isVideo) && file.thumb).map((file) =>
-        $.on(file.thumb, 'mouseover', ImageHover.mouseover(this, file)));
-    },
-
-    catalogNode() {
-      const file = this.thread.OP.files[0];
-      if (!file || (!file.isImage && !file.isVideo)) { return; }
-      return $.on(this.nodes.thumb, 'mouseover', ImageHover.mouseover(this.thread.OP, file));
-    },
-
-    mouseover(post, file) { return function(e) {
-      let el, height, width;
-      if (!doc.contains(this)) { return; }
-      const {isVideo} = file;
-      if (file.isExpanding || file.isExpanded || g.SITE.isThumbExpanded?.(file)) { return; }
-      const error = ImageHover.error(post, file);
-      if (ImageCommon.cache?.dataset.fileID === `${post.fullID}.${file.index}`) {
-        el = ImageCommon.popCache();
-        $.on(el, 'error', error);
-      } else {
-        el = $.el((isVideo ? 'video' : 'img'));
-        el.dataset.fileID = `${post.fullID}.${file.index}`;
-        $.on(el, 'error', error);
-        el.src = file.url;
-      }
-
-      if (Conf['Restart when Opened']) {
-        ImageCommon.rewind(el);
-        ImageCommon.rewind(this);
-      }
-      el.id = 'ihover';
-      $.add(Header.hover, el);
-      if (isVideo) {
-        el.loop     = true;
-        el.controls = false;
-        Volume.setup(el);
-        if (Conf['Autoplay']) {
-          el.play();
-          if (this.nodeName === 'VIDEO') { this.currentTime = el.currentTime; }
-        }
-      }
-      if (file.dimensions) {
-        [width, height] = file.dimensions.split('x').map((x) => +x);
-        const maxWidth = doc.clientWidth;
-        const maxHeight = doc.clientHeight - UI.hover.padding;
-        const scale = Math.min(1, maxWidth / width, maxHeight / height);
-        width *= scale;
-        height *= scale;
-        el.style.maxWidth  = `${width}px`;
-        el.style.maxHeight = `${height}px`;
-      }
-      return UI.hover({
-        root: this,
-        el,
-        latestEvent: e,
-        endEvents: 'mouseout click',
-        height,
-        width,
-        noRemove: true,
-        cb() {
-          $.off(el, 'error', error);
-          ImageCommon.pushCache(el);
-          ImageCommon.pause(el);
-          $.rm(el);
-          return el.removeAttribute('style');
-        }
-      });
-    }; },
-
-    error(post, file) { return function() {
-      if (ImageCommon.decodeError(this, file)) { return; }
-      return ImageCommon.error(this, post, file, 3 * SECOND, URL => {
-        if (URL) {
-          return this.src = URL + (this.src === URL ? '?' + Date.now() : '');
-        } else {
-          return $.rm(this);
-        }
-      });
-    }; }
   };
 
   var ImageLoader = {
-    init() {
-      if (!['index', 'thread', 'archive'].includes(g.VIEW)) { return; }
-      const replace = Conf['Replace JPG'] || Conf['Replace PNG'] || Conf['Replace GIF'] || Conf['Replace WEBM'];
-      if (!Conf['Image Prefetching'] && !replace) { return; }
-
-      Callbacks.Post.push({
-        name: 'Image Replace',
-        cb:   this.node
-      });
-
-      $.on(d, 'PostsInserted', function() {
-        if (ImageLoader.prefetchEnabled || replace) {
-          return g.posts.forEach(ImageLoader.prefetchAll);
-        }
-      });
-
-      if (Conf['Replace WEBM']) {
-        $.on(d, 'scroll visibilitychange 4chanXInitFinished PostsInserted', this.playVideos);
-      }
-
-      if (!Conf['Image Prefetching'] || !['index', 'thread'].includes(g.VIEW)) { return; }
-
-      const el = $.el('a', {
-        href: 'javascript:;',
-        title: 'Prefetch Images',
-        className: 'disabled',
-      });
-      Icon.set(el, 'bolt', 'Prefetch');
-
-      $.on(el, 'click', this.toggle);
-
-      return Header.addShortcut('prefetch', el, 525);
-    },
-
-    node() {
-      if (this.isClone) { return; }
-      for (var file of this.files) {
-        if (Conf['Replace WEBM'] && file.isVideo) { ImageLoader.replaceVideo(this, file); }
-        ImageLoader.prefetch(this, file);
-      }
-    },
-
-    replaceVideo(post, file) {
-      const {thumb} = file;
-      const video = $.el('video', {
-        preload:     'none',
-        loop:        true,
-        muted:       true,
-        poster:      thumb.src || thumb.dataset.src,
-        textContent: thumb.alt,
-        className:   thumb.className
-      }
-      );
-      video.setAttribute('muted', 'muted');
-      video.dataset.md5 = thumb.dataset.md5;
-      for (var attr of ['height', 'width', 'maxHeight', 'maxWidth']) { video.style[attr] = thumb.style[attr]; }
-      video.src         = file.url;
-      $.replace(thumb, video);
-      file.thumb      = video;
-      return file.videoThumb = true;
-    },
-
-    prefetch(post, file) {
-      let clone, type;
-      const {isImage, isVideo, thumb, url} = file;
-      if (file.isPrefetched || !(isImage || isVideo) || post.isHidden || post.thread.isHidden) { return; }
-      if (isVideo) {
-        type = 'WEBM';
-      } else {
-        type = url.match(/\.([^.]+)$/)?.[1].toUpperCase();
-        if (type === 'JPEG') { type = 'JPG'; }
-      }
-      const replace = Conf[`Replace ${type}`] && !/spoiler/.test(thumb.src || thumb.dataset.src);
-      if (!replace && !ImageLoader.prefetchEnabled) { return; }
-      if ($.hasClass(doc, 'catalog-mode')) { return; }
-      if (![post, ...post.clones].some(clone => doc.contains(clone.nodes.root))) { return; }
-      file.isPrefetched = true;
-      if (file.videoThumb) {
-        for (clone of post.clones) { clone.file.thumb.preload = 'auto'; }
-        thumb.preload = 'auto';
-        // XXX Cloned video elements with poster in Firefox cause momentary display of image loading icon.
-        if ($.engine === 'gecko') {
-          $.on(thumb, 'loadeddata', function() { return this.removeAttribute('poster'); });
-        }
-        return;
-      }
-
-      const el = $.el(isImage ? 'img' : 'video');
-      if (isVideo) { el.preload = 'auto'; }
-      if (replace && isImage) {
-        $.on(el, 'load', function() {
-          for (clone of post.clones) { clone.file.thumb.src = url; }
-          return thumb.src = url;
-        });
-      }
-      return el.src = url;
-    },
-
-    prefetchAll(post) {
-      for (var file of post.files) {
-        ImageLoader.prefetch(post, file);
-      }
-    },
-
-    toggle() {
-      ImageLoader.prefetchEnabled = !ImageLoader.prefetchEnabled;
-      this.classList.toggle('disabled', !ImageLoader.prefetchEnabled);
-      if (ImageLoader.prefetchEnabled) {
-        g.posts.forEach(ImageLoader.prefetchAll);
-      }
-    },
-
-    playVideos() {
-      // Special case: Quote previews are off screen when inserted into document, but quickly moved on screen.
-      const qpClone = $.id('qp')?.firstElementChild;
-      return g.posts.forEach(function(post) {
-        for (post of [post, ...post.clones]) {
-          for (var file of post.files) {
-            if (file.videoThumb) {
-              var {thumb} = file;
-              if (Header.isNodeVisible(thumb) || (post.nodes.root === qpClone)) { thumb.play(); } else { thumb.pause(); }
-            }
+      init() {
+          if (!['index', 'thread', 'archive'].includes(g.VIEW)) {
+              return;
           }
-        }
-      });
-    }
+          const replace = Conf['Replace JPG'] || Conf['Replace PNG'] || Conf['Replace GIF'] || Conf['Replace WEBM'];
+          if (!Conf['Image Prefetching'] && !replace) {
+              return;
+          }
+          Callbacks.Post.push({
+              name: 'Image Replace',
+              cb: this.node
+          });
+          $.on(d, 'PostsInserted', function () {
+              if (ImageLoader.prefetchEnabled || replace) {
+                  return g.posts.forEach(ImageLoader.prefetchAll);
+              }
+          });
+          if (Conf['Replace WEBM']) {
+              $.on(d, 'scroll visibilitychange 4chanXInitFinished PostsInserted', this.playVideos);
+          }
+          if (!Conf['Image Prefetching'] || !['index', 'thread'].includes(g.VIEW)) {
+              return;
+          }
+          const el = $.el('a', {
+              href: 'javascript:;',
+              title: 'Prefetch Images',
+              className: 'disabled',
+          });
+          Icon.set(el, 'bolt', 'Prefetch');
+          $.on(el, 'click', this.toggle);
+          return Header.addShortcut('prefetch', el, 525);
+      },
+      node() {
+          if (this.isClone) {
+              return;
+          }
+          for (var file of this.files) {
+              if (Conf['Replace WEBM'] && file.isVideo) {
+                  ImageLoader.replaceVideo(this, file);
+              }
+              ImageLoader.prefetch(this, file);
+          }
+      },
+      replaceVideo(post, file) {
+          const { thumb } = file;
+          const video = $.el('video', {
+              preload: 'none',
+              loop: true,
+              muted: true,
+              poster: thumb.src || thumb.dataset.src,
+              textContent: thumb.alt,
+              className: thumb.className
+          });
+          video.setAttribute('muted', 'muted');
+          video.dataset.md5 = thumb.dataset.md5;
+          for (var attr of ['height', 'width', 'maxHeight', 'maxWidth']) {
+              video.style[attr] = thumb.style[attr];
+          }
+          video.src = file.url;
+          $.replace(thumb, video);
+          file.thumb = video;
+          return file.videoThumb = true;
+      },
+      prefetch(post, file) {
+          let clone, type;
+          const { isImage, isVideo, thumb, url } = file;
+          if (file.isPrefetched || !(isImage || isVideo) || post.isHidden || post.thread.isHidden) {
+              return;
+          }
+          if (isVideo) {
+              type = 'WEBM';
+          }
+          else {
+              type = url.match(/\.([^.]+)$/)?.[1].toUpperCase();
+              if (type === 'JPEG') {
+                  type = 'JPG';
+              }
+          }
+          const replace = Conf[`Replace ${type}`] && !/spoiler/.test(thumb.src || thumb.dataset.src);
+          if (!replace && !ImageLoader.prefetchEnabled) {
+              return;
+          }
+          if ($.hasClass(doc, 'catalog-mode')) {
+              return;
+          }
+          if (![post, ...post.clones].some(clone => doc.contains(clone.nodes.root))) {
+              return;
+          }
+          file.isPrefetched = true;
+          if (file.videoThumb) {
+              for (clone of post.clones) {
+                  clone.file.thumb.preload = 'auto';
+              }
+              thumb.preload = 'auto';
+              // XXX Cloned video elements with poster in Firefox cause momentary display of image loading icon.
+              if ($.engine === 'gecko') {
+                  $.on(thumb, 'loadeddata', function () { return this.removeAttribute('poster'); });
+              }
+              return;
+          }
+          const el = $.el(isImage ? 'img' : 'video');
+          if (isVideo) {
+              el.preload = 'auto';
+          }
+          if (replace && isImage) {
+              $.on(el, 'load', function () {
+                  for (clone of post.clones) {
+                      clone.file.thumb.src = url;
+                  }
+                  return thumb.src = url;
+              });
+          }
+          return el.src = url;
+      },
+      prefetchAll(post) {
+          for (var file of post.files) {
+              ImageLoader.prefetch(post, file);
+          }
+      },
+      toggle() {
+          ImageLoader.prefetchEnabled = !ImageLoader.prefetchEnabled;
+          this.classList.toggle('disabled', !ImageLoader.prefetchEnabled);
+          if (ImageLoader.prefetchEnabled) {
+              g.posts.forEach(ImageLoader.prefetchAll);
+          }
+      },
+      playVideos() {
+          // Special case: Quote previews are off screen when inserted into document, but quickly moved on screen.
+          const qpClone = $.id('qp')?.firstElementChild;
+          return g.posts.forEach(function (post) {
+              for (post of [post, ...post.clones]) {
+                  for (var file of post.files) {
+                      if (file.videoThumb) {
+                          var { thumb } = file;
+                          if (Header.isNodeVisible(thumb) || (post.nodes.root === qpClone)) {
+                              thumb.play();
+                          }
+                          else {
+                              thumb.pause();
+                          }
+                      }
+                  }
+              }
+          });
+      }
   };
 
   var Metadata = {
-    init() {
-      if (!Conf['WEBM Metadata'] || !['index', 'thread'].includes(g.VIEW)) { return; }
-
-      return Callbacks.Post.push({
-        name: 'WEBM Metadata',
-        cb:   this.node
-      });
-    },
-
-    node() {
-      for (let i = 0; i < this.files.length; i++) {
-        var file = this.files[i];
-        if (/webm$/i.test(file.url)) {var el;
-
-          if (this.isClone) {
-            el = $('.webm-title', file.text);
-          } else {
-            el = $.el('span',
-              {className: 'webm-title'});
-            el.dataset.index = i;
-            $.extend(el,
-              {innerHTML: "<a href=\"javascript:;\"></a>"});
-            $.add(file.text, [$.tn(' '), el]);
+      init() {
+          if (!Conf['WEBM Metadata'] || !['index', 'thread'].includes(g.VIEW)) {
+              return;
           }
-          if (el.children.length === 1) { $.one(el.lastElementChild, 'mouseover focus', Metadata.load); }
-        }
-      }
-    },
-
-    load() {
-      $.rmClass(this.parentNode, 'error');
-      $.addClass(this.parentNode, 'loading');
-      const {index} = this.parentNode.dataset;
-      return CrossOrigin.binary(Get.postFromNode(this).files[+index].url, data => {
-        $.rmClass(this.parentNode, 'loading');
-        if (data != null) {
-          const title = Metadata.parse(data);
-          const output = $.el('span',
-            {textContent: title || ''});
-          if (title == null) { $.addClass(this.parentNode, 'not-found'); }
-          $.before(this, output);
-          this.parentNode.tabIndex = 0;
-          if (d.activeElement === this) { this.parentNode.focus(); }
-          return this.tabIndex = -1;
-        } else {
-          $.addClass(this.parentNode, 'error');
-          return $.one(this, 'click', Metadata.load);
-        }
-      }
-      ,
-        {Range: 'bytes=0-9999'});
-    },
-
-    parse(data) {
-      const readInt = function() {
-        let n = data[i++];
-        let len = 0;
-        while (n < (0x80 >> len)) { len++; }
-        n ^= (0x80 >> len);
-        while (len-- && (i < data.length)) {
-          n = (n << 8) ^ data[i++];
-        }
-        return n;
-      };
-
-      var i = 0;
-      while (i < data.length) {
-        var element = readInt();
-        var size    = readInt();
-        if (element === 0x3BA9) { // Title
-          var title = '';
-          while (size-- && (i < data.length)) {
-            title += String.fromCharCode(data[i++]);
+          return Callbacks.Post.push({
+              name: 'WEBM Metadata',
+              cb: this.node
+          });
+      },
+      node() {
+          for (let i = 0; i < this.files.length; i++) {
+              var file = this.files[i];
+              if (/webm$/i.test(file.url)) {
+                  var el;
+                  if (this.isClone) {
+                      el = $('.webm-title', file.text);
+                  }
+                  else {
+                      el = $.el('span', { className: 'webm-title' });
+                      el.dataset.index = i;
+                      $.extend(el, { innerHTML: "<a href=\"javascript:;\"></a>" });
+                      $.add(file.text, [$.tn(' '), el]);
+                  }
+                  if (el.children.length === 1) {
+                      $.one(el.lastElementChild, 'mouseover focus', Metadata.load);
+                  }
+              }
           }
-          return decodeURIComponent(escape(title)); // UTF-8 decoding
-        } else if (![0x8538067, 0x549A966].includes(element)) { // Segment, Info
-          i += size;
-        }
+      },
+      load() {
+          $.rmClass(this.parentNode, 'error');
+          $.addClass(this.parentNode, 'loading');
+          const { index } = this.parentNode.dataset;
+          return CrossOrigin.binary(Get.postFromNode(this).files[+index].url, data => {
+              $.rmClass(this.parentNode, 'loading');
+              if (data != null) {
+                  const title = Metadata.parse(data);
+                  const output = $.el('span', { textContent: title || '' });
+                  if (title == null) {
+                      $.addClass(this.parentNode, 'not-found');
+                  }
+                  $.before(this, output);
+                  this.parentNode.tabIndex = 0;
+                  if (d.activeElement === this) {
+                      this.parentNode.focus();
+                  }
+                  return this.tabIndex = -1;
+              }
+              else {
+                  $.addClass(this.parentNode, 'error');
+                  return $.one(this, 'click', Metadata.load);
+              }
+          }, { Range: 'bytes=0-9999' });
+      },
+      parse(data) {
+          const readInt = function () {
+              let n = data[i++];
+              let len = 0;
+              while (n < (0x80 >> len)) {
+                  len++;
+              }
+              n ^= (0x80 >> len);
+              while (len-- && (i < data.length)) {
+                  n = (n << 8) ^ data[i++];
+              }
+              return n;
+          };
+          var i = 0;
+          while (i < data.length) {
+              var element = readInt();
+              var size = readInt();
+              if (element === 0x3BA9) { // Title
+                  var title = '';
+                  while (size-- && (i < data.length)) {
+                      title += String.fromCharCode(data[i++]);
+                  }
+                  return decodeURIComponent(escape(title)); // UTF-8 decoding
+              }
+              else if (![0x8538067, 0x549A966].includes(element)) { // Segment, Info
+                  i += size;
+              }
+          }
+          return null;
       }
-      return null;
-    }
   };
 
   const RevealSpoilers = {
-    init() {
-      if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf['Reveal Spoiler Thumbnails']) { return; }
-
-      return Callbacks.Post.push({
-        name: 'Reveal Spoiler Thumbnails',
-        cb:   this.node
-      });
-    },
-
-    node() {
-      if (this.isClone) { return; }
-      for (var file of this.files) {
-        if (file.thumb && file.isSpoiler) {
-          var {thumb} = file;
-          // Remove old width and height.
-          thumb.removeAttribute('style');
-          // Enforce thumbnail size if thumbnail is replaced.
-          thumb.style.maxHeight = (thumb.style.maxWidth = this.isReply ? '125px' : '250px');
-          if (thumb.src) {
-            thumb.src = file.thumbURL;
-          } else {
-            thumb.dataset.src = file.thumbURL;
+      init() {
+          if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf['Reveal Spoiler Thumbnails']) {
+              return;
           }
-        }
+          return Callbacks.Post.push({
+              name: 'Reveal Spoiler Thumbnails',
+              cb: this.node
+          });
+      },
+      node() {
+          if (this.isClone) {
+              return;
+          }
+          for (var file of this.files) {
+              if (file.thumb && file.isSpoiler) {
+                  var { thumb } = file;
+                  // Remove old width and height.
+                  thumb.removeAttribute('style');
+                  // Enforce thumbnail size if thumbnail is replaced.
+                  thumb.style.maxHeight = (thumb.style.maxWidth = this.isReply ? '125px' : '250px');
+                  if (thumb.src) {
+                      thumb.src = file.thumbURL;
+                  }
+                  else {
+                      thumb.dataset.src = file.thumbURL;
+                  }
+              }
+          }
       }
-    }
   };
 
   const ArchiveLink = {
-    init() {
-      if ((g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW) || !Conf['Menu'] || !Conf['Archive Link']) { return; }
-
-      const div = $.el('div',
-        {textContent: 'Archive'});
-
-      const entry = {
-        el: div,
-        order: 60,
-        open({ID, thread, board}) {
-          return !!Redirect.to('thread', {postID: ID, threadID: thread.ID, boardID: board.ID});
-        },
-        subEntries: []
-      };
-
-      for (var type of [
-        ['Post',      'post'],
-        ['Name',      'name'],
-        ['Tripcode',  'tripcode'],
-        ['Capcode',   'capcode'],
-        ['Subject',   'subject'],
-        ['Flag',      'country'],
-        ['Filename',  'filename'],
-        ['Image MD5', 'MD5']
-      ]) {
-        // Add a sub entry for each type.
-        entry.subEntries.push(this.createSubEntry(type[0], type[1]));
-      }
-
-      return Menu.menu.addEntry(entry);
-    },
-
-    createSubEntry(text, type) {
-      const el = $.el('a', {
-        textContent: text,
-        target: '_blank'
-      }
-      );
-
-      const open = type === 'post' ?
-        function({ID, thread, board}) {
-          el.href = Redirect.to('thread', {postID: ID, threadID: thread.ID, boardID: board.ID});
-          return true;
-        }
-      :
-        function(post) {
-          const typeParam = (type === 'country') && post.info.flagCodeTroll ?
-            'troll_country'
-          :
-            type;
-          const value = type === 'country' ?
-            post.info.flagCode || post.info.flagCodeTroll?.toLowerCase()
-          :
-            Filter.values(type, post)[0];
-          // We want to parse the exact same stuff as the filter does already.
-          if (!value) { return false; }
-          el.href = Redirect.to('search', {
-            boardID:  post.board.ID,
-            type:     typeParam,
-            value,
-            isSearch: true
+      init() {
+          if ((g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW) || !Conf['Menu'] || !Conf['Archive Link']) {
+              return;
           }
-          );
-          return true;
-        };
-
-      return {
-        el,
-        open
-      };
-    }
+          const div = $.el('div', { textContent: 'Archive' });
+          const entry = {
+              el: div,
+              order: 60,
+              open({ ID, thread, board }) {
+                  return !!Redirect.to('thread', { postID: ID, threadID: thread.ID, boardID: board.ID });
+              },
+              subEntries: []
+          };
+          for (var type of [
+              ['Post', 'post'],
+              ['Name', 'name'],
+              ['Tripcode', 'tripcode'],
+              ['Capcode', 'capcode'],
+              ['Subject', 'subject'],
+              ['Flag', 'country'],
+              ['Filename', 'filename'],
+              ['Image MD5', 'MD5']
+          ]) {
+              // Add a sub entry for each type.
+              entry.subEntries.push(this.createSubEntry(type[0], type[1]));
+          }
+          return Menu.menu.addEntry(entry);
+      },
+      createSubEntry(text, type) {
+          const el = $.el('a', {
+              textContent: text,
+              target: '_blank'
+          });
+          const open = type === 'post' ?
+              function ({ ID, thread, board }) {
+                  el.href = Redirect.to('thread', { postID: ID, threadID: thread.ID, boardID: board.ID });
+                  return true;
+              }
+              :
+                  function (post) {
+                      const typeParam = (type === 'country') && post.info.flagCodeTroll ?
+                          'troll_country'
+                          :
+                              type;
+                      const value = type === 'country' ?
+                          post.info.flagCode || post.info.flagCodeTroll?.toLowerCase()
+                          :
+                              Filter.values(type, post)[0];
+                      // We want to parse the exact same stuff as the filter does already.
+                      if (!value) {
+                          return false;
+                      }
+                      el.href = Redirect.to('search', {
+                          boardID: post.board.ID,
+                          type: typeParam,
+                          value,
+                          isSearch: true
+                      });
+                      return true;
+                  };
+          return {
+              el,
+              open
+          };
+      }
   };
 
   var CopyTextLink = {
-    init() {
-      if (!['index', 'thread'].includes(g.VIEW) || !Conf['Menu'] || !Conf['Copy Text Link']) { return; }
-
-      const a = $.el('a', {
-        className: 'copy-text-link',
-        href: 'javascript:;',
-        textContent: 'Copy Text'
+      init() {
+          if (!['index', 'thread'].includes(g.VIEW) || !Conf['Menu'] || !Conf['Copy Text Link']) {
+              return;
+          }
+          const a = $.el('a', {
+              className: 'copy-text-link',
+              href: 'javascript:;',
+              textContent: 'Copy Text'
+          });
+          $.on(a, 'click', CopyTextLink.copy);
+          return Menu.menu.addEntry({
+              el: a,
+              order: 12,
+              open(post) {
+                  CopyTextLink.text = (post.origin || post).commentOrig();
+                  return true;
+              }
+          });
+      },
+      copy() {
+          const el = $.el('textarea', {
+              className: 'copy-text-element',
+              value: CopyTextLink.text
+          });
+          $.add(d.body, el);
+          el.select();
+          try {
+              d.execCommand('copy');
+          }
+          catch (error) { }
+          return $.rm(el);
       }
-      );
-      $.on(a, 'click', CopyTextLink.copy);
-
-      return Menu.menu.addEntry({
-        el: a,
-        order: 12,
-        open(post) {
-          CopyTextLink.text = (post.origin || post).commentOrig();
-          return true;
-        }
-      });
-    },
-
-    copy() {
-      const el = $.el('textarea', {
-        className: 'copy-text-element',
-        value: CopyTextLink.text
-      }
-      );
-      $.add(d.body, el);
-      el.select();
-      try {
-        d.execCommand('copy');
-      } catch (error) {}
-      return $.rm(el);
-    }
   };
 
   var DeleteLink = {
-    auto: [dict(), dict()],
-
-    init() {
-      if (!['index', 'thread'].includes(g.VIEW) || !Conf['Menu'] || !Conf['Delete Link']) { return; }
-
-      const div = $.el('div', {
-        className: 'delete-link',
-        textContent: 'Delete'
-      }
-      );
-      const postEl = $.el('a', {
-        className: 'delete-post',
-        href: 'javascript:;'
-      }
-      );
-      const fileEl = $.el('a', {
-        className: 'delete-file',
-        href: 'javascript:;'
-      }
-      );
-      this.nodes = {
-        menu:  div.firstChild,
-        links: [postEl, fileEl]
-      };
-
-      const postEntry = {
-        el: postEl,
-        open() {
-          postEl.textContent = DeleteLink.linkText(false);
-          $.on(postEl, 'click', DeleteLink.toggle);
-          return true;
-        }
-      };
-      const fileEntry = {
-        el: fileEl,
-        open({file}) {
-          if (!file || file.isDead) { return false; }
-          fileEl.textContent = DeleteLink.linkText(true);
-          $.on(fileEl, 'click', DeleteLink.toggle);
-          return true;
-        }
-      };
-
-      return Menu.menu.addEntry({
-        el: div,
-        order: 40,
-        open(post) {
-          if (post.isDead) { return false; }
-          DeleteLink.post = post;
-          DeleteLink.nodes.menu.textContent = DeleteLink.menuText();
-          DeleteLink.cooldown.start(post);
-          return true;
-        },
-        subEntries: [postEntry, fileEntry]});
-    },
-
-    menuText() {
-      let seconds;
-      if ((seconds = DeleteLink.cooldown.seconds[DeleteLink.post.fullID])) {
-        return `Delete (${seconds})`;
-      } else {
-        return 'Delete';
-      }
-    },
-
-    linkText(fileOnly) {
-      let text = fileOnly ? 'File' : 'Post';
-      if (DeleteLink.auto[+fileOnly][DeleteLink.post.fullID]) {
-        text = `Deleting ${text.toLowerCase()}...`;
-      }
-      return text;
-    },
-
-    toggle() {
-      const {post} = DeleteLink;
-      const fileOnly = $.hasClass(this, 'delete-file');
-      const auto = DeleteLink.auto[+fileOnly];
-
-      if (auto[post.fullID]) {
-        delete auto[post.fullID];
-      } else {
-        auto[post.fullID] = true;
-      }
-      this.textContent = DeleteLink.linkText(fileOnly);
-
-      if (!DeleteLink.cooldown.seconds[post.fullID]) {
-        return DeleteLink.delete(post, fileOnly);
-      }
-    },
-
-    delete(post, fileOnly) {
-      const link = DeleteLink.nodes.links[+fileOnly];
-      delete DeleteLink.auto[+fileOnly][post.fullID];
-      if (post.fullID === DeleteLink.post.fullID) { $.off(link, 'click', DeleteLink.toggle); }
-
-      const form = {
-        mode: 'usrdel',
-        onlyimgdel: fileOnly,
-        pwd: QR.persona.getPassword()
-      };
-      form[+post.ID] = 'delete';
-
-      return $.ajax($.id('delform').action.replace(`/${g.BOARD}/`, `/${post.board}/`), {
-        responseType: 'document',
-        withCredentials: true,
-        onloadend() { return DeleteLink.load(link, post, fileOnly, this.response); },
-        form: $.formData(form)
-      }
-      );
-    },
-
-    load(link, post, fileOnly, resDoc) {
-      let msg;
-      if (!resDoc) {
-        new Notice('warning', 'Connection error, please retry.', 20);
-        if (post.fullID === DeleteLink.post.fullID) { $.on(link, 'click', DeleteLink.toggle); }
-        return;
-      }
-
-      link.textContent = DeleteLink.linkText(fileOnly);
-      if (resDoc.title === '4chan - Banned') { // Ban/warn check
-        const el = $.el('span', {innerHTML: "You can&#039;t delete posts because you are <a href=\"//www.4chan.org/banned\" target=\"_blank\">banned</a>."});
-        return new Notice('warning', el, 20);
-      } else if (msg = resDoc.getElementById('errmsg')) { // error!
-        new Notice('warning', msg.textContent, 20);
-        if (post.fullID === DeleteLink.post.fullID) { $.on(link, 'click', DeleteLink.toggle); }
-        if (QR.cooldown.data && Conf['Cooldown'] && /\bwait\b/i.test(msg.textContent)) {
-          DeleteLink.cooldown.start(post, 5);
-          DeleteLink.auto[+fileOnly][post.fullID] = true;
-          return DeleteLink.nodes.links[+fileOnly].textContent = DeleteLink.linkText(fileOnly);
-        }
-      } else {
-        if (!fileOnly) { QR.cooldown.delete(post); }
-        if (resDoc.title === 'Updating index...') {
-          // We're 100% sure.
-          (post.origin || post).kill(fileOnly);
-        }
-        if (post.fullID === DeleteLink.post.fullID) { return link.textContent = 'Deleted'; }
-      }
-    },
-
-    cooldown: {
-      seconds: dict(),
-
-      start(post, seconds) {
-        // Already counting.
-        if (DeleteLink.cooldown.seconds[post.fullID] != null) { return; }
-
-        if (seconds == null) { seconds = QR.cooldown.secondsDeletion(post); }
-        if (seconds > 0) {
-          DeleteLink.cooldown.seconds[post.fullID] = seconds;
-          return DeleteLink.cooldown.count(post);
-        }
-      },
-
-      count(post) {
-        if (post.fullID === DeleteLink.post.fullID) { DeleteLink.nodes.menu.textContent = DeleteLink.menuText(); }
-        if ((DeleteLink.cooldown.seconds[post.fullID] > 0) && Conf['Cooldown']) {
-          DeleteLink.cooldown.seconds[post.fullID]--;
-          setTimeout(DeleteLink.cooldown.count, 1000, post);
-        } else {
-          delete DeleteLink.cooldown.seconds[post.fullID];
-          for (var fileOnly of [false, true]) {
-            if (DeleteLink.auto[+fileOnly][post.fullID]) {
-              DeleteLink.delete(post, fileOnly);
-            }
+      auto: [dict(), dict()],
+      init() {
+          if (!['index', 'thread'].includes(g.VIEW) || !Conf['Menu'] || !Conf['Delete Link']) {
+              return;
           }
-        }
+          const div = $.el('div', {
+              className: 'delete-link',
+              textContent: 'Delete'
+          });
+          const postEl = $.el('a', {
+              className: 'delete-post',
+              href: 'javascript:;'
+          });
+          const fileEl = $.el('a', {
+              className: 'delete-file',
+              href: 'javascript:;'
+          });
+          this.nodes = {
+              menu: div.firstChild,
+              links: [postEl, fileEl]
+          };
+          const postEntry = {
+              el: postEl,
+              open() {
+                  postEl.textContent = DeleteLink.linkText(false);
+                  $.on(postEl, 'click', DeleteLink.toggle);
+                  return true;
+              }
+          };
+          const fileEntry = {
+              el: fileEl,
+              open({ file }) {
+                  if (!file || file.isDead) {
+                      return false;
+                  }
+                  fileEl.textContent = DeleteLink.linkText(true);
+                  $.on(fileEl, 'click', DeleteLink.toggle);
+                  return true;
+              }
+          };
+          return Menu.menu.addEntry({
+              el: div,
+              order: 40,
+              open(post) {
+                  if (post.isDead) {
+                      return false;
+                  }
+                  DeleteLink.post = post;
+                  DeleteLink.nodes.menu.textContent = DeleteLink.menuText();
+                  DeleteLink.cooldown.start(post);
+                  return true;
+              },
+              subEntries: [postEntry, fileEntry]
+          });
+      },
+      menuText() {
+          let seconds;
+          if ((seconds = DeleteLink.cooldown.seconds[DeleteLink.post.fullID])) {
+              return `Delete (${seconds})`;
+          }
+          else {
+              return 'Delete';
+          }
+      },
+      linkText(fileOnly) {
+          let text = fileOnly ? 'File' : 'Post';
+          if (DeleteLink.auto[+fileOnly][DeleteLink.post.fullID]) {
+              text = `Deleting ${text.toLowerCase()}...`;
+          }
+          return text;
+      },
+      toggle() {
+          const { post } = DeleteLink;
+          const fileOnly = $.hasClass(this, 'delete-file');
+          const auto = DeleteLink.auto[+fileOnly];
+          if (auto[post.fullID]) {
+              delete auto[post.fullID];
+          }
+          else {
+              auto[post.fullID] = true;
+          }
+          this.textContent = DeleteLink.linkText(fileOnly);
+          if (!DeleteLink.cooldown.seconds[post.fullID]) {
+              return DeleteLink.delete(post, fileOnly);
+          }
+      },
+      delete(post, fileOnly) {
+          const link = DeleteLink.nodes.links[+fileOnly];
+          delete DeleteLink.auto[+fileOnly][post.fullID];
+          if (post.fullID === DeleteLink.post.fullID) {
+              $.off(link, 'click', DeleteLink.toggle);
+          }
+          const form = {
+              mode: 'usrdel',
+              onlyimgdel: fileOnly,
+              pwd: QR.persona.getPassword()
+          };
+          form[+post.ID] = 'delete';
+          return $.ajax($.id('delform').action.replace(`/${g.BOARD}/`, `/${post.board}/`), {
+              responseType: 'document',
+              withCredentials: true,
+              onloadend() { return DeleteLink.load(link, post, fileOnly, this.response); },
+              form: $.formData(form)
+          });
+      },
+      load(link, post, fileOnly, resDoc) {
+          let msg;
+          if (!resDoc) {
+              new Notice('warning', 'Connection error, please retry.', 20);
+              if (post.fullID === DeleteLink.post.fullID) {
+                  $.on(link, 'click', DeleteLink.toggle);
+              }
+              return;
+          }
+          link.textContent = DeleteLink.linkText(fileOnly);
+          if (resDoc.title === '4chan - Banned') { // Ban/warn check
+              const el = $.el('span', { innerHTML: "You can&#039;t delete posts because you are <a href=\"//www.4chan.org/banned\" target=\"_blank\">banned</a>." });
+              return new Notice('warning', el, 20);
+          }
+          else if (msg = resDoc.getElementById('errmsg')) { // error!
+              new Notice('warning', msg.textContent, 20);
+              if (post.fullID === DeleteLink.post.fullID) {
+                  $.on(link, 'click', DeleteLink.toggle);
+              }
+              if (QR.cooldown.data && Conf['Cooldown'] && /\bwait\b/i.test(msg.textContent)) {
+                  DeleteLink.cooldown.start(post, 5);
+                  DeleteLink.auto[+fileOnly][post.fullID] = true;
+                  return DeleteLink.nodes.links[+fileOnly].textContent = DeleteLink.linkText(fileOnly);
+              }
+          }
+          else {
+              if (!fileOnly) {
+                  QR.cooldown.delete(post);
+              }
+              if (resDoc.title === 'Updating index...') {
+                  // We're 100% sure.
+                  (post.origin || post).kill(fileOnly);
+              }
+              if (post.fullID === DeleteLink.post.fullID) {
+                  return link.textContent = 'Deleted';
+              }
+          }
+      },
+      cooldown: {
+          seconds: dict(),
+          start(post, seconds) {
+              // Already counting.
+              if (DeleteLink.cooldown.seconds[post.fullID] != null) {
+                  return;
+              }
+              if (seconds == null) {
+                  seconds = QR.cooldown.secondsDeletion(post);
+              }
+              if (seconds > 0) {
+                  DeleteLink.cooldown.seconds[post.fullID] = seconds;
+                  return DeleteLink.cooldown.count(post);
+              }
+          },
+          count(post) {
+              if (post.fullID === DeleteLink.post.fullID) {
+                  DeleteLink.nodes.menu.textContent = DeleteLink.menuText();
+              }
+              if ((DeleteLink.cooldown.seconds[post.fullID] > 0) && Conf['Cooldown']) {
+                  DeleteLink.cooldown.seconds[post.fullID]--;
+                  setTimeout(DeleteLink.cooldown.count, 1000, post);
+              }
+              else {
+                  delete DeleteLink.cooldown.seconds[post.fullID];
+                  for (var fileOnly of [false, true]) {
+                      if (DeleteLink.auto[+fileOnly][post.fullID]) {
+                          DeleteLink.delete(post, fileOnly);
+                      }
+                  }
+              }
+          }
       }
-    }
   };
 
   const DownloadLink = {
-    init() {
-      if (!['index', 'thread'].includes(g.VIEW) || !Conf['Menu'] || !Conf['Download Link']) { return; }
-
-      const a = $.el('a', {
-        className: 'download-link',
-        textContent: 'Download file'
+      init() {
+          if (!['index', 'thread'].includes(g.VIEW) || !Conf['Menu'] || !Conf['Download Link']) {
+              return;
+          }
+          const a = $.el('a', {
+              className: 'download-link',
+              textContent: 'Download file'
+          });
+          // Specifying the filename with the download attribute only works for same-origin links.
+          $.on(a, 'click', ImageCommon.download);
+          return Menu.menu.addEntry({
+              el: a,
+              order: 100,
+              open({ file }) {
+                  if (!file) {
+                      return false;
+                  }
+                  a.href = file.url;
+                  a.download = file.name;
+                  return true;
+              }
+          });
       }
-      );
-
-      // Specifying the filename with the download attribute only works for same-origin links.
-      $.on(a, 'click', ImageCommon.download);
-
-      return Menu.menu.addEntry({
-        el: a,
-        order: 100,
-        open({file}) {
-          if (!file) { return false; }
-          a.href     = file.url;
-          a.download = file.name;
-          return true;
-        }
-      });
-    }
   };
 
   var ReportLink = {
-    init() {
-      if (!['index', 'thread'].includes(g.VIEW) || !Conf['Menu'] || !Conf['Report Link']) { return; }
-
-      const a = $.el('a', {
-        className: 'report-link',
-        href: 'javascript:;',
-        textContent: 'Report'
-      }
-      );
-      $.on(a, 'click', ReportLink.report);
-
-      return Menu.menu.addEntry({
-        el: a,
-        order: 10,
-        open(post) {
-          ReportLink.url = `//sys.${location.hostname.split('.')[1]}.org/${post.board}/imgboard.php?mode=report&no=${post}`;
-          if (d.cookie.indexOf('pass_enabled=1') >= 0) {
-            ReportLink.dims = 'width=350,height=275';
-          } else {
-            ReportLink.dims = 'width=400,height=550';
+      init() {
+          if (!['index', 'thread'].includes(g.VIEW) || !Conf['Menu'] || !Conf['Report Link']) {
+              return;
           }
-          return true;
-        }
-      });
-    },
-
-    report() {
-      const {url, dims} = ReportLink;
-      const id  = Date.now();
-      const set = `toolbar=0,scrollbars=1,location=0,status=1,menubar=0,resizable=1,${dims}`;
-      return window.open(url, id, set);
-    }
+          const a = $.el('a', {
+              className: 'report-link',
+              href: 'javascript:;',
+              textContent: 'Report'
+          });
+          $.on(a, 'click', ReportLink.report);
+          return Menu.menu.addEntry({
+              el: a,
+              order: 10,
+              open(post) {
+                  ReportLink.url = `//sys.${location.hostname.split('.')[1]}.org/${post.board}/imgboard.php?mode=report&no=${post}`;
+                  if (d.cookie.indexOf('pass_enabled=1') >= 0) {
+                      ReportLink.dims = 'width=350,height=275';
+                  }
+                  else {
+                      ReportLink.dims = 'width=400,height=550';
+                  }
+                  return true;
+              }
+          });
+      },
+      report() {
+          const { url, dims } = ReportLink;
+          const id = Date.now();
+          const set = `toolbar=0,scrollbars=1,location=0,status=1,menubar=0,resizable=1,${dims}`;
+          return window.open(url, id, set);
+      }
   };
 
   var AntiAutoplay = {
-    init() {
-      if (!Conf['Disable Autoplaying Sounds']) { return; }
-      $.addClass(doc, 'anti-autoplay');
-      for (var audio of $$('audio[autoplay]', doc)) { this.stop(audio); }
-      window.addEventListener('loadstart', (e => this.stop(e.target)), true);
-      Callbacks.Post.push({
-        name: 'Disable Autoplaying Sounds',
-        cb:   this.node
-      });
-      return $.ready(() => this.process(d.body));
-    },
-
-    stop(audio) {
-      if (!audio.autoplay) { return; }
-      audio.pause();
-      audio.autoplay = false;
-      if (audio.controls) { return; }
-      audio.controls = true;
-      return $.addClass(audio, 'controls-added');
-    },
-
-    node() {
-      return AntiAutoplay.process(this.nodes.comment);
-    },
-
-    process(root) {
-      for (var iframe of $$('iframe[src*="youtube"][src*="autoplay=1"]', root)) {
-        AntiAutoplay.processVideo(iframe, 'src');
+      init() {
+          if (!Conf['Disable Autoplaying Sounds']) {
+              return;
+          }
+          $.addClass(doc, 'anti-autoplay');
+          for (var audio of $$('audio[autoplay]', doc)) {
+              this.stop(audio);
+          }
+          window.addEventListener('loadstart', (e => this.stop(e.target)), true);
+          Callbacks.Post.push({
+              name: 'Disable Autoplaying Sounds',
+              cb: this.node
+          });
+          return $.ready(() => this.process(d.body));
+      },
+      stop(audio) {
+          if (!audio.autoplay) {
+              return;
+          }
+          audio.pause();
+          audio.autoplay = false;
+          if (audio.controls) {
+              return;
+          }
+          audio.controls = true;
+          return $.addClass(audio, 'controls-added');
+      },
+      node() {
+          return AntiAutoplay.process(this.nodes.comment);
+      },
+      process(root) {
+          for (var iframe of $$('iframe[src*="youtube"][src*="autoplay=1"]', root)) {
+              AntiAutoplay.processVideo(iframe, 'src');
+          }
+          for (var object of $$('object[data*="youtube"][data*="autoplay=1"]', root)) {
+              AntiAutoplay.processVideo(object, 'data');
+          }
+      },
+      processVideo(el, attr) {
+          el[attr] = el[attr].replace(/\?autoplay=1&?/, '?').replace('&autoplay=1', '');
+          if (window.getComputedStyle(el).display === 'none') {
+              el.style.display = 'block';
+          }
+          return $.addClass(el, 'autoplay-removed');
       }
-      for (var object of $$('object[data*="youtube"][data*="autoplay=1"]', root)) {
-        AntiAutoplay.processVideo(object, 'data');
-      }
-    },
-
-    processVideo(el, attr) {
-      el[attr] = el[attr].replace(/\?autoplay=1&?/, '?').replace('&autoplay=1', '');
-      if (window.getComputedStyle(el).display === 'none') { el.style.display = 'block'; }
-      return $.addClass(el, 'autoplay-removed');
-    }
   };
 
   var Banner = {
-    init() {
-      if (Conf['Custom Board Titles']) {
-        this.db = new DataBoard('customTitles', null, true);
-      }
-
-      $.asap((() => d.body), () => $.asap((() => $('hr')), Banner.ready));
-
-      // Let 4chan's JS load the banner if enabled; otherwise, load it ourselves.
-      if (g.BOARD.ID !== 'f') {
-        return Main.ready(() => $.queueTask(Banner.load));
-      }
-    },
-
-    ready() {
-      const banner = $(".boardBanner");
-      const {children} = banner;
-
-      if ((g.VIEW === 'thread') && Conf['Remove Thread Excerpt']) {
-        Banner.setTitle(children[1].textContent);
-      }
-
-      children[0].title = "Click to change";
-      $.on(children[0], 'click', Banner.cb.toggle);
-
-      if (Conf['Custom Board Titles']) {
-        Banner.custom(children[1]);
-        if (children[2]) { return Banner.custom(children[2]); }
-      }
-    },
-
-    load() {
-      const bannerCnt = $.id('bannerCnt');
-      if (!bannerCnt.firstChild) {
-        const img = $.el('img', {
-          alt: '4chan',
-          src: '//s.4cdn.org/image/title/' + bannerCnt.dataset.src
-        }
-        );
-        return $.add(bannerCnt, img);
-      }
-    },
-
-    setTitle(title) {
-      if (Unread.title != null) {
-        Unread.title = title;
-        return Unread.update();
-      } else {
-        return d.title = title;
-      }
-    },
-
-    cb: {
-      toggle() {
-        if (!Banner.choices?.length) {
-          Banner.choices = Conf['knownBanners'].split(',').slice();
-        }
-        const i = Math.floor(Banner.choices.length * Math.random());
-        const banner = Banner.choices.splice(i, 1);
-        return $('img', this.parentNode).src = `//s.4cdn.org/image/title/${banner}`;
+      init() {
+          if (Conf['Custom Board Titles']) {
+              this.db = new DataBoard('customTitles', null, true);
+          }
+          $.asap((() => d.body), () => $.asap((() => $('hr')), Banner.ready));
+          // Let 4chan's JS load the banner if enabled; otherwise, load it ourselves.
+          if (g.BOARD.ID !== 'f') {
+              return Main.ready(() => $.queueTask(Banner.load));
+          }
       },
-
-      click(e) {
-        if (!e.ctrlKey && !e.metaKey) { return; }
-        if (Banner.original[this.className] == null) { Banner.original[this.className] = this.cloneNode(true); }
-        this.contentEditable = true;
-        for (var br of $$('br', this)) { $.replace(br, $.tn('\n')); }
-        return this.focus();
+      ready() {
+          const banner = $(".boardBanner");
+          const { children } = banner;
+          if ((g.VIEW === 'thread') && Conf['Remove Thread Excerpt']) {
+              Banner.setTitle(children[1].textContent);
+          }
+          children[0].title = "Click to change";
+          $.on(children[0], 'click', Banner.cb.toggle);
+          if (Conf['Custom Board Titles']) {
+              Banner.custom(children[1]);
+              if (children[2]) {
+                  return Banner.custom(children[2]);
+              }
+          }
       },
-
-      keydown(e) {
-        e.stopPropagation();
-        if (!e.shiftKey && (e.keyCode === 13)) { return this.blur(); }
+      load() {
+          const bannerCnt = $.id('bannerCnt');
+          if (!bannerCnt.firstChild) {
+              const img = $.el('img', {
+                  alt: '4chan',
+                  src: '//s.4cdn.org/image/title/' + bannerCnt.dataset.src
+              });
+              return $.add(bannerCnt, img);
+          }
       },
-
-      blur() {
-        for (var br of $$('br', this)) { $.replace(br, $.tn('\n')); }
-        if (this.textContent = this.textContent.replace(/\n*$/, '')) {
-          this.contentEditable = false;
-          return Banner.db.set({
-            boardID:  g.BOARD.ID,
-            threadID: this.className,
-            val: {
-              title: this.textContent,
-              orig:  Banner.original[this.className].textContent
-            }
-          });
-        } else {
-          $.rmAll(this);
-          $.add(this, [...Banner.original[this.className].cloneNode(true).childNodes]);
-          return Banner.db.delete({
-            boardID:  g.BOARD.ID,
-            threadID: this.className
-          });
-        }
+      setTitle(title) {
+          if (Unread.title != null) {
+              Unread.title = title;
+              return Unread.update();
+          }
+          else {
+              return d.title = title;
+          }
+      },
+      cb: {
+          toggle() {
+              if (!Banner.choices?.length) {
+                  Banner.choices = Conf['knownBanners'].split(',').slice();
+              }
+              const i = Math.floor(Banner.choices.length * Math.random());
+              const banner = Banner.choices.splice(i, 1);
+              return $('img', this.parentNode).src = `//s.4cdn.org/image/title/${banner}`;
+          },
+          click(e) {
+              if (!e.ctrlKey && !e.metaKey) {
+                  return;
+              }
+              if (Banner.original[this.className] == null) {
+                  Banner.original[this.className] = this.cloneNode(true);
+              }
+              this.contentEditable = true;
+              for (var br of $$('br', this)) {
+                  $.replace(br, $.tn('\n'));
+              }
+              return this.focus();
+          },
+          keydown(e) {
+              e.stopPropagation();
+              if (!e.shiftKey && (e.keyCode === 13)) {
+                  return this.blur();
+              }
+          },
+          blur() {
+              for (var br of $$('br', this)) {
+                  $.replace(br, $.tn('\n'));
+              }
+              if (this.textContent = this.textContent.replace(/\n*$/, '')) {
+                  this.contentEditable = false;
+                  return Banner.db.set({
+                      boardID: g.BOARD.ID,
+                      threadID: this.className,
+                      val: {
+                          title: this.textContent,
+                          orig: Banner.original[this.className].textContent
+                      }
+                  });
+              }
+              else {
+                  $.rmAll(this);
+                  $.add(this, [...Banner.original[this.className].cloneNode(true).childNodes]);
+                  return Banner.db.delete({
+                      boardID: g.BOARD.ID,
+                      threadID: this.className
+                  });
+              }
+          }
+      },
+      original: dict(),
+      custom(child) {
+          let data;
+          const { className } = child;
+          child.title = `Ctrl/\u2318+click to edit board ${className.slice(5).toLowerCase()}`;
+          child.spellcheck = false;
+          for (var event of ['click', 'keydown', 'blur']) {
+              $.on(child, event, Banner.cb[event]);
+          }
+          if (data = Banner.db.get({ boardID: g.BOARD.ID, threadID: className })) {
+              if (Conf['Persistent Custom Board Titles'] || (data.orig === child.textContent)) {
+                  Banner.original[className] = child.cloneNode(true);
+                  return child.textContent = data.title;
+              }
+              else {
+                  return Banner.db.delete({ boardID: g.BOARD.ID, threadID: className });
+              }
+          }
       }
-    },
-
-    original: dict(),
-
-    custom(child) {
-      let data;
-      const {className} = child;
-      child.title = `Ctrl/\u2318+click to edit board ${className.slice(5).toLowerCase()}`;
-      child.spellcheck = false;
-
-      for (var event of ['click', 'keydown', 'blur']) {
-        $.on(child, event, Banner.cb[event]);
-      }
-
-      if (data = Banner.db.get({boardID: g.BOARD.ID, threadID: className})) {
-        if (Conf['Persistent Custom Board Titles'] || (data.orig === child.textContent)) {
-          Banner.original[className] = child.cloneNode(true);
-          return child.textContent = data.title;
-        } else {
-          return Banner.db.delete({boardID: g.BOARD.ID, threadID: className});
-        }
-      }
-    }
   };
 
   var Flash = {
-    init() {
-      if ((g.BOARD.ID === 'f') && Conf['Enable Native Flash Embedding']) {
-        return $.ready(Flash.initReady);
+      init() {
+          if ((g.BOARD.ID === 'f') && Conf['Enable Native Flash Embedding']) {
+              return $.ready(Flash.initReady);
+          }
+      },
+      initReady() {
+          if ($.hasStorage) {
+              $.global('initFlash');
+          }
+          else {
+              if (g.VIEW === 'thread') {
+                  $.global('setThreadId');
+              }
+              $.global('initFlashNoStorage');
+          }
       }
-    },
-
-    initReady() {
-      if ($.hasStorage) {
-        $.global('initFlash');
-      } else {
-        if (g.VIEW === 'thread') {
-          $.global('setThreadId');
-        }
-        $.global('initFlashNoStorage');
-      }
-    }
   };
 
   var Fourchan = {
-    init() {
-      if ((g.SITE.software !== 'yotsuba') || !['index', 'thread', 'archive'].includes(g.VIEW)) { return; }
-      BoardConfig.ready(this.initBoard);
-      return Main.ready(this.initReady);
-    },
-
-    initBoard() {
-      if (g.BOARD.config.code_tags) {
-        $.on(window, 'prettyprint:cb', function(e) {
-          let post, pre;
-          if (!(post = g.posts.get(e.detail.ID))) { return; }
-          if (!(pre  = $$('.prettyprint', post.nodes.comment)[+e.detail.i])) { return; }
-          if (!$.hasClass(pre, 'prettyprinted')) {
-            pre.innerHTML = e.detail.html;
-            return $.addClass(pre, 'prettyprinted');
+      init() {
+          if ((g.SITE.software !== 'yotsuba') || !['index', 'thread', 'archive'].includes(g.VIEW)) {
+              return;
           }
-        });
-        $.global('fourChanPrettyPrintListener');
-        Callbacks.Post.push({
-          name: 'Parse [code] tags',
-          cb:   Fourchan.code
-        });
-        g.posts.forEach(function(post) {
-          if (post.callbacksExecuted) {
-            return Callbacks.Post.execute(post, ['Parse [code] tags'], true);
+          BoardConfig.ready(this.initBoard);
+          return Main.ready(this.initReady);
+      },
+      initBoard() {
+          if (g.BOARD.config.code_tags) {
+              $.on(window, 'prettyprint:cb', function (e) {
+                  let post, pre;
+                  if (!(post = g.posts.get(e.detail.ID))) {
+                      return;
+                  }
+                  if (!(pre = $$('.prettyprint', post.nodes.comment)[+e.detail.i])) {
+                      return;
+                  }
+                  if (!$.hasClass(pre, 'prettyprinted')) {
+                      pre.innerHTML = e.detail.html;
+                      return $.addClass(pre, 'prettyprinted');
+                  }
+              });
+              $.global('fourChanPrettyPrintListener');
+              Callbacks.Post.push({
+                  name: 'Parse [code] tags',
+                  cb: Fourchan.code
+              });
+              g.posts.forEach(function (post) {
+                  if (post.callbacksExecuted) {
+                      return Callbacks.Post.execute(post, ['Parse [code] tags'], true);
+                  }
+              });
+              ExpandComment.callbacks.push(Fourchan.code);
           }
-        });
-        ExpandComment.callbacks.push(Fourchan.code);
+          if (g.BOARD.config.math_tags) {
+              $.global('fourChanMathjaxListener');
+              Callbacks.Post.push({
+                  name: 'Parse [math] tags',
+                  cb: Fourchan.math
+              });
+              g.posts.forEach(function (post) {
+                  if (post.callbacksExecuted) {
+                      return Callbacks.Post.execute(post, ['Parse [math] tags'], true);
+                  }
+              });
+              return ExpandComment.callbacks.push(Fourchan.math);
+          }
+      },
+      // Disable 4chan's ID highlighting (replaced by IDHighlight) and reported post hiding.
+      initReady() {
+          return $.global('disable4chanIdHl');
+      },
+      code() {
+          if (this.isClone) {
+              return;
+          }
+          return $.ready(() => {
+              const iterable = $$('.prettyprint', this.nodes.comment);
+              for (let i = 0; i < iterable.length; i++) {
+                  var pre = iterable[i];
+                  if (!$.hasClass(pre, 'prettyprinted')) {
+                      $.event('prettyprint', { ID: this.fullID, i, html: pre.innerHTML }, window);
+                  }
+              }
+          });
+      },
+      math() {
+          let wbrs;
+          if (!/\[(math|eqn)\]/.test(this.nodes.comment.textContent)) {
+              return;
+          }
+          // XXX <wbr> tags frequently break MathJax; remove them.
+          if ((wbrs = $$('wbr', this.nodes.comment)).length) {
+              for (var wbr of wbrs) {
+                  $.rm(wbr);
+              }
+              this.nodes.comment.normalize();
+          }
+          var cb = () => {
+              if (!doc.contains(this.nodes.comment)) {
+                  return;
+              }
+              $.off(d, 'PostsInserted', cb);
+              return $.event('mathjax', null, this.nodes.comment);
+          };
+          $.on(d, 'PostsInserted', cb);
+          return cb();
       }
-
-      if (g.BOARD.config.math_tags) {
-        $.global('fourChanMathjaxListener');
-        Callbacks.Post.push({
-          name: 'Parse [math] tags',
-          cb:   Fourchan.math
-        });
-        g.posts.forEach(function(post) {
-          if (post.callbacksExecuted) {
-            return Callbacks.Post.execute(post, ['Parse [math] tags'], true);
-          }
-        });
-        return ExpandComment.callbacks.push(Fourchan.math);
-      }
-    },
-
-    // Disable 4chan's ID highlighting (replaced by IDHighlight) and reported post hiding.
-    initReady() {
-      return $.global('disable4chanIdHl');
-    },
-
-    code() {
-      if (this.isClone) { return; }
-      return $.ready(() => {
-        const iterable = $$('.prettyprint', this.nodes.comment);
-        for (let i = 0; i < iterable.length; i++) {
-          var pre = iterable[i];
-          if (!$.hasClass(pre, 'prettyprinted')) {
-            $.event('prettyprint', {ID: this.fullID, i, html: pre.innerHTML}, window);
-          }
-        }
-      });
-    },
-
-    math() {
-      let wbrs;
-      if (!/\[(math|eqn)\]/.test(this.nodes.comment.textContent)) { return; }
-      // XXX <wbr> tags frequently break MathJax; remove them.
-      if ((wbrs = $$('wbr', this.nodes.comment)).length) {
-        for (var wbr of wbrs) { $.rm(wbr); }
-        this.nodes.comment.normalize();
-      }
-      var cb = () => {
-        if (!doc.contains(this.nodes.comment)) { return; }
-        $.off(d, 'PostsInserted', cb);
-        return $.event('mathjax', null, this.nodes.comment);
-      };
-      $.on(d, 'PostsInserted', cb);
-      return cb();
-    }
   };
 
   var IDColor = {
-    init() {
-      if (!['index', 'thread'].includes(g.VIEW) || !Conf['Color User IDs']) { return; }
-      this.ids = dict();
-      this.ids['Heaven'] = [0, 0, 0, '#fff'];
-
-      return Callbacks.Post.push({
-        name: 'Color User IDs',
-        cb:   this.node
-      });
-    },
-
-    node() {
-      let span, uid;
-      if (this.isClone || !((uid = this.info.uniqueID) && (span = this.nodes.uniqueID))) { return; }
-
-      const rgb = IDColor.ids[uid] || IDColor.compute(uid);
-
-      // Style the damn node.
-      const {style} = span;
-      style.color = rgb[3];
-      style.backgroundColor = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
-      return $.addClass(span, 'painted');
-    },
-
-    compute(uid) {
-      // Convert chars to integers, bitshift and math to create a larger integer
-      // Create a nice string of binary
-      const hash = g.SITE.uidColor ? g.SITE.uidColor(uid) : parseInt(uid, 16);
-
-      // Convert binary string to numerical values with bitshift and '&' truncation.
-      const rgb = [
-        (hash >> 16) & 0xFF,
-        (hash >> 8)  & 0xFF,
-        hash & 0xFF
-      ];
-
-      // Weight color luminance values, assign a font color that should be readable.
-      rgb.push($.luma(rgb) > 125 ?
-        '#000'
-      :
-        '#fff'
-      );
-
-      // Cache.
-      return this.ids[uid] = rgb;
-    }
+      init() {
+          if (!['index', 'thread'].includes(g.VIEW) || !Conf['Color User IDs']) {
+              return;
+          }
+          this.ids = dict();
+          this.ids['Heaven'] = [0, 0, 0, '#fff'];
+          return Callbacks.Post.push({
+              name: 'Color User IDs',
+              cb: this.node
+          });
+      },
+      node() {
+          let span, uid;
+          if (this.isClone || !((uid = this.info.uniqueID) && (span = this.nodes.uniqueID))) {
+              return;
+          }
+          const rgb = IDColor.ids[uid] || IDColor.compute(uid);
+          // Style the damn node.
+          const { style } = span;
+          style.color = rgb[3];
+          style.backgroundColor = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+          return $.addClass(span, 'painted');
+      },
+      compute(uid) {
+          // Convert chars to integers, bitshift and math to create a larger integer
+          // Create a nice string of binary
+          const hash = g.SITE.uidColor ? g.SITE.uidColor(uid) : parseInt(uid, 16);
+          // Convert binary string to numerical values with bitshift and '&' truncation.
+          const rgb = [
+              (hash >> 16) & 0xFF,
+              (hash >> 8) & 0xFF,
+              hash & 0xFF
+          ];
+          // Weight color luminance values, assign a font color that should be readable.
+          rgb.push($.luma(rgb) > 125 ?
+              '#000'
+              :
+                  '#fff');
+          // Cache.
+          return this.ids[uid] = rgb;
+      }
   };
 
   var IDHighlight = {
-    init() {
-      if (!['index', 'thread'].includes(g.VIEW)) { return; }
-
-      return Callbacks.Post.push({
-        name: 'Highlight by User ID',
-        cb:   this.node
-      });
-    },
-
-    uniqueID: null,
-
-    node() {
-      if (this.nodes.uniqueIDRoot) { $.on(this.nodes.uniqueIDRoot, 'click', IDHighlight.click(this)); }
-      if (this.nodes.capcode) { $.on(this.nodes.capcode,      'click', IDHighlight.click(this)); }
-      if (!this.isClone) { return IDHighlight.set(this); }
-    },
-
-    set(post) {
-      const match = (post.info.uniqueID || post.info.capcode) === IDHighlight.uniqueID;
-      return $[match ? 'addClass' : 'rmClass'](post.nodes.post, 'highlight');
-    },
-
-    click(post) { return function() {
-      const uniqueID = post.info.uniqueID || post.info.capcode;
-      IDHighlight.uniqueID = IDHighlight.uniqueID === uniqueID ? null : uniqueID;
-      return g.posts.forEach(IDHighlight.set);
-    }; }
+      init() {
+          if (!['index', 'thread'].includes(g.VIEW)) {
+              return;
+          }
+          return Callbacks.Post.push({
+              name: 'Highlight by User ID',
+              cb: this.node
+          });
+      },
+      uniqueID: null,
+      node() {
+          if (this.nodes.uniqueIDRoot) {
+              $.on(this.nodes.uniqueIDRoot, 'click', IDHighlight.click(this));
+          }
+          if (this.nodes.capcode) {
+              $.on(this.nodes.capcode, 'click', IDHighlight.click(this));
+          }
+          if (!this.isClone) {
+              return IDHighlight.set(this);
+          }
+      },
+      set(post) {
+          const match = (post.info.uniqueID || post.info.capcode) === IDHighlight.uniqueID;
+          return $[match ? 'addClass' : 'rmClass'](post.nodes.post, 'highlight');
+      },
+      click(post) {
+          return function () {
+              const uniqueID = post.info.uniqueID || post.info.capcode;
+              IDHighlight.uniqueID = IDHighlight.uniqueID === uniqueID ? null : uniqueID;
+              return g.posts.forEach(IDHighlight.set);
+          };
+      }
   };
 
   var IDPostCount = {
-    init() {
-      if ((g.VIEW !== 'thread') || !Conf['Count Posts by ID']) { return; }
-      Callbacks.Thread.push({
-        name: 'Count Posts by ID',
-        cb() { return IDPostCount.thread = this; }
-      });
-      return Callbacks.Post.push({
-        name: 'Count Posts by ID',
-        cb:   this.node
-      });
-    },
-
-    node() {
-      if (this.nodes.uniqueID && (this.thread === IDPostCount.thread)) {
-        return $.on(this.nodes.uniqueID, 'mouseover', IDPostCount.count);
+      init() {
+          if ((g.VIEW !== 'thread') || !Conf['Count Posts by ID']) {
+              return;
+          }
+          Callbacks.Thread.push({
+              name: 'Count Posts by ID',
+              cb() { return IDPostCount.thread = this; }
+          });
+          return Callbacks.Post.push({
+              name: 'Count Posts by ID',
+              cb: this.node
+          });
+      },
+      node() {
+          if (this.nodes.uniqueID && (this.thread === IDPostCount.thread)) {
+              return $.on(this.nodes.uniqueID, 'mouseover', IDPostCount.count);
+          }
+      },
+      count() {
+          const { uniqueID } = Get.postFromNode(this).info;
+          let n = 0;
+          IDPostCount.thread.posts.forEach(function (post) {
+              if (post.info.uniqueID === uniqueID) {
+                  return n++;
+              }
+          });
+          return this.title = `${n} post${n === 1 ? '' : 's'} by this ID`;
       }
-    },
-
-    count() {
-      const {uniqueID} = Get.postFromNode(this).info;
-      let n = 0;
-      IDPostCount.thread.posts.forEach(function(post) {
-        if (post.info.uniqueID === uniqueID) { return n++; }
-      });
-      return this.title = `${n} post${n === 1 ? '' : 's'} by this ID`;
-    }
   };
 
   var ModContact = {
-    init() {
-      if ((g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW)) { return; }
-      return Callbacks.Post.push({
-        name: 'Mod Contact Links',
-        cb:   this.node
-      });
-    },
-
-    node() {
-      let moved;
-      if (this.isClone || !$.hasOwn(ModContact.specific, this.info.capcode)) { return; }
-      const links = $.el('span', {className: 'contact-links brackets-wrap'});
-      $.extend(links, ModContact.template(this.info.capcode));
-      $.after(this.nodes.capcode, links);
-      if ((moved = this.info.comment.match(/This thread was moved to >>>\/(\w+)\//)) && $.hasOwn(ModContact.moveNote, moved[1])) {
-        const moveNote = $.el('div', {className: 'move-note'});
-        $.extend(moveNote, ModContact.moveNote[moved[1]]);
-        return $.add(this.nodes.post, moveNote);
+      init() {
+          if ((g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW)) {
+              return;
+          }
+          return Callbacks.Post.push({
+              name: 'Mod Contact Links',
+              cb: this.node
+          });
+      },
+      node() {
+          let moved;
+          if (this.isClone || !$.hasOwn(ModContact.specific, this.info.capcode)) {
+              return;
+          }
+          const links = $.el('span', { className: 'contact-links brackets-wrap' });
+          $.extend(links, ModContact.template(this.info.capcode));
+          $.after(this.nodes.capcode, links);
+          if ((moved = this.info.comment.match(/This thread was moved to >>>\/(\w+)\//)) && $.hasOwn(ModContact.moveNote, moved[1])) {
+              const moveNote = $.el('div', { className: 'move-note' });
+              $.extend(moveNote, ModContact.moveNote[moved[1]]);
+              return $.add(this.nodes.post, moveNote);
+          }
+      },
+      template(capcode) {
+          return { innerHTML: "<a href=\"https://www.4chan.org/feedback\" target=\"_blank\">feedback</a>" + (ModContact.specific[capcode]()).innerHTML };
+      },
+      specific: {
+          Mod() { return { innerHTML: " <a href=\"https://www.4chan-x.net/4chan-irc.html\" target=\"_blank\">IRC</a>" }; },
+          Manager() { return ModContact.specific.Mod(); },
+          Developer() { return { innerHTML: " <a href=\"https://github.com/4chan\" target=\"_blank\">github</a>" }; },
+          Admin() { return { innerHTML: " <a href=\"https://twitter.com/hiroyuki_ni\" target=\"_blank\">twitter</a>" }; }
+      },
+      moveNote: {
+          qa: { innerHTML: "Moving a thread to /qa/ does not imply mods will read it. If you wish to contact mods, use <a href=\"https://www.4chan.org/feedback\" target=\"_blank\">feedback</a><span class=\"invisible\"> (https://www.4chan.org/feedback)</span> or <a href=\"https://www.4chan-x.net/4chan-irc.html\" target=\"_blank\">IRC</a><span class=\"invisible\"> (https://www.4chan-x.net/4chan-irc.html)</span>." }
       }
-    },
-
-    template(capcode) {
-      return {innerHTML: "<a href=\"https://www.4chan.org/feedback\" target=\"_blank\">feedback</a>" + (ModContact.specific[capcode]()).innerHTML};
-    },
-
-    specific: {
-      Mod() { return {innerHTML: " <a href=\"https://www.4chan-x.net/4chan-irc.html\" target=\"_blank\">IRC</a>"}; },
-      Manager() { return ModContact.specific.Mod(); },
-      Developer() { return {innerHTML: " <a href=\"https://github.com/4chan\" target=\"_blank\">github</a>"}; },
-      Admin() { return {innerHTML: " <a href=\"https://twitter.com/hiroyuki_ni\" target=\"_blank\">twitter</a>"}; }
-    },
-
-    moveNote: {
-      qa: {innerHTML: "Moving a thread to /qa/ does not imply mods will read it. If you wish to contact mods, use <a href=\"https://www.4chan.org/feedback\" target=\"_blank\">feedback</a><span class=\"invisible\"> (https://www.4chan.org/feedback)</span> or <a href=\"https://www.4chan-x.net/4chan-irc.html\" target=\"_blank\">IRC</a><span class=\"invisible\"> (https://www.4chan-x.net/4chan-irc.html)</span>."}
-    }
   };
 
   const NormalizeURL = {
-    init() {
-      if (!Conf['Normalize URL']) { return; }
-
-      let pathname = location.pathname.split(/\/+/);
-      if (g.SITE.software === 'yotsuba') {
-        switch (g.VIEW) {
-          case 'thread':
-            pathname[2] = 'thread';
-            pathname = pathname.slice(0, 4);
-            break;
-          case 'index':
-            pathname = pathname.slice(0, 3);
-            break;
-        }
+      init() {
+          if (!Conf['Normalize URL']) {
+              return;
+          }
+          let pathname = location.pathname.split(/\/+/);
+          if (g.SITE.software === 'yotsuba') {
+              switch (g.VIEW) {
+                  case 'thread':
+                      pathname[2] = 'thread';
+                      pathname = pathname.slice(0, 4);
+                      break;
+                  case 'index':
+                      pathname = pathname.slice(0, 3);
+                      break;
+              }
+          }
+          pathname = pathname.join('/');
+          if (location.pathname !== pathname) {
+              return history.replaceState(history.state, '', `${location.protocol}//${location.host}${pathname}${location.hash}`);
+          }
       }
-      pathname = pathname.join('/');
-      if (location.pathname !== pathname) {
-        return history.replaceState(history.state, '', `${location.protocol}//${location.host}${pathname}${location.hash}`);
-      }
-    }
   };
 
   var PostJumper = {
-    init() {
-      if (!Conf['Unique ID and Capcode Navigation'] || !['index', 'thread'].includes(g.VIEW)) { return; }
-
-      this.buttons = this.makeButtons();
-      Icon.set(this.buttons.firstChild, 'arrowUpLong');
-      Icon.set(this.buttons.lastChild, 'arrowDownLong');
-
-      return Callbacks.Post.push({
-        name: 'Post Jumper',
-        cb:   this.node
-      });
-    },
-
-    node() {
-      if (this.isClone) {
-        for (var buttons of $$('.postJumper', this.nodes.info)) {
-          PostJumper.addListeners(buttons);
-        }
-        return;
+      init() {
+          if (!Conf['Unique ID and Capcode Navigation'] || !['index', 'thread'].includes(g.VIEW)) {
+              return;
+          }
+          this.buttons = this.makeButtons();
+          Icon.set(this.buttons.firstChild, 'arrowUpLong');
+          Icon.set(this.buttons.lastChild, 'arrowDownLong');
+          return Callbacks.Post.push({
+              name: 'Post Jumper',
+              cb: this.node
+          });
+      },
+      node() {
+          if (this.isClone) {
+              for (var buttons of $$('.postJumper', this.nodes.info)) {
+                  PostJumper.addListeners(buttons);
+              }
+              return;
+          }
+          if (this.nodes.uniqueIDRoot) {
+              PostJumper.addButtons(this, 'uniqueID');
+          }
+          if (this.nodes.capcode) {
+              return PostJumper.addButtons(this, 'capcode');
+          }
+      },
+      addButtons(post, type) {
+          const value = post.info[type];
+          const buttons = PostJumper.buttons.cloneNode(true);
+          $.extend(buttons.dataset, { type, value });
+          $.after(post.nodes[type + (type === 'capcode' ? '' : 'Root')], buttons);
+          return PostJumper.addListeners(buttons);
+      },
+      addListeners(buttons) {
+          $.on(buttons.firstChild, 'click', PostJumper.buttonClick);
+          return $.on(buttons.lastChild, 'click', PostJumper.buttonClick);
+      },
+      buttonClick() {
+          let toJumper;
+          const dir = $.hasClass(this, 'prev') ? -1 : 1;
+          if (toJumper = PostJumper.find(this.parentNode, dir)) {
+              return PostJumper.scroll(this.parentNode, toJumper);
+          }
+      },
+      find(jumper, dir) {
+          const { type, value } = jumper.dataset;
+          const xpath = `span[contains(@class,\"postJumper\") and @data-value=\"${value}\" and @data-type=\"${type}\"]`;
+          const axis = dir < 0 ? 'preceding' : 'following';
+          let jumper2 = jumper;
+          while (jumper2 = $.x(`${axis}::${xpath}`, jumper2)) {
+              if (jumper2.getBoundingClientRect().height) {
+                  return jumper2;
+              }
+          }
+          if (jumper2 = $.x(`(//${xpath})[${dir < 0 ? 'last()' : '1'}]`)) {
+              if (jumper2.getBoundingClientRect().height) {
+                  return jumper2;
+              }
+          }
+          while ((jumper2 = $.x(`${axis}::${xpath}`, jumper2)) && (jumper2 !== jumper)) {
+              if (jumper2.getBoundingClientRect().height) {
+                  return jumper2;
+              }
+          }
+          return null;
+      },
+      makeButtons() {
+          const charPrev = '\u23EB';
+          const charNext = '\u23EC';
+          const classPrev = 'prev';
+          const classNext = 'next';
+          const span = $.el('span', { className: 'postJumper' });
+          $.extend(span, { innerHTML: "<a href=\"javascript:;\" class=\"" + E(classPrev) + "\">" + E(charPrev) + "</a><a href=\"javascript:;\" class=\"" + E(classNext) + "\">" + E(charNext) + "</a>" });
+          return span;
+      },
+      scroll(fromJumper, toJumper) {
+          const prevPos = fromJumper.getBoundingClientRect().top;
+          const destPos = toJumper.getBoundingClientRect().top;
+          return window.scrollBy(0, destPos - prevPos);
       }
-
-      if (this.nodes.uniqueIDRoot) {
-        PostJumper.addButtons(this,'uniqueID');
-      }
-
-      if (this.nodes.capcode) {
-        return PostJumper.addButtons(this,'capcode');
-      }
-    },
-
-    addButtons(post,type) {
-      const value = post.info[type];
-      const buttons = PostJumper.buttons.cloneNode(true);
-      $.extend(buttons.dataset, {type, value});
-      $.after(post.nodes[type+(type === 'capcode' ? '' : 'Root')], buttons);
-      return PostJumper.addListeners(buttons);
-    },
-
-    addListeners(buttons) {
-      $.on(buttons.firstChild, 'click', PostJumper.buttonClick);
-      return $.on(buttons.lastChild, 'click', PostJumper.buttonClick);
-    },
-
-    buttonClick() {
-      let toJumper;
-      const dir = $.hasClass(this, 'prev') ? -1 : 1;
-      if (toJumper = PostJumper.find(this.parentNode, dir)) {
-        return PostJumper.scroll(this.parentNode, toJumper);
-      }
-    },
-
-    find(jumper, dir) {
-      const {type, value} = jumper.dataset;
-      const xpath = `span[contains(@class,\"postJumper\") and @data-value=\"${value}\" and @data-type=\"${type}\"]`;
-      const axis = dir < 0 ? 'preceding' : 'following';
-      let jumper2 = jumper;
-      while (jumper2 = $.x(`${axis}::${xpath}`, jumper2)) {
-        if (jumper2.getBoundingClientRect().height) { return jumper2; }
-      }
-      if (jumper2 = $.x(`(//${xpath})[${dir < 0 ? 'last()' : '1'}]`)) {
-        if (jumper2.getBoundingClientRect().height) { return jumper2; }
-      }
-      while ((jumper2 = $.x(`${axis}::${xpath}`, jumper2)) && (jumper2 !== jumper)) {
-        if (jumper2.getBoundingClientRect().height) { return jumper2; }
-      }
-      return null;
-    },
-
-    makeButtons() {
-      const charPrev = '\u23EB';
-      const charNext = '\u23EC';
-      const classPrev = 'prev';
-      const classNext = 'next';
-      const span = $.el('span',
-        {className: 'postJumper'});
-      $.extend(span, {innerHTML: "<a href=\"javascript:;\" class=\"" + E(classPrev) + "\">" + E(charPrev) + "</a><a href=\"javascript:;\" class=\"" + E(classNext) + "\">" + E(charNext) + "</a>"});
-      return span;
-    },
-
-    scroll(fromJumper, toJumper) {
-      const prevPos = fromJumper.getBoundingClientRect().top;
-      const destPos = toJumper.getBoundingClientRect().top;
-      return window.scrollBy(0, destPos-prevPos);
-    }
   };
 
   const PSA = {
-    init() {
-      let el;
-      if ((g.SITE.software === 'yotsuba') && (g.BOARD.ID === 'qa')) {
-        const announcement = {innerHTML: "Stay in touch with your <a href=\"https://www.4chan-x.net/qa_friends.html\" target=\"_blank\" rel=\"noopener\">/qa/ friends</a>!"};
-        el = $.el('div', {className: 'fcx-announcement'}, announcement);
-        $.onExists(doc, '.boardBanner', banner => $.after(banner, el));
+      init() {
+          let el;
+          if ((g.SITE.software === 'yotsuba') && (g.BOARD.ID === 'qa')) {
+              const announcement = { innerHTML: "Stay in touch with your <a href=\"https://www.4chan-x.net/qa_friends.html\" target=\"_blank\" rel=\"noopener\">/qa/ friends</a>!" };
+              el = $.el('div', { className: 'fcx-announcement' }, announcement);
+              $.onExists(doc, '.boardBanner', banner => $.after(banner, el));
+          }
+          if ('samachan.org' in Conf['siteProperties'] && !Conf['PSAseen'].includes('samachan')) {
+              el = $.el('span', { innerHTML: "<a href=\"https://sushigirl.us/yakuza/res/776.html\" target=\"_blank\" rel=\"noopener\">Looking for a new home?<br>Some former Samachan users are regrouping on SushiChan.</a><br>(a message from 4chan X)" });
+              return Main.ready(function () {
+                  new Notice('info', el);
+                  Conf['PSAseen'].push('samachan');
+                  return $.set('PSAseen', Conf['PSAseen']);
+              });
+          }
       }
-      if ('samachan.org' in Conf['siteProperties'] && !Conf['PSAseen'].includes('samachan')) {
-        el = $.el('span',
-          {innerHTML: "<a href=\"https://sushigirl.us/yakuza/res/776.html\" target=\"_blank\" rel=\"noopener\">Looking for a new home?<br>Some former Samachan users are regrouping on SushiChan.</a><br>(a message from 4chan X)"});
-        return Main.ready(function() {
-          new Notice('info', el);
-          Conf['PSAseen'].push('samachan');
-          return $.set('PSAseen', Conf['PSAseen']);});
-      }
-    }
   };
 
   var PSAHiding = {
-    init() {
-      if (!Conf['Announcement Hiding'] || !g.SITE.selectors.psa) { return; }
-      $.addClass(doc, 'hide-announcement');
-      $.onExists(doc, g.SITE.selectors.psa, this.setup);
-      return $.ready(function() {
-        if (!$(g.SITE.selectors.psa)) { return $.rmClass(doc, 'hide-announcement'); }
-      });
-    },
-
-    setup(psa) {
-      let btn, hr;
-      PSAHiding.psa = psa;
-      PSAHiding.text = psa.dataset.utc ?? psa.innerHTML;
-      if (g.SITE.selectors.psaTop && (hr = $(g.SITE.selectors.psaTop)?.previousElementSibling) && (hr.nodeName === 'HR')) {
-        PSAHiding.hr = hr;
+      init() {
+          if (!Conf['Announcement Hiding'] || !g.SITE.selectors.psa) {
+              return;
+          }
+          $.addClass(doc, 'hide-announcement');
+          $.onExists(doc, g.SITE.selectors.psa, this.setup);
+          return $.ready(function () {
+              if (!$(g.SITE.selectors.psa)) {
+                  return $.rmClass(doc, 'hide-announcement');
+              }
+          });
+      },
+      setup(psa) {
+          let btn, hr;
+          PSAHiding.psa = psa;
+          PSAHiding.text = psa.dataset.utc ?? psa.innerHTML;
+          if (g.SITE.selectors.psaTop && (hr = $(g.SITE.selectors.psaTop)?.previousElementSibling) && (hr.nodeName === 'HR')) {
+              PSAHiding.hr = hr;
+          }
+          PSAHiding.content = $.el('div');
+          const entry = {
+              el: $.el('a', {
+                  textContent: 'Show announcement',
+                  className: 'show-announcement',
+                  href: 'javascript:;'
+              }),
+              order: 50,
+              open() { return psa.hidden; }
+          };
+          Header.menu.addEntry(entry);
+          $.on(entry.el, 'click', PSAHiding.toggle);
+          PSAHiding.btn = (btn = $.el('a', {
+              title: 'Mark announcement as read and hide.',
+              className: 'hide-announcement-button',
+              href: 'javascript:;',
+              textContent: '➖︎',
+          }));
+          Icon.set(btn, 'squareMinus');
+          $.on(btn, 'click', PSAHiding.toggle);
+          if (psa.firstChild?.tagName === 'HR') {
+              $.after(psa.firstChild, btn);
+          }
+          else {
+              $.prepend(psa, btn);
+          }
+          PSAHiding.sync(Conf['hiddenPSAList']);
+          $.rmClass(doc, 'hide-announcement');
+          return $.sync('hiddenPSAList', PSAHiding.sync);
+      },
+      toggle() {
+          const hide = $.hasClass(this, 'hide-announcement-button');
+          const set = function (hiddenPSAList) {
+              if (hide) {
+                  return hiddenPSAList[g.SITE.ID] = PSAHiding.text;
+              }
+              else {
+                  return delete hiddenPSAList[g.SITE.ID];
+              }
+          };
+          set(Conf['hiddenPSAList']);
+          PSAHiding.sync(Conf['hiddenPSAList']);
+          return $.get('hiddenPSAList', Conf['hiddenPSAList'], function ({ hiddenPSAList }) {
+              set(hiddenPSAList);
+              return $.set('hiddenPSAList', hiddenPSAList);
+          });
+      },
+      sync(hiddenPSAList) {
+          const { psa, content } = PSAHiding;
+          psa.hidden = (hiddenPSAList[g.SITE.ID] === PSAHiding.text);
+          // Remove content to prevent autoplaying sounds from hidden announcements
+          if (psa.hidden) {
+              $.add(content, [...psa.childNodes]);
+          }
+          else {
+              $.add(psa, [...content.childNodes]);
+          }
+          if (PSAHiding.hr)
+              PSAHiding.hr.hidden = psa.hidden;
       }
-      PSAHiding.content = $.el('div');
-
-      const entry = {
-        el: $.el('a', {
-          textContent: 'Show announcement',
-          className: 'show-announcement',
-          href: 'javascript:;'
-        }
-        ),
-        order: 50,
-        open() { return psa.hidden; }
-      };
-      Header.menu.addEntry(entry);
-      $.on(entry.el, 'click', PSAHiding.toggle);
-
-      PSAHiding.btn = (btn = $.el('a', {
-        title:       'Mark announcement as read and hide.',
-        className:   'hide-announcement-button',
-        href:        'javascript:;',
-        textContent: '➖︎',
-      }
-      ));
-      Icon.set(btn, 'squareMinus');
-      $.on(btn, 'click', PSAHiding.toggle);
-      if (psa.firstChild?.tagName === 'HR') {
-        $.after(psa.firstChild, btn);
-      } else {
-        $.prepend(psa, btn);
-      }
-
-      PSAHiding.sync(Conf['hiddenPSAList']);
-      $.rmClass(doc, 'hide-announcement');
-
-      return $.sync('hiddenPSAList', PSAHiding.sync);
-    },
-
-    toggle() {
-      const hide = $.hasClass(this, 'hide-announcement-button');
-      const set = function(hiddenPSAList) {
-        if (hide) {
-          return hiddenPSAList[g.SITE.ID] = PSAHiding.text;
-        } else {
-          return delete hiddenPSAList[g.SITE.ID];
-        }
-      };
-      set(Conf['hiddenPSAList']);
-      PSAHiding.sync(Conf['hiddenPSAList']);
-      return $.get('hiddenPSAList', Conf['hiddenPSAList'], function({hiddenPSAList}) {
-        set(hiddenPSAList);
-        return $.set('hiddenPSAList', hiddenPSAList);
-      });
-    },
-
-    sync(hiddenPSAList) {
-      const {psa, content} = PSAHiding;
-      psa.hidden = (hiddenPSAList[g.SITE.ID] === PSAHiding.text);
-      // Remove content to prevent autoplaying sounds from hidden announcements
-      if (psa.hidden) {
-        $.add(content, [...psa.childNodes]);
-      } else {
-        $.add(psa, [...content.childNodes]);
-      }
-      if (PSAHiding.hr) PSAHiding.hr.hidden = psa.hidden;
-    }
   };
 
   var RemoveSpoilers = {
-    init() {
-      if (Conf['Reveal Spoilers']) {
-        $.addClass(doc, 'reveal-spoilers');
+      init() {
+          if (Conf['Reveal Spoilers']) {
+              $.addClass(doc, 'reveal-spoilers');
+          }
+          if (!Conf['Remove Spoilers']) {
+              return;
+          }
+          Callbacks.Post.push({
+              name: 'Reveal Spoilers',
+              cb: this.node
+          });
+          if (g.VIEW === 'archive') {
+              return $.ready(() => RemoveSpoilers.unspoiler($.id('arc-list')));
+          }
+      },
+      node() {
+          return RemoveSpoilers.unspoiler(this.nodes.comment);
+      },
+      unspoiler(el) {
+          const spoilers = $$(g.SITE.selectors.spoiler, el);
+          for (var spoiler of spoilers) {
+              var span = $.el('span', { className: 'removed-spoiler' });
+              $.replace(spoiler, span);
+              $.add(span, [...spoiler.childNodes]);
+          }
       }
-
-      if (!Conf['Remove Spoilers']) { return; }
-
-      Callbacks.Post.push({
-        name: 'Reveal Spoilers',
-        cb:   this.node
-      });
-
-      if (g.VIEW === 'archive') {
-        return $.ready(() => RemoveSpoilers.unspoiler($.id('arc-list')));
-      }
-    },
-
-    node() {
-      return RemoveSpoilers.unspoiler(this.nodes.comment);
-    },
-
-    unspoiler(el) {
-      const spoilers = $$(g.SITE.selectors.spoiler, el);
-      for (var spoiler of spoilers) {
-        var span = $.el('span', {className: 'removed-spoiler'});
-        $.replace(spoiler, span);
-        $.add(span, [...spoiler.childNodes]);
-      }
-    }
   };
 
   var ThreadLinks = {
-    init() {
-      if ((g.VIEW !== 'index') || !Conf['Open Threads in New Tab']) { return; }
-
-      Callbacks.Post.push({
-        name: 'Thread Links',
-        cb:   this.node
-      });
-      return Callbacks.CatalogThread.push({
-        name: 'Thread Links',
-        cb:   this.catalogNode
-      });
-    },
-
-    node() {
-      if (this.isReply || this.isClone) { return; }
-      return ThreadLinks.process(this.nodes.reply);
-    },
-
-    catalogNode() {
-      return ThreadLinks.process(this.nodes.thumb.parentNode);
-    },
-
-    process(link) {
-      return link.target = '_blank';
-    }
+      init() {
+          if ((g.VIEW !== 'index') || !Conf['Open Threads in New Tab']) {
+              return;
+          }
+          Callbacks.Post.push({
+              name: 'Thread Links',
+              cb: this.node
+          });
+          return Callbacks.CatalogThread.push({
+              name: 'Thread Links',
+              cb: this.catalogNode
+          });
+      },
+      node() {
+          if (this.isReply || this.isClone) {
+              return;
+          }
+          return ThreadLinks.process(this.nodes.reply);
+      },
+      catalogNode() {
+          return ThreadLinks.process(this.nodes.thumb.parentNode);
+      },
+      process(link) {
+          return link.target = '_blank';
+      }
   };
 
   const Tinyboard = {
-    init() {
-      if (g.SITE.software !== 'tinyboard') { return; }
-      if (g.VIEW === 'thread') {
-        return Main.ready(() => $.global("initTinyBoard", { boardID: g.BOARD.ID, threadID: g.THREADID.toString() }));
+      init() {
+          if (g.SITE.software !== 'tinyboard') {
+              return;
+          }
+          if (g.VIEW === 'thread') {
+              return Main.ready(() => $.global("initTinyBoard", { boardID: g.BOARD.ID, threadID: g.THREADID.toString() }));
+          }
       }
-    }
   };
 
   var MarkNewIPs = {
-    init() {
-      if ((g.SITE.software !== 'yotsuba') || (g.VIEW !== 'thread') || !Conf['Mark New IPs']) { return; }
-      return Callbacks.Thread.push({
-        name: 'Mark New IPs',
-        cb:   this.node
-      });
-    },
-
-    node() {
-      MarkNewIPs.ipCount = this.ipCount;
-      MarkNewIPs.postCount = this.posts.keys.length;
-      return $.on(d, 'ThreadUpdate', MarkNewIPs.onUpdate);
-    },
-
-    onUpdate(e) {
-      let fullID;
-      const {ipCount, postCount, newPosts, deletedPosts} = e.detail;
-      if (ipCount == null) { return; }
-
-      switch (ipCount - MarkNewIPs.ipCount) {
-        case (postCount - MarkNewIPs.postCount) + deletedPosts.length:
-          var i = MarkNewIPs.ipCount;
-          for (fullID of newPosts) {
-            MarkNewIPs.markNew(g.posts.get(fullID), ++i);
+      init() {
+          if ((g.SITE.software !== 'yotsuba') || (g.VIEW !== 'thread') || !Conf['Mark New IPs']) {
+              return;
           }
-          break;
-        case -deletedPosts.length:
-          for (fullID of newPosts) {
-            MarkNewIPs.markOld(g.posts.get(fullID));
+          return Callbacks.Thread.push({
+              name: 'Mark New IPs',
+              cb: this.node
+          });
+      },
+      node() {
+          MarkNewIPs.ipCount = this.ipCount;
+          MarkNewIPs.postCount = this.posts.keys.length;
+          return $.on(d, 'ThreadUpdate', MarkNewIPs.onUpdate);
+      },
+      onUpdate(e) {
+          let fullID;
+          const { ipCount, postCount, newPosts, deletedPosts } = e.detail;
+          if (ipCount == null) {
+              return;
           }
-          break;
+          switch (ipCount - MarkNewIPs.ipCount) {
+              case (postCount - MarkNewIPs.postCount) + deletedPosts.length:
+                  var i = MarkNewIPs.ipCount;
+                  for (fullID of newPosts) {
+                      MarkNewIPs.markNew(g.posts.get(fullID), ++i);
+                  }
+                  break;
+              case -deletedPosts.length:
+                  for (fullID of newPosts) {
+                      MarkNewIPs.markOld(g.posts.get(fullID));
+                  }
+                  break;
+          }
+          MarkNewIPs.ipCount = ipCount;
+          return MarkNewIPs.postCount = postCount;
+      },
+      markNew(post, ipCount) {
+          const suffix = ((Math.floor(ipCount / 10)) % 10) === 1 ?
+              'th'
+              :
+                  ['st', 'nd', 'rd'][(ipCount % 10) - 1] || 'th'; // fuck switches
+          const counter = $.el('span', {
+              className: 'ip-counter',
+              textContent: `(${ipCount})`
+          });
+          post.nodes.nameBlock.title = `This is the ${ipCount}${suffix} IP in the thread.`;
+          $.add(post.nodes.nameBlock, [$.tn(' '), counter]);
+          return $.addClass(post.nodes.root, 'new-ip');
+      },
+      markOld(post) {
+          post.nodes.nameBlock.title = 'Not the first post from this IP.';
+          return $.addClass(post.nodes.root, 'old-ip');
       }
-      MarkNewIPs.ipCount = ipCount;
-      return MarkNewIPs.postCount = postCount;
-    },
-
-    markNew(post, ipCount) {
-      const suffix = ((Math.floor(ipCount / 10)) % 10) === 1 ?
-        'th'
-      :
-        ['st', 'nd', 'rd'][(ipCount % 10) - 1] || 'th'; // fuck switches
-      const counter = $.el('span', {
-        className: 'ip-counter',
-        textContent: `(${ipCount})`
-      }
-      );
-      post.nodes.nameBlock.title = `This is the ${ipCount}${suffix} IP in the thread.`;
-      $.add(post.nodes.nameBlock, [$.tn(' '), counter]);
-      return $.addClass(post.nodes.root, 'new-ip');
-    },
-
-    markOld(post) {
-      post.nodes.nameBlock.title = 'Not the first post from this IP.';
-      return $.addClass(post.nodes.root, 'old-ip');
-    }
   };
 
   var ThreadStats = {
-    postCount: 0,
-    fileCount: 0,
-    postIndex: 0,
-
-    init() {
-      let sc;
-      if ((g.VIEW !== 'thread') || !Conf['Thread Stats']) { return; }
-
-      if (Conf['Page Count in Stats']) {
-        this[g.SITE.isPrunedByAge?.(g.BOARD) ? 'showPurgePos' : 'showPage'] = true;
-      }
-
-      const statsHTML = {innerHTML: "<span id=\"post-count\">?</span> / <span id=\"file-count\">?</span>" + ((Conf["IP Count in Stats"] && g.SITE.hasIPCount) ? " / <span id=\"ip-count\">?</span>" : "") + ((Conf["Page Count in Stats"]) ? " / <span id=\"page-count\">?</span>" : "")};
-      let statsTitle = 'Posts / Files';
-      if (Conf['IP Count in Stats'] && g.SITE.hasIPCount) { statsTitle += ' / IPs'; }
-      if (Conf['Page Count in Stats']) {
-        if (this.showPurgePos) {
-          statsTitle += ' / Purge Position';
-        } else {
-          statsTitle += ' / Page';
-          if (Conf['Purge Position']) statsTitle += ' (Purge Position)';
-        }
-      }
-
-      if (Conf['Updater and Stats in Header']) {
-        this.dialog = (sc = $.el('span', {
-          id:    'thread-stats',
-          title: statsTitle
-        }
-        ));
-        $.extend(sc, statsHTML);
-        Header.addShortcut('stats', sc, 200);
-
-      } else {
-        this.dialog = (sc = UI.dialog('thread-stats',
-          {innerHTML: "<div class=\"move\" title=\"" + E(statsTitle) + "\">" + (statsHTML).innerHTML + "</div>"}));
-        $.addClass(doc, 'float');
-        $.ready(() => $.add(d.body, sc));
-      }
-
-      this.postCountEl = $('#post-count', sc);
-      this.fileCountEl = $('#file-count', sc);
-      this.ipCountEl   = $('#ip-count',   sc);
-      this.pageCountEl = $('#page-count', sc);
-
-      if (this.pageCountEl) { $.on(this.pageCountEl, 'click', ThreadStats.fetchPage); }
-
-      return Callbacks.Thread.push({
-        name: 'Thread Stats',
-        cb:   this.node
-      });
-    },
-
-    node() {
-      ThreadStats.thread = this;
-      ThreadStats.count();
-      ThreadStats.update();
-      ThreadStats.fetchPage();
-      $.on(d, 'PostsInserted', () => $.queueTask(ThreadStats.onPostsInserted));
-      return $.on(d, 'ThreadUpdate', ThreadStats.onUpdate);
-    },
-
-    count() {
-      const {posts} = ThreadStats.thread;
-      const n = posts.keys.length;
-      for (let i = ThreadStats.postIndex, end = n; i < end; i++) {
-        var post = posts.get(posts.keys[i]);
-        if (!post.isFetchedQuote) {
-          ThreadStats.postCount++;
-          ThreadStats.fileCount += post.files.length;
-        }
-      }
-      ThreadStats.postIndex = n;
-    },
-
-    onUpdate(e) {
-      if (e.detail[404]) { return; }
-      const {postCount, fileCount} = e.detail;
-      $.extend(ThreadStats, {postCount, fileCount});
-      ThreadStats.postIndex = ThreadStats.thread.posts.keys.length;
-      ThreadStats.update();
-      if (ThreadStats.showPage && (ThreadStats.pageCountEl.textContent !== '1')) {
-        return ThreadStats.fetchPage();
-      }
-    },
-
-    onPostsInserted() {
-      if (ThreadStats.thread.posts.keys.length <= ThreadStats.postIndex) { return; }
-      ThreadStats.count();
-      ThreadStats.update();
-      if (ThreadStats.showPage && (ThreadStats.pageCountEl.textContent !== '1')) {
-        return ThreadStats.fetchPage();
-      }
-    },
-
-    update() {
-      const {thread, postCountEl, fileCountEl, ipCountEl} = ThreadStats;
-      postCountEl.textContent = ThreadStats.postCount;
-      fileCountEl.textContent = ThreadStats.fileCount;
-      if (ipCountEl) {
-        if (thread.ipCount) {
-          ipCountEl.textContent = thread.ipCount;
-        } else if (g.BOARD?.config.user_ids) {
-          const IDs = new Set();
-          g.posts.forEach(post => {
-            IDs.add(post.info.uniqueID);
+      postCount: 0,
+      fileCount: 0,
+      postIndex: 0,
+      init() {
+          let sc;
+          if ((g.VIEW !== 'thread') || !Conf['Thread Stats']) {
+              return;
+          }
+          if (Conf['Page Count in Stats']) {
+              this[g.SITE.isPrunedByAge?.(g.BOARD) ? 'showPurgePos' : 'showPage'] = true;
+          }
+          const statsHTML = { innerHTML: "<span id=\"post-count\">?</span> / <span id=\"file-count\">?</span>" + ((Conf["IP Count in Stats"] && g.SITE.hasIPCount) ? " / <span id=\"ip-count\">?</span>" : "") + ((Conf["Page Count in Stats"]) ? " / <span id=\"page-count\">?</span>" : "") };
+          let statsTitle = 'Posts / Files';
+          if (Conf['IP Count in Stats'] && g.SITE.hasIPCount) {
+              statsTitle += ' / IPs';
+          }
+          if (Conf['Page Count in Stats']) {
+              if (this.showPurgePos) {
+                  statsTitle += ' / Purge Position';
+              }
+              else {
+                  statsTitle += ' / Page';
+                  if (Conf['Purge Position'])
+                      statsTitle += ' (Purge Position)';
+              }
+          }
+          if (Conf['Updater and Stats in Header']) {
+              this.dialog = (sc = $.el('span', {
+                  id: 'thread-stats',
+                  title: statsTitle
+              }));
+              $.extend(sc, statsHTML);
+              Header.addShortcut('stats', sc, 200);
+          }
+          else {
+              this.dialog = (sc = UI.dialog('thread-stats', { innerHTML: "<div class=\"move\" title=\"" + E(statsTitle) + "\">" + (statsHTML).innerHTML + "</div>" }));
+              $.addClass(doc, 'float');
+              $.ready(() => $.add(d.body, sc));
+          }
+          this.postCountEl = $('#post-count', sc);
+          this.fileCountEl = $('#file-count', sc);
+          this.ipCountEl = $('#ip-count', sc);
+          this.pageCountEl = $('#page-count', sc);
+          if (this.pageCountEl) {
+              $.on(this.pageCountEl, 'click', ThreadStats.fetchPage);
+          }
+          return Callbacks.Thread.push({
+              name: 'Thread Stats',
+              cb: this.node
           });
-          ipCountEl.textContent = IDs.size;
-        } else {
-          ipCountEl.textContent = '?';
-        }
-      }
-      postCountEl.classList.toggle('warning', (thread.postLimit && !thread.isSticky));
-      fileCountEl.classList.toggle('warning', (thread.fileLimit && !thread.isSticky));
-    },
-
-    fetchPage() {
-      if (!ThreadStats.pageCountEl) { return; }
-      clearTimeout(ThreadStats.timeout);
-      if (ThreadStats.thread.isDead) {
-        ThreadStats.pageCountEl.textContent = 'Dead';
-        $.addClass(ThreadStats.pageCountEl, 'warning');
-        return;
-      }
-      ThreadStats.timeout = setTimeout(
-        ThreadStats.fetchPage,
-        Conf['Purge Position'] && ThreadStats.pageCountEl.classList.contains('warning')
-          ? (5 * SECOND) : (2 * MINUTE)
-      );
-      $.whenModified(
-        g.SITE.urls.threadsListJSON(ThreadStats.thread),
-        'ThreadStats',
-        ThreadStats.onThreadsLoad
-      );
-    },
-
-    onThreadsLoad() {
-      if (this.status === 200) {
-        let page, thread;
-        if (ThreadStats.showPurgePos) {
-          let purgePos = 1;
-          for (page of this.response) {
-            for (thread of page.threads) {
-              if (thread.no < ThreadStats.thread.ID) {
-                purgePos++;
+      },
+      node() {
+          ThreadStats.thread = this;
+          ThreadStats.count();
+          ThreadStats.update();
+          ThreadStats.fetchPage();
+          $.on(d, 'PostsInserted', () => $.queueTask(ThreadStats.onPostsInserted));
+          return $.on(d, 'ThreadUpdate', ThreadStats.onUpdate);
+      },
+      count() {
+          const { posts } = ThreadStats.thread;
+          const n = posts.keys.length;
+          for (let i = ThreadStats.postIndex, end = n; i < end; i++) {
+              var post = posts.get(posts.keys[i]);
+              if (!post.isFetchedQuote) {
+                  ThreadStats.postCount++;
+                  ThreadStats.fileCount += post.files.length;
               }
-            }
           }
-          ThreadStats.pageCountEl.textContent = purgePos;
-          ThreadStats.pageCountEl.classList.toggle('warning', (purgePos === 1));
-        } else {
-          let nThreads;
-          let i = (nThreads = 0);
-          for (page of this.response) {
-            nThreads += page.threads.length;
+          ThreadStats.postIndex = n;
+      },
+      onUpdate(e) {
+          if (e.detail[404]) {
+              return;
           }
-          for (let pageNum = 0; pageNum < this.response.length; pageNum++) {
-            page = this.response[pageNum];
-            for (thread of page.threads) {
-              if (thread.no === ThreadStats.thread.ID) {
-                ThreadStats.pageCountEl.textContent = pageNum + 1;
-                const hasWarning = (i >= (nThreads - this.response[0].threads.length));
-                ThreadStats.pageCountEl.classList.toggle('warning', hasWarning);
-                if (hasWarning && Conf['Purge Position']) {
-                  ThreadStats.pageCountEl.textContent += ` (${nThreads - i - 1})`;
-                }
-                ThreadStats.lastPageUpdate = new Date(thread.last_modified * SECOND);
-                ThreadStats.retry();
-                return;
+          const { postCount, fileCount } = e.detail;
+          $.extend(ThreadStats, { postCount, fileCount });
+          ThreadStats.postIndex = ThreadStats.thread.posts.keys.length;
+          ThreadStats.update();
+          if (ThreadStats.showPage && (ThreadStats.pageCountEl.textContent !== '1')) {
+              return ThreadStats.fetchPage();
+          }
+      },
+      onPostsInserted() {
+          if (ThreadStats.thread.posts.keys.length <= ThreadStats.postIndex) {
+              return;
+          }
+          ThreadStats.count();
+          ThreadStats.update();
+          if (ThreadStats.showPage && (ThreadStats.pageCountEl.textContent !== '1')) {
+              return ThreadStats.fetchPage();
+          }
+      },
+      update() {
+          const { thread, postCountEl, fileCountEl, ipCountEl } = ThreadStats;
+          postCountEl.textContent = ThreadStats.postCount;
+          fileCountEl.textContent = ThreadStats.fileCount;
+          if (ipCountEl) {
+              if (thread.ipCount) {
+                  ipCountEl.textContent = thread.ipCount;
               }
-              i++;
-            }
+              else if (g.BOARD?.config.user_ids) {
+                  const IDs = new Set();
+                  g.posts.forEach(post => {
+                      IDs.add(post.info.uniqueID);
+                  });
+                  ipCountEl.textContent = IDs.size;
+              }
+              else {
+                  ipCountEl.textContent = '?';
+              }
           }
-        }
-      } else if (this.status === 304) {
-        ThreadStats.retry();
+          postCountEl.classList.toggle('warning', (thread.postLimit && !thread.isSticky));
+          fileCountEl.classList.toggle('warning', (thread.fileLimit && !thread.isSticky));
+      },
+      fetchPage() {
+          if (!ThreadStats.pageCountEl) {
+              return;
+          }
+          clearTimeout(ThreadStats.timeout);
+          if (ThreadStats.thread.isDead) {
+              ThreadStats.pageCountEl.textContent = 'Dead';
+              $.addClass(ThreadStats.pageCountEl, 'warning');
+              return;
+          }
+          ThreadStats.timeout = setTimeout(ThreadStats.fetchPage, Conf['Purge Position'] && ThreadStats.pageCountEl.classList.contains('warning')
+              ? (5 * SECOND) : (2 * MINUTE));
+          $.whenModified(g.SITE.urls.threadsListJSON(ThreadStats.thread), 'ThreadStats', ThreadStats.onThreadsLoad);
+      },
+      onThreadsLoad() {
+          if (this.status === 200) {
+              let page, thread;
+              if (ThreadStats.showPurgePos) {
+                  let purgePos = 1;
+                  for (page of this.response) {
+                      for (thread of page.threads) {
+                          if (thread.no < ThreadStats.thread.ID) {
+                              purgePos++;
+                          }
+                      }
+                  }
+                  ThreadStats.pageCountEl.textContent = purgePos;
+                  ThreadStats.pageCountEl.classList.toggle('warning', (purgePos === 1));
+              }
+              else {
+                  let nThreads;
+                  let i = (nThreads = 0);
+                  for (page of this.response) {
+                      nThreads += page.threads.length;
+                  }
+                  for (let pageNum = 0; pageNum < this.response.length; pageNum++) {
+                      page = this.response[pageNum];
+                      for (thread of page.threads) {
+                          if (thread.no === ThreadStats.thread.ID) {
+                              ThreadStats.pageCountEl.textContent = pageNum + 1;
+                              const hasWarning = (i >= (nThreads - this.response[0].threads.length));
+                              ThreadStats.pageCountEl.classList.toggle('warning', hasWarning);
+                              if (hasWarning && Conf['Purge Position']) {
+                                  ThreadStats.pageCountEl.textContent += ` (${nThreads - i - 1})`;
+                              }
+                              ThreadStats.lastPageUpdate = new Date(thread.last_modified * SECOND);
+                              ThreadStats.retry();
+                              return;
+                          }
+                          i++;
+                      }
+                  }
+              }
+          }
+          else if (this.status === 304) {
+              ThreadStats.retry();
+          }
+      },
+      retry() {
+          // If thread data is stale (modification date given < time of last post), try again.
+          // Skip this on vichan sites due to sage posts not updating modification time in threads.json.
+          if (!ThreadStats.showPage ||
+              (ThreadStats.pageCountEl.textContent === '1') ||
+              !!g.SITE.threadModTimeIgnoresSage ||
+              (ThreadStats.thread.posts.get(ThreadStats.thread.lastPost).info.date <= ThreadStats.lastPageUpdate)) {
+              return;
+          }
+          clearTimeout(ThreadStats.timeout);
+          ThreadStats.timeout = setTimeout(ThreadStats.fetchPage, 5 * SECOND);
       }
-    },
-
-    retry() {
-      // If thread data is stale (modification date given < time of last post), try again.
-      // Skip this on vichan sites due to sage posts not updating modification time in threads.json.
-      if (
-        !ThreadStats.showPage ||
-        (ThreadStats.pageCountEl.textContent === '1') ||
-        !!g.SITE.threadModTimeIgnoresSage ||
-        (ThreadStats.thread.posts.get(ThreadStats.thread.lastPost).info.date <= ThreadStats.lastPageUpdate)
-      ) { return; }
-      clearTimeout(ThreadStats.timeout);
-      ThreadStats.timeout = setTimeout(ThreadStats.fetchPage, 5 * SECOND);
-    }
   };
 
   const PassLink = {
-    init() {
-      if ((g.SITE.software !== 'yotsuba') || !Conf['Pass Link']) { return; }
-      return Main.ready(this.ready);
-    },
-
-    ready() {
-      let styleSelector;
-      if (!(styleSelector = $.id('styleSelector'))) { return; }
-
-      const passLink = $.el('span',
-        {className: 'brackets-wrap pass-link-container'});
-      $.extend(passLink, {innerHTML: "<a href=\"javascript:;\">4chan Pass</a>"});
-      $.on(passLink.firstElementChild, 'click', () => window.open(`//sys.${location.hostname.split('.')[1]}.org/auth`,
-        Date.now(),
-        'width=500,height=280,toolbar=0'));
-      return $.before(styleSelector.previousSibling, [passLink, $.tn('\u00A0\u00A0')]);
-    }
+      init() {
+          if ((g.SITE.software !== 'yotsuba') || !Conf['Pass Link']) {
+              return;
+          }
+          return Main.ready(this.ready);
+      },
+      ready() {
+          let styleSelector;
+          if (!(styleSelector = $.id('styleSelector'))) {
+              return;
+          }
+          const passLink = $.el('span', { className: 'brackets-wrap pass-link-container' });
+          $.extend(passLink, { innerHTML: "<a href=\"javascript:;\">4chan Pass</a>" });
+          $.on(passLink.firstElementChild, 'click', () => window.open(`//sys.${location.hostname.split('.')[1]}.org/auth`, Date.now(), 'width=500,height=280,toolbar=0'));
+          return $.before(styleSelector.previousSibling, [passLink, $.tn('\u00A0\u00A0')]);
+      }
   };
 
   var QuoteInline = {
-    init() {
-      if (!['index', 'thread'].includes(g.VIEW) || !Conf['Quote Inlining']) { return; }
-
-      if (Conf['Comment Expansion']) {
-        ExpandComment.callbacks.push(this.node);
+      init() {
+          if (!['index', 'thread'].includes(g.VIEW) || !Conf['Quote Inlining']) {
+              return;
+          }
+          if (Conf['Comment Expansion']) {
+              ExpandComment.callbacks.push(this.node);
+          }
+          return Callbacks.Post.push({
+              name: 'Quote Inlining',
+              cb: this.node
+          });
+      },
+      node() {
+          const { process } = QuoteInline;
+          const { isClone } = this;
+          for (var link of this.nodes.quotelinks.concat([...this.nodes.backlinks], this.nodes.archivelinks)) {
+              process(link, isClone);
+          }
+      },
+      process(link, clone) {
+          if (Conf['Quote Hash Navigation']) {
+              if (!clone) {
+                  $.after(link, QuoteInline.qiQuote(link, $.hasClass(link, 'filtered')));
+              }
+          }
+          return $.on(link, 'click', QuoteInline.toggle);
+      },
+      qiQuote(link, hidden) {
+          let name = "hashlink";
+          if (hidden) {
+              name += " filtered";
+          }
+          return $.el('a', {
+              className: name,
+              textContent: '#',
+              href: link.href
+          });
+      },
+      toggle(e) {
+          if ($.modifiedClick(e)) {
+              return;
+          }
+          const { boardID, threadID, postID } = Get.postDataFromLink(this);
+          if (Conf['Inline Cross-thread Quotes Only'] && (g.VIEW === 'thread') && g.posts.get(`${boardID}.${postID}`)?.nodes.root.offsetParent) {
+              return;
+          } // exists and not hidden
+          if ($.hasClass(doc, 'catalog-mode')) {
+              return;
+          }
+          e.preventDefault();
+          const quoter = Get.postFromNode(this);
+          const { context } = quoter;
+          if ($.hasClass(this, 'inlined')) {
+              QuoteInline.rm(this, boardID, threadID, postID, context);
+          }
+          else {
+              if ($.x(`ancestor::div[@data-full-i-d='${boardID}.${postID}']`, this)) {
+                  return;
+              }
+              QuoteInline.add(this, boardID, threadID, postID, context, quoter);
+          }
+          return this.classList.toggle('inlined');
+      },
+      findRoot(quotelink, isBacklink) {
+          if (isBacklink) {
+              return $.x('ancestor::*[parent::*[contains(@class,"post")]][1]', quotelink);
+          }
+          else {
+              return $.x('ancestor-or-self::*[parent::blockquote][1]', quotelink);
+          }
+      },
+      add(quotelink, boardID, threadID, postID, context, quoter) {
+          let post;
+          const isBacklink = $.hasClass(quotelink, 'backlink');
+          const inline = $.el('div', { className: 'inline' });
+          inline.dataset.fullID = `${boardID}.${postID}`;
+          const root = QuoteInline.findRoot(quotelink, isBacklink);
+          $.after(root, inline);
+          const qroot = $.x('ancestor::*[contains(@class,"postContainer")][1]', root);
+          $.addClass(qroot, 'hasInline');
+          new Fetcher(boardID, threadID, postID, inline, quoter);
+          if (!((post = g.posts.get(`${boardID}.${postID}`)) &&
+              (context.thread === post.thread))) {
+              return;
+          }
+          // Hide forward post if it's a backlink of a post in this thread.
+          // Will only unhide if there's no inlined backlinks of it anymore.
+          if (isBacklink && Conf['Forward Hiding']) {
+              $.addClass(post.nodes.root, 'forwarded');
+              post.forwarded++ || (post.forwarded = 1);
+          }
+          // Decrease the unread count if this post
+          // is in the array of unread posts.
+          if (!Unread.posts) {
+              return;
+          }
+          return Unread.readSinglePost(post);
+      },
+      rm(quotelink, boardID, threadID, postID, context) {
+          let el;
+          let inlined;
+          const isBacklink = $.hasClass(quotelink, 'backlink');
+          // Select the corresponding inlined quote, and remove it.
+          let root = QuoteInline.findRoot(quotelink, isBacklink);
+          root = $.x(`following-sibling::div[@data-full-i-d='${boardID}.${postID}'][1]`, root);
+          const qroot = $.x('ancestor::*[contains(@class,"postContainer")][1]', root);
+          const { parentNode } = root;
+          $.rm(root);
+          $.event('PostsRemoved', null, parentNode);
+          if (!$('.inline', qroot)) {
+              $.rmClass(qroot, 'hasInline');
+          }
+          // Stop if it only contains text.
+          if (!(el = root.firstElementChild)) {
+              return;
+          }
+          // Dereference clone.
+          const post = g.posts.get(`${boardID}.${postID}`);
+          post.rmClone(el.dataset.clone);
+          // Decrease forward count and unhide.
+          if (Conf['Forward Hiding'] &&
+              isBacklink &&
+              (context.thread === g.threads.get(`${boardID}.${threadID}`)) &&
+              !--post.forwarded) {
+              delete post.forwarded;
+              $.rmClass(post.nodes.root, 'forwarded');
+          }
+          // Repeat.
+          while ((inlined = $('.inlined', el))) {
+              ({ boardID, threadID, postID } = Get.postDataFromLink(inlined));
+              QuoteInline.rm(inlined, boardID, threadID, postID, context);
+              $.rmClass(inlined, 'inlined');
+          }
       }
-
-      return Callbacks.Post.push({
-        name: 'Quote Inlining',
-        cb:   this.node
-      });
-    },
-
-    node() {
-      const {process} = QuoteInline;
-      const {isClone} = this;
-      for (var link of this.nodes.quotelinks.concat([...this.nodes.backlinks], this.nodes.archivelinks)) {
-        process(link, isClone);
-      }
-    },
-
-    process(link, clone) {
-      if (Conf['Quote Hash Navigation']) {
-        if (!clone) { $.after(link, QuoteInline.qiQuote(link, $.hasClass(link, 'filtered'))); }
-      }
-      return $.on(link, 'click', QuoteInline.toggle);
-    },
-
-    qiQuote(link, hidden) {
-      let name = "hashlink";
-      if (hidden) { name += " filtered"; }
-      return $.el('a', {
-        className: name,
-        textContent: '#',
-        href: link.href
-      }
-      );
-    },
-
-    toggle(e) {
-      if ($.modifiedClick(e)) { return; }
-
-      const {boardID, threadID, postID} = Get.postDataFromLink(this);
-      if (Conf['Inline Cross-thread Quotes Only'] && (g.VIEW === 'thread') && g.posts.get(`${boardID}.${postID}`)?.nodes.root.offsetParent) { return; } // exists and not hidden
-      if ($.hasClass(doc, 'catalog-mode')) { return; }
-
-      e.preventDefault();
-      const quoter = Get.postFromNode(this);
-      const {context} = quoter;
-      if ($.hasClass(this, 'inlined')) {
-        QuoteInline.rm(this, boardID, threadID, postID, context);
-      } else {
-        if ($.x(`ancestor::div[@data-full-i-d='${boardID}.${postID}']`, this)) { return; }
-        QuoteInline.add(this, boardID, threadID, postID, context, quoter);
-      }
-      return this.classList.toggle('inlined');
-    },
-
-    findRoot(quotelink, isBacklink) {
-      if (isBacklink) {
-        return $.x('ancestor::*[parent::*[contains(@class,"post")]][1]', quotelink);
-      } else {
-        return $.x('ancestor-or-self::*[parent::blockquote][1]', quotelink);
-      }
-    },
-
-    add(quotelink, boardID, threadID, postID, context, quoter) {
-      let post;
-      const isBacklink = $.hasClass(quotelink, 'backlink');
-      const inline = $.el('div',
-        {className: 'inline'});
-      inline.dataset.fullID = `${boardID}.${postID}`;
-      const root = QuoteInline.findRoot(quotelink, isBacklink);
-      $.after(root, inline);
-
-      const qroot = $.x('ancestor::*[contains(@class,"postContainer")][1]', root);
-
-      $.addClass(qroot, 'hasInline');
-      new Fetcher(boardID, threadID, postID, inline, quoter);
-
-      if (!(
-        (post = g.posts.get(`${boardID}.${postID}`)) &&
-        (context.thread === post.thread)
-      )) { return; }
-
-      // Hide forward post if it's a backlink of a post in this thread.
-      // Will only unhide if there's no inlined backlinks of it anymore.
-      if (isBacklink && Conf['Forward Hiding']) {
-        $.addClass(post.nodes.root, 'forwarded');
-        post.forwarded++ || (post.forwarded = 1);
-      }
-
-      // Decrease the unread count if this post
-      // is in the array of unread posts.
-      if (!Unread.posts) { return; }
-      return Unread.readSinglePost(post);
-    },
-
-    rm(quotelink, boardID, threadID, postID, context) {
-      let el;
-      let inlined;
-      const isBacklink = $.hasClass(quotelink, 'backlink');
-      // Select the corresponding inlined quote, and remove it.
-      let root = QuoteInline.findRoot(quotelink, isBacklink);
-      root = $.x(`following-sibling::div[@data-full-i-d='${boardID}.${postID}'][1]`, root);
-      const qroot = $.x('ancestor::*[contains(@class,"postContainer")][1]', root);
-      const {parentNode} = root;
-      $.rm(root);
-      $.event('PostsRemoved', null, parentNode);
-
-      if (!$('.inline', qroot)) {
-        $.rmClass(qroot, 'hasInline');
-      }
-
-      // Stop if it only contains text.
-      if (!(el = root.firstElementChild)) { return; }
-
-      // Dereference clone.
-      const post = g.posts.get(`${boardID}.${postID}`);
-      post.rmClone(el.dataset.clone);
-
-      // Decrease forward count and unhide.
-      if (Conf['Forward Hiding'] &&
-        isBacklink &&
-        (context.thread === g.threads.get(`${boardID}.${threadID}`)) &&
-        !--post.forwarded) {
-          delete post.forwarded;
-          $.rmClass(post.nodes.root, 'forwarded');
-        }
-
-      // Repeat.
-      while ((inlined = $('.inlined', el))) {
-        ({boardID, threadID, postID} = Get.postDataFromLink(inlined));
-        QuoteInline.rm(inlined, boardID, threadID, postID, context);
-        $.rmClass(inlined, 'inlined');
-      }
-    }
   };
 
   var QuoteBacklink = {
-    // Backlinks appending need to work for:
-    //  - previous, same, and following posts.
-    //  - existing and yet-to-exist posts.
-    //  - newly fetched posts.
-    //  - in copies.
-    // XXX what about order for fetched posts?
-    //
-    // First callback creates backlinks and add them to relevant containers.
-    // Second callback adds relevant containers into posts.
-    // This is is so that fetched posts can get their backlinks,
-    // and that as much backlinks are appended in the background as possible.
-    containers: dict(),
-    init() {
-      if (!['index', 'thread'].includes(g.VIEW) || !Conf['Quote Backlinks']) { return; }
-
-      // Add a class to differentiate when backlinks are at
-      // the top (default) or bottom of a post
-      if (this.bottomBacklinks = Conf['Bottom Backlinks']) {
-        $.addClass(doc, 'bottom-backlinks');
-      }
-
-      Callbacks.Post.push({
-        name: 'Quote Backlinking Part 1',
-        cb:   this.firstNode
-      });
-      return Callbacks.Post.push({
-        name: 'Quote Backlinking Part 2',
-        cb:   this.secondNode
-      });
-    },
-    firstNode() {
-      if (this.isClone || !this.quotes.length || this.isRebuilt) { return; }
-      const markYours = Conf['Mark Quotes of You'] && QuoteYou.isYou(this);
-      const a = $.el('a', {
-        href: g.SITE.Build.postURL(this.board.ID, this.thread.ID, this.ID),
-        className: this.isHidden ? 'filtered backlink' : 'backlink',
-        textContent: Conf['backlink'].replace(/%(?:id|%)/g, x => ({'%id': this.ID, '%%': '%'})[x])
-      }
-      );
-      if (markYours) { $.add(a, QuoteYou.mark.cloneNode(true)); }
-      for (var quote of this.quotes) {
-        var post;
-        var containers = [QuoteBacklink.getContainer(quote)];
-        if ((post = g.posts.get(quote)) && post.nodes.backlinkContainer) {
-          // Don't add OP clones when OP Backlinks is disabled,
-          // as the clones won't have the backlink containers.
-          for (var clone of post.clones) {
-            containers.push(clone.nodes.backlinkContainer);
+      // Backlinks appending need to work for:
+      //  - previous, same, and following posts.
+      //  - existing and yet-to-exist posts.
+      //  - newly fetched posts.
+      //  - in copies.
+      // XXX what about order for fetched posts?
+      //
+      // First callback creates backlinks and add them to relevant containers.
+      // Second callback adds relevant containers into posts.
+      // This is is so that fetched posts can get their backlinks,
+      // and that as much backlinks are appended in the background as possible.
+      containers: dict(),
+      init() {
+          if (!['index', 'thread'].includes(g.VIEW) || !Conf['Quote Backlinks']) {
+              return;
           }
-        }
-        for (var container of containers) {
-          var link = a.cloneNode(true);
-          var nodes = container.firstChild ? [$.tn(' '), link] : [link];
-          if (Conf['Quote Previewing']) {
-            $.on(link, 'mouseover', QuotePreview.mouseover);
+          // Add a class to differentiate when backlinks are at
+          // the top (default) or bottom of a post
+          if (this.bottomBacklinks = Conf['Bottom Backlinks']) {
+              $.addClass(doc, 'bottom-backlinks');
           }
-          if (Conf['Quote Inlining']) {
-            $.on(link, 'click', QuoteInline.toggle);
-            if (Conf['Quote Hash Navigation']) {
-              var hash = QuoteInline.qiQuote(link, $.hasClass(link, 'filtered'));
-              nodes.push(hash);
-            }
+          Callbacks.Post.push({
+              name: 'Quote Backlinking Part 1',
+              cb: this.firstNode
+          });
+          return Callbacks.Post.push({
+              name: 'Quote Backlinking Part 2',
+              cb: this.secondNode
+          });
+      },
+      firstNode() {
+          if (this.isClone || !this.quotes.length || this.isRebuilt) {
+              return;
           }
-          $.add(container, nodes);
-        }
+          const markYours = Conf['Mark Quotes of You'] && QuoteYou.isYou(this);
+          const a = $.el('a', {
+              href: g.SITE.Build.postURL(this.board.ID, this.thread.ID, this.ID),
+              className: this.isHidden ? 'filtered backlink' : 'backlink',
+              textContent: Conf['backlink'].replace(/%(?:id|%)/g, x => ({ '%id': this.ID, '%%': '%' })[x])
+          });
+          if (markYours) {
+              $.add(a, QuoteYou.mark.cloneNode(true));
+          }
+          for (var quote of this.quotes) {
+              var post;
+              var containers = [QuoteBacklink.getContainer(quote)];
+              if ((post = g.posts.get(quote)) && post.nodes.backlinkContainer) {
+                  // Don't add OP clones when OP Backlinks is disabled,
+                  // as the clones won't have the backlink containers.
+                  for (var clone of post.clones) {
+                      containers.push(clone.nodes.backlinkContainer);
+                  }
+              }
+              for (var container of containers) {
+                  var link = a.cloneNode(true);
+                  var nodes = container.firstChild ? [$.tn(' '), link] : [link];
+                  if (Conf['Quote Previewing']) {
+                      $.on(link, 'mouseover', QuotePreview.mouseover);
+                  }
+                  if (Conf['Quote Inlining']) {
+                      $.on(link, 'click', QuoteInline.toggle);
+                      if (Conf['Quote Hash Navigation']) {
+                          var hash = QuoteInline.qiQuote(link, $.hasClass(link, 'filtered'));
+                          nodes.push(hash);
+                      }
+                  }
+                  $.add(container, nodes);
+              }
+          }
+      },
+      secondNode() {
+          if (this.isClone && (this.origin.isReply || Conf['OP Backlinks'])) {
+              this.nodes.backlinkContainer = $('.container', this.nodes.post);
+              return;
+          }
+          // Don't backlink the OP.
+          if (!this.isReply && !Conf['OP Backlinks']) {
+              return;
+          }
+          const container = QuoteBacklink.getContainer(this.fullID);
+          this.nodes.backlinkContainer = container;
+          if (QuoteBacklink.bottomBacklinks) {
+              return $.add(this.nodes.post, container);
+          }
+          else {
+              return $.add(this.nodes.info, container);
+          }
+      },
+      getContainer(id) {
+          return this.containers[id] ||
+              (this.containers[id] = $.el('span', { className: 'container' }));
       }
-    },
-    secondNode() {
-      if (this.isClone && (this.origin.isReply || Conf['OP Backlinks'])) {
-        this.nodes.backlinkContainer = $('.container', this.nodes.post);
-        return;
-      }
-      // Don't backlink the OP.
-      if (!this.isReply && !Conf['OP Backlinks']) { return; }
-      const container = QuoteBacklink.getContainer(this.fullID);
-      this.nodes.backlinkContainer = container;
-      if (QuoteBacklink.bottomBacklinks) {
-        return $.add(this.nodes.post, container);
-      } else {
-        return $.add(this.nodes.info, container);
-      }
-    },
-    getContainer(id) {
-      return this.containers[id] ||
-        (this.containers[id] = $.el('span', {className: 'container'}));
-    }
   };
 
   var QuoteCT = {
-    init() {
-      if (!['index', 'thread'].includes(g.VIEW) || !Conf['Mark Cross-thread Quotes']) { return; }
-
-      if (Conf['Comment Expansion']) {
-        ExpandComment.callbacks.push(this.node);
+      init() {
+          if (!['index', 'thread'].includes(g.VIEW) || !Conf['Mark Cross-thread Quotes']) {
+              return;
+          }
+          if (Conf['Comment Expansion']) {
+              ExpandComment.callbacks.push(this.node);
+          }
+          // \u00A0 is nbsp
+          this.mark = $.el('span', {
+              textContent: '\u00A0(Cross-thread)',
+              className: 'qmark-ct'
+          });
+          return Callbacks.Post.push({
+              name: 'Mark Cross-thread Quotes',
+              cb: this.node
+          });
+      },
+      node() {
+          // Stop there if it's a clone of a post in the same thread.
+          if (this.isClone && (this.thread === this.context.thread)) {
+              return;
+          }
+          const { board, thread } = this.context;
+          for (var quotelink of this.nodes.quotelinks) {
+              var { boardID, threadID } = Get.postDataFromLink(quotelink);
+              if (!threadID) {
+                  continue;
+              } // deadlink
+              if (this.isClone) {
+                  $.rm($('.qmark-ct', quotelink));
+              }
+              if ((boardID === board.ID) && (threadID !== thread.ID)) {
+                  $.add(quotelink, QuoteCT.mark.cloneNode(true));
+              }
+          }
       }
-
-      // \u00A0 is nbsp
-      this.mark = $.el('span', {
-        textContent: '\u00A0(Cross-thread)',
-        className:   'qmark-ct'
-      }
-      );
-      return Callbacks.Post.push({
-        name: 'Mark Cross-thread Quotes',
-        cb:   this.node
-      });
-    },
-    node() {
-      // Stop there if it's a clone of a post in the same thread.
-      if (this.isClone && (this.thread === this.context.thread)) { return; }
-
-      const {board, thread} = this.context;
-      for (var quotelink of this.nodes.quotelinks) {
-        var {boardID, threadID} = Get.postDataFromLink(quotelink);
-        if (!threadID) { continue; } // deadlink
-        if (this.isClone) {
-          $.rm($('.qmark-ct', quotelink));
-        }
-        if ((boardID === board.ID) && (threadID !== thread.ID)) {
-          $.add(quotelink, QuoteCT.mark.cloneNode(true));
-        }
-      }
-    }
   };
 
   var QuoteOP = {
-    init() {
-      if (!['index', 'thread'].includes(g.VIEW) || !Conf['Mark OP Quotes']) { return; }
-
-      if (Conf['Comment Expansion']) {
-        ExpandComment.callbacks.push(this.node);
+      init() {
+          if (!['index', 'thread'].includes(g.VIEW) || !Conf['Mark OP Quotes']) {
+              return;
+          }
+          if (Conf['Comment Expansion']) {
+              ExpandComment.callbacks.push(this.node);
+          }
+          // \u00A0 is nbsp
+          this.mark = $.el('span', {
+              textContent: '\u00A0(OP)',
+              className: 'qmark-op'
+          });
+          return Callbacks.Post.push({
+              name: 'Mark OP Quotes',
+              cb: this.node
+          });
+      },
+      node() {
+          // Stop there if it's a clone of a post in the same thread.
+          let i, quotelink, quotes;
+          if (this.isClone && (this.thread === this.context.thread)) {
+              return;
+          }
+          // Stop there if there's no quotes in that post.
+          if (!(quotes = this.quotes).length) {
+              return;
+          }
+          const { quotelinks } = this.nodes;
+          // rm (OP) from cross-thread quotes.
+          if (this.isClone && quotes.includes(this.thread.fullID)) {
+              i = 0;
+              while ((quotelink = quotelinks[i++])) {
+                  $.rm($('.qmark-op', quotelink));
+              }
+          }
+          const { fullID } = this.context.thread;
+          // add (OP) to quotes quoting this context's OP.
+          if (!quotes.includes(fullID)) {
+              return;
+          }
+          i = 0;
+          while ((quotelink = quotelinks[i++])) {
+              var { boardID, postID } = Get.postDataFromLink(quotelink);
+              if (`${boardID}.${postID}` === fullID) {
+                  $.add(quotelink, QuoteOP.mark.cloneNode(true));
+              }
+          }
       }
-
-      // \u00A0 is nbsp
-      this.mark = $.el('span', {
-        textContent: '\u00A0(OP)',
-        className:   'qmark-op'
-      }
-      );
-      return Callbacks.Post.push({
-        name: 'Mark OP Quotes',
-        cb:   this.node
-      });
-    },
-
-    node() {
-      // Stop there if it's a clone of a post in the same thread.
-      let i, quotelink, quotes;
-      if (this.isClone && (this.thread === this.context.thread)) { return; }
-      // Stop there if there's no quotes in that post.
-      if (!(quotes = this.quotes).length) { return; }
-      const {quotelinks} = this.nodes;
-
-      // rm (OP) from cross-thread quotes.
-      if (this.isClone && quotes.includes(this.thread.fullID)) {
-        i = 0;
-        while ((quotelink = quotelinks[i++])) {
-          $.rm($('.qmark-op', quotelink));
-        }
-      }
-
-      const {fullID} = this.context.thread;
-      // add (OP) to quotes quoting this context's OP.
-
-      if (!quotes.includes(fullID)) { return; }
-      i = 0;
-      while ((quotelink = quotelinks[i++])) {
-        var {boardID, postID} = Get.postDataFromLink(quotelink);
-        if (`${boardID}.${postID}` === fullID) {
-          $.add(quotelink, QuoteOP.mark.cloneNode(true));
-        }
-      }
-    }
   };
 
   const QuoteStrikeThrough = {
-    init() {
-      if (!['index', 'thread'].includes(g.VIEW) ||
-        (!Conf['Reply Hiding Buttons'] && (!Conf['Menu'] || !Conf['Reply Hiding Link']) && !Conf['Filter'])) { return; }
-
-      return Callbacks.Post.push({
-        name: 'Strike-through Quotes',
-        cb:   this.node
-      });
-    },
-
-    node() {
-      if (this.isClone) { return; }
-      for (var quotelink of this.nodes.quotelinks) {
-        var {boardID, postID} = Get.postDataFromLink(quotelink);
-        if (g.posts.get(`${boardID}.${postID}`)?.isHidden) {
-          $.addClass(quotelink, 'filtered');
-        }
+      init() {
+          if (!['index', 'thread'].includes(g.VIEW) ||
+              (!Conf['Reply Hiding Buttons'] && (!Conf['Menu'] || !Conf['Reply Hiding Link']) && !Conf['Filter'])) {
+              return;
+          }
+          return Callbacks.Post.push({
+              name: 'Strike-through Quotes',
+              cb: this.node
+          });
+      },
+      node() {
+          if (this.isClone) {
+              return;
+          }
+          for (var quotelink of this.nodes.quotelinks) {
+              var { boardID, postID } = Get.postDataFromLink(quotelink);
+              if (g.posts.get(`${boardID}.${postID}`)?.isHidden) {
+                  $.addClass(quotelink, 'filtered');
+              }
+          }
       }
-    }
   };
 
   var Quotify = {
-    init() {
-      if (!['index', 'thread'].includes(g.VIEW) || !Conf['Resurrect Quotes']) { return; }
-
-      $.addClass(doc, 'resurrect-quotes');
-
-      if (Conf['Comment Expansion']) {
-        ExpandComment.callbacks.push(this.node);
-      }
-
-      return Callbacks.Post.push({
-        name: 'Resurrect Quotes',
-        cb:   this.node
-      });
-    },
-
-    node() {
-      if (this.isClone) {
-        this.nodes.archivelinks = $$('a.linkify.quotelink', this.nodes.comment);
-        return;
-      }
-      for (var link of $$('a.linkify', this.nodes.comment)) {
-        Quotify.parseArchivelink.call(this, link);
-      }
-      for (var deadlink of $$('.deadlink', this.nodes.comment)) {
-        Quotify.parseDeadlink.call(this, deadlink);
-      }
-    },
-
-    parseArchivelink(link) {
-      let m;
-      if (!(m = link.pathname.match(/^\/([^/]+)\/thread\/S?(\d+)\/?$/))) { return; }
-      if (['boards.4chan.org', 'boards.4channel.org'].includes(link.hostname)) { return; }
-      const boardID  = m[1];
-      const threadID = m[2];
-      const postID   = link.hash.match(/^#[pq]?(\d+)$|$/)[1] || threadID;
-      if (Redirect.to('post', {boardID, postID})) {
-        $.addClass(link, 'quotelink');
-        $.extend(link.dataset, {boardID, threadID, postID});
-        return this.nodes.archivelinks.push(link);
-      }
-    },
-
-    parseDeadlink(deadlink) {
-      let a, m, post, postID;
-      if ($.hasClass(deadlink.parentNode, 'prettyprint')) {
-        // Don't quotify deadlinks inside code tags,
-        // un-`span` them.
-        // This won't be necessary once 4chan
-        // stops quotifying inside code tags:
-        // https://github.com/4chan/4chan-JS/issues/77
-        Quotify.fixDeadlink(deadlink);
-        return;
-      }
-
-      const quote = deadlink.textContent;
-      if (!(postID = quote.match(/\d+$/)?.[0])) { return; }
-      if (postID[0] === '0') {
-        // Fix quotelinks that start with a `0`.
-        Quotify.fixDeadlink(deadlink);
-        return;
-      }
-      const boardID = (m = quote.match(/^>>>\/([a-z\d]+)/)) ?
-        m[1]
-      :
-        this.board.ID;
-      const quoteID = `${boardID}.${postID}`;
-
-      if (post = g.posts.get(quoteID)) {
-        if (!post.isDead) {
-          // Don't (Dead) when quotifying in an archived post,
-          // and we know the post still exists.
-          a = $.el('a', {
-            href:        g.SITE.Build.postURL(boardID, post.thread.ID, postID),
-            className:   'quotelink',
-            textContent: quote
+      init() {
+          if (!['index', 'thread'].includes(g.VIEW) || !Conf['Resurrect Quotes']) {
+              return;
           }
-          );
-        } else {
-          // Replace the .deadlink span if we can redirect.
-          a = $.el('a', {
-            href:        g.SITE.Build.postURL(boardID, post.thread.ID, postID),
-            className:   'quotelink deadlink',
-            textContent: quote
+          $.addClass(doc, 'resurrect-quotes');
+          if (Conf['Comment Expansion']) {
+              ExpandComment.callbacks.push(this.node);
           }
-          );
-          $.add(a, Post.deadMark.cloneNode(true));
-          $.extend(a.dataset, {boardID, threadID: post.thread.ID, postID});
-        }
-
-      } else {
-        const redirect = Redirect.to('thread', {boardID, threadID: 0, postID});
-        const fetchable = Redirect.to('post', {boardID, postID});
-        if (redirect || fetchable) {
-          // Replace the .deadlink span if we can redirect or fetch the post.
-          a = $.el('a', {
-            href:        redirect || 'javascript:;',
-            className:   'deadlink',
-            textContent: quote
+          return Callbacks.Post.push({
+              name: 'Resurrect Quotes',
+              cb: this.node
+          });
+      },
+      node() {
+          if (this.isClone) {
+              this.nodes.archivelinks = $$('a.linkify.quotelink', this.nodes.comment);
+              return;
           }
-          );
-          $.add(a, Post.deadMark.cloneNode(true));
-          if (fetchable) {
-            // Make it function as a normal quote if we can fetch the post.
-            $.addClass(a, 'quotelink');
-            $.extend(a.dataset, {boardID, postID});
+          for (var link of $$('a.linkify', this.nodes.comment)) {
+              Quotify.parseArchivelink.call(this, link);
           }
-        }
+          for (var deadlink of $$('.deadlink', this.nodes.comment)) {
+              Quotify.parseDeadlink.call(this, deadlink);
+          }
+      },
+      parseArchivelink(link) {
+          let m;
+          if (!(m = link.pathname.match(/^\/([^/]+)\/thread\/S?(\d+)\/?$/))) {
+              return;
+          }
+          if (['boards.4chan.org', 'boards.4channel.org'].includes(link.hostname)) {
+              return;
+          }
+          const boardID = m[1];
+          const threadID = m[2];
+          const postID = link.hash.match(/^#[pq]?(\d+)$|$/)[1] || threadID;
+          if (Redirect.to('post', { boardID, postID })) {
+              $.addClass(link, 'quotelink');
+              $.extend(link.dataset, { boardID, threadID, postID });
+              return this.nodes.archivelinks.push(link);
+          }
+      },
+      parseDeadlink(deadlink) {
+          let a, m, post, postID;
+          if ($.hasClass(deadlink.parentNode, 'prettyprint')) {
+              // Don't quotify deadlinks inside code tags,
+              // un-`span` them.
+              // This won't be necessary once 4chan
+              // stops quotifying inside code tags:
+              // https://github.com/4chan/4chan-JS/issues/77
+              Quotify.fixDeadlink(deadlink);
+              return;
+          }
+          const quote = deadlink.textContent;
+          if (!(postID = quote.match(/\d+$/)?.[0])) {
+              return;
+          }
+          if (postID[0] === '0') {
+              // Fix quotelinks that start with a `0`.
+              Quotify.fixDeadlink(deadlink);
+              return;
+          }
+          const boardID = (m = quote.match(/^>>>\/([a-z\d]+)/)) ?
+              m[1]
+              :
+                  this.board.ID;
+          const quoteID = `${boardID}.${postID}`;
+          if (post = g.posts.get(quoteID)) {
+              if (!post.isDead) {
+                  // Don't (Dead) when quotifying in an archived post,
+                  // and we know the post still exists.
+                  a = $.el('a', {
+                      href: g.SITE.Build.postURL(boardID, post.thread.ID, postID),
+                      className: 'quotelink',
+                      textContent: quote
+                  });
+              }
+              else {
+                  // Replace the .deadlink span if we can redirect.
+                  a = $.el('a', {
+                      href: g.SITE.Build.postURL(boardID, post.thread.ID, postID),
+                      className: 'quotelink deadlink',
+                      textContent: quote
+                  });
+                  $.add(a, Post.deadMark.cloneNode(true));
+                  $.extend(a.dataset, { boardID, threadID: post.thread.ID, postID });
+              }
+          }
+          else {
+              const redirect = Redirect.to('thread', { boardID, threadID: 0, postID });
+              const fetchable = Redirect.to('post', { boardID, postID });
+              if (redirect || fetchable) {
+                  // Replace the .deadlink span if we can redirect or fetch the post.
+                  a = $.el('a', {
+                      href: redirect || 'javascript:;',
+                      className: 'deadlink',
+                      textContent: quote
+                  });
+                  $.add(a, Post.deadMark.cloneNode(true));
+                  if (fetchable) {
+                      // Make it function as a normal quote if we can fetch the post.
+                      $.addClass(a, 'quotelink');
+                      $.extend(a.dataset, { boardID, postID });
+                  }
+              }
+          }
+          if (!this.quotes.includes(quoteID)) {
+              this.quotes.push(quoteID);
+          }
+          if (!a) {
+              $.add(deadlink, Post.deadMark.cloneNode(true));
+              return;
+          }
+          $.replace(deadlink, a);
+          if ($.hasClass(a, 'quotelink')) {
+              return this.nodes.quotelinks.push(a);
+          }
+      },
+      fixDeadlink(deadlink) {
+          let el;
+          if (!(el = deadlink.previousSibling) || (el.nodeName === 'BR')) {
+              const green = $.el('span', { className: 'quote' });
+              $.before(deadlink, green);
+              $.add(green, deadlink);
+          }
+          return $.replace(deadlink, [...deadlink.childNodes]);
       }
-
-      if (!this.quotes.includes(quoteID)) { this.quotes.push(quoteID); }
-
-      if (!a) {
-        $.add(deadlink, Post.deadMark.cloneNode(true));
-        return;
-      }
-
-      $.replace(deadlink, a);
-      if ($.hasClass(a, 'quotelink')) {
-        return this.nodes.quotelinks.push(a);
-      }
-    },
-
-    fixDeadlink(deadlink) {
-      let el;
-      if (!(el = deadlink.previousSibling) || (el.nodeName === 'BR')) {
-        const green = $.el('span',
-          {className: 'quote'});
-        $.before(deadlink, green);
-        $.add(green, deadlink);
-      }
-      return $.replace(deadlink, [...deadlink.childNodes]);
-    }
   };
 
   var Main = {
-    init() {
-      // Return if the url is exactly https://www.4chan.org, this is only the home page which has a cloudflare checking
-      // system which breaks this script. Keep it in the includes so it can be found on greasy fork.
-      // __cf is also a cloudflare check page
-      if (location.hostname === 'www.4chan.org' || location.search.includes("__cf")) return;
-      // XXX dwb userscripts extension reloads scripts run at document-start when replaceState/pushState is called.
-      // XXX Firefox reinjects WebExtension content scripts when extension is updated / reloaded.
-      try {
-        let w = window;
+      init() {
+          // Return if the url is exactly https://www.4chan.org, this is only the home page which has a cloudflare checking
+          // system which breaks this script. Keep it in the includes so it can be found on greasy fork.
+          // __cf is also a cloudflare check page
+          if (location.hostname === 'www.4chan.org' || location.search.includes("__cf"))
+              return;
+          // XXX dwb userscripts extension reloads scripts run at document-start when replaceState/pushState is called.
+          // XXX Firefox reinjects WebExtension content scripts when extension is updated / reloaded.
+          try {
+              let w = window;
 
-        if (`${meta.name} antidup` in w) { return; }
-        w[`${meta.name} antidup`] = true;
-      } catch (error) {}
-
-      // Don't run inside ad iframes.
-      try {
-        if (window.frameElement && ['', 'about:blank'].includes(window.frameElement.src)) { return; }
-      } catch (error1) {}
-
-      // Detect multiple copies of 4chan X
-      if (doc && $.hasClass(doc, 'fourchan-x')) { return; }
-      $.asap(docSet, function() {
-        $.addClass(doc, 'fourchan-xt', 'fourchan-x', 'seaweedchan');
-        if ($.engine) $.addClass(doc, `ua-${$.engine}`);
-        BoardConfig.ready(() => {
-          if (g.BOARD?.config.ws_board != null) $.addClass(doc, g.BOARD.config.ws_board ? 'ws' : 'nws');
-        });
-      });
-      try {
-        $.global(
-          'exposeVersion',
-          { version: g.VERSION, buildDate: g.VERSION_DATE.getTime().toString() },
-        );
-      } catch (e) {
-        console.error(e);
-      }
-      $.on(d, '4chanXInitFinished', function() {
-        if (Main.expectInitFinished) {
-          return delete Main.expectInitFinished;
-        } else {
-          new Notice('error', `Error: Multiple copies of ${meta.name} or 4chan X are enabled.`);
-          return $.addClass(doc, 'tainted');
-        }
-      });
-
-      // Detect "mounted" event from Kissu
-      var mountedCB = function() {
-        d.removeEventListener('mounted', mountedCB, true);
-        Main.isMounted = true;
-        return Main.mountedCBs.map((cb) =>
-          (() => { try {
-            return cb();
-          } catch (error2) {} })());
-      };
-      d.addEventListener('mounted', mountedCB, true);
-
-      // Flatten default values from Config into Conf
-      var flatten = function(parent, obj) {
-        if (obj instanceof Array) {
-          Conf[parent] = dict.clone(obj[0]);
-        } else if (typeof obj === 'object') {
-          for (var key in obj) {
-            flatten(key, obj[key]);
+              if (`${meta.name} antidup` in w) {
+                  return;
+              }
+              w[`${meta.name} antidup`] = true;
           }
-        } else { // string or number
-          Conf[parent] = obj;
-        }
-      };
-
-      // XXX Remove document-breaking ad
-      if (location.hostname === 'boards.4chan.org') {
-        $.asap(docSet, () => $.onExists(doc, 'iframe[srcdoc]', $.rm));
-      }
-
-      flatten(null, Config);
-
-      for (var db of DataBoard.keys) {
-        Conf[db] = dict();
-      }
-      Conf['customTitles'] = dict.clone({'4chan.org': {boards: {'qa': {'boardTitle': {orig: '/qa/ - Question & Answer', title: '/qa/ - 2D/Random'}}}}});
-      Conf['boardConfig'] = {boards: dict()};
-      Conf['archives'] = Redirect.archives;
-      Conf['selectedArchives'] = dict();
-      Conf['cooldowns'] = dict();
-      Conf['Index Sort'] = dict();
-      for (let i = 0; i < 2; i++) { Conf[`Last Long Reply Thresholds ${i}`] = dict(); }
-      Conf['siteProperties'] = dict();
-
-      // XXX old key names
-      Conf['Except Archives from Encryption'] = false;
-      Conf['JSON Navigation'] = true;
-      Conf['Oekaki Links'] = true;
-      Conf['Show Name and Subject'] = false;
-      Conf['QR Shortcut'] = true;
-      Conf['Bottom QR Link'] = true;
-      Conf['Toggleable Thread Watcher'] = true;
-      Conf['siteSoftware'] = '';
-      Conf['Use Faster Image Host'] = 'true';
-      Conf['Captcha Fixes'] = true;
-      Conf['captchaServiceDomain'] = '';
-      Conf['captchaServiceKey'] = dict();
-
-      // Enforce JS whitelist
-      if (
-        /\.4chan(?:nel)?\.org$/.test(location.hostname) &&
-        !SW.yotsuba.regexp.pass.test(location.href) &&
-        !SW.yotsuba.regexp.captcha.test(location.href) &&
-        !$$('script:not([src])', d).filter(s => /this\[/.test(s.textContent)).length
-      ) {
-        ($.getSync || $.get)({'jsWhitelist': Conf['jsWhitelist']}, ({jsWhitelist}) => {
-          const parsedList = jsWhitelist.replace(/^#.*$/mg, '').replace(/[\s;]+/g, ' ').trim();
-          if (/\S/.test(parsedList)) $.addCSP(`script-src ${parsedList}`);
-        });
-      }
-
-      // Get saved values as items
-      const items = dict();
-      for (const key in Conf) items[key] = undefined;
-      items['previousversion'] = undefined;
-      ($.getSync || $.get)(items, function(items) {
-        $.asap(docSet, function() {
-
-          // Don't hide the local storage warning behind a settings panel.
-          if ($.cantSet) ; else if ((items.previousversion == null)) {
-            Main.isFirstRun = true;
-            Main.ready(function() {
-              $.set('previousversion', g.VERSION);
-              return Settings.open();
-            });
-
-          // Migrate old settings
-          } else if (items.previousversion !== g.VERSION) {
-            Main.upgrade(items);
+          catch (error) { }
+          // Don't run inside ad iframes.
+          try {
+              if (window.frameElement && ['', 'about:blank'].includes(window.frameElement.src)) {
+                  return;
+              }
           }
-
-          // Combine default values with saved values
-          for (const key in Conf) {
-            Conf[key] = items[key] ?? Conf[key];
+          catch (error1) { }
+          // Detect multiple copies of 4chan X
+          if (doc && $.hasClass(doc, 'fourchan-x')) {
+              return;
           }
-
-          Site.init(Main.initFeatures);
-        });
-      });
-    },
-
-    upgrade(items) {
-      const {previousversion} = items;
-      const changes = Settings.upgrade(items, previousversion);
-      items.previousversion = (changes.previousversion = g.VERSION);
-      return $.set(changes, function() {
-        if (items['Show Updated Notifications'] ?? true) {
-          const el = $.el('span',
-            { innerHTML: `${meta.name} has been updated to <a href="${meta.changelog}" target="_blank">version ${g.VERSION}</a>.` });
-          return new Notice('info', el, 15);
-        }
-      });
-    },
-
-    parseURL(site=g.SITE, url=location) {
-      const r = {};
-
-      if (!site) { return r; }
-      r.siteID = site.ID;
-
-      if (site.isBoardlessPage?.(url)) { return r; }
-      const pathname = url.pathname.split(/\/+/);
-      r.boardID = pathname[1];
-
-      if (site.isFileURL(url)) {
-        r.VIEW = 'file';
-      } else if (site.isAuxiliaryPage?.(url)) ; else if (['thread', 'res'].includes(pathname[2])) {
-        r.VIEW = 'thread';
-        r.threadID = (r.THREADID = +pathname[3].replace(/\.\w+$/, ''));
-      } else if ((pathname[2] === 'archive') && (pathname[3] === 'res')) {
-        r.VIEW = 'thread';
-        r.threadID = (r.THREADID = +pathname[4].replace(/\.\w+$/, ''));
-        r.threadArchived = true;
-      } else if (/^(?:catalog|archive)(?:\.\w+)?$/.test(pathname[2])) {
-        r.VIEW = pathname[2].replace(/\.\w+$/, '');
-      } else if (/^(?:index|\d*)(?:\.\w+)?$/.test(pathname[2])) {
-        r.VIEW = 'index';
-      }
-      return r;
-    },
-
-    initFeatures() {
-      $.global('initMain');
-      Main.jsEnabled = $.hasClass(doc, 'js-enabled');
-
-      $.extend(g, Main.parseURL());
-      if (g.boardID) { g.BOARD = new Board(g.boardID); }
-
-      if (!g.VIEW) {
-        g.SITE.initAuxiliary?.();
-        return;
-      }
-
-      if (g.VIEW === 'file') {
-        $.asap((() => d.readyState !== 'loading'), function() {
-          let video;
-          if ((g.SITE.software === 'yotsuba') && Conf['404 Redirect'] && g.SITE.is404?.()) {
-            const pathname = location.pathname.split(/\/+/);
-            return Redirect.navigate('file', {
-              boardID:  g.BOARD.ID,
-              filename: pathname[pathname.length - 1]
-            });
-          } else if (video = $('video')) {
-            if (Conf['Volume in New Tab']) {
-              Volume.setup(video);
-            }
-            if (Conf['Loop in New Tab']) {
-              video.loop = true;
-              video.controls = true;
-              video.play();
-            }
-          }
-        });
-        return;
-      }
-
-      g.threads = new SimpleDict();
-      g.posts   = new SimpleDict();
-
-      // set up CSS when <head> is completely loaded
-      $.onExists(doc, 'body', Main.initStyle);
-
-      // c.time 'All initializations'
-      for (var [name, feature] of Main.features) {
-        if (g.SITE.disabledFeatures && g.SITE.disabledFeatures.includes(name)) { continue; }
-        // c.time "#{name} initialization"
-        try {
-          feature.init();
-        } catch (err) {
-          Main.handleErrors({
-            message: `\"${name}\" initialization crashed.`,
-            error: err
+          $.asap(docSet, function () {
+              $.addClass(doc, 'fourchan-xt', 'fourchan-x', 'seaweedchan');
+              if ($.engine)
+                  $.addClass(doc, `ua-${$.engine}`);
+              BoardConfig.ready(() => {
+                  if (g.BOARD?.config.ws_board != null)
+                      $.addClass(doc, g.BOARD.config.ws_board ? 'ws' : 'nws');
+              });
           });
-        }
-      }
-        // finally
-        //   c.timeEnd "#{name} initialization"
-
-      // c.timeEnd 'All initializations'
-
-      return $.ready(Main.initReady);
-    },
-
-    initStyle() {
-      if (!Main.isThisPageLegit()) { return; }
-
-      // disable the mobile layout
-      const mobileLink = $('link[href*=mobile]', d.head);
-      if (mobileLink) mobileLink.disabled = true;
-      doc.dataset.host = location.host;
-      $.addClass(doc, `sw-${g.SITE.software}`);
-      $.addClass(doc, g.VIEW === 'thread' ? 'thread-view' : g.VIEW);
-      $.onExists(doc, '.ad-cnt, .adg-rects > .desktop', ad => $.onExists(ad, 'img, iframe', () => $.addClass(doc, 'ads-loaded')));
-      if (Conf['Autohiding Scrollbar']) { $.addClass(doc, 'autohiding-scrollbar'); }
-      $.ready(function() {
-        if ((d.body.clientHeight > doc.clientHeight) && ((window.innerWidth === doc.clientWidth) !== Conf['Autohiding Scrollbar'])) {
-          Conf['Autohiding Scrollbar'] = !Conf['Autohiding Scrollbar'];
-          $.set('Autohiding Scrollbar', Conf['Autohiding Scrollbar']);
-          return $.toggleClass(doc, 'autohiding-scrollbar');
-        }
-      });
-      $.addStyle(CSS.sub(CSS.boards), 'fourchanx-css');
-      Main.bgColorStyle = $.el('style', {id: 'fourchanx-bgcolor-css'});
-
-      return Main.setClass();
-    },
-
-    setClass() {
-      let mainStyleSheet, style, styleSheets;
-      const knownStyles = ['yotsuba', 'yotsuba-b', 'futaba', 'burichan', 'photon', 'tomorrow', 'spooky'];
-
-      if ((g.SITE.software === 'yotsuba') && (g.VIEW === 'catalog')) {
-        if (mainStyleSheet = $.id('base-css')) {
-          style = mainStyleSheet.href.match(/catalog_(\w+)/)?.[1].replace('_new', '').replace(/_+/g, '-');
-          if (knownStyles.includes(style)) {
-            $.addClass(doc, style);
-            return;
+          try {
+              $.global('exposeVersion', { version: g.VERSION, buildDate: g.VERSION_DATE.getTime().toString() });
           }
-        }
-      }
-
-      style = (mainStyleSheet = (styleSheets = null));
-
-      const setStyle = function() {
-        // Use preconfigured CSS for 4chan's default themes.
-        if (g.SITE.software === 'yotsuba') {
-          $.rmClass(doc, style);
-          style = null;
-          for (var styleSheet of styleSheets) {
-            if (styleSheet.href === mainStyleSheet?.href) {
-              style = styleSheet.title.toLowerCase().replace('new', '').trim().replace(/\s+/g, '-');
-              if (style === '_special') { style = styleSheet.href.match(/[a-z]*(?=[^/]*$)/)[0]; }
-              if (!knownStyles.includes(style)) { style = null; }
-              break;
-            }
+          catch (e) {
+              console.error(e);
           }
-          if (style) {
-            $.addClass(doc, style);
-            $.rm(Main.bgColorStyle);
-            return;
+          $.on(d, '4chanXInitFinished', function () {
+              if (Main.expectInitFinished) {
+                  return delete Main.expectInitFinished;
+              }
+              else {
+                  new Notice('error', `Error: Multiple copies of ${meta.name} or 4chan X are enabled.`);
+                  return $.addClass(doc, 'tainted');
+              }
+          });
+          // Detect "mounted" event from Kissu
+          var mountedCB = function () {
+              d.removeEventListener('mounted', mountedCB, true);
+              Main.isMounted = true;
+              return Main.mountedCBs.map((cb) => (() => {
+                  try {
+                      return cb();
+                  }
+                  catch (error2) { }
+              })());
+          };
+          d.addEventListener('mounted', mountedCB, true);
+          // Flatten default values from Config into Conf
+          var flatten = function (parent, obj) {
+              if (obj instanceof Array) {
+                  Conf[parent] = dict.clone(obj[0]);
+              }
+              else if (typeof obj === 'object') {
+                  for (var key in obj) {
+                      flatten(key, obj[key]);
+                  }
+              }
+              else { // string or number
+                  Conf[parent] = obj;
+              }
+          };
+          // XXX Remove document-breaking ad
+          if (location.hostname === 'boards.4chan.org') {
+              $.asap(docSet, () => $.onExists(doc, 'iframe[srcdoc]', $.rm));
           }
-        }
-
-        // Determine proper dialog background color for other themes.
-        const div = g.SITE.bgColoredEl();
-        div.style.position = 'absolute';
-        div.style.visibility = 'hidden';
-        $.add(d.body, div);
-        let bgColor = window.getComputedStyle(div).backgroundColor;
-        $.rm(div);
-        const rgb = bgColor.match(/[\d.]+/g);
-        // Use body background if reply background is transparent
-        if (!/^rgb\(/.test(bgColor)) {
-          const s = window.getComputedStyle(d.body);
-          bgColor = `${s.backgroundColor} ${s.backgroundImage} ${s.backgroundRepeat} ${s.backgroundPosition}`;
-        }
-        let css = `\
+          flatten(null, Config);
+          for (var db of DataBoard.keys) {
+              Conf[db] = dict();
+          }
+          Conf['customTitles'] = dict.clone({ '4chan.org': { boards: { 'qa': { 'boardTitle': { orig: '/qa/ - Question & Answer', title: '/qa/ - 2D/Random' } } } } });
+          Conf['boardConfig'] = { boards: dict() };
+          Conf['archives'] = Redirect.archives;
+          Conf['selectedArchives'] = dict();
+          Conf['cooldowns'] = dict();
+          Conf['Index Sort'] = dict();
+          for (let i = 0; i < 2; i++) {
+              Conf[`Last Long Reply Thresholds ${i}`] = dict();
+          }
+          Conf['siteProperties'] = dict();
+          // XXX old key names
+          Conf['Except Archives from Encryption'] = false;
+          Conf['JSON Navigation'] = true;
+          Conf['Oekaki Links'] = true;
+          Conf['Show Name and Subject'] = false;
+          Conf['QR Shortcut'] = true;
+          Conf['Bottom QR Link'] = true;
+          Conf['Toggleable Thread Watcher'] = true;
+          Conf['siteSoftware'] = '';
+          Conf['Use Faster Image Host'] = 'true';
+          Conf['Captcha Fixes'] = true;
+          Conf['captchaServiceDomain'] = '';
+          Conf['captchaServiceKey'] = dict();
+          // Enforce JS whitelist
+          if (/\.4chan(?:nel)?\.org$/.test(location.hostname) &&
+              !SW.yotsuba.regexp.pass.test(location.href) &&
+              !SW.yotsuba.regexp.captcha.test(location.href) &&
+              !$$('script:not([src])', d).filter(s => /this\[/.test(s.textContent)).length) {
+              ($.getSync || $.get)({ 'jsWhitelist': Conf['jsWhitelist'] }, ({ jsWhitelist }) => {
+                  const parsedList = jsWhitelist.replace(/^#.*$/mg, '').replace(/[\s;]+/g, ' ').trim();
+                  if (/\S/.test(parsedList))
+                      $.addCSP(`script-src ${parsedList}`);
+              });
+          }
+          // Get saved values as items
+          const items = dict();
+          for (const key in Conf)
+              items[key] = undefined;
+          items['previousversion'] = undefined;
+          ($.getSync || $.get)(items, function (items) {
+              $.asap(docSet, function () {
+                  // Don't hide the local storage warning behind a settings panel.
+                  if ($.cantSet) ;
+                  else if ((items.previousversion == null)) {
+                      Main.isFirstRun = true;
+                      Main.ready(function () {
+                          $.set('previousversion', g.VERSION);
+                          return Settings.open();
+                      });
+                      // Migrate old settings
+                  }
+                  else if (items.previousversion !== g.VERSION) {
+                      Main.upgrade(items);
+                  }
+                  // Combine default values with saved values
+                  for (const key in Conf) {
+                      Conf[key] = items[key] ?? Conf[key];
+                  }
+                  Site.init(Main.initFeatures);
+              });
+          });
+      },
+      upgrade(items) {
+          const { previousversion } = items;
+          const changes = Settings.upgrade(items, previousversion);
+          items.previousversion = (changes.previousversion = g.VERSION);
+          return $.set(changes, function () {
+              if (items['Show Updated Notifications'] ?? true) {
+                  const el = $.el('span', { innerHTML: `${meta.name} has been updated to <a href="${meta.changelog}" target="_blank">version ${g.VERSION}</a>.` });
+                  return new Notice('info', el, 15);
+              }
+          });
+      },
+      parseURL(site = g.SITE, url = location) {
+          const r = {};
+          if (!site) {
+              return r;
+          }
+          r.siteID = site.ID;
+          if (site.isBoardlessPage?.(url)) {
+              return r;
+          }
+          const pathname = url.pathname.split(/\/+/);
+          r.boardID = pathname[1];
+          if (site.isFileURL(url)) {
+              r.VIEW = 'file';
+          }
+          else if (site.isAuxiliaryPage?.(url)) ;
+          else if (['thread', 'res'].includes(pathname[2])) {
+              r.VIEW = 'thread';
+              r.threadID = (r.THREADID = +pathname[3].replace(/\.\w+$/, ''));
+          }
+          else if ((pathname[2] === 'archive') && (pathname[3] === 'res')) {
+              r.VIEW = 'thread';
+              r.threadID = (r.THREADID = +pathname[4].replace(/\.\w+$/, ''));
+              r.threadArchived = true;
+          }
+          else if (/^(?:catalog|archive)(?:\.\w+)?$/.test(pathname[2])) {
+              r.VIEW = pathname[2].replace(/\.\w+$/, '');
+          }
+          else if (/^(?:index|\d*)(?:\.\w+)?$/.test(pathname[2])) {
+              r.VIEW = 'index';
+          }
+          return r;
+      },
+      initFeatures() {
+          $.global('initMain');
+          Main.jsEnabled = $.hasClass(doc, 'js-enabled');
+          $.extend(g, Main.parseURL());
+          if (g.boardID) {
+              g.BOARD = new Board(g.boardID);
+          }
+          if (!g.VIEW) {
+              g.SITE.initAuxiliary?.();
+              return;
+          }
+          if (g.VIEW === 'file') {
+              $.asap((() => d.readyState !== 'loading'), function () {
+                  let video;
+                  if ((g.SITE.software === 'yotsuba') && Conf['404 Redirect'] && g.SITE.is404?.()) {
+                      const pathname = location.pathname.split(/\/+/);
+                      return Redirect.navigate('file', {
+                          boardID: g.BOARD.ID,
+                          filename: pathname[pathname.length - 1]
+                      });
+                  }
+                  else if (video = $('video')) {
+                      if (Conf['Volume in New Tab']) {
+                          Volume.setup(video);
+                      }
+                      if (Conf['Loop in New Tab']) {
+                          video.loop = true;
+                          video.controls = true;
+                          video.play();
+                      }
+                  }
+              });
+              return;
+          }
+          g.threads = new SimpleDict();
+          g.posts = new SimpleDict();
+          // set up CSS when <head> is completely loaded
+          $.onExists(doc, 'body', Main.initStyle);
+          // c.time 'All initializations'
+          for (var [name, feature] of Main.features) {
+              if (g.SITE.disabledFeatures && g.SITE.disabledFeatures.includes(name)) {
+                  continue;
+              }
+              // c.time "#{name} initialization"
+              try {
+                  feature.init();
+              }
+              catch (err) {
+                  Main.handleErrors({
+                      message: `\"${name}\" initialization crashed.`,
+                      error: err
+                  });
+              }
+          }
+          // finally
+          //   c.timeEnd "#{name} initialization"
+          // c.timeEnd 'All initializations'
+          return $.ready(Main.initReady);
+      },
+      initStyle() {
+          if (!Main.isThisPageLegit()) {
+              return;
+          }
+          // disable the mobile layout
+          const mobileLink = $('link[href*=mobile]', d.head);
+          if (mobileLink)
+              mobileLink.disabled = true;
+          doc.dataset.host = location.host;
+          $.addClass(doc, `sw-${g.SITE.software}`);
+          $.addClass(doc, g.VIEW === 'thread' ? 'thread-view' : g.VIEW);
+          $.onExists(doc, '.ad-cnt, .adg-rects > .desktop', ad => $.onExists(ad, 'img, iframe', () => $.addClass(doc, 'ads-loaded')));
+          if (Conf['Autohiding Scrollbar']) {
+              $.addClass(doc, 'autohiding-scrollbar');
+          }
+          $.ready(function () {
+              if ((d.body.clientHeight > doc.clientHeight) && ((window.innerWidth === doc.clientWidth) !== Conf['Autohiding Scrollbar'])) {
+                  Conf['Autohiding Scrollbar'] = !Conf['Autohiding Scrollbar'];
+                  $.set('Autohiding Scrollbar', Conf['Autohiding Scrollbar']);
+                  return $.toggleClass(doc, 'autohiding-scrollbar');
+              }
+          });
+          $.addStyle(CSS.sub(CSS.boards), 'fourchanx-css');
+          Main.bgColorStyle = $.el('style', { id: 'fourchanx-bgcolor-css' });
+          return Main.setClass();
+      },
+      setClass() {
+          let mainStyleSheet, style, styleSheets;
+          const knownStyles = ['yotsuba', 'yotsuba-b', 'futaba', 'burichan', 'photon', 'tomorrow', 'spooky'];
+          if ((g.SITE.software === 'yotsuba') && (g.VIEW === 'catalog')) {
+              if (mainStyleSheet = $.id('base-css')) {
+                  style = mainStyleSheet.href.match(/catalog_(\w+)/)?.[1].replace('_new', '').replace(/_+/g, '-');
+                  if (knownStyles.includes(style)) {
+                      $.addClass(doc, style);
+                      return;
+                  }
+              }
+          }
+          style = (mainStyleSheet = (styleSheets = null));
+          const setStyle = function () {
+              // Use preconfigured CSS for 4chan's default themes.
+              if (g.SITE.software === 'yotsuba') {
+                  $.rmClass(doc, style);
+                  style = null;
+                  for (var styleSheet of styleSheets) {
+                      if (styleSheet.href === mainStyleSheet?.href) {
+                          style = styleSheet.title.toLowerCase().replace('new', '').trim().replace(/\s+/g, '-');
+                          if (style === '_special') {
+                              style = styleSheet.href.match(/[a-z]*(?=[^/]*$)/)[0];
+                          }
+                          if (!knownStyles.includes(style)) {
+                              style = null;
+                          }
+                          break;
+                      }
+                  }
+                  if (style) {
+                      $.addClass(doc, style);
+                      $.rm(Main.bgColorStyle);
+                      return;
+                  }
+              }
+              // Determine proper dialog background color for other themes.
+              const div = g.SITE.bgColoredEl();
+              div.style.position = 'absolute';
+              div.style.visibility = 'hidden';
+              $.add(d.body, div);
+              let bgColor = window.getComputedStyle(div).backgroundColor;
+              $.rm(div);
+              const rgb = bgColor.match(/[\d.]+/g);
+              // Use body background if reply background is transparent
+              if (!/^rgb\(/.test(bgColor)) {
+                  const s = window.getComputedStyle(d.body);
+                  bgColor = `${s.backgroundColor} ${s.backgroundImage} ${s.backgroundRepeat} ${s.backgroundPosition}`;
+              }
+              let css = `\
 .dialog, .suboption-list > div:last-of-type, :root.catalog-hover-expand .catalog-container:hover > .post {
   background: ${bgColor};
 }
 .unread-mark-read {
-  background-color: rgba(${rgb.slice(0, 3).join(', ')}, ${0.5*(rgb[3] || 1)});
+  background-color: rgba(${rgb.slice(0, 3).join(', ')}, ${0.5 * (rgb[3] || 1)});
 }\
 `;
-        if ($.luma(rgb) < 100) {
-          css += '.watch-thread-link { --xt-watcher: #c8c8c8 }';
-        }
-        Main.bgColorStyle.textContent = css;
-        return $.after($.id('fourchanx-css'), Main.bgColorStyle);
-      };
-
-      $.onExists(d.head, g.SITE.selectors.styleSheet, function(el) {
-        mainStyleSheet = el;
-        if (g.SITE.software === 'yotsuba') {
-          styleSheets = $$('link[rel="alternate stylesheet"]', d.head);
-        }
-        new MutationObserver(setStyle).observe(mainStyleSheet, {
-          attributes: true,
-          attributeFilter: ['href']
-        });
-        $.on(mainStyleSheet, 'load', setStyle);
-        return setStyle();
-      });
-      if (!mainStyleSheet) {
-        for (var styleSheet of $$('link[rel="stylesheet"]', d.head)) {
-          $.on(styleSheet, 'load', setStyle);
-        }
-        return setStyle();
-      }
-    },
-
-    initReady() {
-      if (g.SITE.is404?.()) {
-        if (g.VIEW === 'thread') {
-          ThreadWatcher.set404(g.BOARD.ID, g.THREADID, function() {
-            if (Conf['404 Redirect']) {
-              return Redirect.navigate('thread', {
-                boardID:  g.BOARD.ID,
-                threadID: g.THREADID,
-                postID:   +location.hash.match(/\d+/)
-              } // post number or 0
-              , `/${g.BOARD}/`);
-            }
+              if ($.luma(rgb) < 100) {
+                  css += '.watch-thread-link { --xt-watcher: #c8c8c8 }';
+              }
+              Main.bgColorStyle.textContent = css;
+              return $.after($.id('fourchanx-css'), Main.bgColorStyle);
+          };
+          $.onExists(d.head, g.SITE.selectors.styleSheet, function (el) {
+              mainStyleSheet = el;
+              if (g.SITE.software === 'yotsuba') {
+                  styleSheets = $$('link[rel="alternate stylesheet"]', d.head);
+              }
+              new MutationObserver(setStyle).observe(mainStyleSheet, {
+                  attributes: true,
+                  attributeFilter: ['href']
+              });
+              $.on(mainStyleSheet, 'load', setStyle);
+              return setStyle();
           });
-        }
-
-        return;
-      }
-
-      if (g.SITE.isIncomplete?.()) {
-        const msg = $.el('div',
-          {innerHTML: 'The page didn&#039;t load completely.<br>Some features may not work unless you <a href="javascript:;">reload</a>.'});
-        $.on($('a', msg), 'click', () => location.reload());
-        new Notice('warning', msg);
-      }
-
-      // Parse HTML or skip it and start building from JSON.
-      if (g.VIEW === 'catalog') {
-        Main.initCatalog();
-      } else if (!Index.enabled) {
-        if (g.SITE.awaitBoard) {
-          g.SITE.awaitBoard(Main.initThread);
-        } else {
-          Main.initThread();
-        }
-      } else {
-        Main.expectInitFinished = true;
-        $.event('4chanXInitFinished');
-      }
-    },
-
-    initThread() {
-      let board;
-      const s = g.SITE.selectors;
-      if (board = $((s.boardFor?.[g.VIEW] || s.board))) {
-        const threads = [];
-        const posts   = [];
-        const errors  = [];
-
-        try {
-          g.SITE.preParsingFixes?.(board);
-        } catch (error) {}
-
-        Main.addThreadsObserver = new MutationObserver(Main.addThreads);
-        Main.addPostsObserver   = new MutationObserver(Main.addPosts);
-        Main.addThreadsObserver.observe(board, {childList: true});
-
-        Main.parseThreads($$(s.thread, board), threads, posts, errors);
-        if (errors.length) { Main.handleErrors(errors); }
-
-        if (g.VIEW === 'thread') {
-          if (g.threadArchived) {
-            threads[0].isArchived = true;
-            threads[0].kill();
+          if (!mainStyleSheet) {
+              for (var styleSheet of $$('link[rel="stylesheet"]', d.head)) {
+                  $.on(styleSheet, 'load', setStyle);
+              }
+              return setStyle();
           }
-          g.SITE.parseThreadMetadata?.(threads[0]);
-        }
-
-        setTimeout(() => {
+      },
+      initReady() {
+          if (g.SITE.is404?.()) {
+              if (g.VIEW === 'thread') {
+                  ThreadWatcher.set404(g.BOARD.ID, g.THREADID, function () {
+                      if (Conf['404 Redirect']) {
+                          return Redirect.navigate('thread', {
+                              boardID: g.BOARD.ID,
+                              threadID: g.THREADID,
+                              postID: +location.hash.match(/\d+/)
+                          } // post number or 0
+                          , `/${g.BOARD}/`);
+                      }
+                  });
+              }
+              return;
+          }
+          if (g.SITE.isIncomplete?.()) {
+              const msg = $.el('div', { innerHTML: 'The page didn&#039;t load completely.<br>Some features may not work unless you <a href="javascript:;">reload</a>.' });
+              $.on($('a', msg), 'click', () => location.reload());
+              new Notice('warning', msg);
+          }
+          // Parse HTML or skip it and start building from JSON.
+          if (g.VIEW === 'catalog') {
+              Main.initCatalog();
+          }
+          else if (!Index.enabled) {
+              if (g.SITE.awaitBoard) {
+                  g.SITE.awaitBoard(Main.initThread);
+              }
+              else {
+                  Main.initThread();
+              }
+          }
+          else {
+              Main.expectInitFinished = true;
+              $.event('4chanXInitFinished');
+          }
+      },
+      initThread() {
+          let board;
+          const s = g.SITE.selectors;
+          if (board = $((s.boardFor?.[g.VIEW] || s.board))) {
+              const threads = [];
+              const posts = [];
+              const errors = [];
+              try {
+                  g.SITE.preParsingFixes?.(board);
+              }
+              catch (error) { }
+              Main.addThreadsObserver = new MutationObserver(Main.addThreads);
+              Main.addPostsObserver = new MutationObserver(Main.addPosts);
+              Main.addThreadsObserver.observe(board, { childList: true });
+              Main.parseThreads($$(s.thread, board), threads, posts, errors);
+              if (errors.length) {
+                  Main.handleErrors(errors);
+              }
+              if (g.VIEW === 'thread') {
+                  if (g.threadArchived) {
+                      threads[0].isArchived = true;
+                      threads[0].kill();
+                  }
+                  g.SITE.parseThreadMetadata?.(threads[0]);
+              }
+              setTimeout(() => {
+                  Main.callbackNodes('Thread', threads);
+                  Main.callbackNodesDB('Post', posts, function () {
+                      for (var post of posts)
+                          QuoteThreading.insert(post);
+                      Main.expectInitFinished = true;
+                      $.event('4chanXInitFinished');
+                  });
+              }, 0);
+          }
+          else {
+              Main.expectInitFinished = true;
+              $.event('4chanXInitFinished');
+          }
+      },
+      parseThreads(threadRoots, threads, posts, errors) {
+          for (var threadRoot of threadRoots) {
+              var boardObj = (() => {
+                  let boardID;
+                  if (boardID = threadRoot.dataset.board) {
+                      boardID = encodeURIComponent(boardID);
+                      return g.boards[boardID] || new Board(boardID);
+                  }
+                  else {
+                      return g.BOARD;
+                  }
+              })();
+              var threadID = +threadRoot.id.match(/\d*$/)[0];
+              if (!threadID || boardObj.threads.get(threadID)?.nodes.root) {
+                  return;
+              }
+              var thread = new Thread(threadID, boardObj);
+              thread.nodes.root = threadRoot;
+              threads.push(thread);
+              var postRoots = $$(g.SITE.selectors.postContainer, threadRoot);
+              if (g.SITE.isOPContainerThread) {
+                  postRoots.unshift(threadRoot);
+              }
+              Main.parsePosts(postRoots, thread, posts, errors);
+              Main.addPostsObserver.observe(threadRoot, { childList: true });
+          }
+      },
+      parsePosts(postRoots, thread, posts, errors) {
+          for (var postRoot of postRoots) {
+              if (!(postRoot.dataset.fullID && g.posts.get(postRoot.dataset.fullID)) && $(g.SITE.selectors.comment, postRoot)) {
+                  try {
+                      posts.push(new Post(postRoot, thread, thread.board));
+                  }
+                  catch (err) {
+                      // Skip posts that we failed to parse.
+                      errors.push({
+                          message: `Parsing of Post No.${postRoot.id.match(/\d+/)} failed. Post will be skipped.`,
+                          error: err,
+                          html: postRoot.outerHTML
+                      });
+                  }
+              }
+          }
+      },
+      addThreads(records) {
+          const threadRoots = [];
+          for (var record of records) {
+              for (var node of record.addedNodes) {
+                  if ((node.nodeType === Node.ELEMENT_NODE) && node.matches(g.SITE.selectors.thread)) {
+                      threadRoots.push(node);
+                  }
+              }
+          }
+          if (!threadRoots.length) {
+              return;
+          }
+          const threads = [];
+          const posts = [];
+          const errors = [];
+          Main.parseThreads(threadRoots, threads, posts, errors);
+          if (errors.length) {
+              Main.handleErrors(errors);
+          }
           Main.callbackNodes('Thread', threads);
-          Main.callbackNodesDB('Post', posts, function() {
-            for (var post of posts) QuoteThreading.insert(post);
-            Main.expectInitFinished = true;
-            $.event('4chanXInitFinished');
+          Main.callbackNodesDB('Post', posts, () => $.event('PostsInserted', null, records[0].target));
+      },
+      addPosts(records) {
+          let thread;
+          const threads = [];
+          const threadsRM = [];
+          const posts = [];
+          const errors = [];
+          for (var record of records) {
+              thread = Get.threadFromRoot(record.target);
+              var postRoots = [];
+              for (var node of record.addedNodes) {
+                  if (node.nodeType === Node.ELEMENT_NODE) {
+                      if (node.matches(g.SITE.selectors.postContainer) || (node = $(g.SITE.selectors.postContainer, node))) {
+                          postRoots.push(node);
+                      }
+                  }
+              }
+              var n = posts.length;
+              Main.parsePosts(postRoots, thread, posts, errors);
+              if ((posts.length > n) && !threads.includes(thread)) {
+                  threads.push(thread);
+              }
+              var anyRemoved = false;
+              for (var el of record.removedNodes) {
+                  if ((Get.postFromRoot(el)?.nodes.root === el) && !doc.contains(el)) {
+                      anyRemoved = true;
+                      break;
+                  }
+              }
+              if (anyRemoved && !threadsRM.includes(thread)) {
+                  threadsRM.push(thread);
+              }
+          }
+          if (errors.length) {
+              Main.handleErrors(errors);
+          }
+          Main.callbackNodesDB('Post', posts, function () {
+              for (thread of threads) {
+                  $.event('PostsInserted', null, thread.nodes.root);
+              }
+              for (thread of threadsRM) {
+                  $.event('PostsRemoved', null, thread.nodes.root);
+              }
           });
-        }, 0);
-
-      } else {
-        Main.expectInitFinished = true;
-        $.event('4chanXInitFinished');
-      }
-    },
-
-    parseThreads(threadRoots, threads, posts, errors) {
-      for (var threadRoot of threadRoots) {
-        var boardObj = (() => {
-          let boardID;
-          if (boardID = threadRoot.dataset.board) {
-          boardID = encodeURIComponent(boardID);
-          return g.boards[boardID] || new Board(boardID);
-        } else {
-          return g.BOARD;
-        }
-        })();
-        var threadID = +threadRoot.id.match(/\d*$/)[0];
-        if (!threadID || boardObj.threads.get(threadID)?.nodes.root) { return; }
-        var thread = new Thread(threadID, boardObj);
-        thread.nodes.root = threadRoot;
-        threads.push(thread);
-        var postRoots = $$(g.SITE.selectors.postContainer, threadRoot);
-        if (g.SITE.isOPContainerThread) { postRoots.unshift(threadRoot); }
-        Main.parsePosts(postRoots, thread, posts, errors);
-        Main.addPostsObserver.observe(threadRoot, {childList: true});
-      }
-    },
-
-    parsePosts(postRoots, thread, posts, errors) {
-      for (var postRoot of postRoots) {
-        if (!(postRoot.dataset.fullID && g.posts.get(postRoot.dataset.fullID)) && $(g.SITE.selectors.comment, postRoot)) {
-          try {
-            posts.push(new Post(postRoot, thread, thread.board));
-          } catch (err) {
-            // Skip posts that we failed to parse.
-            errors.push({
-              message: `Parsing of Post No.${postRoot.id.match(/\d+/)} failed. Post will be skipped.`,
-              error: err,
-              html: postRoot.outerHTML
-            });
+      },
+      initCatalog() {
+          let board;
+          const s = g.SITE.selectors.catalog;
+          if (s && (board = $(s.board))) {
+              const threads = [];
+              const errors = [];
+              Main.addCatalogThreadsObserver = new MutationObserver(Main.addCatalogThreads);
+              Main.addCatalogThreadsObserver.observe(board, { childList: true });
+              Main.parseCatalogThreads($$(s.thread, board), threads, errors);
+              if (errors.length) {
+                  Main.handleErrors(errors);
+              }
+              Main.callbackNodes('CatalogThreadNative', threads);
           }
-        }
-      }
-    },
-
-    addThreads(records) {
-      const threadRoots = [];
-      for (var record of records) {
-        for (var node of record.addedNodes) {
-          if ((node.nodeType === Node.ELEMENT_NODE) && node.matches(g.SITE.selectors.thread)) {
-            threadRoots.push(node);
+          Main.expectInitFinished = true;
+          return $.event('4chanXInitFinished');
+      },
+      parseCatalogThreads(threadRoots, threads, errors) {
+          for (var threadRoot of threadRoots) {
+              try {
+                  var thread = new CatalogThreadNative(threadRoot);
+                  if (thread.thread.catalogViewNative?.nodes.root !== threadRoot) {
+                      thread.thread.catalogViewNative = thread;
+                      threads.push(thread);
+                  }
+              }
+              catch (err) {
+                  // Skip threads that we failed to parse.
+                  errors.push({
+                      message: `Parsing of Catalog Thread No.${(threadRoot.dataset.id || threadRoot.id).match(/\d+/)} failed. Thread will be skipped.`,
+                      error: err,
+                      html: threadRoot.outerHTML
+                  });
+              }
           }
-        }
-      }
-      if (!threadRoots.length) { return; }
-      const threads = [];
-      const posts   = [];
-      const errors  = [];
-      Main.parseThreads(threadRoots, threads, posts, errors);
-      if (errors.length) { Main.handleErrors(errors); }
-      Main.callbackNodes('Thread', threads);
-      Main.callbackNodesDB('Post', posts, () => $.event('PostsInserted', null, records[0].target));
-    },
-
-    addPosts(records) {
-      let thread;
-      const threads   = [];
-      const threadsRM = [];
-      const posts     = [];
-      const errors    = [];
-      for (var record of records) {
-        thread = Get.threadFromRoot(record.target);
-        var postRoots = [];
-        for (var node of record.addedNodes) {
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            if (node.matches(g.SITE.selectors.postContainer) || (node = $(g.SITE.selectors.postContainer, node))) {
-              postRoots.push(node);
-            }
+      },
+      addCatalogThreads(records) {
+          const threadRoots = [];
+          for (var record of records) {
+              for (var node of record.addedNodes) {
+                  if ((node.nodeType === Node.ELEMENT_NODE) && node.matches(g.SITE.selectors.catalog.thread)) {
+                      threadRoots.push(node);
+                  }
+              }
           }
-        }
-        var n = posts.length;
-        Main.parsePosts(postRoots, thread, posts, errors);
-        if ((posts.length > n) && !threads.includes(thread)) {
-          threads.push(thread);
-        }
-        var anyRemoved = false;
-        for (var el of record.removedNodes) {
-          if ((Get.postFromRoot(el)?.nodes.root === el) && !doc.contains(el)) {
-            anyRemoved = true;
-            break;
+          if (!threadRoots.length) {
+              return;
           }
-        }
-        if (anyRemoved && !threadsRM.includes(thread)) {
-          threadsRM.push(thread);
-        }
-      }
-      if (errors.length) { Main.handleErrors(errors); }
-      Main.callbackNodesDB('Post', posts, function() {
-        for (thread of threads) {
-          $.event('PostsInserted', null, thread.nodes.root);
-        }
-        for (thread of threadsRM) {
-          $.event('PostsRemoved', null, thread.nodes.root);
-        }
-      });
-    },
-
-    initCatalog() {
-      let board;
-      const s = g.SITE.selectors.catalog;
-      if (s && (board = $(s.board))) {
-        const threads = [];
-        const errors  = [];
-
-        Main.addCatalogThreadsObserver = new MutationObserver(Main.addCatalogThreads);
-        Main.addCatalogThreadsObserver.observe(board, {childList: true});
-
-        Main.parseCatalogThreads($$(s.thread, board), threads, errors);
-        if (errors.length) { Main.handleErrors(errors); }
-
-        Main.callbackNodes('CatalogThreadNative', threads);
-      }
-
-      Main.expectInitFinished = true;
-      return $.event('4chanXInitFinished');
-    },
-
-    parseCatalogThreads(threadRoots, threads, errors) {
-      for (var threadRoot of threadRoots) {
-        try {
-          var thread = new CatalogThreadNative(threadRoot);
-          if (thread.thread.catalogViewNative?.nodes.root !== threadRoot) {
-            thread.thread.catalogViewNative = thread;
-            threads.push(thread);
+          const threads = [];
+          const errors = [];
+          Main.parseCatalogThreads(threadRoots, threads, errors);
+          if (errors.length) {
+              Main.handleErrors(errors);
           }
-        } catch (err) {
-          // Skip threads that we failed to parse.
-          errors.push({
-            message: `Parsing of Catalog Thread No.${(threadRoot.dataset.id || threadRoot.id).match(/\d+/)} failed. Thread will be skipped.`,
-            error: err,
-            html: threadRoot.outerHTML
+          return Main.callbackNodes('CatalogThreadNative', threads);
+      },
+      callbackNodes(klass, nodes) {
+          let node;
+          let i = 0;
+          const cb = Callbacks[klass];
+          while ((node = nodes[i++])) {
+              cb.execute(node);
+          }
+      },
+      callbackNodesDB(klass, nodes, cb) {
+          let i = 0;
+          const cbs = Callbacks[klass];
+          const fn = function () {
+              let node;
+              if (!(node = nodes[i])) {
+                  return false;
+              }
+              cbs.execute(node);
+              return ++i % 250;
+          };
+          var softTask = function () {
+              while (fn()) {
+                  continue;
+              }
+              if (!nodes[i]) {
+                  if (cb) {
+                      cb();
+                  }
+                  return;
+              }
+              setTimeout(softTask, 0);
+          };
+          softTask();
+      },
+      handleErrors(errors) {
+          // Detect conflicts with 4chan X v2
+          let error;
+          if (d.body && $.hasClass(d.body, 'fourchan_x') && !$.hasClass(doc, 'tainted')) {
+              new Notice('error', `Error: Multiple copies of ${meta.name} or 4chan X are enabled.`);
+              $.addClass(doc, 'tainted');
+          }
+          // Detect conflicts with native extension
+          if (g.SITE.testNativeExtension && !$.hasClass(doc, 'tainted')) {
+              g.SITE.testNativeExtension().then(({ enabled }) => {
+                  if (enabled) {
+                      $.addClass(doc, 'tainted');
+                      if (Conf['Disable Native Extension'] && !Main.isFirstRun) {
+                          const msg = $.el('div', { innerHTML: 'Failed to disable the native extension. You may need to <a href="' + E(meta.upstreamFaq) +
+                                  '#blocking-native-extension" target="_blank">block it</a>.' });
+                          new Notice('error', msg);
+                      }
+                  }
+              });
+          }
+          if (!(errors instanceof Array)) {
+              error = errors;
+          }
+          else if (errors.length === 1) {
+              error = errors[0];
+          }
+          if (error) {
+              new Notice('error', Main.parseError(error, Main.reportLink([error])), 15);
+              return;
+          }
+          const div = $.el('div', {
+              innerHTML: `${errors.length} errors occurred.${Main.reportLink(errors).innerHTML} [<a href="javascript:;">show</a>]`
           });
-        }
-      }
-    },
-
-    addCatalogThreads(records) {
-      const threadRoots = [];
-      for (var record of records) {
-        for (var node of record.addedNodes) {
-          if ((node.nodeType === Node.ELEMENT_NODE) && node.matches(g.SITE.selectors.catalog.thread)) {
-            threadRoots.push(node);
+          $.on(div.lastElementChild, 'click', function () {
+              return [this.textContent, logs.hidden] = this.textContent === 'show' ? ['hide', false] : ['show', true];
+          });
+          var logs = $.el('div', { hidden: true });
+          for (error of errors) {
+              $.add(logs, Main.parseError(error));
           }
-        }
-      }
-      if (!threadRoots.length) { return; }
-      const threads = [];
-      const errors  = [];
-      Main.parseCatalogThreads(threadRoots, threads, errors);
-      if (errors.length) { Main.handleErrors(errors); }
-      return Main.callbackNodes('CatalogThreadNative', threads);
-    },
-
-    callbackNodes(klass, nodes) {
-      let node;
-      let i = 0;
-      const cb = Callbacks[klass];
-      while ((node = nodes[i++])) {
-        cb.execute(node);
-      }
-    },
-
-    callbackNodesDB(klass, nodes, cb) {
-      let i   = 0;
-      const cbs = Callbacks[klass];
-      const fn  = function() {
-        let node;
-        if (!(node = nodes[i])) { return false; }
-        cbs.execute(node);
-        return ++i % 250;
-      };
-
-      var softTask = function() {
-        while (fn()) {
-          continue;
-        }
-        if (!nodes[i]) {
-          if (cb) { cb(); }
-          return;
-        }
-        setTimeout(softTask, 0);
-      };
-
-      softTask();
-    },
-
-    handleErrors(errors) {
-      // Detect conflicts with 4chan X v2
-      let error;
-      if (d.body && $.hasClass(d.body, 'fourchan_x') && !$.hasClass(doc, 'tainted')) {
-        new Notice('error', `Error: Multiple copies of ${meta.name} or 4chan X are enabled.`);
-        $.addClass(doc, 'tainted');
-      }
-
-      // Detect conflicts with native extension
-      if (g.SITE.testNativeExtension && !$.hasClass(doc, 'tainted')) {
-        g.SITE.testNativeExtension().then(({enabled}) => {
-          if (enabled) {
-            $.addClass(doc, 'tainted');
-            if (Conf['Disable Native Extension'] && !Main.isFirstRun) {
-              const msg = $.el('div',
-                { innerHTML: 'Failed to disable the native extension. You may need to <a href="' + E(meta.upstreamFaq) +
-                  '#blocking-native-extension" target="_blank">block it</a>.' });
-              new Notice('error', msg);
-            }
+          return new Notice('error', [div, logs], 30);
+      },
+      parseError(data, reportLink) {
+          c.error(data.message, data.error.stack);
+          const message = $.el('div', { innerHTML: E(data.message) + ((reportLink) ? (reportLink).innerHTML : "") });
+          const error = $.el('div', { textContent: `${data.error.name || 'Error'}: ${data.error.message || 'see console for details'}` });
+          const lines = data.error.stack?.match(/\d+(?=:\d+\)?$)/mg)?.join().replace(/^/, ' at ') || '';
+          const context = $.el('div', { textContent: `(${meta.name} ${meta.fork} v${g.VERSION} ${platform} on ${$.engine}${lines})` });
+          return [message, error, context];
+      },
+      reportLink(errors) {
+          let info;
+          const data = errors[0];
+          let title = data.message;
+          if (errors.length > 1) {
+              title += ` (+${errors.length - 1} other errors)`;
           }
-        });
-      }
-
-      if (!(errors instanceof Array)) {
-        error = errors;
-      } else if (errors.length === 1) {
-        error = errors[0];
-      }
-      if (error) {
-        new Notice('error', Main.parseError(error, Main.reportLink([error])), 15);
-        return;
-      }
-
-      const div = $.el('div', {
-        innerHTML:
-          `${errors.length} errors occurred.${Main.reportLink(errors).innerHTML} [<a href="javascript:;">show</a>]`
-      });
-      $.on(div.lastElementChild, 'click', function () {
-        return [this.textContent, logs.hidden] = this.textContent === 'show' ? ['hide', false] : ['show', true];
-      });
-
-      var logs = $.el('div',
-        {hidden: true});
-      for (error of errors) {
-        $.add(logs, Main.parseError(error));
-      }
-
-      return new Notice('error', [div, logs], 30);
-    },
-
-    parseError(data, reportLink) {
-      c.error(data.message, data.error.stack);
-      const message = $.el('div',
-        { innerHTML: E(data.message) + ((reportLink) ? (reportLink).innerHTML : "") });
-      const error = $.el('div',
-        {textContent: `${data.error.name || 'Error'}: ${data.error.message || 'see console for details'}`});
-      const lines = data.error.stack?.match(/\d+(?=:\d+\)?$)/mg)?.join().replace(/^/, ' at ') || '';
-      const context = $.el('div',
-        { textContent: `(${meta.name} ${meta.fork} v${g.VERSION} ${platform} on ${$.engine}${lines})` });
-      return [message, error, context];
-    },
-
-    reportLink(errors) {
-      let info;
-      const data = errors[0];
-      let title  = data.message;
-      if (errors.length > 1) { title += ` (+${errors.length - 1} other errors)`; }
-      let details = '';
-      const addDetails = function(text) {
-        if (encodeURIComponent(title + details + text + '\n').length <= meta.newIssueMaxLength - meta.newIssue.replace(/%(title|details)/, '').length) {
-          return details += text + '\n';
-        }
-      };
-      addDetails(`\
+          let details = '';
+          const addDetails = function (text) {
+              if (encodeURIComponent(title + details + text + '\n').length <= meta.newIssueMaxLength - meta.newIssue.replace(/%(title|details)/, '').length) {
+                  return details += text + '\n';
+              }
+          };
+          addDetails(`\
 [Please describe the steps needed to reproduce this error.]
 
 Script: ${meta.name} ${meta.fork} v${g.VERSION} ${platform}
 URL: ${location.href}
 User agent: ${navigator.userAgent}\
-`
-      );
-      if ((platform === 'userscript') && (info = (() => {
-        if (typeof GM !== 'undefined' && GM !== null) { return GM.info; } else { if (typeof GM_info !== 'undefined' && GM_info !== null) { return GM_info; }
-    }
-      })())) {
-        addDetails(`Userscript manager: ${info.scriptHandler} ${info.version}`);
-      }
-      addDetails('\n' + data.error);
-      if (data.error.stack) { addDetails(data.error.stack.replace(data.error.toString(), '').trim()); }
-      if (data.html) { addDetails('\n`' + data.html + '`'); }
-      details = details.replace(/file:\/{3}.+\//g, ''); // Remove local file paths
-      const url = meta.newIssue.replace('%title', encodeURIComponent(title)).replace('%details', encodeURIComponent(details));
-      return { innerHTML: `<span class="report-error"> [<a href="${url}" target="_blank">report</a>]</span>` };
-    },
-
-    isThisPageLegit() {
-      // not 404 error page or similar.
-      if (!('thisPageIsLegit' in Main)) {
-        Main.thisPageIsLegit = g.SITE.isThisPageLegit ?
-          g.SITE.isThisPageLegit()
-        :
-          !/^[45]\d\d\b/.test(document.title) && !/\.(?:json|rss)$/.test(location.pathname);
-      }
-      return Main.thisPageIsLegit;
-    },
-
-    ready(cb) {
-      return $.ready(function() {
-        if (Main.isThisPageLegit()) { return cb(); }
-      });
-    },
-
-    mounted(cb) {
-      if (Main.isMounted) {
-        return cb();
-      } else {
-        return Main.mountedCBs.push(cb);
-      }
-    },
-
-    mountedCBs: [],
-
-    features: [
-      ['Board Configuration',       BoardConfig],
-      ['Normalize URL',             NormalizeURL],
-      ['Delay Redirect on Post',    PostRedirect],
-      ['Captcha Configuration',     CaptchaReplace],
-      ['Image Host Rewriting',      ImageHost],
-      ['Redirect',                  Redirect],
-      ['Header',                    Header],
-      ['Catalog Links',             CatalogLinks],
-      ['Settings',                  Settings],
-      ['Index Generator',           Index],
-      ['Disable Autoplay',          AntiAutoplay],
-      ['Announcement Hiding',       PSAHiding],
-      ['Fourchan thingies',         Fourchan],
-      ['Tinyboard Glue',            Tinyboard],
-      ['Color User IDs',            IDColor],
-      ['Highlight by User ID',      IDHighlight],
-      ['Count Posts by ID',         IDPostCount],
-      ['Custom CSS',                CustomCSS],
-      ['Thread Links',              ThreadLinks],
-      ['Linkify',                   Linkify],
-      ['Reveal Spoilers',           RemoveSpoilers],
-      ['Resurrect Quotes',          Quotify],
-      ['Filter',                    Filter],
-      ['Thread Hiding Buttons',     ThreadHiding],
-      ['Reply Hiding Buttons',      PostHiding],
-      ['Recursive',                 Recursive],
-      ['Strike-through Quotes',     QuoteStrikeThrough],
-      ['Quick Reply Personas',      QR.persona],
-      ['Quick Reply',               QR],
-      ['Cooldown',                  QR.cooldown],
-      ['Post Jumper',               PostJumper],
-      ['Pass Link',                 PassLink],
-      ['Menu',                      Menu],
-      ['Index Generator (Menu)',    Index.menu],
-      ['Report Link',               ReportLink],
-      ['Copy Text Link',            CopyTextLink],
-      ['Thread Hiding (Menu)',      ThreadHiding.menu],
-      ['Reply Hiding (Menu)',       PostHiding.menu],
-      ['Delete Link',               DeleteLink],
-      ['Filter (Menu)',             Filter.menu],
-      ['Edit Link',                 QR.oekaki.menu],
-      ['Download Link',             DownloadLink],
-      ['Archive Link',              ArchiveLink],
-      ['Quote Inlining',            QuoteInline],
-      ['Quote Previewing',          QuotePreview],
-      ['Quote Backlinks',           QuoteBacklink],
-      ['Mark Quotes of You',        QuoteYou],
-      ['Mark OP Quotes',            QuoteOP],
-      ['Mark Cross-thread Quotes',  QuoteCT],
-      ['Anonymize',                 Anonymize],
-      ['Time Formatting',           Time],
-      ['Relative Post Dates',       RelativeDates],
-      ['File Info Formatting',      FileInfo],
-      ['Fappe Tyme',                FappeTyme],
-      ['Gallery',                   Gallery],
-      ['Gallery (menu)',            Gallery.menu],
-      ['Sauce',                     Sauce],
-      ['Image Expansion',           ImageExpand],
-      ['Image Expansion (Menu)',    ImageExpand.menu],
-      ['Reveal Spoiler Thumbnails', RevealSpoilers],
-      ['Image Loading',             ImageLoader],
-      ['Image Hover',               ImageHover],
-      ['Volume Control',            Volume],
-      ['WEBM Metadata',             Metadata],
-      ['Comment Expansion',         ExpandComment],
-      ['Thread Expansion',          ExpandThread],
-      ['Favicon',                   Favicon],
-      ['Unread',                    Unread],
-      ['Unread Line in Index',      UnreadIndex],
-      ['Quote Threading',           QuoteThreading],
-      ['Thread Stats',              ThreadStats],
-      ['Thread Updater',            ThreadUpdater],
-      ['Thread Watcher',            ThreadWatcher],
-      ['Thread Watcher (Menu)',     ThreadWatcher.menu],
-      ['Mark New IPs',              MarkNewIPs],
-      ['Index Navigation',          Nav],
-      ['Keybinds',                  Keybinds],
-      ['Banner',                    Banner],
-      ['Announcements',             PSA],
-      ['Flash Features',            Flash],
-      ['Reply Pruning',             ReplyPruning],
-      ['Mod Contact Links',         ModContact],
-      ['Restore deleted posts from archive', RestoreDeletedFromArchive],
-      ['Mark posts on scroll bar',  ScrollMarkers],
-    ]
+`);
+          if ((platform === 'userscript') && (info = (() => {
+              if (typeof GM !== 'undefined' && GM !== null) {
+                  return GM.info;
+              }
+              else {
+                  if (typeof GM_info !== 'undefined' && GM_info !== null) {
+                      return GM_info;
+                  }
+              }
+          })())) {
+              addDetails(`Userscript manager: ${info.scriptHandler} ${info.version}`);
+          }
+          addDetails('\n' + data.error);
+          if (data.error.stack) {
+              addDetails(data.error.stack.replace(data.error.toString(), '').trim());
+          }
+          if (data.html) {
+              addDetails('\n`' + data.html + '`');
+          }
+          details = details.replace(/file:\/{3}.+\//g, ''); // Remove local file paths
+          const url = meta.newIssue.replace('%title', encodeURIComponent(title)).replace('%details', encodeURIComponent(details));
+          return { innerHTML: `<span class="report-error"> [<a href="${url}" target="_blank">report</a>]</span>` };
+      },
+      isThisPageLegit() {
+          // not 404 error page or similar.
+          if (!('thisPageIsLegit' in Main)) {
+              Main.thisPageIsLegit = g.SITE.isThisPageLegit ?
+                  g.SITE.isThisPageLegit()
+                  :
+                      !/^[45]\d\d\b/.test(document.title) && !/\.(?:json|rss)$/.test(location.pathname);
+          }
+          return Main.thisPageIsLegit;
+      },
+      ready(cb) {
+          return $.ready(function () {
+              if (Main.isThisPageLegit()) {
+                  return cb();
+              }
+          });
+      },
+      mounted(cb) {
+          if (Main.isMounted) {
+              return cb();
+          }
+          else {
+              return Main.mountedCBs.push(cb);
+          }
+      },
+      mountedCBs: [],
+      features: [
+          ['Board Configuration', BoardConfig],
+          ['Normalize URL', NormalizeURL],
+          ['Delay Redirect on Post', PostRedirect],
+          ['Captcha Configuration', CaptchaReplace],
+          ['Image Host Rewriting', ImageHost],
+          ['Redirect', Redirect],
+          ['Header', Header],
+          ['Catalog Links', CatalogLinks],
+          ['Settings', Settings],
+          ['Index Generator', Index],
+          ['Disable Autoplay', AntiAutoplay],
+          ['Announcement Hiding', PSAHiding],
+          ['Fourchan thingies', Fourchan],
+          ['Tinyboard Glue', Tinyboard],
+          ['Color User IDs', IDColor],
+          ['Highlight by User ID', IDHighlight],
+          ['Count Posts by ID', IDPostCount],
+          ['Custom CSS', CustomCSS],
+          ['Thread Links', ThreadLinks],
+          ['Linkify', Linkify],
+          ['Reveal Spoilers', RemoveSpoilers],
+          ['Resurrect Quotes', Quotify],
+          ['Filter', Filter],
+          ['Thread Hiding Buttons', ThreadHiding],
+          ['Reply Hiding Buttons', PostHiding],
+          ['Recursive', Recursive],
+          ['Strike-through Quotes', QuoteStrikeThrough],
+          ['Quick Reply Personas', QR.persona],
+          ['Quick Reply', QR],
+          ['Cooldown', QR.cooldown],
+          ['Post Jumper', PostJumper],
+          ['Pass Link', PassLink],
+          ['Menu', Menu],
+          ['Index Generator (Menu)', Index.menu],
+          ['Report Link', ReportLink],
+          ['Copy Text Link', CopyTextLink],
+          ['Thread Hiding (Menu)', ThreadHiding.menu],
+          ['Reply Hiding (Menu)', PostHiding.menu],
+          ['Delete Link', DeleteLink],
+          ['Filter (Menu)', Filter.menu],
+          ['Edit Link', QR.oekaki.menu],
+          ['Download Link', DownloadLink],
+          ['Archive Link', ArchiveLink],
+          ['Quote Inlining', QuoteInline],
+          ['Quote Previewing', QuotePreview],
+          ['Quote Backlinks', QuoteBacklink],
+          ['Mark Quotes of You', QuoteYou],
+          ['Mark OP Quotes', QuoteOP],
+          ['Mark Cross-thread Quotes', QuoteCT],
+          ['Anonymize', Anonymize],
+          ['Time Formatting', Time],
+          ['Relative Post Dates', RelativeDates],
+          ['File Info Formatting', FileInfo],
+          ['Fappe Tyme', FappeTyme],
+          ['Gallery', Gallery],
+          ['Gallery (menu)', Gallery.menu],
+          ['Sauce', Sauce],
+          ['Image Expansion', ImageExpand],
+          ['Image Expansion (Menu)', ImageExpand.menu],
+          ['Reveal Spoiler Thumbnails', RevealSpoilers],
+          ['Image Loading', ImageLoader],
+          ['Image Hover', ImageHover],
+          ['Volume Control', Volume],
+          ['WEBM Metadata', Metadata],
+          ['Comment Expansion', ExpandComment],
+          ['Thread Expansion', ExpandThread],
+          ['Favicon', Favicon],
+          ['Unread', Unread],
+          ['Unread Line in Index', UnreadIndex],
+          ['Quote Threading', QuoteThreading],
+          ['Thread Stats', ThreadStats],
+          ['Thread Updater', ThreadUpdater],
+          ['Thread Watcher', ThreadWatcher],
+          ['Thread Watcher (Menu)', ThreadWatcher.menu],
+          ['Mark New IPs', MarkNewIPs],
+          ['Index Navigation', Nav],
+          ['Keybinds', Keybinds],
+          ['Banner', Banner],
+          ['Announcements', PSA],
+          ['Flash Features', Flash],
+          ['Reply Pruning', ReplyPruning],
+          ['Mod Contact Links', ModContact],
+          ['Restore deleted posts from archive', RestoreDeletedFromArchive],
+          ['Mark posts on scroll bar', ScrollMarkers],
+      ]
   };
   $.ready(() => Main.init());
 
