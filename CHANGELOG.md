@@ -3,6 +3,11 @@
 4chan XT uses a different user script namespace than 4chan X, so to migrate you need to export settings from 4chan X,
 and import them in XT.
 
+### 2.24.3 (2026-05-26)
+
+- WEBM title bugfix
+- twitframe domain changed from twitframe.com to tf.rita.moe
+
 ### 2.24.2 (2025-12-23 🎅🏻)
 
 I'm officially stopping XT since I don't use 4chan anymore. This update removes the update URL, and merges the last two
