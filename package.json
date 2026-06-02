@@ -36,7 +36,6 @@
     "matches": [
       "https://erischan.org/*",
       "https://www.erischan.org/*",
-      "https://fufufu.moe/*",
       "https://kakashinenpo.com/*",
       "https://www.kakashinenpo.com/*",
       "https://kissu.moe/*",
@@ -47,17 +46,11 @@
       "https://merorin.com/*",
       "https://ota-ch.com/*",
       "https://www.ota-ch.com/*",
-      "https://ponyville.us/*",
-      "https://www.ponyville.us/*",
-      "https://smuglo.li/*",
-      "https://notso.smuglo.li/*",
-      "https://smugloli.net/*",
       "https://smug.nepu.moe/*",
       "https://sportschan.org/*",
       "https://www.sportschan.org/*",
       "https://sushigirl.us/*",
-      "https://www.sushigirl.us/*",
-      "https://tvch.moe/*"
+      "https://www.sushigirl.us/*"
     ],
     "matches_extra": [],
     "exclude_matches": [

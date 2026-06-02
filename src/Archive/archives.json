@@ -59,44 +59,4 @@
   "files": ["can", "cock", "con", "fap", "fitlit", "gd", "mlpol", "mo", "mtv", "outsoc", "po", "q", "qb", "qst", "spa", "vint", "vip"],
   "search": ["aco", "adv", "an", "asp", "b", "bant", "biz", "c", "can", "cgl", "ck", "cm", "cock", "con", "d", "diy", "e", "f", "fap", "fitlit", "gd", "gif", "h", "hc", "his", "hm", "hr", "i", "ic", "lgbt", "lit", "mlpol", "mo", "mtv", "n", "news", "o", "out", "outsoc", "p", "po", "pw", "q", "qa", "qst", "r", "s", "soc", "spa", "trv", "u", "vint", "vip", "vrpg", "w", "wg", "wsg", "wsr", "x", "y"],
   "reports": true
-}, {
-  "uid": 30,
-  "name": "TheBArchive.com",
-  "domain": "thebarchive.com",
-  "http": true,
-  "https": true,
-  "software": "foolfuuka",
-  "boards": ["b", "bant"],
-  "files": ["b", "bant"],
-  "reports": true
-}, {
-  "uid": 31,
-  "name": "Archive Of Sins",
-  "domain": "archiveofsins.com",
-  "http": true,
-  "https": true,
-  "software": "foolfuuka",
-  "boards": ["h", "hc", "hm", "i", "lgbt", "r", "s", "soc", "t", "u"],
-  "files": ["h", "hc", "hm", "i", "lgbt", "r", "s", "soc", "t", "u"],
-  "reports": true
-}, {
-  "uid": 36,
-  "name": "palanq.win",
-  "domain": "archive.palanq.win",
-  "http": false,
-  "https": true,
-  "software": "foolfuuka",
-  "boards": ["bant", "c", "con", "e", "i", "n", "news", "out", "p", "pw", "qst", "toy", "vip", "vp", "vt", "w", "wg", "wsr"],
-  "files": ["bant", "c", "e", "i", "n", "news", "out", "p", "pw", "qst", "toy", "vip", "vp", "vt", "w", "wg", "wsr"],
-  "reports": true
-}, {
-  "uid": 37,
-  "name": "Eientei",
-  "domain": "eientei.xyz",
-  "http": false,
-  "https": true,
-  "software": "Eientei",
-  "boards": ["3", "i", "sci", "xs"],
-  "files": ["3", "i", "sci", "xs"],
-  "reports": true
 }]
