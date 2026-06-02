@@ -12,7 +12,6 @@ import linkifyGfycat from './linkify.gfycat.png';
 import linkifyGist from './linkify.gist.png';
 import linkifyImage from './linkify.image.png';
 import linkifyInstallgentoo from './linkify.installgentoo.png';
-import linkifyLiveleak from './linkify.liveleak.png';
 import linkifyPastebin from './linkify.pastebin.png';
 import linkifyPeertube from './linkify.peertube.png';
 import linkifySoundcloud from './linkify.soundcloud.png';
@@ -22,7 +21,6 @@ import linkifyX from './linkify.x.png';
 import linkifyVideo from './linkify.video.png';
 import linkifyVidlii from './linkify.vidlii.png';
 import linkifyVimeo from './linkify.vimeo.png';
-import linkifyVine from './linkify.vine.png';
 import linkifyVocaroo from './linkify.vocaroo.png';
 import linkifyYoutube from './linkify.youtube.png';
 
@@ -51,7 +49,6 @@ const faIcons: { name: string, data: string }[] = [
   { name: "gist", data: linkifyGist },
   { name: "image", data: linkifyImage },
   { name: "installgentoo", data: linkifyInstallgentoo },
-  { name: "liveleak", data: linkifyLiveleak },
   { name: "pastebin", data: linkifyPastebin },
   { name: "peertube", data: linkifyPeertube },
   { name: "soundcloud", data: linkifySoundcloud },
@@ -61,7 +58,6 @@ const faIcons: { name: string, data: string }[] = [
   { name: "video", data: linkifyVideo },
   { name: "vidlii", data: linkifyVidlii },
   { name: "vimeo", data: linkifyVimeo },
-  { name: "vine", data: linkifyVine },
   { name: "vocaroo", data: linkifyVocaroo },
   { name: "youtube", data: linkifyYoutube },
 ];

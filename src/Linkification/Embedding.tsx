@@ -444,16 +444,6 @@ var Embedding = {
       }
     }
     , {
-      key: 'LiveLeak',
-      regExp: /^\w+:\/\/(?:\w+\.)?liveleak\.com\/.*\?.*[tif]=(\w+)/,
-      el(a) {
-        const el = $.el('iframe',
-          {src: `https://www.liveleak.com/e/${a.dataset.uid}`,});
-        el.setAttribute("allowfullscreen", "true");
-        return el;
-      }
-    }
-    , {
       key: 'Loopvid',
       regExp: /^\w+:\/\/(?:www\.)?loopvid.appspot.com\/#?((?:pf|kd|lv|gd|gh|db|dx|nn|cp|wu|ig|ky|mf|m2|pc|1c|pi|ni|wl|ko|mm|ic|gc)\/[\w\-\/]+(?:,[\w\-\/]+)*|fc\/\w+\/\d+|https?:\/\/.+)/,
       style: 'max-width: 80vw; max-height: 80vh;',
@@ -646,15 +636,6 @@ var Embedding = {
       title: {
         api(uid) { return `https://vimeo.com/api/oembed.json?url=https://vimeo.com/${uid}`; },
         text(_) { return _.title; }
-      }
-    }
-    , {
-      key: 'Vine',
-      regExp: /^\w+:\/\/(?:www\.)?vine\.co\/v\/(\w+)/,
-      style: 'border: none; width: 500px; height: 500px;',
-      el(a) {
-        return $.el('iframe',
-          {src: `https://vine.co/v/${a.dataset.uid}/card`});
       }
     }
     , {
