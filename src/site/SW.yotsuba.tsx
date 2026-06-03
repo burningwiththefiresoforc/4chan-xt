@@ -1,5 +1,4 @@
 import Redirect from "../Archive/Redirect";
-import PassMessage from "../Miscellaneous/PassMessage";
 import Report from "../Miscellaneous/Report";
 import $ from "../platform/$";
 import $$ from "../platform/$$";
@@ -179,12 +178,8 @@ $\
   initAuxiliary() {
     switch (location.hostname) {
       case 'www.4chan.org': case 'www.4channel.org':
-        if (SWYotsuba.regexp.pass.test(location.href)) {
-          PassMessage.init();
-        } else {
           $.onExists(doc, 'body', () => $.addStyle(CSS.www));
           Captcha.replace.init();
-        }
         return;
       case 'sys.4chan.org': case 'sys.4channel.org':
         var pathname = location.pathname.split(/\/+/);

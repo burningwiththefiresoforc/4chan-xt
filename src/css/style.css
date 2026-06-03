@@ -174,21 +174,11 @@ body.hasDropDownNav{
 }
 
 /* Tinyboard site style conflicts */
-:root[data-host="fufufu.moe"].fixed.top-header:not(.autohide) div.pages.top {
-  top: 26px;
-  bottom: auto;
-}
 :root[data-host="merorin.com"].fixed.top-header:not(.autohide) span.settings {
   top: 26px;
 }
-:root[data-host="fufufu.moe"]:not(.fixed) #header-bar {
-  margin-top: 38px;
-}
 :root[data-host="lainchan.org"]:not(.fixed) #header-bar {
   margin-top: 17px;
-}
-:root[data-host="smuglo.li"]:not(.fixed) #header-bar {
-  margin-top: 8px;
 }
 
 /* Anti-autoplay */

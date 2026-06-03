@@ -23,7 +23,7 @@ const RestoreDeletedFromArchive = {
           const domain = E(new URL(url).origin);
           new Notice('error', $.el('div', {
               innerHTML: 'There was an error while fetching from the archive. See the console for details.<br />' +
-                'Some archive check the browser first before checking content, you might need to open the archive ' +
+                'Some archives check the browser first before checking content, you might need to open the archive ' +
                 `first to get past the browser check: <a href="${domain}" target="_blank">${domain}</a><br />` +
                 'If that doesn\'t work, try a different archive under Settings > Advanced > Archives > Thread fetching.'
             }));

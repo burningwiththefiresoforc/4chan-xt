@@ -85,19 +85,19 @@
   'use strict';
 
   var version = {
-    "version": "2.24.3",
-    "date": "2026-05-26T20:20:20Z"
+    "version": "2.24.4",
+    "date": "2026-06-02T20:20:20Z"
   }
   ;
 
   var meta = {
    "name": "4chan XT",
    "path": "4chan-XT",
-   "fork": "TuxedoTako",
+   "fork": "burningwiththefiresoforc",
    "page": "https://github.com/burningwiththefiresoforc/4chan-xt",
-   "downloads": "https://github.com/burningwiththefiresoforc/4chan-xt/releases",
+   "downloads": "https://github.com/burningwiththefiresoforc/4chan-xt",
    "oldVersions": "https://raw.githubusercontent.com/ccd0/4chan-x/",
-   "faq": "https://github.com/burningwiththefiresoforc/4chan-xt/wiki/Frequently-Asked-Questions",
+   "faq": "https://github.com/TuxedoTako/4chan-xt/wiki/Frequently-Asked-Questions",
    "upstreamFaq": "https://github.com/ccd0/4chan-x/wiki/Frequently-Asked-Questions",
    "captchaFAQ": "https://github.com/ccd0/4chan-x/wiki/Captcha-FAQ",
    "cssGuide": "https://github.com/ccd0/4chan-x/wiki/Styling-Guide",
