@@ -306,7 +306,7 @@ var Header = {
       let urlV;
       if (boardID === '@') {
         return $.el('a', {
-          href: 'https://twitter.com/4chan',
+          href: 'https://x.com/4chan',
           title: '4chan Twitter',
           className: 'navSmall',
           textContent: '@'

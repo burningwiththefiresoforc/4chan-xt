@@ -37,7 +37,7 @@ var ModContact = {
     Mod() { return {innerHTML: " <a href=\"https://www.4chan-x.net/4chan-irc.html\" target=\"_blank\">IRC</a>"}; },
     Manager() { return ModContact.specific.Mod(); },
     Developer() { return {innerHTML: " <a href=\"https://github.com/4chan\" target=\"_blank\">github</a>"}; },
-    Admin() { return {innerHTML: " <a href=\"https://twitter.com/hiroyuki_ni\" target=\"_blank\">twitter</a>"}; }
+    Admin() { return {innerHTML: " <a href=\"https://x.com/hiroyuki_ni\" target=\"_blank\">twitter</a>"}; }
   },
 
   moveNote: {

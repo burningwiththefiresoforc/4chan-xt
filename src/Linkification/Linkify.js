@@ -125,18 +125,15 @@ var Linkify = {
   },
 
   regString: new RegExp(`(\
-\
-(https?|mailto|git|magnet|ftp|irc):(\
-[a-z\\d%/?]\
-)\
+(https?|git|magnet|ftp|irc|mailto):(?:[a-z\\d%/?])\
 |\
-([-a-z\\d]+[.])+(\
-aero|asia|biz|cat|com|coop|dance|info|int|jobs|mobi|moe|museum|name|net|org|post|pro|tel|travel|xxx|xyz|edu|gov|mil|[a-z]{2}\
-)([:/]|(?![^\\s"]))\
+[a-z\\d-]+(?:\\.[a-z\\d-]+)*\\.\
+(?:com|org|net|edu|gov|[a-z]{2}|moe|info|live|biz|mil|xyz|aero|asia|cat|coop|dance|int|jobs|mobi|museum|name|post|pro|tel|travel|xxx)\
+(?:[:/]|(?![^\\s"]))\
 |\
-[\\d]{1,3}\\.[\\d]{1,3}\\.[\\d]{1,3}\\.[\\d]{1,3}\
+\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\
 |\
-[-\\w\\d.@]+@[a-z\\d.-]+\\.[a-z\\d]\
+[-\\w.@]+@[a-z\\d.-]+\\.[a-z\\d]\
 )`, 'i'),
 
   makeRange(startNode, endNode, startOffset, endOffset) {

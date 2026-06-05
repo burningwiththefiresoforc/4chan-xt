@@ -313,7 +313,7 @@ var Embedding = {
     }
     , {
       key: 'image',
-      regExp: /^[^?#]+\.(?:gif|png|jpg|jpeg|bmp|webp)(?::\w+)?(?:[?#]|$)/i,
+      regExp: /^[^?#]+\.(?:gif|png|jpe?g|bmp|webp)(?::\w+)?(?:[?#]|$)/i,
       style: '',
       el(a) {
         const hrefEsc = E(a.dataset.href);
@@ -445,7 +445,7 @@ var Embedding = {
     }
     , {
       key: 'Loopvid',
-      regExp: /^\w+:\/\/(?:www\.)?loopvid.appspot.com\/#?((?:pf|kd|lv|gd|gh|db|dx|nn|cp|wu|ig|ky|mf|m2|pc|1c|pi|ni|wl|ko|mm|ic|gc)\/[\w\-\/]+(?:,[\w\-\/]+)*|fc\/\w+\/\d+|https?:\/\/.+)/,
+      regExp: /^\w+:\/\/(?:www\.)?loopvid.kastden.org\/#?((?:pf|kd|lv|gd|gh|db|dx|nn|ig|ky|mf|m2|pc|pi|ni|ko|mm|ic|gc)\/[\w\-\/]+(?:,[\w\-\/]+)*|fc\/\w+\/\d+|https?:\/\/.+)/,
       style: 'max-width: 80vw; max-height: 80vh;',
       el(a) {
         const el = $.el('video', {
@@ -477,17 +477,13 @@ var Embedding = {
               case 'db': return [`https://dl.dropboxusercontent.com/u/${base}`];
               case 'dx': return [`https://dl.dropboxusercontent.com/${base}`];
               case 'nn': return [`https://kastden.org/_loopvid_media/nn/${base}`];
-              case 'cp': return [`https://copy.com/${base}`];
-              case 'wu': return [`http://webmup.com/${base}/vid.webm`];
               case 'ig': return [`https://i.imgur.com/${base}`];
               case 'ky': return [`https://kastden.org/_loopvid_media/ky/${base}`];
               case 'mf': return [`https://kastden.org/_loopvid_media/mf/${base}`, `https://web.archive.org/web/2/https://d.maxfile.ro/${base}`];
               case 'm2': return [`https://kastden.org/_loopvid_media/m2/${base}`];
               case 'pc': return [`https://kastden.org/_loopvid_media/pc/${base}`, `https://web.archive.org/web/2/http://a.pomf.cat/${base}`];
-              case '1c': return [`http://b.1339.cf/${base}`];
               case 'pi': return [`https://kastden.org/_loopvid_media/pi/${base}`, `https://web.archive.org/web/2/https://u.pomf.is/${base}`];
               case 'ni': return [`https://kastden.org/_loopvid_media/ni/${base}`, `https://web.archive.org/web/2/https://u.nya.is/${base}`];
-              case 'wl': return [`http://webm.land/media/${base}`];
               case 'ko': return [`https://kordy.kastden.org/loopvid/${base}`];
               case 'mm': return [`https://kastden.org/_loopvid_media/mm/${base}`, `https://web.archive.org/web/2/https://my.mixtape.moe/${base}`];
               case 'ic': return [`https://media.8ch.net/file_store/${base}`];
@@ -584,7 +580,7 @@ var Embedding = {
     , {
       key: 'Twitter',
       regExp:
-        /^\w+:\/\/(?:www\.|mobile\.)?(?:(?:(?:fx|vx)?twitter|(?:fixup|fixv)?x|twittpr|xcancel)\.com|nitter\.\w+.\w+)\/(\w+\/status\/\d+)/,
+        /^\w+:\/\/(?:www\.|mobile\.)?(?:(?:(?:[fv]x|fix(?:up|v))?twitt[ep]r|x(?:cancel)?)\.com|nitter\.\w+.\w+)\/(\w+\/status\/\d+)/,
       style: 'border: none; width: 550px; height: 250px; overflow: hidden; resize: both;',
       el(a) {
         if (Conf.XEmbedder === 'tf') {
@@ -599,7 +595,7 @@ var Embedding = {
             }
           };
           $.on(window, 'message', onMessage);
-          el.src = `https://tf.rita.moe/show?url=https://twitter.com/${a.dataset.uid}`;
+          el.src = `https://tf.rita.moe/show?url=https://x.com/${a.dataset.uid}`;
           if ($.engine === 'gecko') {
             // XXX https://bugzilla.mozilla.org/show_bug.cgi?id=680823
             el.style.cssText = 'border: none; width: 100%; height: 100%;';
@@ -653,7 +649,7 @@ var Embedding = {
     }
     , {
       key: 'YouTube',
-      regExp: /^\w+:\/\/(?:youtu.be\/|[\w.]*youtube[\w.]*\/.*(?:v=|\bembed\/|\bv\/|shorts\/|live\/|watch\/))([\w\-]{11})(.*)/,
+      regExp: /^\w+:\/\/(?:youtu\.be\/|[\w.]*youtube[\w.]*\/.*(?:v=|\bembed\/|\bv\/|shorts\/|live\/|watch\/))([\w\-]{11})(.*)/,
       el(a) {
         let start = a.dataset.options.match(/\b(?:star)?t\=(\w+)/);
         if (start) { start = start[1]; }

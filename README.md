@@ -1,5 +1,17 @@
 Custom fork
 
+### TODO
+
+<details>
+
+- [ ] Add text replacement to filtering system
+- [ ] Clean up circular dependencies
+- [ ] OffscreenCanvas workaround appears to be [deprecated](https://bugzilla.mozilla.org/show_bug.cgi?id=1422862)
+- [ ] Captcha fallback is deprecated but leaving it in just in case it changes again
+
+</details>
+
+
 <details>
 <summary>Old readme</summary>
 

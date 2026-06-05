@@ -1,7 +1,16 @@
 ## 4chan XT changelog
 
-4chan XT uses a different user script namespace than 4chan X, so to migrate you need to export settings from 4chan X,
-and import them in XT.
+4chan XT uses a different user script namespace than 4chan X, so to migrate you need to export settings from 4chan X, and import them in XT.
+
+### 2.24.3 (2026-06-08)
+
+- Linkification support for .live domains
+- Regex optimizations
+- Modernized some services and dropped support for dead ones
+- Removed stale PSAs
+- Cleanup and debloat
+- Dropped support for liveleak, vine, some dead archives, a few other things
+- Desuarchive image bugfix
 
 ### 2.24.3 (2026-05-26)
 
