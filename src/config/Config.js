@@ -562,14 +562,10 @@ const Config = {
           '<a href="https://github.com/TuxedoTako/4chan-xt/issues/132">this LibreWolf bug</a>',
         1
       ],
-      'Force Noscript Captcha': [
-        false,
-        'Use the non-Javascript fallback captcha even if Javascript is enabled.'
-      ],
-      'Pass Link': [
-        false,
-        'Add a 4chan Pass login link to the bottom of the page.'
-      ]
+      // 'Force Noscript Captcha': [
+      //   false,
+      //   'Use the non-Javascript fallback captcha even if Javascript is enabled.'
+      // ],
     },
 
     'Quote Links': {

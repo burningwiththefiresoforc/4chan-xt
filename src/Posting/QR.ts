@@ -32,7 +32,8 @@ var QR = {
   postingIsEnabled: false,
 
   // will be set at init
-  captcha: undefined as typeof Captcha.v2 | typeof Captcha.t,
+  // captcha: undefined as typeof Captcha.v2 | typeof Captcha.t,
+  captcha: typeof Captcha.t,
   min_width: 0,
   min_height: 0,
   max_width: 0,
@@ -161,8 +162,9 @@ var QR = {
 
   initReady() {
     let origToggle;
-    const captchaVersion = $('#g-recaptcha, #captcha-forced-noscript') ? 'v2' : 't';
-    QR.captcha = Captcha[captchaVersion];
+    // const captchaVersion = $('#g-recaptcha, #captcha-forced-noscript') ? 'v2' : 't';
+    // QR.captcha = Captcha[captchaVersion];
+    QR.captcha = 't';
     QR.postingIsEnabled = true;
 
     const {config} = g.BOARD;
@@ -991,11 +993,12 @@ var QR = {
       if (!err) { err = 'Original comment required.'; }
     }
 
-    if (QR.captcha.isEnabled && !((QR.captcha === Captcha.v2) && /\b_ct=/.test(d.cookie) && threadID) && !(err && !force)) {
+    // if (QR.captcha.isEnabled && !((QR.captcha === Captcha.v2) && /\b_ct=/.test(d.cookie) && threadID) && !(err && !force)) {
+    if (QR.captcha.isEnabled && !(err && !force)) {
       captcha = QR.captcha.getOne(!!threadID);
-      if (QR.captcha === Captcha.v2) {
-        if (!captcha) { captcha = Captcha.cache.request(!!threadID); }
-      }
+      // if (QR.captcha === Captcha.v2) {
+      //   if (!captcha) { captcha = Captcha.cache.request(!!threadID); }
+      // }
       if (!captcha) {
         err = 'No valid captcha.';
         QR.captcha.setup(!QR.cooldown.auto || (d.activeElement === QR.nodes.status));
@@ -1055,19 +1058,19 @@ var QR = {
     let cb = function(response) {
       if (response != null) {
         QR.currentCaptcha = response;
-        if (QR.captcha === Captcha.v2) {
-          if (response.challenge != null) {
-            options.form.append('recaptcha_challenge_field', response.challenge);
-            options.form.append('recaptcha_response_field', response.response);
-          } else {
-            options.form.append('g-recaptcha-response', response.response);
-          }
-        } else {
+        // if (QR.captcha === Captcha.v2) {
+        //   if (response.challenge != null) {
+        //     options.form.append('recaptcha_challenge_field', response.challenge);
+        //     options.form.append('recaptcha_response_field', response.response);
+        //   } else {
+        //     options.form.append('g-recaptcha-response', response.response);
+        //   }
+        // } else {
           for (var key in response) {
             var val = response[key];
             options.form.append(key, val);
           }
-        }
+        // }
       }
       QR.req = $.ajax(`https://sys.${location.hostname.split('.')[1]}.org/${g.BOARD}/post`, options);
       QR.req.progress = '...';
@@ -1078,17 +1081,18 @@ var QR = {
       QR.req = {
         progress: '...',
         abort() {
-          if (QR.captcha === Captcha.v2) {
-            Captcha.cache.abort();
-          }
+          // if (QR.captcha === Captcha.v2) {
+          //   Captcha.cache.abort();
+          // }
           cb = null;
         }
       };
       captcha(function(response) {
-        if ((QR.captcha === Captcha.v2) && Captcha.cache.haveCookie()) {
-          cb?.();
-          if (response) { return Captcha.cache.save(response); }
-        } else if (response) {
+        // if ((QR.captcha === Captcha.v2) && Captcha.cache.haveCookie()) {
+        //   cb?.();
+        //   if (response) { return Captcha.cache.save(response); }
+        // } else if (response) {
+        if (response) {
           cb?.(response);
         } else {
           delete QR.req;
@@ -1119,7 +1123,7 @@ var QR = {
       if (el) el.target = '_blank'; // duplicate image link
     } else if (connErr = (!this.response || (this.response.title !== 'Post successful!'))) {
       err = QR.connectionError();
-      if ((QR.captcha === Captcha.v2) && QR.currentCaptcha) { Captcha.cache.save(QR.currentCaptcha); }
+    //   if ((QR.captcha === Captcha.v2) && QR.currentCaptcha) { Captcha.cache.save(QR.currentCaptcha); }
     } else if (this.status !== 200) {
       err = `Error ${this.statusText} (${this.status})`;
     }
@@ -1265,7 +1269,7 @@ var QR = {
     if ((oldReq = QR.req) && !QR.req.isUploadFinished) {
       delete QR.req;
       oldReq.abort();
-      if ((QR.captcha === Captcha.v2) && QR.currentCaptcha) { Captcha.cache.save(QR.currentCaptcha); }
+      // if ((QR.captcha === Captcha.v2) && QR.currentCaptcha) { Captcha.cache.save(QR.currentCaptcha); }
       delete QR.currentCaptcha;
       QR.posts[0].unlock();
       QR.cooldown.auto = false;

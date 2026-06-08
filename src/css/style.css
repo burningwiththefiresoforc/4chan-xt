@@ -1573,13 +1573,14 @@ input.field.tripped:not(:hover):not(:focus) {
 }
 
 /* Recaptcha v2 */
-#qr .captcha-root {
-  position: relative;
-}
-#qr .captcha-container > div {
-  margin: auto;
-  width: 304px;
-}
+/* #qr .captcha-root { */
+/*   position: relative; */
+/* } */
+/* #qr .captcha-container > div { */
+/*   margin: auto; */
+/*   width: 304px; */
+/* } */
+
 /* XXX scrollable with scroll bar hidden; prevents scroll on space press */
 :root.ua-blink #qr .captcha-container > div,
 :root.ua-edge #qr .captcha-container > div {
@@ -1611,7 +1612,8 @@ input.field.tripped:not(:hover):not(:focus) {
   display: block;
   width: 100%;
 }
-#qr.captcha-v2 #qr-captcha-iframe {
+/* #qr.captcha-v2 #qr-captcha-iframe { */
+#qr-captcha-iframe {
   width: 302px;
   height: 423px;
   border: 0;
@@ -2236,7 +2238,7 @@ div.post {
   position: fixed;
   right: -5px;
   background-color: var(
-    --xt-scroll-maker-you, 
+    --xt-scroll-maker-you,
     var(--xt-border-highlight, currentColor)
   );
   border-radius: 3px;

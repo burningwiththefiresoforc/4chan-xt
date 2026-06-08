@@ -65,7 +65,6 @@ import Unread from "../Monitoring/Unread";
 import UnreadIndex from "../Monitoring/UnreadIndex";
 import $ from "../platform/$";
 import $$ from "../platform/$$";
-import PassLink from "../Posting/PassLink";
 import PostRedirect from "../Posting/PostRedirect";
 import QR from "../Posting/QR";
 import QuoteBacklink from "../Quotelinks/QuoteBacklink";
@@ -85,7 +84,7 @@ import Header from "../General/Header";
 import { c, Conf, d, doc, docSet, E, g } from "../globals/globals";
 import Menu from "../Menu/Menu";
 import BoardConfig from "../General/BoardConfig";
-import CaptchaReplace from "../Posting/Captcha.replace";
+// import CaptchaReplace from "../Posting/Captcha.replace";
 import Get from "../General/Get";
 import { dict, platform } from "../platform/helpers";
 import RestoreDeletedFromArchive from "../Archive/RestoreDeletedFromArchive";
@@ -863,7 +862,7 @@ User agent: ${navigator.userAgent}\
     ['Board Configuration',       BoardConfig],
     ['Normalize URL',             NormalizeURL],
     ['Delay Redirect on Post',    PostRedirect],
-    ['Captcha Configuration',     CaptchaReplace],
+    // ['Captcha Configuration',     CaptchaReplace],
     ['Image Host Rewriting',      ImageHost],
     ['Redirect',                  Redirect],
     ['Header',                    Header],
@@ -891,7 +890,6 @@ User agent: ${navigator.userAgent}\
     ['Quick Reply',               QR],
     ['Cooldown',                  QR.cooldown],
     ['Post Jumper',               PostJumper],
-    ['Pass Link',                 PassLink],
     ['Menu',                      Menu],
     ['Index Generator (Menu)',    Index.menu],
     ['Report Link',               ReportLink],
