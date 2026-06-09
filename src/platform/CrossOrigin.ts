@@ -24,7 +24,7 @@ export interface CrossOriginAjaxOptions {
 var CrossOrigin = {
   binary(url, cb, headers = dict()) {
     // XXX https://forums.lanik.us/viewtopic.php?f=64&t=24173&p=78310
-    url = url.replace(/^((?:https?:)?\/\/(?:\w+\.)?(?:4chan|4channel|4cdn)\.org)\/adv\//, '$1//adv/');
+    url = url.replace(/^((?:https?:)?\/\/(?:\w+\.)?(?:4chan(?:nel)?|4cdn)\.org)\/adv\//, '$1//adv/');
     if (platform === 'crx') {
     $.eventPageRequest({type: 'ajax', url, headers, responseType: 'arraybuffer'})
       .then(({response, responseHeaderString}: any) => {

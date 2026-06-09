@@ -80,7 +80,6 @@ var QR = {
     restoreNameButton: HTMLAnchorElement,
     fileRM: HTMLAnchorElement,
     urlButton: HTMLAnchorElement,
-    pasteArea: HTMLAnchorElement,
     customCooldown: HTMLAnchorElement,
     dumpButton: HTMLAnchorElement,
     status: HTMLInputElement,
@@ -164,7 +163,7 @@ var QR = {
     let origToggle;
     // const captchaVersion = $('#g-recaptcha, #captcha-forced-noscript') ? 'v2' : 't';
     // QR.captcha = Captcha[captchaVersion];
-    QR.captcha = 't';
+    QR.captcha = Captcha['t'];
     QR.postingIsEnabled = true;
 
     const {config} = g.BOARD;
@@ -289,17 +288,17 @@ var QR = {
 
   focus() {
     return $.queueTask(function() {
-      if (!QR.inBubble()) {
+      // if (!QR.inBubble()) {
         QR.hasFocus = d.activeElement && QR.nodes.el.contains(d.activeElement);
         return QR.nodes.el.classList.toggle('focus', QR.hasFocus);
-      }
+      // }
     });
   },
 
-  inBubble() {
-    const bubbles = $$('iframe[src^="https://www.google.com/recaptcha/api2/frame"]');
-    return bubbles.includes(d.activeElement) || bubbles.some(el => (getComputedStyle(el).visibility !== 'hidden') && (el.getBoundingClientRect().bottom > 0));
-  },
+  // inBubble() {
+  //   const bubbles = $$('iframe[src^="https://www.google.com/recaptcha/api2/frame"]');
+  //   return bubbles.includes(d.activeElement) || bubbles.some(el => (getComputedStyle(el).visibility !== 'hidden') && (el.getBoundingClientRect().bottom > 0));
+  // },
 
   hide() {
     QR.blur();
@@ -653,29 +652,6 @@ var QR = {
     }
   },
 
-  pasteFF() {
-    const {pasteArea} = QR.nodes;
-    if (!pasteArea.childNodes.length) { return; }
-    const images = $$('img', pasteArea);
-    $.rmAll(pasteArea);
-    for (var img of images) {
-      var m;
-      var {src} = img;
-      if (m = src.match(/data:(image\/(\w+));base64,(.+)/)) {
-        var bstr = atob(m[3]);
-        var arr = new Uint8Array(bstr.length);
-        for (let i = 0; i < bstr.length; i++) {
-          arr[i] = bstr.charCodeAt(i);
-        }
-        var blob = new Blob([arr], {type: m[1]});
-        blob.name = `${Conf['pastedname']}.${m[2]}`;
-        QR.handleFiles([blob]);
-      } else if (/^https?:\/\//.test(src)) {
-        QR.handleUrl(src);
-      }
-    }
-  },
-
   handleUrl(urlDefault) {
     QR.open();
     const { selected } = QR;
@@ -795,7 +771,6 @@ var QR = {
     setNode('oekakiButton',   '#qr-oekaki-button');
     setNode('fileRM',         '#qr-filerm');
     setNode('urlButton',      '#url-button');
-    setNode('pasteArea',      '#paste-area');
     setNode('customCooldown', '#custom-cooldown-button');
     setNode('dumpButton',     '#dump-button');
     setNode('status',         '[type=submit]');
@@ -853,13 +828,6 @@ var QR = {
     // We don't receive blur events from captcha iframe.
     $.on(d, 'click', QR.focus);
 
-    // XXX Workaround for image pasting in Firefox, obsolete as of v50.
-    // https://bugzilla.mozilla.org/show_bug.cgi?id=906420
-    if (($.engine === 'gecko') && !window.DataTransferItemList) {
-      nodes.pasteArea.hidden = false;
-    }
-    new MutationObserver(QR.pasteFF).observe(nodes.pasteArea, {childList: true});
-
     // save selected post's data
     const items = ['thread', 'name', 'email', 'sub', 'com', 'filename', 'flag'];
     let i = 0;
@@ -896,7 +864,6 @@ var QR = {
 
     Icon.set(nodes.oekakiButton, 'pencil');
     Icon.set(nodes.urlButton, 'link');
-    Icon.set(nodes.pasteArea, 'clipboard');
     Icon.set(nodes.customCooldown, 'clock');
     Icon.set(nodes.randomizeButton, 'shuffle');
     Icon.set(nodes.compress, 'shrink');
@@ -1292,20 +1259,8 @@ var QR = {
     const newName = file.name.replace(/\.[a-z]+$/i, '.' + type);
     const mime = 'image/' + type;
 
-    // Fallback to HTMLCanvasElement is for old firefox versions. Once the minimum firefox >= 105, this can be
-    // simplified to just the OffscreenCanvas implementation.
-    // Conf['Avoid OffscreenCanvas'] is for https://codeberg.org/librewolf/issues/issues/2174
-    let canvas: HTMLCanvasElement | OffscreenCanvas;
-    let toBlob: (mime: string, quality: number) => Promise<Blob>;
-    if (window.OffscreenCanvas && !Conf['Avoid OffscreenCanvas']) {
-      canvas = new OffscreenCanvas(width, height);
-      toBlob = (mime, quality) => (canvas as OffscreenCanvas).convertToBlob({ type: mime, quality });
-    } else {
-      canvas = $.el('canvas', { width, height }) as HTMLCanvasElement;
-      toBlob = (mime, quality) => new Promise(resolve => {
-        (canvas as HTMLCanvasElement).toBlob(resolve, mime, quality);
-      });
-    }
+    const canvas = new OffscreenCanvas(width, height);
+    const toBlob = (mime, quality) => (canvas as OffscreenCanvas).convertToBlob({ type: mime, quality });
 
     let newFile: File;
     let quality = .9;

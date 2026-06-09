@@ -5,12 +5,14 @@
 ### 2.24.3 (2026-06-08)
 
 - Linkification support for .live domains
-- Regex optimizations
-- Modernized some services and dropped support for dead ones
-- Removed stale PSAs
-- Cleanup and debloat
-- Dropped support for liveleak, vine, some dead archives, a few other things
 - Desuarchive image bugfix
+- Modernized some services
+- Cleanup and debloat
+    - Dropped obsolete Firefox OffscreenCanvas workaround and an old pasting workaround
+    - Dropped support for old Captcha, 4chan pass link annoyance, some dead services
+    - Dropped support for liveleak, vine, some dead archives, a few other things
+    - Regex optimizations
+    - Removed stale PSAs
 
 ### 2.24.3 (2026-05-26)
 
