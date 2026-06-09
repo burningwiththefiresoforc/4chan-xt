@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         4chan XT
-// @version      2.25.0
+// @version      2.25.1
 // @minGMVer     1.14
 // @minFFVer     115
 // @namespace    4chan-XT
@@ -158,7 +158,7 @@
   'use strict';
 
   var version = {
-    "version": "2.25.0",
+    "version": "2.25.1",
     "date": "2026-06-09T20:20:20Z"
   }
   ;
@@ -7708,7 +7708,7 @@ svg.icon {
       }
   };
 
-  const Audio = {
+  const Sound = {
     /** Add event listeners for videos with audio from a third party */
     setupSync(video, audio) {
       audio.addEventListener('playing', () => {
@@ -7738,6 +7738,26 @@ svg.icon {
           video.currentTime = 0;
       }, { once: true });
     },
+    setupSoundpost(el, file) {
+      const soundUrlMatch = file.name.match(/\[sound=([^\]]+)]/i);
+      if (!soundUrlMatch)
+        return;
+      let src = decodeURIComponent(soundUrlMatch[1]);
+      if (!src.startsWith('http')) {
+        src = `https://${src}`;
+      }
+      const audioEl = new Audio(src);
+      Volume.setup(audioEl);
+      if (el instanceof HTMLVideoElement) {
+        Sound.setupSync(el, audioEl);
+        el.controls = false;
+      }
+      audioEl.loop = true;
+      audioEl.controls = Conf['Show Controls'];
+      audioEl.autoplay = Conf['Autoplay'];
+      el.after(audioEl);
+      file.audio = audioEl;
+    }
   };
 
   var ImageExpand = {
@@ -7991,23 +8011,7 @@ svg.icon {
         $.on(el, 'loadedmetadata', () => ImageExpand.completeExpand(post));
       }
       if (Conf['Enable sound posts'] && Conf['Allow Sound']) {
-        const soundUrlMatch = file.name.match(/\[sound=([^\]]+)]/i);
-        if (soundUrlMatch) {
-          let src = decodeURIComponent(soundUrlMatch[1]);
-          if (!src.startsWith('http'))
-            src = `https://${src}`;
-          const audioEl = $.el('audio', { src });
-          Volume.setup(audioEl);
-          if (isVideo) {
-            Audio.setupSync(el, audioEl);
-            el.controls = false;
-          }
-          audioEl.loop = true;
-          audioEl.controls = Conf['Show Controls'];
-          audioEl.autoplay = Conf['Autoplay'];
-          $.after(el, audioEl);
-          file.audio = audioEl;
-        }
+        Sound.setupSoundpost(el, file);
       }
     },
     completeExpand(post) {
@@ -23346,114 +23350,118 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
   };
 
   var ImageHover = {
-      init() {
-          if (!['index', 'thread'].includes(g.VIEW)) {
-              return;
-          }
-          if (Conf['Image Hover']) {
-              Callbacks.Post.push({
-                  name: 'Image Hover',
-                  cb: this.node
-              });
-          }
-          if (Conf['Image Hover in Catalog']) {
-              return Callbacks.CatalogThread.push({
-                  name: 'Image Hover',
-                  cb: this.catalogNode
-              });
-          }
-      },
-      node() {
-          return this.files.filter((file) => (file.isImage || file.isVideo) && file.thumb).map((file) => $.on(file.thumb, 'mouseover', ImageHover.mouseover(this, file)));
-      },
-      catalogNode() {
-          const file = this.thread.OP.files[0];
-          if (!file || (!file.isImage && !file.isVideo)) {
-              return;
-          }
-          return $.on(this.nodes.thumb, 'mouseover', ImageHover.mouseover(this.thread.OP, file));
-      },
-      mouseover(post, file) {
-          return function (e) {
-              let el, height, width;
-              if (!doc.contains(this)) {
-                  return;
-              }
-              const { isVideo } = file;
-              if (file.isExpanding || file.isExpanded || g.SITE.isThumbExpanded?.(file)) {
-                  return;
-              }
-              const error = ImageHover.error(post, file);
-              if (ImageCommon.cache?.dataset.fileID === `${post.fullID}.${file.index}`) {
-                  el = ImageCommon.popCache();
-                  $.on(el, 'error', error);
-              }
-              else {
-                  el = $.el((isVideo ? 'video' : 'img'));
-                  el.dataset.fileID = `${post.fullID}.${file.index}`;
-                  $.on(el, 'error', error);
-                  el.src = file.url;
-              }
-              if (Conf['Restart when Opened']) {
-                  ImageCommon.rewind(el);
-                  ImageCommon.rewind(this);
-              }
-              el.id = 'ihover';
-              $.add(Header.hover, el);
-              if (isVideo) {
-                  el.loop = true;
-                  el.controls = false;
-                  Volume.setup(el);
-                  if (Conf['Autoplay']) {
-                      el.play();
-                      if (this.nodeName === 'VIDEO') {
-                          this.currentTime = el.currentTime;
-                      }
-                  }
-              }
-              if (file.dimensions) {
-                  [width, height] = file.dimensions.split('x').map((x) => +x);
-                  const maxWidth = doc.clientWidth;
-                  const maxHeight = doc.clientHeight - UI.hover.padding;
-                  const scale = Math.min(1, maxWidth / width, maxHeight / height);
-                  width *= scale;
-                  height *= scale;
-                  el.style.maxWidth = `${width}px`;
-                  el.style.maxHeight = `${height}px`;
-              }
-              return UI.hover({
-                  root: this,
-                  el,
-                  latestEvent: e,
-                  endEvents: 'mouseout click',
-                  height,
-                  width,
-                  noRemove: true,
-                  cb() {
-                      $.off(el, 'error', error);
-                      ImageCommon.pushCache(el);
-                      ImageCommon.pause(el);
-                      $.rm(el);
-                      return el.removeAttribute('style');
-                  }
-              });
-          };
-      },
-      error(post, file) {
-          return function () {
-              if (ImageCommon.decodeError(this, file)) {
-                  return;
-              }
-              return ImageCommon.error(this, post, file, 3 * SECOND, URL => {
-                  if (URL) {
-                      return this.src = URL + (this.src === URL ? '?' + Date.now() : '');
-                  }
-                  else {
-                      return $.rm(this);
-                  }
-              });
-          };
+    init() {
+      if (!['index', 'thread'].includes(g.VIEW))
+        return;
+      if (Conf['Image Hover']) {
+        Callbacks.Post.push({
+          name: 'Image Hover',
+          cb: this.node
+        });
       }
+      if (Conf['Image Hover in Catalog']) {
+        return Callbacks.CatalogThread.push({
+          name: 'Image Hover',
+          cb: this.catalogNode
+        });
+      }
+    },
+    node() {
+      return this.files.filter(file => (file.isImage || file.isVideo) && file.thumb).map(file => $.on(file.thumb, 'mouseover', ImageHover.mouseover(this, file)));
+    },
+    catalogNode() {
+      const file = this.thread.OP.files[0];
+      if (!file || (!file.isImage && !file.isVideo))
+        return;
+      return $.on(this.nodes.thumb, 'mouseover', ImageHover.mouseover(this.thread.OP, file));
+    },
+    mouseover(post, file) {
+      return function (e) {
+        if (!doc.contains(this))
+          return;
+        if (file.isExpanding || file.isExpanded || g.SITE.isThumbExpanded?.(file))
+          return;
+        let el;
+        const error = ImageHover.error(post, file);
+        if (ImageCommon.cache?.dataset.fileID === `${post.fullID}.${file.index}`) {
+          el = ImageCommon.popCache();
+          $.on(el, 'error', error);
+        } else {
+          el = $.el(file.isVideo ? 'video' : 'img');
+          el.dataset.fileID = `${post.fullID}.${file.index}`;
+          $.on(el, 'error', error);
+          el.src = file.url;
+        }
+        if (Conf['Restart when Opened']) {
+          ImageCommon.rewind(el);
+          ImageCommon.rewind(this);
+        }
+        el.id = 'ihover';
+        $.add(Header.hover, el);
+        if (el instanceof HTMLVideoElement) {
+          el.loop = true;
+          el.controls = false;
+          Volume.setup(el);
+          if (Conf['Autoplay']) {
+            el.play();
+            if (this.nodeName === 'VIDEO') {
+              this.currentTime = el.currentTime;
+            }
+          }
+        }
+        let width, height;
+        if (file.dimensions) {
+          [width, height] = file.dimensions.split('x').map((x) => +x);
+          const maxWidth = doc.clientWidth;
+          const maxHeight = doc.clientHeight - UI.hover.padding;
+          const scale = Math.min(1, maxWidth / width, maxHeight / height);
+          width *= scale;
+          height *= scale;
+          el.style.maxWidth = `${width}px`;
+          el.style.maxHeight = `${height}px`;
+        }
+        if (Conf['Enable sound posts'] && Conf['Allow Sound']) {
+          Sound.setupSoundpost(el, file);
+        }
+        return UI.hover({
+          root: this,
+          el,
+          latestEvent: e,
+          endEvents: 'mouseout click',
+          height,
+          width,
+          noRemove: true,
+          cb() {
+            $.off(el, 'error', error);
+            ImageCommon.pushCache(el);
+            ImageCommon.pause(el);
+            $.rm(el);
+            if (file.audio) {
+              file.audio.remove();
+              delete file.audio;
+              if (file.audioSlider) {
+                file.audioSlider.remove();
+                delete file.audioSlider;
+              }
+            }
+            return el.removeAttribute('style');
+          }
+        });
+      };
+    },
+    error(post, file) {
+      return function () {
+        if (ImageCommon.decodeError(this, file))
+          return;
+        return ImageCommon.error(this, post, file, 3 * SECOND, URL => {
+          if (URL) {
+            return this.src = URL + (this.src === URL ? '?' + Date.now() : '');
+          } else {
+            return $.rm(this);
+          }
+        });
+      };
+    }
   };
 
   var ImageLoader = {
