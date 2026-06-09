@@ -85,7 +85,7 @@
   'use strict';
 
   var version = {
-    "version": "2.25.1",
+    "version": "2.25.2",
     "date": "2026-06-09T20:20:20Z"
   }
   ;
@@ -465,6 +465,10 @@ div.boardTitle {
               'Image Expansion': [
                   true,
                   'Expand images / videos.'
+              ],
+              'Image Media Controls': [
+                  true,
+                  'Show additional media controls when hovering over expanded images.'
               ],
               'Image Hover': [
                   true,
@@ -892,6 +896,7 @@ div.boardTitle {
               'Advance to next post when contracting an expanded image.'
           ]
       },
+      imageMediaControlsPosition: 'top-left',
       gallery: {
           'Hide Thumbnails': [
               false
@@ -2711,6 +2716,19 @@ current-archive-text:"Archive"]
 </fieldset>
 
 <fieldset>
+  <legend>Image Media Controls <span class="warning" data-feature="Image Media Controls">is disabled.</span></legend>
+  <label>Media Controls Position
+    <select name="imageMediaControlsPosition">
+      <option value="top-left">Top left</option>
+      <option value="top-right">Top right</option>
+      <option value="bottom-left">Bottom left</option>
+      <option value="bottom-right">Bottom right</option>
+    </select>
+  </label>
+  <span class="favicon-preview"></span>
+</fieldset>
+
+<fieldset>
   <legend>Thread Updater <span class="warning" data-feature="Thread Updater">is disabled.</span></legend>
   <div>
     Interval: <input type="number" name="Interval" class="field" min="1"> seconds
@@ -4046,7 +4064,7 @@ div[data-checked="false"] > .suboption-list {
   padding-top: 2px;
 }
 .catalog-stats > [title] {
-  cursor: help;
+  cursor: pointer;
 }
 .catalog-post > .postMessage {
   margin: 0;
@@ -4469,7 +4487,7 @@ textarea.copy-text-element {
   display: none;
   cursor: pointer;
 }
-.expanded-image > .post > .file > .fileThumb > .full-image {
+.expanded-image > .post > .file > .fileThumb .full-image {
   display: inline;
 }
 .expanded-image > .post > .file > .fileThumb > audio {
@@ -5480,6 +5498,85 @@ div.post {
 
 .scroll-marker-container {
   display: contents;
+}
+
+/* Media Controls */
+.media-controls-container {
+  position: relative;
+}
+
+.media-controls-wrapper {
+  display: table;
+}
+
+.media-controls-wrapper[rotation] {
+  transform-origin: top left;
+}
+
+.media-controls-wrapper[rotation="0"] {
+	transform: initial;
+}
+
+.media-controls-wrapper[rotation="1"] {
+	transform: rotate(90deg) translateY(-100%);
+}
+
+.media-controls-wrapper[rotation="2"] {
+	transform: rotate(180deg) translate(-100%, -100%);
+}
+
+.media-controls-wrapper[rotation="3"] {
+	transform: rotate(270deg) translateX(-100%);
+}
+
+.fileThumb:hover > .media-controls-container > .media-controls {
+  opacity: 1;
+}
+
+.media-controls {
+  position: absolute;
+  opacity: 0;
+  z-index: 1;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.media-controls-top {
+  top: 10px;
+}
+
+.media-controls-left {
+  left: 10px;
+}
+
+.media-controls-bottom {
+  bottom: 10px;
+}
+
+.media-controls-right {
+  right: 10px;
+}
+
+.media-controls > button {
+  background: transparent;
+  margin: 0;
+  border-style: none;
+  border-color: initial;
+  line-height: 0;
+  filter: saturate(0);
+  cursor: pointer;
+  padding: 6px;
+}
+
+.media-controls > button > svg {
+  color: rgb(238, 238, 238);
+}
+
+.media-controls > button:hover > svg {
+  color: rgb(185, 185, 185);
+}
+
+.expanded-image > .post > .file > .fileThumb .media-controls-wrapper > .full-image {
+  width: inherit;
 }`;
 
   var tomorrow = `:root.tomorrow {
@@ -5983,6 +6080,9 @@ svg.icon {
   const RotateLeftSvg = 'M48.5 224L40 224c-13.3 0-24-10.7-24-24L16 72c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2L98.6 96.6c87.6-86.5 228.7-86.2 315.8 1c87.5 87.5 87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3c-62.2-62.2-162.7-62.5-225.3-1L185 183c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8L48.5 224z';
   const RotateLeftW = 512, RotateLeftH = 512;
 
+  const RotateRightSvg = 'M463.5 224l8.5 0c13.3 0 24-10.7 24-24l0-128c0-9.7-5.8-18.5-14.8-22.2s-19.3-1.7-26.2 5.2L413.4 96.6c-87.6-86.5-228.7-86.2-315.8 1c-87.5 87.5-87.5 229.3 0 316.8s229.3 87.5 316.8 0c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0c-62.5 62.5-163.8 62.5-226.3 0s-62.5-163.8 0-226.3c62.2-62.2 162.7-62.5 225.3-1L327 183c-6.9 6.9-8.9 17.2-5.2 26.2s12.5 14.8 22.2 14.8l119.5 0z';
+  const RotateRightW = 512, RotateRightH = 512;
+
   const DownloadSvg = 'M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 242.7-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7 288 32zM64 352c-35.3 0-64 28.7-64 64l0 32c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-32c0-35.3-28.7-64-64-64l-101.5 0-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352 64 352zm368 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48z';
   const DownloadW = 512, DownloadH = 512;
 
@@ -6052,6 +6152,8 @@ svg.icon {
     clock: toSvg(ClockSvg, ClockW, ClockH),
     shuffle: toSvg(ShuffleSvg, ShuffleW, ShuffleH),
     undo: toSvg(RotateLeftSvg, RotateLeftW, RotateLeftH),
+    rotateLeft: toSvg(RotateLeftSvg, RotateLeftW, RotateLeftH),
+    rotateRight: toSvg(RotateRightSvg, RotateRightW, RotateRightH),
     download: toSvg(DownloadSvg, DownloadW, DownloadH),
     bookOpen: toSvg(BookOpenSvg, BookOpenW, BookOpenH),
     shrink: toSvg(DownLeftAndUpRightToCenterSvg, DownLeftAndUpRightToCenterW, DownLeftAndUpRightToCenterH),
@@ -7458,6 +7560,12 @@ svg.icon {
       }
   };
 
+  function MediaControls() {
+    return (h("div", { class: 'media-controls' },
+      h("button", { "data-action": "rotateLeft" }, Icon.raw('rotateLeft')),
+      h("button", { "data-action": "rotateRight" }, Icon.raw('rotateRight'))));
+  }
+
   var Volume = {
       init() {
           if (!['index', 'thread'].includes(g.VIEW) ||
@@ -7823,6 +7931,10 @@ svg.icon {
           delete file.audioSlider;
         }
       }
+      if (file.imageMediaControls) {
+        $.rm(file.imageMediaControls);
+        delete file.imageMediaControls;
+      }
     },
     expand(post, src) {
       const { file } = post;
@@ -7873,6 +7985,57 @@ svg.icon {
       }
       if (Conf['Enable sound posts'] && Conf['Allow Sound']) {
         Sound.setupSoundpost(el, file);
+      }
+      if (Conf['Image Media Controls']) {
+        const controls = $.el('div', MediaControls());
+        const [y, x] = Conf['imageMediaControlsPosition'].split('-');
+        [...controls.childNodes][0].classList.add(`media-controls-${x}`, `media-controls-${y}`);
+        const container = $.el('div', { className: 'media-controls-container' });
+        const wrapper = $.el('div', { className: 'media-controls-wrapper' });
+        file.imageMediaControls = container;
+        $.add(container, [...controls.childNodes]);
+        $.add(wrapper, el);
+        $.add(container, wrapper);
+        $.prepend(thumbLink, container);
+        const totalRotationStates = 4;
+        let currentRotationState = 0;
+        const { width } = el.getBoundingClientRect();
+        const initialImageContentWidth = width;
+        el.style.maxWidth = `${initialImageContentWidth}px`;
+        el.style.maxHeight = '';
+        function positiveModulo(a, n) {
+          return ((a % n) + n) % n;
+        }
+        const compensateTransformedSize = () => {
+          const rotationState = positiveModulo(currentRotationState, totalRotationStates);
+          const { width, height } = wrapper.getBoundingClientRect();
+          if (rotationState === 1 || rotationState === 3) {
+            el.style.maxHeight = `${initialImageContentWidth}px`;
+          } else {
+            el.style.maxHeight = '';
+          }
+          Object.assign(container.style, { width: `${width}px`, height: `${height}px` });
+        };
+        const compensateTransformedSizeObserver = new ResizeObserver(compensateTransformedSize);
+        function updateRotation() {
+          compensateTransformedSizeObserver.observe(wrapper);
+          wrapper.setAttribute('rotation', String(positiveModulo(currentRotationState, totalRotationStates)));
+          compensateTransformedSize();
+        }
+        const leftBtn = thumbLink.querySelector('[data-action="rotateLeft"]');
+        const rightBtn = thumbLink.querySelector('[data-action="rotateRight"]');
+        $.on(leftBtn, 'click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          currentRotationState--;
+          updateRotation();
+        });
+        $.on(rightBtn, 'click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          currentRotationState++;
+          updateRotation();
+        });
       }
     },
     completeExpand(post) {

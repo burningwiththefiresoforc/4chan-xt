@@ -2,6 +2,10 @@
 
 4chan XT uses a different user script namespace than 4chan X, so to migrate you need to export settings from 4chan X, and import them in XT.
 
+### 2.25.2 (2026-06-09)
+
+- Add image rotation controls
+
 ### 2.25.1 (2026-06-09)
 
 - Play soundposts on hover
