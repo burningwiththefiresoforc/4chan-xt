@@ -435,14 +435,14 @@ var Embedding = {
         }
       }
     }
-    , {
-      key: 'InstallGentoo',
-      regExp: /^\w+:\/\/paste\.installgentoo\.com\/view\/(?:raw\/|download\/|embed\/)?(\w+)/,
-      el(a) {
-        return $.el('iframe',
-          {src: `https://paste.installgentoo.com/view/embed/${a.dataset.uid}`});
-      }
-    }
+    // , {
+    //   key: 'InstallGentoo',
+    //   regExp: /^\w+:\/\/paste\.installgentoo\.com\/view\/(?:raw\/|download\/|embed\/)?(\w+)/,
+    //   el(a) {
+    //     return $.el('iframe',
+    //       {src: `https://paste.installgentoo.com/view/embed/${a.dataset.uid}`});
+    //   }
+    // }
     , {
       key: 'Loopvid',
       regExp: /^\w+:\/\/(?:www\.)?loopvid.kastden.org\/#?((?:pf|kd|lv|gd|gh|db|dx|nn|ig|ky|mf|m2|pc|pi|ni|ko|mm|ic|gc)\/[\w\-\/]+(?:,[\w\-\/]+)*|fc\/\w+\/\d+|https?:\/\/.+)/,

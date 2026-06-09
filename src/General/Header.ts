@@ -658,8 +658,7 @@ var Header = {
         return;
         break;
       case 'denied':
-        // requestPermission doesn't work if status is 'denied',
-        // but it'll still work if status is 'default'.
+        // requestPermission doesn't work if status is 'denied', but it'll still work if status is 'default'.
         return;
         break;
     }

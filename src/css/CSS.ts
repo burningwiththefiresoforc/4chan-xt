@@ -11,7 +11,7 @@ import linkifyDailymotion from './linkify.dailymotion.png';
 import linkifyGfycat from './linkify.gfycat.png';
 import linkifyGist from './linkify.gist.png';
 import linkifyImage from './linkify.image.png';
-import linkifyInstallgentoo from './linkify.installgentoo.png';
+// import linkifyInstallgentoo from './linkify.installgentoo.png';
 import linkifyPastebin from './linkify.pastebin.png';
 import linkifyPeertube from './linkify.peertube.png';
 import linkifySoundcloud from './linkify.soundcloud.png';
@@ -48,7 +48,7 @@ const faIcons: { name: string, data: string }[] = [
   { name: "gfycat", data: linkifyGfycat },
   { name: "gist", data: linkifyGist },
   { name: "image", data: linkifyImage },
-  { name: "installgentoo", data: linkifyInstallgentoo },
+  // { name: "installgentoo", data: linkifyInstallgentoo },
   { name: "pastebin", data: linkifyPastebin },
   { name: "peertube", data: linkifyPeertube },
   { name: "soundcloud", data: linkifySoundcloud },

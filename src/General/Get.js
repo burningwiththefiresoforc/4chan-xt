@@ -68,28 +68,20 @@ var Get = {
       quotelinks.push(...(qPost.nodes[type] || []));
       for (var clone of qPost.clones) { quotelinks.push(...(clone.nodes[type] || [])); }
     };
-    // First:
-    //   In every posts,
-    //   if it did quote this post,
-    //   get all their backlinks.
+    // First: In every posts, if it did quote this post, get all their backlinks.
     posts.forEach(function(qPost) {
       if (qPost.quotes.includes(fullID)) {
         return handleQuotes(qPost, 'quotelinks');
       }
     });
 
-    // Second:
-    //   If we have quote backlinks:
-    //   in all posts this post quoted
-    //   and their clones,
-    //   get all of their backlinks.
+    // Second: If we have quote backlinks: in all posts this post quoted and their clones, get all of their backlinks.
     if (Conf['Quote Backlinks']) {
       for (var quote of post.quotes) { var qPost;
       if ((qPost = posts.get(quote))) { handleQuotes(qPost, 'backlinks'); } }
     }
 
-    // Third:
-    //   Filter out irrelevant quotelinks.
+    // Third: Filter out irrelevant quotelinks.
     return quotelinks.filter(function(quotelink) {
       const {boardID, postID} = Get.postDataFromLink(quotelink);
       return (boardID === post.board.ID) && (postID === post.ID);
