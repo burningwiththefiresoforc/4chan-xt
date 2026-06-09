@@ -1,4 +1,4 @@
-Custom fork
+This is my personal fork that I only plan on merging bugfixes and minor optimizations for and isn't intended to compete with the other forks.
 
 ### TODO
 
@@ -6,8 +6,8 @@ Custom fork
 
 - [ ] Add text replacement to filtering system
 - [ ] Clean up circular dependencies
-- [ ] OffscreenCanvas workaround appears to be [deprecated](https://bugzilla.mozilla.org/show_bug.cgi?id=1422862)
-- [ ] Captcha fallback is deprecated but leaving it in just in case it changes again
+- [x] OffscreenCanvas workaround appears to be [deprecated](https://bugzilla.mozilla.org/show_bug.cgi?id=1422862)
+- [x] Captcha fallback is deprecated but leaving it in just in case it changes again
 
 </details>
 

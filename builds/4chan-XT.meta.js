@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         4chan XT
-// @version      2.24.4
+// @version      2.25.0
 // @minGMVer     1.14
-// @minFFVer     78
+// @minFFVer     115
 // @namespace    4chan-XT
 // @description  4chan XT is a script that adds various features to anonymous imageboards.
 // @license      MIT; https://github.com/burningwiththefiresoforc/4chan-xt/blob/project-XT/LICENSE
@@ -14,7 +14,6 @@
 // @include      https://is2.4chan.org/*
 // @include      https://erischan.org/*
 // @include      https://www.erischan.org/*
-// @include      https://fufufu.moe/*
 // @include      https://kakashinenpo.com/*
 // @include      https://www.kakashinenpo.com/*
 // @include      https://kissu.moe/*
@@ -25,17 +24,10 @@
 // @include      https://merorin.com/*
 // @include      https://ota-ch.com/*
 // @include      https://www.ota-ch.com/*
-// @include      https://ponyville.us/*
-// @include      https://www.ponyville.us/*
-// @include      https://smuglo.li/*
-// @include      https://notso.smuglo.li/*
-// @include      https://smugloli.net/*
-// @include      https://smug.nepu.moe/*
 // @include      https://sportschan.org/*
 // @include      https://www.sportschan.org/*
 // @include      https://sushigirl.us/*
 // @include      https://www.sushigirl.us/*
-// @include      https://tvch.moe/*
 // @exclude      https://www.4chan.org/advertise
 // @exclude      https://www.4chan.org/advertise?*
 // @exclude      https://www.4chan.org/donate
@@ -51,10 +43,6 @@
 // @connect      boards.fireden.net
 // @connect      arch.b4k.dev
 // @connect      archived.moe
-// @connect      thebarchive.com
-// @connect      archiveofsins.com
-// @connect      archive.palanq.win
-// @connect      eientei.xyz
 // @connect      api.clyp.it
 // @connect      api.dailymotion.com
 // @connect      api.github.com
@@ -79,6 +67,7 @@
 // @run-at       document-start
 // @updateURL    https://github.com/burningwiththefiresoforc/4chan-xt/raw/refs/heads/project-XT/builds/4chan-XT.meta.js
 // @downloadURL  https://github.com/burningwiththefiresoforc/4chan-xt/raw/refs/heads/project-XT/builds/4chan-XT.user.js
+// @homepageURL  https://github.com/burningwiththefiresoforc/4chan-xt/
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAACVBMVEUAAGcAAABmzDNZt9VtAAAAAXRSTlMAQObYZgAAAF5JREFUeNrtkTESABAQxPD/R6tsE2dUGYUtFJvLDKf93KevHJAjpBorAQWSBIKqFASC4G0pCAkm4GfaEvgYXl0T6HBaE97f0vmnfYHbZOMLZCx9ISdKWwjOWZSC8GYm4SUGwfYgqI4AAAAASUVORK5CYII=
 // @license      MIT
 // ==/UserScript==

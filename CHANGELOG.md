@@ -2,22 +2,21 @@
 
 4chan XT uses a different user script namespace than 4chan X, so to migrate you need to export settings from 4chan X, and import them in XT.
 
-### 2.24.3 (2026-06-08)
+### 2.25.0 (2026-06-09)
 
 - Linkification support for .live domains
 - Desuarchive image bugfix
+- WEBM title bugfix
 - Modernized some services
+    - twitframe.com (appears to be hijacked) -> tf.rita.moe
+    - twitter.com -> x.com
+    - loopvid.appspot.com -> loopvid.kastden.org
 - Cleanup and debloat
     - Dropped obsolete Firefox OffscreenCanvas workaround and an old pasting workaround
-    - Dropped support for old Captcha, 4chan pass link annoyance, some dead services
-    - Dropped support for liveleak, vine, some dead archives, a few other things
+    - Dropped support for old Captcha, 4chan pass annoyance, some dead services
+    - Dropped support for liveleak, vine, installgentoo, some dead archives, a few other things
     - Regex optimizations
     - Removed stale PSAs
-
-### 2.24.3 (2026-05-26)
-
-- WEBM title bugfix
-- twitframe domain changed from twitframe.com to tf.rita.moe
 
 ### 2.24.2 (2025-12-23 🎅🏻)
 
