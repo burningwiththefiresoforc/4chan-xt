@@ -12,7 +12,8 @@ const CaptchaReplace = {
     }
 
     if (Conf['captchaLanguage'].trim()) {
-      if (['boards.4chan.org', 'boards.4channel.org'].includes(location.hostname)) {
+      // if (['boards.4chan.org', 'boards.4channel.org'].includes(location.hostname)) {
+      if (location.hostname === 'boards.4chan.org') {
         $.onExists(doc, '#captchaFormPart', node => $.onExists(node, 'iframe[src^="https://www.google.com/recaptcha/"]', this.iframe));
       } else {
         $.onExists(doc, 'iframe[src^="https://www.google.com/recaptcha/"]', this.iframe);

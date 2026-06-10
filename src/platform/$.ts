@@ -74,7 +74,7 @@ $.ajax = (function() {
     if (options.responseType == null) { options.responseType = 'json'; }
     if (!options.type) { options.type = (options.form && 'post') || 'get'; }
     // XXX https://forums.lanik.us/viewtopic.php?f=64&t=24173&p=78310
-    url = url.replace(/^((?:https?:)?\/\/(?:\w+\.)?(?:4chan|4channel|4cdn)\.org)\/adv\//, '$1//adv/');
+    url = url.replace(/^((?:https?:)?\/\/(?:\w+\.)?(?:4chan(?:nel)?|4cdn)\.org)\/adv\//, '$1//adv/');
     const {onloadend, timeout, responseType, withCredentials, type, onprogress, form, headers} = options;
     const r = new pageXHR();
     try {

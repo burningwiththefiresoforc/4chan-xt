@@ -148,7 +148,8 @@ $\
 
   isThisPageLegit() {
     // not 404 error page or similar.
-    return ['boards.4chan.org', 'boards.4channel.org'].includes(location.hostname) &&
+    // return ['boards.4chan.org', 'boards.4channel.org'].includes(location.hostname) &&
+    return location.hostname === 'boards.4chan.org' &&
     d.doctype &&
     !$('link[href*="favicon-status.ico"]', d.head) &&
     !['4chan - Temporarily Offline', '4chan - Error', '504 Gateway Time-out', 'MathJax Equation Source'].includes(d.title);
@@ -164,11 +165,13 @@ $\
   },
 
   isBoardlessPage(url) {
-    return ['www.4chan.org', 'www.4channel.org'].includes(url.hostname);
+    // return ['www.4chan.org', 'www.4channel.org'].includes(url.hostname);
+    return url.hostname === 'www.4chan.org'
   },
 
   isAuxiliaryPage(url) {
-    return !['boards.4chan.org', 'boards.4channel.org'].includes(url.hostname);
+    // return !['boards.4chan.org', 'boards.4channel.org'].includes(url.hostname);
+    return url.hostname !== 'boards.4chan.org'
   },
 
   isFileURL(url) {
@@ -177,11 +180,13 @@ $\
 
   initAuxiliary() {
     switch (location.hostname) {
-      case 'www.4chan.org': case 'www.4channel.org':
+      // case 'www.4chan.org': case 'www.4channel.org':
+      case 'www.4chan.org':
           $.onExists(doc, 'body', () => $.addStyle(CSS.www));
           Captcha.replace.init();
         return;
-      case 'sys.4chan.org': case 'sys.4channel.org':
+      // case 'sys.4chan.org': case 'sys.4channel.org':
+      case 'sys.4chan.org':
         var pathname = location.pathname.split(/\/+/);
         if (pathname[2] === 'imgboard.php') {
           let match;

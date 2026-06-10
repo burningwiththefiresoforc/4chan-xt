@@ -43,7 +43,8 @@ var Quotify = {
   parseArchivelink(link) {
     let m;
     if (!(m = link.pathname.match(/^\/([^/]+)\/thread\/S?(\d+)\/?$/))) { return; }
-    if (['boards.4chan.org', 'boards.4channel.org'].includes(link.hostname)) { return; }
+    // if (['boards.4chan.org', 'boards.4channel.org'].includes(link.hostname)) { return; }
+    if (link.hostname === 'boards.4chan.org') { return; }
     const boardID  = m[1];
     const threadID = m[2];
     const postID   = link.hash.match(/^#[pq]?(\d+)$|$/)[1] || threadID;
@@ -57,10 +58,8 @@ var Quotify = {
   parseDeadlink(deadlink) {
     let a, m, post, postID;
     if ($.hasClass(deadlink.parentNode, 'prettyprint')) {
-      // Don't quotify deadlinks inside code tags,
-      // un-`span` them.
-      // This won't be necessary once 4chan
-      // stops quotifying inside code tags:
+      // Don't quotify deadlinks inside code tags, un-`span` them.
+      // This won't be necessary once 4chan stops quotifying inside code tags:
       // https://github.com/4chan/4chan-JS/issues/77
       Quotify.fixDeadlink(deadlink);
       return;
@@ -81,8 +80,7 @@ var Quotify = {
 
     if (post = g.posts.get(quoteID)) {
       if (!post.isDead) {
-        // Don't (Dead) when quotifying in an archived post,
-        // and we know the post still exists.
+        // Don't (Dead) when quotifying in an archived post, and we know the post still exists.
         a = $.el('a', {
           href:        g.SITE.Build.postURL(boardID, post.thread.ID, postID),
           className:   'quotelink',

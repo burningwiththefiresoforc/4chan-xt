@@ -37,9 +37,9 @@ export default async function generateMetadata(packageJson, fileName, metaFileNa
     ).join('\n');
   })();
 
+// @connect      4channel.org
   output += `
 // @connect      4chan.org
-// @connect      4channel.org
 // @connect      4cdn.org
 // @connect      4chenz.github.io
 `;

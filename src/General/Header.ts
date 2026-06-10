@@ -277,7 +277,8 @@ var Header = {
 
     let boardID = t.split('-')[0];
     if (boardID === 'current') {
-      if (['boards.4chan.org', 'boards.4channel.org'].includes(location.hostname)) {
+      // if (['boards.4chan.org', 'boards.4channel.org'].includes(location.hostname)) {
+      if (location.hostname === 'boards.4chan.org') {
         boardID = g.BOARD.ID;
       } else {
         a = $.el('a', {
@@ -347,7 +348,8 @@ var Header = {
 
     if (Conf['JSON Index'] && indexOptions) {
       a.dataset.indexOptions = indexOptions;
-      if (['boards.4chan.org', 'boards.4channel.org'].includes(a.hostname) && (a.pathname.split('/')[2] === '')) {
+      // if (['boards.4chan.org', 'boards.4channel.org'].includes(a.hostname) && (a.pathname.split('/')[2] === '')) {
+      if (a.hostname === 'boards.4chan.org' && a.pathname.split('/')[2] === '') {
         a.href += (a.hash ? '/' : '#') + indexOptions;
       }
     }
