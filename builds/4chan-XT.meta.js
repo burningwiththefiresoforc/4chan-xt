@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         4chan XT
-// @version      2.25.2
+// @version      2.25.3
 // @minGMVer     1.14
 // @minFFVer     115
 // @namespace    4chan-XT
@@ -34,7 +34,6 @@
 // @exclude      https://www.4chan.org/donate?*
 // @exclude      https://www.4chan.org/
 // @connect      4chan.org
-// @connect      4channel.org
 // @connect      4cdn.org
 // @connect      4chenz.github.io
 // @connect      archive.4plebs.org
@@ -68,6 +67,6 @@
 // @updateURL    https://github.com/burningwiththefiresoforc/4chan-xt/raw/refs/heads/project-XT/builds/4chan-XT.meta.js
 // @downloadURL  https://github.com/burningwiththefiresoforc/4chan-xt/raw/refs/heads/project-XT/builds/4chan-XT.user.js
 // @homepageURL  https://github.com/burningwiththefiresoforc/4chan-xt/
-// @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAACVBMVEUAAGcAAABmzDNZt9VtAAAAAXRSTlMAQObYZgAAAF5JREFUeNrtkTESABAQxPD/R6tsE2dUGYUtFJvLDKf93KevHJAjpBorAQWSBIKqFASC4G0pCAkm4GfaEvgYXl0T6HBaE97f0vmnfYHbZOMLZCx9ISdKWwjOWZSC8GYm4SUGwfYgqI4AAAAASUVORK5CYII=
+// @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAACVBMVEUAAGcAAABmzDNZt9VtAAAAAXRSTlMAQObYZgAAAF1JREFUeNrtkYEGwDAUxLb9/0cPNJB6BqLYobhc4PX6nj/3yoAagepZAWxRIMzAZSEIgLdlIBAv7DMOBLJ1mPaCHda9cOyV5p/uBV/TTS+YuewFXpexAOYdykA4Ly/hJQbBjgt3/wAAAABJRU5ErkJggg==
 // @license      MIT
 // ==/UserScript==
