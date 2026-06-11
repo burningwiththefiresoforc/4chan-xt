@@ -125,5 +125,9 @@
     "build:userscript:min": "node ./tools/rollup -min -platform=userscript",
     "build:crx:min": "node ./tools/rollup -min -platform=crx",
     "build:all": "node ./tools/rollup -min -platform=userscript && node ./tools/rollup -platform=userscript && node ./tools/rollup -platform=crx"
+  },
+  "dependencies": {
+    "@fortawesome/free-brands-svg-icons": "^7.2.0",
+    "@iconify/json": "^2.2.485"
   }
 }

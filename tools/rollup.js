@@ -91,6 +91,14 @@ const tsPlugin = typescript({
             find: /^@fas\/(.*)$/,
             replacement: resolve(__dirname, '../node_modules/@fortawesome/free-solid-svg-icons/$1.js')
           },
+          {
+            find: /^@fab\/(.*)$/,
+            replacement: resolve(__dirname, '../node_modules/@fortawesome/free-brands-svg-icons/$1.js')
+          },
+          {
+            find: /^@custom\/(.*)$/,
+            replacement: resolve(__dirname, '../src/css/Assets/$1.js')
+          }
         ]
       }),
       minify || noFormat ? undefined : fixTsOutputFormat({
