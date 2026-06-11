@@ -2,6 +2,10 @@
 
 4chan XT uses a different user script namespace than 4chan X, so to migrate you need to export settings from 4chan X, and import them in XT.
 
+### 2.26.0 (2026-06-11)
+
+- Converted some embedded link icons to SVG
+
 ### 2.25.3 (2026-06-10)
 
 - Dropped 4channel.org support

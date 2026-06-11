@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         4chan XT
-// @version      2.25.3
+// @version      2.26.0
 // @minGMVer     1.14
 // @minFFVer     115
 // @namespace    4chan-XT
@@ -157,8 +157,8 @@
   'use strict';
 
   var version = {
-    "version": "2.25.3",
-    "date": "2026-06-10T20:20:20Z"
+    "version": "2.26.0",
+    "date": "2026-06-11T20:20:20Z"
   }
   ;
 
@@ -3073,41 +3073,50 @@ current-archive-text:"Archive"]
   font-size: 12pt;
 }`;
 
-  var linkifyAudio = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAwFBMVEUAAAAASZIAPIcAM3oIQ48qZaYAOIo1XqVmg7kTZqxTe7wHTaFdhMAVcrwERqRLeLswZLQTWbBljMdIeMJgissgYMgIU8MdesgVacEQYMN1nNYHUbZRgcwfgM8FTrQRitJJfs8ah9d9qOR5o+BAfNVKgdIOYcsXe9GMtu15rexrquxcnehJoethleFbluUgrPA9mupWjNsqnuxGid8emOgni+FEetAuf941edonfd82ccwka9QUbdkjZMcGU8YBTb72vVyDAAAAKHRSTlMABxEZIis7RFBQX2p2eXmEhISJpKiqqrGyyc/P0NjZ6vL6+/v8/f3+n90pLQAAAI1JREFUeNpdzIMBw1AUBdAbm7Vt283+U8X6xnlAMRhe1tX0LchutTucPj/15M/NTrvd7vJ4fTM4rdbb26jXaOUZTUMRGMDJ4C4mD7tGgZXBm4YfDf8EmLypF4HUnkxjkNxKlCGO15tXBPpytY/AfB4PVyeE2WZ7nvMA31kMHCaE/u0wMhENFsmlaTyKEQDeOQzkVJp95QAAAABJRU5ErkJggg==';
-
   var linkifyBitchute = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAwFBMVEUAAACAgIDMMzPMMzPSLS3OMTHSLS3RLi7QLy/UKyvVKyvUKyvUKyvTKSnUKSnTLCzVKirVKirSLS3VKirUKyvUKyvUKSnWKSnVKSnWKSnWKSnWKSnXKCjXKCjXKCjWKCjXKCjXKCjXKCjYJyfYJyf56en34+P23t700dH0zMzxu7vwtLTvrKzrm5vrlZXpioroiYnngoLldHTkbm7hX1/gVFTdSEjdRUXdQUHcPDzaNTXZLy/ZKirYJyfYJibYJCSVFsdLAAAAJXRSTlMAAgUKERoiJzE7Qk1ZY2pvdHiJmZuhp620vMXW3ePp6+3z9/v9S3/v/AAAALVJREFUeNpNyQMCxEAMBdC/tm3bVn9y/1tt3b6ZGKZIstjodBrFVAS2eLk3o2nWq8RhSjTndM1bCSBWZ0gjhvyEKiKkWVSnBXTI9+/zFf4en8dbuhjpe/fY31Xvi/1qb0ww1cvyuLiqvten7UFm6Ottc95cVd7H1/GpQzRofM1H0jAfW8gMKOZzDbOIlCb0TcsRINamZ1yJAUj3Sc7J2aCZNe/IdDnr1/KFQi4VhaXabRbN1vcHSCcmXfWdwIUAAAAASUVORK5CYII=';
-
-  var linkifyClyp = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAALVBMVEX////y+f3M5fa/3/Sz2PGm0u+azO2NxeuAv+l0uOZnsuRaq+JNpeBBnt00mNvdQQLXAAAAV0lEQVR42nSOVQLEIAxEwwtO2Pvfduvezue4/G74JKrdiBAvRMpCSQdhIIBthLEQwWbC0JXAhYmojo0Q5kjPK+HzVpoXoh6zGoWo52NduT3NbRgBzyEAALvECrqwkAvKAAAAAElFTkSuQmCC';
-
-  var linkifyDailymotion = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAAXNSR0IArs4c6QAAAMxJREFUeNqFkdENhSAMRRu/bUz4dBMGYA1GYQs/+XQFB3AFV3AO+q634SU+TR4NxdjT20IFa7hciFqnc25zm06tIQoj3Q1axbqpzU1NKyOOjLtasuyGsBAZd/EFFuHDNltoOKkDq6x9ZWT8XhkugBd8u0qIyFeKLtQoVuAzUSJV0DPlBFkbcxNObKZNp3iYKsQKEOgAzdT4AgJLpg7QO8AS3uZh61uJ3mQh8NJkiF4gscn1eU3pGtjQeDxUf2oi8vPUt2FxRPdhMfp33B/2Tf349B8MPAAAAABJRU5ErkJggg==';
 
   var linkifyGfycat = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAjVBMVEWn3gCo3gSr3w2t4BSu4Bav4Ri35C+45DK45DO55DXA50rA50vB50zC6E/D6FTF6VjG6VvL62vN7G/P7XbQ7XfW74vY8JDa8ZTe8qDe8qLf86Pi9Kzj9K7k9LHp9sDp98Lq98Ps+Mr0++L5/O75/fD6/fH6/fL6/fP7/fT7/fb8/ff8/vj8/vn+/v7///91X4cfAAAAa0lEQVR42o2MgxUDUQAENz+2bXv67y48ex6Xykhne90vSq4eAXBr2LrFn1PBMtawyldP0LeMC9SkCUwt4wo9aQxzy9jAzme04Z7zGhruur+PmTxUjjCwhdk8Ac5F26gD8GjKxqyeHJZlRfIG/OkNqq7ZztgAAAAASUVORK5CYII=';
 
-  var linkifyGist = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAKlBMVEUAAABpaWm5ubnNzc/Jysvu7u4LEBf+/v/Y2dqxsrWBhIhYXGEtMjgZHiWQjlYVAAAAB3RSTlMAOJy+6vb9cYkBzAAAAIFJREFUeNpljwUWwCAMQ3FIm9z/ukOf7W9YLS9hEVMBSorhkuCU6Ejnna2JEzXLO29tFaySZrMmorEPlILR2RBDcrH2A+UpFMr6xcQSIOEF1v0fKJS/gK+W5KS9EWtoBMHVNfctO0u8YgqP+Z4Fk+xuO9A8X3PGMQN85pb9WVGP/Q+3BgbjJm1YOAAAAABJRU5ErkJggg==';
-
-  var linkifyImage = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAoJJREFUeNqlk8trU1sYxX/7cc7JSWqb1Da59iEpXr0ovdxcQcSJFnxMxaGOHDv1D1H/AsWhOlJwogPRsVAFJ+KjSqpto/akycnZ57W3AVEQOnPB4oPF+taafB9/CnH55qtOd7hT/yksz9TXrl88vMYuuHLnVef15u9erZS6dmRvc8U5R54Zzi656Gq3u/rbpnOA49maWfGKJo4fUrOWPtEWxzAesh5P4ck6j7p/1R+vixUtobAwVXUcWpS0W7BnARpmg/WtPnZUkAYlMjM5cRzTmp6nNTtPP1NsG8kglwzH9KqKoRLIMaNCICb38c9Sk370lSzP0aIYcubfWcI5zdQE1BR8+OLIckd/JAkCmJ8ALCxOQlHCqJjm5KEa35ISfenA4MaxE8dWXg4sA5OOG0P+bwu2YkFZOhACTwEK6j6cqDEOgKqewFq3quOdnWhj8yO3795DKcPpcxdY3L9MWBVoIZj0ILFgHRRALKARQlpaHPQ1QJYmfN56S1EYHjy8xUx9ieOd4xw+eJRu5LA4NDn7WyGBFGggcRaERPfkTGdhlPL5/UekckS9HltzPd51X6KrAb7vUwmaVMO91EJNZ+lvOu02zgrWBxn6edw6v/ZiA+kfQSiNVIJ0EGCLKmEeoKsV8tRRFB5ah3za3GZnkPBtMI/nBae0RfC1nMFvHEBpHz8MCXyfiYoaTw9PSXxPMr0nZLoWEkpFNhq3R4K5RoF2pcM52LdwEF/lnFluoaVACoGSDhx4WhJ4iszC0zcJoyRnlCbMjgO1SQ0mHpE5iE0J2ZD/FmrgHO7XJZdAxv03ll4sMSYnMUOkDBDbyXbbRKYNAFCpVKJGo7HKLtjN+8fv/B2VaRzENkpWcwAAAABJRU5ErkJggg==';
-
-  var linkifyPastebin = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAXVBMVEUAAAAzMzMuLkZkbHQFBQVeaHElJyo7PUNdY2hrcXdrb3STmZ6Ulpqtr7GWl5jw8fHh4uLb3NzV1tbPz8/Hx8e/v7+3t7iur6+mp6mdnp6Ojo6EhIR9fn53d3dgYGDAjBreAAAAD3RSTlMABQshMTZhfpqeqtbe8P4lQOykAAAAqElEQVR42k3PRYJEIQwEUNodjYff9z/mhPFiVQ9PKe1PfzlE3z2kUpXGTXqWU0oHBcqAYsWG2i2AFScob21Dt3tAa6WXUaBip7FgePGRzSTWfELLJSNPztasL+hUuVGlxoNhAfhwnN3ZYixAV1JD2HBSXkCTbFiXKpD5EiAbOwaVXvrzGDD5TW9Q5VJf592/FdZfl/36bB6j11qKPM/RI6frVy7HWJ8+AIAfD74JkQk3AAAAAElFTkSuQmCC';
-
   var linkifyPeertube = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAwFBMVEUAAAD/AAD/VQD/ZgDGVRx0dHQuFy7rYhQqKipwcHAUFBR2dnYbEhvxagfzZwZzeXlzc3MSGB7zaAYcHBz0ZwUeGRlxcXEkHBlzc3PxZwV5c24bGxvyaQV0dHTwaQVWLROWcFnuaAgeHB5wcHAcGhp0dHRzc3MaGBrxaAUbGRlzc3PxZwVzc3PxaAVzc3MZGBrxaAVzc3TxaQUbGRrxaAV0dHQbGRp0dHQbGhp0dHQaGBnxaQTxaATxaAV0dHQbGRpnuGrGAAAAPXRSTlMAAQMFCQsLDRgZGRwcJCoqKissLi8zNFtdXl9gYWNmdnmFiYuSlp2dn6Gio9TV1dXW2NnZ3OLi4+Pz8/T1Vqn9swAAAIxJREFUeNpVzwOaxTAUBeDamHm2jfq5Sfa/qho3+fzn6jCMtuuzDHzG051KFLzJ99hlKSAkHAo0uMt1D7ac/83oPpNrCLOhZoR+V6uYpGyyiTkg5M34DNStXUMw5jLQX/5czCE+dVimAPw52GbkLYqhBWDsr9bZN4DbpDysbrn8gSz6wxmJMJy6H8D4Keq6ElO/y8ecAAAAAElFTkSuQmCC';
-
-  var linkifySoundcloud = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAwFBMVEX/ZwD/ZgD/ZgD/ZgD/ZgD/ZgD/ZgD////+9vL95db83cr828n82cP82Mj9z7r7y6r8wqv6wqL6vqD6uZ78tZj6pnr5o2//lTH/jy//iyz+iiz9iiz/iiX8iSv4gVT+gyn8gij3gjP2fzz5eUr4gCj+fSX8fCT1fSz3ei35eiT9dSH6cyD2bzz0cSD3aTb6axz7ZBr/ZgD+ZgD9ZQD5YBj3XCP6VBT7TQ74TQ7/SQP9Rwr7Rwr5Rgr+QQf8QAf+PAR+PUqRAAAAB3RSTlNIWuTn6u32AhJttwAAAJ1JREFUeNpVyAOaA1EQAOGObWds277/rbZnVi9/fSwYzQPCfAQz+kGgpxA8PwQQvF7vN8UMqPcbB8dxPC8PeJ4LIVRU1TAEbbs6CIah4jAtS7+vT8vFYutYVgSR593Wp00/FjfRw+HfzhusH4tVjCPeX3YYDtSP9Po/jimOLEulhE1s5OZZBGFZofpbVeFoWkITwrjoCMUYYBIQJvAFpS4jY0uYyp8AAAAASUVORK5CYII=';
 
   var linkifyStreamable = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAYFBMVEUAAAAAgP8Ij/iCyv8GkfkIkfkGkvlqvPsFkvpnuvwGk/sFkfoGkfolnvoHkvoGkfoFkPr+///0+v/l8/7Y7v7A4v694f2u2v2n1/1rvPxjuPxPsPw7p/sknfsYmPsFkfp0hGy8AAAAEXRSTlMABiIrLICIkJOUrr7R1/L5/NC8I58AAACSSURBVHjaXc+DAQRBDEDRtW3//ru8JHt+Y08c5YVFVRWR59zcsKZB1JFr44y3TGdCvkRyvgZOxHFB4+uGY2i7/ZJqg9gpoB+25Zr6dehOSqfiaA/YpTrbjcomdhhmuGxCj/Tr2J3ruXSXHIlg7+TSo227FVJ79tIXz/20Z3XLR/L39fwOJqoxTaJjFSQafhJo/wF+AxPVfMiG4gAAAABJRU5ErkJggg==';
 
-  var linkifyTwitchtv = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAFVBMVEX///9nPqVkQaVjQqVlQqRkQaVkQaW0k2slAAAABnRSTlMBJU9dZX099hOrAAAAOUlEQVR42qWOxQHAMBCAqO6/cRt3D1F4HfBGwJUGdVka4X7F3gqWLDw+WD8gGFC5DdZt8I6NJwGB/8FUAwxvFtZXAAAAAElFTkSuQmCC';
-
-  var linkifyX = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAAAAAA6mKC9AAAAAXNSR0IArs4c6QAAALFJREFUGNNjYEAARigtKCTFBOHzsoOpuReXHeRiYmBiMDooCVYhs5OndyYDC4PKaUOozvgFDCe8GPgPhDGAtQLJJaGKZ2S3pDMww0wXOS4Z/7oEKg9W4rOWYXcYQgBo4JYykYsSjAgV9gcvK4etgClhZNA8oWx2mGFJBkyE56QPA0NzB9MpDbDrGTl3xjMwM7GdsLfezMwI0tDawwByuOHlBc9jwJoEod7klebjZcD0PADkfiVsrSGecwAAAABJRU5ErkJggg==';
-
-  var linkifyVideo = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAAXNSR0IArs4c6QAAACxJREFUeNpj+M+AHzIQVEBYxX98JFEKSHPlf8IK/hNW8J+AAlLdMCgCihAEAJBiCAfi8KAsAAAAAElFTkSuQmCC';
-
   var linkifyVidlii = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAvVBMVEUAAAAAVf8AACoAW/8AHFUASv8AJ4UAV/8AHU0AVv8AMJsAUP8DW/8AVP8APrwAOrMASeICWf8APr0AQ8QFWPoAPsECSNIPYv8JUd4PYv8ZaPwRW+cxdv8aZvMqcfwocfxTif9Cf/oYZv00d/xYjPhml/5ml/Zvnvr//v7//vz7+vn09v3s8f/t7/fg6v/k6fbY4//Z4/bK2PrB0vmyyf+0x/iowf+duvyYtviRs/qDrf11o/92ovdIg/4qcv4qw+UqAAAAKHRSTlMABgYOEh8uNTU+QENUWF9haXZ3fpGToKawuMXH2dne6e7w8vn7/f3+RqYf1wAAANFJREFUeNolToMVxTAAzLdR20xT2/tvVd7zGRwur9cJ3BiOe4ANmKhqGCCtvCN3gqtQxl+YArbk5XJYCNLxfO3FZbDTFQlbmJ8WuQ7Gp641hDl3AuAqZbDklAQNFsyZxXFmGxjrRuQbPWy2XtwM0DAE4VjBDluJp5K4nYnisXCtz0qchQLmjpeOKVK3b0e69+Ia5mPkK7fDyny1AMVutdQYPIOBdTiFrtuaEYrTcgTrcO15yNFNu28bZRs2HNuUCZyiaPK9EneKpv63w/F4PB/BDKopHCtHk83DAAAAAElFTkSuQmCC';
-
-  var linkifyVimeo = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAYFBMVEUAAAD///8NrdYLmr4IdZUcstkLlLkMp88rt9uhxM/B3OTv9PVijp6G1uo7vN530eik4PBEfI/g6OuRr7pKwuCy3ekLmsCTyNdJvdsKh6sVW3Nkpbk1e5GDt8bw+fwZj7DYI521AAAAAXRSTlMAQObYZgAAAHtJREFUeF5lz0cOg0AQRFF+Twzk4Bzuf0uj8QiMXLt6i2p1ValD1t7KT1pVKTnkC61fwTedKdDw8jIDfQbTA50sCWKGyzPC2egJQgarHxCdLFCXjdMIMkOwBSRAM5L0dvYOwCAbvAFqu4ObSPVVdhA93HLPkMW60tXf+x+dFQTqdXyYYwAAAABJRU5ErkJggg==';
 
   var linkifyVocaroo = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABgFBMVEUAAAAAAAAAVQAnThQUOwAoUQ1OeiwhTgs7WBQzVRE3ZxxGbh06ah1pkjY/ax4rZQt5n0w7bhVgiC1ciis9cxQjWghhjS9LjSSDrkqFom5kiD56nFWbxllgizA1dQ9JciFDgBo9hBI9ghCk1GVQgCWDrElMczKMukl4pEWZxltyoDeSwlA8hQ1woDyiwIKVxFlnkzNynj+bxGOl1GWOu2BenixGlRJcpyliozCTwlWt22loqzGBrUaNu1VWpx+Nu02hzGeCukS35nJpvTa+7nel0WRerCqi0mKVxlTM8pOs1Xa1vWar2Gep2VlQoxfu7u7N/oLM/YHL/IDN947I937F9HzB8Hq/7na66HPB4nW25W/Hx8e04W+y4GvB13K32ISx4l6w22+t3GSk0mG/wmyc11ug0V+i0VilzGmiwnGbx1yjtoWbwGO9q2mIy06Qwk6ZsXKIwUqVs2W9nWCFvUB9vkGOrF98klt7h2hRqBfFYVPMRVHXNk/iL1BbaEZaYU/yjwUiAAAAT3RSTlMAAgYNDRMXFxoeJSw1PUVHSkpaZGRmZ2lra2tvdXV4fYiNk5WWmp2en6Kmqq2ys7vCzc7Z2tra3N3g4ePm6Ojt7/Hz8/X4+Pr7/Pz8/f39rzKQmwAAANtJREFUeNpjgABGDhVdTW0xRgiPnV/AyDUmIirJlw8iIKrmFRYABFEJWkxgAUnPADAIzPfTAWvSA/FCy+MD0irNQEqYTBIrMgNyousDwktEQAp48or86wJCs8sCAtMFQQKspmEFGeGxoUB9NuwgPhezFdCGpJAgJ01OIF/a1oKF19jHPbXUQB7sDE4eZyVGDg3D0kKfLA+wEQzibgrmOcFBKXHJ1m7CIAEmB0dFqdzq2qoIdX1LsFO5uRi4vWtqi4Ps7eQYoIDJKrI41MXQQ5YBBiSUZQTYmFSFGABv9i67U842VAAAAABJRU5ErkJggg==';
 
-  var linkifyYoutube = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAMFBMVEUAAAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/////4OD/wMD/sLD/UFD/QED/Gxv/AAAFx6toAAAACHRSTlMAEDBAUGBwgM3tr98AAABKSURBVHjajY6DAQAxDEWDGsn+057NvjL+0AIy+wlmHG2rBywA6QkCc3ZY8PMn1vn1qyOELBdHOjtiWUrWprI2vY29CZulu4P0X3qQkwiV1a6sEAAAAABJRU5ErkJggg==';
+  var linkifyClyp = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAALVBMVEX////y+f3M5fa/3/Sz2PGm0u+azO2NxeuAv+l0uOZnsuRaq+JNpeBBnt00mNvdQQLXAAAAV0lEQVR42nSOVQLEIAxEwwtO2Pvfduvezue4/G74JKrdiBAvRMpCSQdhIIBthLEQwWbC0JXAhYmojo0Q5kjPK+HzVpoXoh6zGoWo52NduT3NbRgBzyEAALvECrqwkAvKAAAAAElFTkSuQmCC';
+
+  var linkifyTwitchtv = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAFVBMVEX///9nPqVkQaVjQqVlQqRkQaVkQaW0k2slAAAABnRSTlMBJU9dZX099hOrAAAAOUlEQVR42qWOxQHAMBCAqO6/cRt3D1F4HfBGwJUGdVka4X7F3gqWLDw+WD8gGFC5DdZt8I6NJwGB/8FUAwxvFtZXAAAAAElFTkSuQmCC';
+
+  var linkifyPastebin = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAXVBMVEUAAAAzMzMuLkZkbHQFBQVeaHElJyo7PUNdY2hrcXdrb3STmZ6Ulpqtr7GWl5jw8fHh4uLb3NzV1tbPz8/Hx8e/v7+3t7iur6+mp6mdnp6Ojo6EhIR9fn53d3dgYGDAjBreAAAAD3RSTlMABQshMTZhfpqeqtbe8P4lQOykAAAAqElEQVR42k3PRYJEIQwEUNodjYff9z/mhPFiVQ9PKe1PfzlE3z2kUpXGTXqWU0oHBcqAYsWG2i2AFScob21Dt3tAa6WXUaBip7FgePGRzSTWfELLJSNPztasL+hUuVGlxoNhAfhwnN3ZYixAV1JD2HBSXkCTbFiXKpD5EiAbOwaVXvrzGDD5TW9Q5VJf592/FdZfl/36bB6j11qKPM/RI6frVy7HWJ8+AIAfD74JkQk3AAAAAElFTkSuQmCC';
+
+  const FileImageSvg = 'M64 0C28.7 0 0 28.7 0 64L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-288-128 0c-17.7 0-32-14.3-32-32L224 0 64 0zM256 0l0 128 128 0L256 0zM64 256a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zm152 32c5.3 0 10.2 2.6 13.2 6.9l88 128c3.4 4.9 3.7 11.3 1 16.5s-8.2 8.6-14.2 8.6l-88 0-40 0-48 0-48 0c-5.8 0-11.1-3.1-13.9-8.1s-2.8-11.2 .2-16.1l48-80c2.9-4.8 8.1-7.8 13.7-7.8s10.8 2.9 13.7 7.8l12.8 21.4 48.3-70.2c3-4.3 7.9-6.9 13.2-6.9z';
+  const FileImageW = 384, FileImageH = 512;
+
+  const FileAudioSvg = 'M64 0C28.7 0 0 28.7 0 64L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-288-128 0c-17.7 0-32-14.3-32-32L224 0 64 0zM256 0l0 128 128 0L256 0zm2 226.3c37.1 22.4 62 63.1 62 109.7s-24.9 87.3-62 109.7c-7.6 4.6-17.4 2.1-22-5.4s-2.1-17.4 5.4-22C269.4 401.5 288 370.9 288 336s-18.6-65.5-46.5-82.3c-7.6-4.6-10-14.4-5.4-22s14.4-10 22-5.4zm-91.9 30.9c6 2.5 9.9 8.3 9.9 14.8l0 128c0 6.5-3.9 12.3-9.9 14.8s-12.9 1.1-17.4-3.5L113.4 376 80 376c-8.8 0-16-7.2-16-16l0-48c0-8.8 7.2-16 16-16l33.4 0 35.3-35.3c4.6-4.6 11.5-5.9 17.4-3.5zm51 34.9c6.6-5.9 16.7-5.3 22.6 1.3C249.8 304.6 256 319.6 256 336s-6.2 31.4-16.3 42.7c-5.9 6.6-16 7.1-22.6 1.3s-7.1-16-1.3-22.6c5.1-5.7 8.1-13.1 8.1-21.3s-3.1-15.7-8.1-21.3c-5.9-6.6-5.3-16.7 1.3-22.6z';
+  const FileAudioW = 384, FileAudioH = 512;
+
+  const FileVideoSvg = 'M64 0C28.7 0 0 28.7 0 64L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-288-128 0c-17.7 0-32-14.3-32-32L224 0 64 0zM256 0l0 128 128 0L256 0zM64 288c0-17.7 14.3-32 32-32l96 0c17.7 0 32 14.3 32 32l0 96c0 17.7-14.3 32-32 32l-96 0c-17.7 0-32-14.3-32-32l0-96zM300.9 397.9L256 368l0-64 44.9-29.9c2-1.3 4.4-2.1 6.8-2.1c6.8 0 12.3 5.5 12.3 12.3l0 103.4c0 6.8-5.5 12.3-12.3 12.3c-2.4 0-4.8-.7-6.8-2.1z';
+  const FileVideoW = 384, FileVideoH = 512;
+
+  const XTwitterSvg = 'M357.2 48L427.8 48 273.6 224.2 455 464 313 464 201.7 318.6 74.5 464 3.8 464 168.7 275.5-5.2 48 140.4 48 240.9 180.9 357.2 48zM332.4 421.8l39.1 0-252.4-333.8-42 0 255.3 333.8z';
+  const XTwitterW = 448, XTwitterH = 512;
+
+  const SoundcloudSvg = 'M640.2 298.6c-1.3 23.1-11.5 44.8-28.4 60.5s-39.2 24.4-62.3 24.1l-218 0c-4.8 0-9.4-2-12.8-5.4s-5.3-8-5.3-12.8l0-234.8c-.2-4 .9-8 3.1-11.4s5.3-6.1 9-7.7c0 0 20.1-13.9 62.3-13.9 25.8 0 51.1 6.9 73.3 20.1 17.3 10.2 32.3 23.8 44.1 40.1s20 34.8 24.2 54.4c7.5-2.1 15.3-3.2 23.1-3.2 11.7-.1 23.3 2.2 34.2 6.7s20.5 11.3 28.7 19.7 14.6 18.3 18.9 29.3 6.3 22.6 5.9 34.3zm-354-153.5c.1-1 0-2-.3-2.9s-.8-1.8-1.5-2.6-1.5-1.3-2.4-1.7c-1.8-.8-4-.8-5.8 0-.9 .4-1.7 1-2.4 1.7s-1.2 1.6-1.5 2.6-.4 1.9-.3 2.9c-6 78.9-10.6 152.9 0 231.6 .2 1.7 1 3.3 2.3 4.5 2.6 2.4 6.8 2.4 9.4 0 1.3-1.2 2.1-2.8 2.3-4.5 11.3-79.4 6.6-152 0-231.6l.2 0zm-44 27.3c-.2-1.8-1.1-3.5-2.4-4.7s-3.1-1.9-5-1.9-3.6 .7-5 1.9-2.2 2.9-2.4 4.7c-7.9 67.9-7.9 136.5 0 204.4 .3 1.8 1.2 3.4 2.5 4.5s3.1 1.8 4.8 1.8 3.5-.6 4.8-1.8 2.2-2.8 2.5-4.5c8.8-67.8 8.8-136.5 .1-204.4l.1 0zm-44.3-6.9c-.2-1.8-1-3.4-2.3-4.6s-3-1.8-4.8-1.8-3.5 .7-4.8 1.8-2.1 2.8-2.3 4.6c-6.7 72-10.2 139.3 0 211.1 0 1.9 .7 3.7 2.1 5s3.1 2.1 5 2.1 3.7-.7 5-2.1 2.1-3.1 2.1-5c10.5-72.8 7.3-138.2 .1-211.1l-.1 0zm-44 20.6c0-1.9-.8-3.8-2.1-5.2s-3.2-2.1-5.2-2.1-3.8 .8-5.2 2.1-2.1 3.2-2.1 5.2c-8.1 63.3-8.1 127.5 0 190.8 .2 1.8 1 3.4 2.4 4.6s3.1 1.9 4.8 1.9 3.5-.7 4.8-1.9 2.2-2.8 2.4-4.6c8.8-63.3 8.9-127.5 .3-190.8l-.1 0zm-44.5 47.6c0-1.9-.8-3.8-2.1-5.1s-3.2-2.1-5.1-2.1-3.8 .8-5.1 2.1-2.1 3.2-2.1 5.1c-10.5 49.2-5.5 93.9 .4 143.6 .3 1.6 1.1 3.1 2.3 4.2s2.8 1.7 4.5 1.7 3.2-.6 4.5-1.7 2.1-2.5 2.3-4.2c6.6-50.4 11.6-94.1 .4-143.6zm-44.1-7.5c-.2-1.8-1.1-3.5-2.4-4.8s-3.2-1.9-5-1.9-3.6 .7-5 1.9-2.2 2.9-2.4 4.8c-9.3 50.2-6.2 94.4 .3 144.5 .7 7.6 13.6 7.5 14.4 0 7.2-50.9 10.5-93.8 .3-144.5l-.2 0zM20.7 250.8c-.2-1.8-1.1-3.5-2.4-4.8s-3.2-1.9-5-1.9-3.6 .7-5 1.9-2.3 2.9-2.4 4.8c-8.5 33.7-5.9 61.6 .6 95.4 .2 1.7 1 3.3 2.3 4.4s2.9 1.8 4.7 1.8 3.4-.6 4.7-1.8 2.1-2.7 2.3-4.4c7.5-34.5 11.2-61.8 .4-95.4l-.2 0z';
+  const SoundcloudW = 640, SoundcloudH = 512;
+
+  const DailymotionSvg = 'M298.9 267c-7.4-4.2-15.8-6.3-24.4-6.2-13.2 0-24.4 4.4-33.4 13.3s-13.6 20-13.6 33.4c0 14.1 4.4 25.6 13.3 34.6s20 13.4 33.4 13.4c13.7 0 25-4.6 34.1-13.8S322 321.1 322 307.5c0-8.2-2.1-16.3-6.1-23.5-4-7.1-9.8-13-17-17zM0 32l0 448 448 0 0-448-448 0zM374.7 405.3l-53.1 0 0-23.9-.7 0c-10.5 17.5-29.1 26.2-55.8 26.2-18.4 0-34.7-4.4-48.9-13.1-14.1-8.6-25.5-21-32.9-35.8-7.7-15.1-11.6-32.1-11.6-50.9 0-18.4 3.9-35.1 11.8-50.2 7.5-14.7 18.9-27.1 32.9-35.8 14.1-8.7 30-13.1 47.7-13.1 10.2-.1 20.2 1.6 29.7 5.2 8.9 3.5 17.2 9.1 25 17l0-77.9 55.8-12.1 0 264.4z';
+  const DailymotionW = 448, DailymotionH = 512;
+
+  const GithubSvg = 'M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3 .3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5 .3-6.2 2.3zm44.2-1.7c-2.9 .7-4.9 2.6-4.6 4.9 .3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM252.8 8c-138.7 0-244.8 105.3-244.8 244 0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1 100-33.2 167.8-128.1 167.8-239 0-138.7-112.5-244-251.2-244zM105.2 352.9c-1.3 1-1 3.3 .7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3 .3 2.9 2.3 3.9 1.6 1 3.6 .7 4.3-.7 .7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3 .7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3 .7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z';
+  const GithubW = 512, GithubH = 512;
+
+  const VimeoSvg = 'M403.2 32L44.8 32C20.1 32 0 52.1 0 76.8L0 435.2C0 459.9 20.1 480 44.8 480l358.4 0c24.7 0 44.8-20.1 44.8-44.8l0-358.4C448 52.1 427.9 32 403.2 32zM377 180.8c-1.4 31.5-23.4 74.7-66 129.4-44 57.2-81.3 85.8-111.7 85.8-18.9 0-34.8-17.4-47.9-52.3-25.5-93.3-36.4-148-57.4-148-2.4 0-10.9 5.1-25.4 15.2L53.4 191.3c37.3-32.8 72.9-69.2 95.2-71.2 25.2-2.4 40.7 14.8 46.5 51.7 20.7 131.2 29.9 151 67.6 91.6 13.5-21.4 20.8-37.7 21.8-48.9 3.5-33.2-25.9-30.9-45.8-22.4 15.9-52.1 46.3-77.4 91.2-76 33.3 .9 49 22.5 47.1 64.7z';
+  const VimeoW = 448, VimeoH = 512;
+
+  const YoutubeSvg = 'M549.7 124.1C543.5 100.4 524.9 81.8 501.4 75.5 458.9 64 288.1 64 288.1 64S117.3 64 74.7 75.5C51.2 81.8 32.7 100.4 26.4 124.1 15 167 15 256.4 15 256.4s0 89.4 11.4 132.3c6.3 23.6 24.8 41.5 48.3 47.8 42.6 11.5 213.4 11.5 213.4 11.5s170.8 0 213.4-11.5c23.5-6.3 42-24.2 48.3-47.8 11.4-42.9 11.4-132.3 11.4-132.3s0-89.4-11.4-132.3zM232.2 337.6l0-162.4 142.7 81.2-142.7 81.2z';
+  const YoutubeW = 576, YoutubeH = 512;
 
   var variableBase = `/* General */
 .dialog {
@@ -5827,13 +5836,13 @@ div.post {
 }`;
 
   // == Create CSS for Link Title Favicons == //
+  // style.ts
   const icons$1 = (data) => ('/* Link Title Favicons */\n' +
     data.map(({ name, data }) => `.linkify.${name}::before {
-  content: "";
-  background: transparent url('data:image/png;base64,${data}') center left no-repeat!important;
-  padding-left: 18px;
-}
-`).join(''));
+   content: "";
+   background: transparent url('${data}') center left no-repeat !important;
+   padding-left: 18px;
+  }\n`).join(''));
 
   var iconCss = `/* Icons */
 svg.icon {
@@ -6110,27 +6119,31 @@ svg.icon {
 }`;
 
   // cSpell:ignore installGentoo, webfont
+  const toCssSvg = (svgPathData, w, h, color = '#3546c2') => {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}"><path fill="${color}" d="${svgPathData}"/></svg>`;
+    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  };
   const mainCSS = style + variableBase + yotsuba + yotsubaB + futaba + burichan + tomorrow + photon + spooky + iconCss + fxTwitterCss;
   const faIcons = [
-    { name: "audio", data: linkifyAudio },
-    { name: "bitchute", data: linkifyBitchute },
-    { name: "clyp", data: linkifyClyp },
-    { name: "dailymotion", data: linkifyDailymotion },
-    { name: "gfycat", data: linkifyGfycat },
-    { name: "gist", data: linkifyGist },
-    { name: "image", data: linkifyImage },
-    // { name: "installgentoo", data: linkifyInstallgentoo },
-    { name: "pastebin", data: linkifyPastebin },
-    { name: "peertube", data: linkifyPeertube },
-    { name: "soundcloud", data: linkifySoundcloud },
-    { name: "streamable", data: linkifyStreamable },
-    { name: "twitchtv", data: linkifyTwitchtv },
-    { name: "twitter", data: linkifyX },
-    { name: "video", data: linkifyVideo },
-    { name: "vidlii", data: linkifyVidlii },
-    { name: "vimeo", data: linkifyVimeo },
-    { name: "vocaroo", data: linkifyVocaroo },
-    { name: "youtube", data: linkifyYoutube },
+    { name: "bitchute", data: `data:image/png;base64,${linkifyBitchute}` },
+    { name: "clyp", data: `data:image/png;base64,${linkifyClyp}` },
+    { name: "gfycat", data: `data:image/png;base64,${linkifyGfycat}` },
+    // { name: "installgentoo", data: `data:image/png;base64,${linkifyInstallgentoo }`},
+    { name: "pastebin", data: `data:image/png;base64,${linkifyPastebin}` },
+    { name: "peertube", data: `data:image/png;base64,${linkifyPeertube}` },
+    { name: "streamable", data: `data:image/png;base64,${linkifyStreamable}` },
+    { name: "twitchtv", data: `data:image/png;base64,${linkifyTwitchtv}` },
+    { name: "vidlii", data: `data:image/png;base64,${linkifyVidlii}` },
+    { name: "vocaroo", data: `data:image/png;base64,${linkifyVocaroo}` },
+    { name: "image", data: toCssSvg(FileImageSvg, FileImageW, FileImageH) },
+    { name: "video", data: toCssSvg(FileVideoSvg, FileVideoW, FileVideoH) },
+    { name: "audio", data: toCssSvg(FileAudioSvg, FileAudioW, FileAudioH) },
+    { name: "youtube", data: toCssSvg(YoutubeSvg, YoutubeW, YoutubeH) },
+    { name: "twitter", data: toCssSvg(XTwitterSvg, XTwitterW, XTwitterH) },
+    { name: "soundcloud", data: toCssSvg(SoundcloudSvg, SoundcloudW, SoundcloudH) },
+    { name: "dailymotion", data: toCssSvg(DailymotionSvg, DailymotionW, DailymotionH) },
+    { name: "gist", data: toCssSvg(GithubSvg, GithubW, GithubH) },
+    { name: "vimeo", data: toCssSvg(VimeoSvg, VimeoW, VimeoH) }
   ];
   const CSS = {
     boards: mainCSS + icons$1(faIcons),
