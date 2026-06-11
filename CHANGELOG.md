@@ -2,6 +2,11 @@
 
 4chan XT uses a different user script namespace than 4chan X, so to migrate you need to export settings from 4chan X, and import them in XT.
 
+### 2.25.3 (2026-06-10)
+
+- Dropped 4channel.org support
+- Compressed some of the assets with very limited success
+
 ### 2.25.2 (2026-06-09)
 
 - Add image rotation controls

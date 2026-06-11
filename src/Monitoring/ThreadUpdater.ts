@@ -127,10 +127,7 @@ var ThreadUpdater = {
     return ThreadUpdater.setInterval();
   },
 
-  /*
-  http://freesound.org/people/pierrecartoons1979/sounds/90112/
-  cc-by-nc-3.0
-  */
+  // http://freesound.org/people/pierrecartoons1979/sounds/90112/ cc-by-nc-3.0
   beep: `data:audio/wav;base64,${Beep}`,
 
   playBeep(repeatIfPlaying = true) {
@@ -286,8 +283,7 @@ var ThreadUpdater = {
     let node;
     const el = ThreadUpdater[name];
     if ((node = el.firstChild)) {
-      // Prevent the creation of a new DOM Node
-      // by setting the text node's data.
+      // Prevent the creation of a new DOM Node by setting the text node's data.
       node.data = text;
     } else {
       el.textContent = text;
