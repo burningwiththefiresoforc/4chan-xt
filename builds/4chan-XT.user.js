@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         4chan XT
-// @version      2.26.0
+// @version      2.26.1
 // @minGMVer     1.14
 // @minFFVer     115
 // @namespace    4chan-XT
@@ -157,7 +157,7 @@
   'use strict';
 
   var version = {
-    "version": "2.26.0",
+    "version": "2.26.1",
     "date": "2026-06-11T20:20:20Z"
   }
   ;
@@ -3073,29 +3073,35 @@ current-archive-text:"Archive"]
   font-size: 12pt;
 }`;
 
-  var linkifyBitchute = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAwFBMVEUAAACAgIDMMzPMMzPSLS3OMTHSLS3RLi7QLy/UKyvVKyvUKyvUKyvTKSnUKSnTLCzVKirVKirSLS3VKirUKyvUKyvUKSnWKSnVKSnWKSnWKSnWKSnXKCjXKCjXKCjWKCjXKCjXKCjXKCjYJyfYJyf56en34+P23t700dH0zMzxu7vwtLTvrKzrm5vrlZXpioroiYnngoLldHTkbm7hX1/gVFTdSEjdRUXdQUHcPDzaNTXZLy/ZKirYJyfYJibYJCSVFsdLAAAAJXRSTlMAAgUKERoiJzE7Qk1ZY2pvdHiJmZuhp620vMXW3ePp6+3z9/v9S3/v/AAAALVJREFUeNpNyQMCxEAMBdC/tm3bVn9y/1tt3b6ZGKZIstjodBrFVAS2eLk3o2nWq8RhSjTndM1bCSBWZ0gjhvyEKiKkWVSnBXTI9+/zFf4en8dbuhjpe/fY31Xvi/1qb0ww1cvyuLiqvten7UFm6Ottc95cVd7H1/GpQzRofM1H0jAfW8gMKOZzDbOIlCb0TcsRINamZ1yJAUj3Sc7J2aCZNe/IdDnr1/KFQi4VhaXabRbN1vcHSCcmXfWdwIUAAAAASUVORK5CYII=';
+  const width$5 = 24;
+  const height$5 = 24;
+  const body$5 = "\n<path d=\"M3,0v12l9-6L3,0z M3,12v12l9-6L3,12z M12,6v12l9-6L12,6z\"/>";
 
-  var linkifyGfycat = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAjVBMVEWn3gCo3gSr3w2t4BSu4Bav4Ri35C+45DK45DO55DXA50rA50vB50zC6E/D6FTF6VjG6VvL62vN7G/P7XbQ7XfW74vY8JDa8ZTe8qDe8qLf86Pi9Kzj9K7k9LHp9sDp98Lq98Ps+Mr0++L5/O75/fD6/fH6/fL6/fP7/fT7/fb8/ff8/vj8/vn+/v7///91X4cfAAAAa0lEQVR42o2MgxUDUQAENz+2bXv67y48ex6Xykhne90vSq4eAXBr2LrFn1PBMtawyldP0LeMC9SkCUwt4wo9aQxzy9jAzme04Z7zGhruur+PmTxUjjCwhdk8Ac5F26gD8GjKxqyeHJZlRfIG/OkNqq7ZztgAAAAASUVORK5CYII=';
+  const width$4 = 30;
+  const height$4 = 30;
+  const body$4 = "\n  <path d=\"M14.943 30C23.195 30 29.885 23.284 29.885 15C29.885 6.716 23.195 0 14.943 0C6.69 0 0 6.715 0 15C0 23.285 6.69 30 14.943 30ZM18.009 8.82C18.678 8.359 19.24 8.126 19.994 7.987C20.565 7.884 22.06 8.009 22.676 8.211C23.572 8.507 24.165 8.802 24.83 9.286C26.079 10.202 26.988 11.51 27.413 13.003C27.721 14.091 27.721 15.506 27.409 16.689C27.114 17.799 26.325 19.161 25.459 20.039C24.745 20.759 23.679 21.422 22.738 21.722C21.722 22.049 20.842 22.148 19.899 22.036C19.203 21.955 19.029 21.919 18.418 21.722C17.575 21.452 16.169 20.625 16.263 20.455C16.281 20.419 16.678 19.819 17.142 19.12L17.99 17.849L18.19 18.029C18.489 18.299 19.016 18.588 19.416 18.719C20.741 19.135 22.133 18.817 23.127 17.868C23.658 17.366 24.002 16.788 24.194 16.072C24.313 15.624 24.305 14.639 24.176 14.164C23.77 12.659 22.744 11.669 21.361 11.45C19.964 11.226 18.925 11.92 17.511 14.012C17.328 14.282 16.873 15.006 16.494 15.624C14.795 18.405 13.974 19.494 12.836 20.456C12.038 21.137 11.36 21.5 10.386 21.768C9.984 21.881 9.899 21.888 9.021 21.888C8.191 21.888 8.034 21.88 7.66 21.785C6.644 21.539 6.031 21.279 5.264 20.765C3.703 19.722 2.69 18.159 2.297 16.184C2.208 15.723 2.222 14.24 2.324 13.743C2.45 13.163 2.636 12.597 2.877 12.055C3.565 10.568 4.889 9.295 6.424 8.656C8.061 7.966 9.873 7.939 11.586 8.58C12.112 8.772 13.067 9.337 13.451 9.677L13.638 9.847L12.768 11.146C12.29 11.858 11.88 12.449 11.854 12.458C11.827 12.467 11.764 12.428 11.711 12.364C11.523 12.162 11.001 11.794 10.707 11.657C9.636 11.155 8.495 11.159 7.468 11.67C7.009 11.898 6.718 12.118 6.353 12.512C6.024 12.87 5.835 13.211 5.688 13.721C5.608 13.999 5.594 14.169 5.594 14.729C5.599 15.351 5.608 15.427 5.733 15.803C5.947 16.453 6.211 16.883 6.696 17.375C7.446 18.132 8.362 18.476 9.446 18.405C10.035 18.37 10.419 18.222 10.958 17.828C11.444 17.474 11.971 16.932 12.417 16.319C12.988 15.539 13.171 15.257 14.126 13.685C15.818 10.893 16.827 9.627 18.009 8.82Z\" />\n\n";
 
-  var linkifyPeertube = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAwFBMVEUAAAD/AAD/VQD/ZgDGVRx0dHQuFy7rYhQqKipwcHAUFBR2dnYbEhvxagfzZwZzeXlzc3MSGB7zaAYcHBz0ZwUeGRlxcXEkHBlzc3PxZwV5c24bGxvyaQV0dHTwaQVWLROWcFnuaAgeHB5wcHAcGhp0dHRzc3MaGBrxaAUbGRlzc3PxZwVzc3PxaAVzc3MZGBrxaAVzc3TxaQUbGRrxaAV0dHQbGRp0dHQbGhp0dHQaGBnxaQTxaATxaAV0dHQbGRpnuGrGAAAAPXRSTlMAAQMFCQsLDRgZGRwcJCoqKissLi8zNFtdXl9gYWNmdnmFiYuSlp2dn6Gio9TV1dXW2NnZ3OLi4+Pz8/T1Vqn9swAAAIxJREFUeNpVzwOaxTAUBeDamHm2jfq5Sfa/qho3+fzn6jCMtuuzDHzG051KFLzJ99hlKSAkHAo0uMt1D7ac/83oPpNrCLOhZoR+V6uYpGyyiTkg5M34DNStXUMw5jLQX/5czCE+dVimAPw52GbkLYqhBWDsr9bZN4DbpDysbrn8gSz6wxmJMJy6H8D4Keq6ElO/y8ecAAAAAElFTkSuQmCC';
-
-  var linkifyStreamable = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAYFBMVEUAAAAAgP8Ij/iCyv8GkfkIkfkGkvlqvPsFkvpnuvwGk/sFkfoGkfolnvoHkvoGkfoFkPr+///0+v/l8/7Y7v7A4v694f2u2v2n1/1rvPxjuPxPsPw7p/sknfsYmPsFkfp0hGy8AAAAEXRSTlMABiIrLICIkJOUrr7R1/L5/NC8I58AAACSSURBVHjaXc+DAQRBDEDRtW3//ru8JHt+Y08c5YVFVRWR59zcsKZB1JFr44y3TGdCvkRyvgZOxHFB4+uGY2i7/ZJqg9gpoB+25Zr6dehOSqfiaA/YpTrbjcomdhhmuGxCj/Tr2J3ruXSXHIlg7+TSo227FVJ79tIXz/20Z3XLR/L39fwOJqoxTaJjFSQafhJo/wF+AxPVfMiG4gAAAABJRU5ErkJggg==';
-
-  var linkifyVidlii = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAvVBMVEUAAAAAVf8AACoAW/8AHFUASv8AJ4UAV/8AHU0AVv8AMJsAUP8DW/8AVP8APrwAOrMASeICWf8APr0AQ8QFWPoAPsECSNIPYv8JUd4PYv8ZaPwRW+cxdv8aZvMqcfwocfxTif9Cf/oYZv00d/xYjPhml/5ml/Zvnvr//v7//vz7+vn09v3s8f/t7/fg6v/k6fbY4//Z4/bK2PrB0vmyyf+0x/iowf+duvyYtviRs/qDrf11o/92ovdIg/4qcv4qw+UqAAAAKHRSTlMABgYOEh8uNTU+QENUWF9haXZ3fpGToKawuMXH2dne6e7w8vn7/f3+RqYf1wAAANFJREFUeNolToMVxTAAzLdR20xT2/tvVd7zGRwur9cJ3BiOe4ANmKhqGCCtvCN3gqtQxl+YArbk5XJYCNLxfO3FZbDTFQlbmJ8WuQ7Gp641hDl3AuAqZbDklAQNFsyZxXFmGxjrRuQbPWy2XtwM0DAE4VjBDluJp5K4nYnisXCtz0qchQLmjpeOKVK3b0e69+Ia5mPkK7fDyny1AMVutdQYPIOBdTiFrtuaEYrTcgTrcO15yNFNu28bZRs2HNuUCZyiaPK9EneKpv63w/F4PB/BDKopHCtHk83DAAAAAElFTkSuQmCC';
-
-  var linkifyVocaroo = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABgFBMVEUAAAAAAAAAVQAnThQUOwAoUQ1OeiwhTgs7WBQzVRE3ZxxGbh06ah1pkjY/ax4rZQt5n0w7bhVgiC1ciis9cxQjWghhjS9LjSSDrkqFom5kiD56nFWbxllgizA1dQ9JciFDgBo9hBI9ghCk1GVQgCWDrElMczKMukl4pEWZxltyoDeSwlA8hQ1woDyiwIKVxFlnkzNynj+bxGOl1GWOu2BenixGlRJcpyliozCTwlWt22loqzGBrUaNu1VWpx+Nu02hzGeCukS35nJpvTa+7nel0WRerCqi0mKVxlTM8pOs1Xa1vWar2Gep2VlQoxfu7u7N/oLM/YHL/IDN947I937F9HzB8Hq/7na66HPB4nW25W/Hx8e04W+y4GvB13K32ISx4l6w22+t3GSk0mG/wmyc11ug0V+i0VilzGmiwnGbx1yjtoWbwGO9q2mIy06Qwk6ZsXKIwUqVs2W9nWCFvUB9vkGOrF98klt7h2hRqBfFYVPMRVHXNk/iL1BbaEZaYU/yjwUiAAAAT3RSTlMAAgYNDRMXFxoeJSw1PUVHSkpaZGRmZ2lra2tvdXV4fYiNk5WWmp2en6Kmqq2ys7vCzc7Z2tra3N3g4ePm6Ojt7/Hz8/X4+Pr7/Pz8/f39rzKQmwAAANtJREFUeNpjgABGDhVdTW0xRgiPnV/AyDUmIirJlw8iIKrmFRYABFEJWkxgAUnPADAIzPfTAWvSA/FCy+MD0irNQEqYTBIrMgNyousDwktEQAp48or86wJCs8sCAtMFQQKspmEFGeGxoUB9NuwgPhezFdCGpJAgJ01OIF/a1oKF19jHPbXUQB7sDE4eZyVGDg3D0kKfLA+wEQzibgrmOcFBKXHJ1m7CIAEmB0dFqdzq2qoIdX1LsFO5uRi4vWtqi4Ps7eQYoIDJKrI41MXQQ5YBBiSUZQTYmFSFGABv9i67U842VAAAAABJRU5ErkJggg==';
+  const width$3 = 16;
+  const height$3 = 16;
+  const body$3 = "\n<g>\n<path d=\"M6.56737 15.9097C5.09821 15.5758 4.1633 15.1501 3.10317 14.3487C1.75088 13.322 0.649015 11.6692 0.2066 9.99133C-0.0688666 8.95625 -0.0688666 7.00294 0.2066 5.98455C0.548846 4.74913 1.00796 3.8476 1.83435 2.82921C2.76927 1.67726 4.43042 0.625478 5.98304 0.208105C6.57571 0.0495031 6.90127 0.0161133 7.98644 0.0161133C9.45559 0.0161133 10.1985 0.166368 11.3254 0.692258C11.9682 0.992767 12.9949 1.63552 12.9949 1.74404C12.9949 1.77743 12.3605 2.31167 11.5842 2.92938L10.1818 4.06463L9.68932 3.8476C9.28029 3.65561 9.03822 3.61387 8.27025 3.58048C6.64249 3.5137 5.91626 3.78917 4.8144 4.89938C4.24677 5.46701 4.05478 5.72578 3.85444 6.19324C3.61236 6.75252 3.60402 6.82764 3.59567 8.06307L3.58732 9.35693L2.31851 10.392C1.62567 10.968 1.06639 11.4438 1.08308 11.4605C1.09978 11.4772 1.83435 11.3019 2.71919 11.0682L4.33025 10.6341L4.86448 11.1767C5.79105 12.1032 6.57571 12.4121 8.02817 12.4121C9.4055 12.4121 10.115 12.1283 11.1 11.1683C11.7511 10.5339 12.1936 9.76595 12.3522 8.97294L12.4607 8.4554L14.1218 8.01298C15.04 7.77091 15.8414 7.57057 15.8998 7.57057C15.9666 7.57057 16 7.75421 16 8.23837C16 10.3503 14.8481 12.746 13.1869 14.0983C12.1017 14.9831 11.3004 15.4005 10.0232 15.7594C9.27194 15.9681 7.22682 16.0599 6.56737 15.9097Z\" fill=\"#FF00FF\"/>\n</g>\n\n\n";
 
   const width$2 = 24;
   const height$2 = 24;
-  const body$2 = "<?xml version=\"1.0\" encoding=\"utf-8\"?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->\n<title>Clyp icon</title><path d=\"M12 17.958a1.137 1.137 0 01-1.138-1.136V7.233a1.137 1.137 0 012.276 0v9.59c0 .627-.51 1.135-1.138 1.135m7.439 2.44A1.137 1.137 0 0118.3 19.26V4.794a1.137 1.137 0 012.276 0v14.467c0 .627-.51 1.136-1.138 1.136M15.719 24a1.137 1.137 0 01-1.138-1.136V1.136a1.137 1.137 0 012.276 0v21.728c0 .627-.509 1.136-1.138 1.136m-7.438-3.16a1.137 1.137 0 01-1.138-1.136V4.296a1.137 1.137 0 012.276 0v15.408c0 .628-.51 1.137-1.138 1.137m-3.72-4.989a1.137 1.137 0 01-1.138-1.136V9.284a1.137 1.137 0 012.276 0v5.432c0 .627-.51 1.136-1.138 1.136Z\"/>";
+  const body$2 = "\n<path d=\"M12 17.958a1.137 1.137 0 01-1.138-1.136V7.233a1.137 1.137 0 012.276 0v9.59c0 .627-.51 1.135-1.138 1.135m7.439 2.44A1.137 1.137 0 0118.3 19.26V4.794a1.137 1.137 0 012.276 0v14.467c0 .627-.51 1.136-1.138 1.136M15.719 24a1.137 1.137 0 01-1.138-1.136V1.136a1.137 1.137 0 012.276 0v21.728c0 .627-.509 1.136-1.138 1.136m-7.438-3.16a1.137 1.137 0 01-1.138-1.136V4.296a1.137 1.137 0 012.276 0v15.408c0 .628-.51 1.137-1.138 1.137m-3.72-4.989a1.137 1.137 0 01-1.138-1.136V9.284a1.137 1.137 0 012.276 0v5.432c0 .627-.51 1.136-1.138 1.136Z\"/>";
 
   const width$1 = 24;
   const height$1 = 24;
-  const body$1 = "<title>Pastebin</title><path d=\"M17.02 0a2.096 2.096 0 00-.722.123L2.624 5.003A2.1 2.1 0 001.35 7.69l5.324 14.915a2.101 2.101 0 002.685 1.272l7.746-2.765c.792-.307 1.345-.534 1.464-.608.543-.314.962-.817 1.964-2.334.904-1.362 1.859-3.323 2.097-4.28.24-.97.239-1.48-.502-3.674l-3.146-8.82A2.102 2.102 0 0017.02 0zm-.083.414c.72-.031 1.4.403 1.657 1.12l3.68 10.357c.103.433-.281 1.147-.736 1.35-.2.1-.71.293-1.142.429-1.397.463-2.05.878-2.458 1.547-.363.591-.315 1.18.16 2.377.462 1.142.533 1.864.225 2.4-.113.188-.301.322-1.354.733l-.002-.005-7.746 2.765a1.68 1.68 0 01-2.157-1.022L1.74 7.55a1.68 1.68 0 011.022-2.157L16.437.513c.165-.06.334-.092.5-.099zM15.9 2.25l-1.203.885.187.519.523-.316.803 2.235-.696.249c.045.145.216.642.238.664l2.166-.78-.238-.662-.687.248zm-3.29 1.182l-1.203.885.186.519.524-.316.803 2.235-.697.25c.046.144.216.64.238.663l2.167-.778-.238-.663-.687.247zM9.085 4.786c-.283 0-.56.076-.8.223-.732.448-.85 1.383-.332 2.558.337.776.873 1.218 1.462 1.215 1.345-.007 1.86-1.4 1.085-2.95-.307-.66-.837-1.036-1.415-1.046zm-.191.672c.168-.01.357.085.539.279.145.155.347.51.437.787.35.998.164 1.688-.414 1.546C8.855 7.93 8.21 6 8.62 5.585a.407.407 0 01.273-.127zm-3.765.75c-.283 0-.56.076-.8.223-.732.448-.85 1.382-.332 2.557.337.777.873 1.218 1.462 1.215 1.344-.007 1.86-1.398 1.085-2.95-.307-.66-.838-1.036-1.415-1.045zm-.192.672c.168-.01.358.085.54.278.145.155.347.51.437.787.35.999.164 1.689-.415 1.547-.6-.141-1.243-2.072-.834-2.485a.407.407 0 01.272-.127zm13.362.655c-.283 0-.56.076-.8.223-.732.448-.85 1.382-.332 2.558.337.776.873 1.218 1.462 1.215 1.345-.007 1.86-1.4 1.085-2.95-.307-.66-.837-1.036-1.415-1.046zm-.191.672c.168-.01.357.085.539.278.145.155.347.51.437.787.35.999.164 1.689-.414 1.547-.601-.141-1.244-2.072-.835-2.485a.407.407 0 01.273-.127zm-3.766.75a1.532 1.532 0 00-.8.222c-.73.448-.848 1.383-.331 2.558.337.776.873 1.218 1.462 1.215 1.344-.007 1.86-1.398 1.085-2.95-.307-.66-.838-1.036-1.416-1.045zm-.19.67c.167-.008.357.086.539.28.145.155.347.51.437.787.35.998.164 1.688-.415 1.547-.6-.142-1.244-2.072-.835-2.485a.408.408 0 01.273-.128zm-3.746.744c-.283-.001-.56.076-.8.223-.732.448-.85 1.382-.332 2.557.337.777.873 1.218 1.462 1.215 1.345-.007 1.86-1.398 1.085-2.95-.307-.66-.838-1.036-1.415-1.045zm-.192.672c.169-.01.358.085.54.278.145.155.347.51.437.787.35.999.164 1.689-.414 1.547-.601-.141-1.244-2.072-.835-2.485a.407.407 0 01.272-.127zm-3.515.616l-1.203.884.187.52.524-.316.802 2.233-.696.25c.045.145.216.641.238.663l2.166-.778-.238-.663-.687.247zm15.664 1.33c.034 0 .049.047.064.135.023.11-.064.545-.195.957-.47 1.435-2.052 4.223-3.08 5.396l-.407.47.05-.667c.03-.567-.015-.812-.376-1.71-.496-1.263-.533-1.73-.158-2.31.34-.514 1.028-.907 2.448-1.37.72-.238 1.175-.463 1.385-.664.132-.145.207-.22.253-.235a.048.048 0 01.015-.003zm-6.43 1.476l-1.202.885.187.52.523-.317.803 2.235-.696.25c.045.144.216.641.238.663l2.166-.779-.238-.662-.687.247-1.093-3.042zm-3.578 1.33c-.283 0-.56.077-.8.223-.731.448-.85 1.382-.332 2.558.337.776.873 1.218 1.462 1.215 1.345-.007 1.86-1.399 1.086-2.95-.307-.66-.838-1.036-1.416-1.046zm-.191.672c.168-.009.358.085.54.28.144.153.346.51.437.786.35.998.164 1.688-.415 1.546-.6-.14-1.244-2.072-.835-2.485a.407.407 0 01.273-.127zm-3.515.616l-1.204.885.187.52.524-.317.803 2.234-.697.25c.045.145.216.642.238.664l2.166-.779-.238-.663-.687.248-1.092-3.042z\"/>\n";
+  const body$1 = "<path d=\"M17.02 0a2.096 2.096 0 00-.722.123L2.624 5.003A2.1 2.1 0 001.35 7.69l5.324 14.915a2.101 2.101 0 002.685 1.272l7.746-2.765c.792-.307 1.345-.534 1.464-.608.543-.314.962-.817 1.964-2.334.904-1.362 1.859-3.323 2.097-4.28.24-.97.239-1.48-.502-3.674l-3.146-8.82A2.102 2.102 0 0017.02 0zm-.083.414c.72-.031 1.4.403 1.657 1.12l3.68 10.357c.103.433-.281 1.147-.736 1.35-.2.1-.71.293-1.142.429-1.397.463-2.05.878-2.458 1.547-.363.591-.315 1.18.16 2.377.462 1.142.533 1.864.225 2.4-.113.188-.301.322-1.354.733l-.002-.005-7.746 2.765a1.68 1.68 0 01-2.157-1.022L1.74 7.55a1.68 1.68 0 011.022-2.157L16.437.513c.165-.06.334-.092.5-.099zM15.9 2.25l-1.203.885.187.519.523-.316.803 2.235-.696.249c.045.145.216.642.238.664l2.166-.78-.238-.662-.687.248zm-3.29 1.182l-1.203.885.186.519.524-.316.803 2.235-.697.25c.046.144.216.64.238.663l2.167-.778-.238-.663-.687.247zM9.085 4.786c-.283 0-.56.076-.8.223-.732.448-.85 1.383-.332 2.558.337.776.873 1.218 1.462 1.215 1.345-.007 1.86-1.4 1.085-2.95-.307-.66-.837-1.036-1.415-1.046zm-.191.672c.168-.01.357.085.539.279.145.155.347.51.437.787.35.998.164 1.688-.414 1.546C8.855 7.93 8.21 6 8.62 5.585a.407.407 0 01.273-.127zm-3.765.75c-.283 0-.56.076-.8.223-.732.448-.85 1.382-.332 2.557.337.777.873 1.218 1.462 1.215 1.344-.007 1.86-1.398 1.085-2.95-.307-.66-.838-1.036-1.415-1.045zm-.192.672c.168-.01.358.085.54.278.145.155.347.51.437.787.35.999.164 1.689-.415 1.547-.6-.141-1.243-2.072-.834-2.485a.407.407 0 01.272-.127zm13.362.655c-.283 0-.56.076-.8.223-.732.448-.85 1.382-.332 2.558.337.776.873 1.218 1.462 1.215 1.345-.007 1.86-1.4 1.085-2.95-.307-.66-.837-1.036-1.415-1.046zm-.191.672c.168-.01.357.085.539.278.145.155.347.51.437.787.35.999.164 1.689-.414 1.547-.601-.141-1.244-2.072-.835-2.485a.407.407 0 01.273-.127zm-3.766.75a1.532 1.532 0 00-.8.222c-.73.448-.848 1.383-.331 2.558.337.776.873 1.218 1.462 1.215 1.344-.007 1.86-1.398 1.085-2.95-.307-.66-.838-1.036-1.416-1.045zm-.19.67c.167-.008.357.086.539.28.145.155.347.51.437.787.35.998.164 1.688-.415 1.547-.6-.142-1.244-2.072-.835-2.485a.408.408 0 01.273-.128zm-3.746.744c-.283-.001-.56.076-.8.223-.732.448-.85 1.382-.332 2.557.337.777.873 1.218 1.462 1.215 1.345-.007 1.86-1.398 1.085-2.95-.307-.66-.838-1.036-1.415-1.045zm-.192.672c.169-.01.358.085.54.278.145.155.347.51.437.787.35.999.164 1.689-.414 1.547-.601-.141-1.244-2.072-.835-2.485a.407.407 0 01.272-.127zm-3.515.616l-1.203.884.187.52.524-.316.802 2.233-.696.25c.045.145.216.641.238.663l2.166-.778-.238-.663-.687.247zm15.664 1.33c.034 0 .049.047.064.135.023.11-.064.545-.195.957-.47 1.435-2.052 4.223-3.08 5.396l-.407.47.05-.667c.03-.567-.015-.812-.376-1.71-.496-1.263-.533-1.73-.158-2.31.34-.514 1.028-.907 2.448-1.37.72-.238 1.175-.463 1.385-.664.132-.145.207-.22.253-.235a.048.048 0 01.015-.003zm-6.43 1.476l-1.202.885.187.52.523-.317.803 2.235-.696.25c.045.144.216.641.238.663l2.166-.779-.238-.662-.687.247-1.093-3.042zm-3.578 1.33c-.283 0-.56.077-.8.223-.731.448-.85 1.382-.332 2.558.337.776.873 1.218 1.462 1.215 1.345-.007 1.86-1.399 1.086-2.95-.307-.66-.838-1.036-1.416-1.046zm-.191.672c.168-.009.358.085.54.28.144.153.346.51.437.786.35.998.164 1.688-.415 1.546-.6-.14-1.244-2.072-.835-2.485a.407.407 0 01.273-.127zm-3.515.616l-1.204.885.187.52.524-.317.803 2.234-.697.25c.045.145.216.642.238.664l2.166-.779-.238-.663-.687.248-1.092-3.042z\"/>\n";
 
   const width = 512;
   const height = 512;
   const body = "<rect width=\"512\" height=\"512\" rx=\"15%\" fill=\"#6441a4\"/><path d=\"m115 101-22 56v228h78v42h44l41-42h63l85-85v-199zm260 185-48 48h-78l-42 42v-42h-65v-204h233zm-48-100v85h-30v-85zm-78 0v85h-29v-85z\" fill=\"#fff\"/>";
+
+  const PlaySvg = 'M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80L0 432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z';
+  const PlayW = 384, PlayH = 512;
+
+  const MicrophoneSvg = 'M192 0C139 0 96 43 96 96l0 160c0 53 43 96 96 96s96-43 96-96l0-160c0-53-43-96-96-96zM64 216c0-13.3-10.7-24-24-24s-24 10.7-24 24l0 40c0 89.1 66.2 162.7 152 174.4l0 33.6-48 0c-13.3 0-24 10.7-24 24s10.7 24 24 24l72 0 72 0c13.3 0 24-10.7 24-24s-10.7-24-24-24l-48 0 0-33.6c85.8-11.7 152-85.3 152-174.4l0-40c0-13.3-10.7-24-24-24s-24 10.7-24 24l0 40c0 70.7-57.3 128-128 128s-128-57.3-128-128l0-40z';
+  const MicrophoneW = 384, MicrophoneH = 512;
 
   const FileImageSvg = 'M64 0C28.7 0 0 28.7 0 64L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-288-128 0c-17.7 0-32-14.3-32-32L224 0 64 0zM256 0l0 128 128 0L256 0zM64 256a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zm152 32c5.3 0 10.2 2.6 13.2 6.9l88 128c3.4 4.9 3.7 11.3 1 16.5s-8.2 8.6-14.2 8.6l-88 0-40 0-48 0-48 0c-5.8 0-11.1-3.1-13.9-8.1s-2.8-11.2 .2-16.1l48-80c2.9-4.8 8.1-7.8 13.7-7.8s10.8 2.9 13.7 7.8l12.8 21.4 48.3-70.2c3-4.3 7.9-6.9 13.2-6.9z';
   const FileImageW = 384, FileImageH = 512;
@@ -6126,21 +6132,27 @@ svg.icon {
 
   // cSpell:ignore installGentoo, webfont
   const toCssSvg = (svgPathData, w, h, color = '#3546c2') => {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}"><path fill="${color}" d="${svgPathData}"/></svg>`;
+    let inner;
+    if (svgPathData.trimStart().startsWith('<')) {
+      inner = svgPathData
+        .replace(/fill="[^"]*"/g, '')
+        .replace(/(<\w+)/g, `$1 fill="${color}"`);
+    } else {
+      inner = `<path fill="${color}" d="${svgPathData}"/>`;
+    }
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}">${inner}</svg>`;
     return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
   };
   const mainCSS = style + variableBase + yotsuba + yotsubaB + futaba + burichan + tomorrow + photon + spooky + iconCss + fxTwitterCss;
   const faIcons = [
-    { name: "bitchute", data: `data:image/png;base64,${linkifyBitchute}` },
-    { name: "gfycat", data: `data:image/png;base64,${linkifyGfycat}` },
-    // { name: "installgentoo", data: `data:image/png;base64,${linkifyInstallgentoo }`},
-    { name: "peertube", data: `data:image/png;base64,${linkifyPeertube}` },
-    { name: "streamable", data: `data:image/png;base64,${linkifyStreamable}` },
-    { name: "vidlii", data: `data:image/png;base64,${linkifyVidlii}` },
-    { name: "vocaroo", data: `data:image/png;base64,${linkifyVocaroo}` },
+    { name: "peertube", data: toCssSvg(body$5, width$5, height$5) },
+    { name: "streamable", data: toCssSvg(body$4, width$4, height$4) },
+    { name: "bitchute", data: toCssSvg(body$3, width$3, height$3) },
     { name: "clyp", data: toCssSvg(body$2, width$2, height$2) },
     { name: "pastebin", data: toCssSvg(body$1, width$1, height$1) },
     { name: "twitchtv", data: toCssSvg(body, width, height) },
+    { name: "vocaroo", data: toCssSvg(MicrophoneSvg, MicrophoneW, MicrophoneH) },
+    { name: "vidlii", data: toCssSvg(PlaySvg, PlayW, PlayH) },
     { name: "image", data: toCssSvg(FileImageSvg, FileImageW, FileImageH) },
     { name: "video", data: toCssSvg(FileVideoSvg, FileVideoW, FileVideoH) },
     { name: "audio", data: toCssSvg(FileAudioSvg, FileAudioW, FileAudioH) },
@@ -6150,6 +6162,7 @@ svg.icon {
     { name: "dailymotion", data: toCssSvg(DailymotionSvg, DailymotionW, DailymotionH) },
     { name: "gist", data: toCssSvg(GithubSvg, GithubW, GithubH) },
     { name: "vimeo", data: toCssSvg(VimeoSvg, VimeoW, VimeoH) }
+    // { name: "installgentoo", data: `data:image/png;base64,${linkifyInstallgentoo }`},
   ];
   const CSS = {
     boards: mainCSS + icons$1(faIcons),
@@ -6278,9 +6291,6 @@ svg.icon {
 
   const SquareMinusSvg = 'M64 80c-8.8 0-16 7.2-16 16l0 320c0 8.8 7.2 16 16 16l320 0c8.8 0 16-7.2 16-16l0-320c0-8.8-7.2-16-16-16L64 80zM0 96C0 60.7 28.7 32 64 32l320 0c35.3 0 64 28.7 64 64l0 320c0 35.3-28.7 64-64 64L64 480c-35.3 0-64-28.7-64-64L0 96zM152 232l144 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-144 0c-13.3 0-24-10.7-24-24s10.7-24 24-24z';
   const SquareMinusW = 448, SquareMinusH = 512;
-
-  const PlaySvg = 'M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80L0 432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z';
-  const PlayW = 384, PlayH = 512;
 
   const StopSvg = 'M0 128C0 92.7 28.7 64 64 64H320c35.3 0 64 28.7 64 64V384c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V128z';
   const StopW = 384, StopH = 512;
@@ -15641,15 +15651,6 @@ svg.icon {
         }
       },
       {
-        key: 'Gfycat',
-        regExp: /^\w+:\/\/(?:www\.)?gfycat\.com\/(?:iframe\/)?(\w+)/,
-        el(a) {
-          const el = $.el('iframe', { src: `//gfycat.com/ifr/${a.dataset.uid}` });
-          el.setAttribute("allowfullscreen", "true");
-          return el;
-        }
-      },
-      {
         key: 'Gist',
         regExp: /^\w+:\/\/gist\.github\.com\/[\w\-]+\/(\w+)/,
         style: '',
@@ -15691,7 +15692,7 @@ svg.icon {
       ,
       {
         key: 'Loopvid',
-        regExp: /^\w+:\/\/(?:www\.)?loopvid.kastden.org\/#?((?:pf|kd|lv|gd|gh|db|dx|nn|ig|ky|mf|m2|pc|pi|ni|ko|mm|ic|gc)\/[\w\-\/]+(?:,[\w\-\/]+)*|fc\/\w+\/\d+|https?:\/\/.+)/,
+        regExp: /^\w+:\/\/(?:www\.)?loopvid.kastden.org\/#?((?:pf|kd|lv|gd|gh|db|dx|nn|ig|ky|mf|m2|pc|pi|ni|ko|mm|ic)\/[\w\-\/]+(?:,[\w\-\/]+)*|fc\/\w+\/\d+|https?:\/\/.+)/,
         style: 'max-width: 80vw; max-height: 80vh;',
         el(a) {
           const el = $.el('video', {
@@ -15738,7 +15739,6 @@ svg.icon {
                   case 'mm': return [`https://kastden.org/_loopvid_media/mm/${base}`, `https://web.archive.org/web/2/https://my.mixtape.moe/${base}`];
                   case 'ic': return [`https://media.8ch.net/file_store/${base}`];
                   case 'fc': return [`//${ImageHost.host()}/${base}.webm`];
-                  case 'gc': return [`https://${type}.gfycat.com/${name}.webm`];
                 }
               })();
               for (var url of urls) {
