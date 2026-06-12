@@ -398,16 +398,6 @@ var Embedding = {
       }
     }
     , {
-      key: 'Gfycat',
-      regExp: /^\w+:\/\/(?:www\.)?gfycat\.com\/(?:iframe\/)?(\w+)/,
-      el(a) {
-        const el = $.el('iframe',
-          {src: `//gfycat.com/ifr/${a.dataset.uid}`});
-        el.setAttribute("allowfullscreen", "true");
-        return el;
-      }
-    }
-    , {
       key: 'Gist',
       regExp: /^\w+:\/\/gist\.github\.com\/[\w\-]+\/(\w+)/,
       style: '',
@@ -445,7 +435,7 @@ var Embedding = {
     // }
     , {
       key: 'Loopvid',
-      regExp: /^\w+:\/\/(?:www\.)?loopvid.kastden.org\/#?((?:pf|kd|lv|gd|gh|db|dx|nn|ig|ky|mf|m2|pc|pi|ni|ko|mm|ic|gc)\/[\w\-\/]+(?:,[\w\-\/]+)*|fc\/\w+\/\d+|https?:\/\/.+)/,
+      regExp: /^\w+:\/\/(?:www\.)?loopvid.kastden.org\/#?((?:pf|kd|lv|gd|gh|db|dx|nn|ig|ky|mf|m2|pc|pi|ni|ko|mm|ic)\/[\w\-\/]+(?:,[\w\-\/]+)*|fc\/\w+\/\d+|https?:\/\/.+)/,
       style: 'max-width: 80vw; max-height: 80vh;',
       el(a) {
         const el = $.el('video', {
@@ -488,7 +478,6 @@ var Embedding = {
               case 'mm': return [`https://kastden.org/_loopvid_media/mm/${base}`, `https://web.archive.org/web/2/https://my.mixtape.moe/${base}`];
               case 'ic': return [`https://media.8ch.net/file_store/${base}`];
               case 'fc': return [`//${ImageHost.host()}/${base}.webm`];
-              case 'gc': return [`https://${type}.gfycat.com/${name}.webm`];
             } })();
 
             for (var url of urls) {
