@@ -94,10 +94,6 @@ const tsPlugin = typescript({
           {
             find: /^@fab\/(.*)$/,
             replacement: resolve(__dirname, '../node_modules/@fortawesome/free-brands-svg-icons/$1.js')
-          },
-          {
-            find: /^@custom\/(.*)$/,
-            replacement: resolve(__dirname, '../src/css/Assets/$1.js')
           }
         ]
       }),
@@ -133,6 +129,25 @@ const tsPlugin = typescript({
         }
       }),
       importBase64({ include: ["**/*.png", "**/*.gif", "**/*.wav", "**/*.woff", "**/*.woff2"] }),
+      inlineFile({
+        include: ["**/*.svg"],
+        wrap: false,
+        transformer(svg) {
+        const viewBox = svg.match(/viewBox="([^"]*)"/)?.[1] ?? "0 0 24 24";
+        const [, , w, h] = viewBox.split(" ");
+        const body = svg
+        .replace(/<svg[^>]*>/, "")
+        .replace(/<\/svg>/, "")
+        .replace(/<title>[^<]*<\/title>/, "")
+        .replace(/<defs>[\s\S]*?<\/defs>/g, "")
+        .replace(/clip-path="[^"]*"/g, "")
+        .replace(/<g\s*>/g, "<g>")
+        .replace(/<\?xml[^?]*\?>/g, "")        // remove XML declaration
+        .replace(/<!--[\s\S]*?-->/g, "")        // remove comments
+
+        return `export const width = ${w};\nexport const height = ${h};\nexport const body = ${JSON.stringify(body)};`;
+        }
+      }),
       inlineFile({
         include: "**/package.json",
         wrap: false,
