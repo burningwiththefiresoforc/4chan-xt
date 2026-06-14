@@ -37,6 +37,7 @@ import { g } from '../globals/globals';
 import iconCss from '../Icons/icons.css';
 import fxTwitterCss from '../Linkification/Embedding/FxTwitter.css';
 
+// This is set up to deal with .js and .svgs differently. If it is ever simplified  change it .
 const toCssSvg = (svgPathData: string, w: number | string, h: number | string, color: string = '#3546c2') => {
   let inner: string;
   if (svgPathData.trimStart().startsWith('<')) {

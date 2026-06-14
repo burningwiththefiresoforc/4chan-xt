@@ -562,13 +562,9 @@ var Filter = {
   },
 
   escape(value) {
-    return value.replace(/\/|\\|\^|\$|\n|\.|\(|\)|\{|\}|\[|\]|\?|\*|\+|\|/g, (c) => {
-      if (c === '\n') {
-        return '\\n';
-      } else {
-        return `\\${c}`;
-      }
-    });
+    return value.replace(/[/\\^$\n.(){}[\]?*+|]/g, (c) =>
+      c === '\n' ? '\\n' : `\\${c}`
+    );
   },
 
   menu: {
