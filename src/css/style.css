@@ -118,7 +118,6 @@ body.hasDropDownNav{
   display: inline;
 }
 :root.sw-yotsuba .fileText {
-  max-width: auto;
   white-space: normal;
 }
 
