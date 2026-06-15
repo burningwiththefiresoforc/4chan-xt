@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         4chan XT
-// @version      2.26.1
+// @version      2.26.2
 // @minGMVer     1.14
 // @minFFVer     115
 // @namespace    4chan-XT
@@ -26,8 +26,8 @@
 // @include      https://www.ota-ch.com/*
 // @include      https://sportschan.org/*
 // @include      https://www.sportschan.org/*
-// @include      https://sushigirl.us/*
-// @include      https://www.sushigirl.us/*
+// @include      https://sushigirl.cafe/*
+// @include      https://www.sushigirl.cafe/*
 // @exclude      https://www.4chan.org/advertise
 // @exclude      https://www.4chan.org/advertise?*
 // @exclude      https://www.4chan.org/donate

@@ -149,7 +149,8 @@ export default class Post {
       flag:      this.nodes.flag?.title,
       date:      this.nodes.date ? g.SITE.parseDate(this.nodes.date) : undefined,
     };
-    g.SITE.parseInfo?.(this);
+    g.SITE.parseInfo?.(this); // parses the tripcode
+    // this now has to happen after the tripcode parsing
     this.info.nameBlock = Conf['Anonymize'] ? 'Anonymous' : `${this.info.name || ''} ${this.info.tripcode || ''}`.trim();
 
     if (this.info.capcode) { this.info.nameBlock += ` ## ${this.info.capcode}`; }

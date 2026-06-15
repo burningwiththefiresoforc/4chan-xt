@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         4chan XT
-// @version      2.26.1
+// @version      2.26.2
 // @minGMVer     1.14
 // @minFFVer     115
 // @namespace    4chan-XT
@@ -26,8 +26,8 @@
 // @include      https://www.ota-ch.com/*
 // @include      https://sportschan.org/*
 // @include      https://www.sportschan.org/*
-// @include      https://sushigirl.us/*
-// @include      https://www.sushigirl.us/*
+// @include      https://sushigirl.cafe/*
+// @include      https://www.sushigirl.cafe/*
 // @exclude      https://www.4chan.org/advertise
 // @exclude      https://www.4chan.org/advertise?*
 // @exclude      https://www.4chan.org/donate
@@ -157,8 +157,8 @@
   'use strict';
 
   var version = {
-    "version": "2.26.1",
-    "date": "2026-06-11T20:20:20Z"
+    "version": "2.26.2",
+    "date": "2026-06-14T20:20:20Z"
   }
   ;
 
@@ -6131,6 +6131,7 @@ svg.icon {
 }`;
 
   // cSpell:ignore installGentoo, webfont
+  // This is set up to deal with .js and .svgs differently. If it is ever simplified  change it .
   const toCssSvg = (svgPathData, w, h, color = '#3546c2') => {
     let inner;
     if (svgPathData.trimStart().startsWith('<')) {
@@ -8385,8 +8386,10 @@ svg.icon {
         flagCodeTroll: this.nodes.flag?.className.match(/bfl-(\w+)/)?.[1].toUpperCase(),
         flag: this.nodes.flag?.title,
         date: this.nodes.date ? g.SITE.parseDate(this.nodes.date) : undefined,
-        nameBlock: Conf['Anonymize'] ? 'Anonymous' : `${name || ''} ${tripcode || ''}`.trim(),
       };
+      g.SITE.parseInfo?.(this); // parses the tripcode
+      // this now has to happen after the tripcode parsing
+      this.info.nameBlock = Conf['Anonymize'] ? 'Anonymous' : `${this.info.name || ''} ${this.info.tripcode || ''}`.trim();
       if (this.info.capcode) {
         this.info.nameBlock += ` ## ${this.info.capcode}`;
       }
@@ -20146,6 +20149,11 @@ $\
         })();
       }
     },
+    parseInfo(post) {
+      if (post.info.tripcode == null && /!/.test(post.info.name)) {
+        [, post.info.name, post.info.tripcode] = post.info.name.match(/(.*?) ?(!.*)/);
+      }
+    },
     parseDate(node) {
       return new Date(node.dataset.utc * 1000);
     },
@@ -22238,13 +22246,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       }
     },
     escape(value) {
-      return value.replace(/\/|\\|\^|\$|\n|\.|\(|\)|\{|\}|\[|\]|\?|\*|\+|\|/g, (c) => {
-        if (c === '\n') {
-          return '\\n';
-        } else {
-          return `\\${c}`;
-        }
-      });
+      return value.replace(/[/\\^$\n.(){}[\]?*+|]/g, (c) => c === '\n' ? '\\n' : `\\${c}`);
     },
     menu: {
       init() {
