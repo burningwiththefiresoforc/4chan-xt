@@ -148,8 +148,9 @@ export default class Post {
       flagCodeTroll: this.nodes.flag?.className.match(/bfl-(\w+)/)?.[1].toUpperCase(),
       flag:      this.nodes.flag?.title,
       date:      this.nodes.date ? g.SITE.parseDate(this.nodes.date) : undefined,
-      nameBlock: Conf['Anonymize'] ? 'Anonymous' : `${name || ''} ${tripcode || ''}`.trim(),
     };
+    g.SITE.parseInfo?.(this);
+    this.info.nameBlock = Conf['Anonymize'] ? 'Anonymous' : `${this.info.name || ''} ${this.info.tripcode || ''}`.trim();
 
     if (this.info.capcode) { this.info.nameBlock += ` ## ${this.info.capcode}`; }
     if (this.info.uniqueID) { this.info.nameBlock += ` (ID: ${this.info.uniqueID})`; }

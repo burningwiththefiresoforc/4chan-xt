@@ -252,6 +252,12 @@ $\
     }
   },
 
+  parseInfo(post) {
+    if (post.info.tripcode == null && /!/.test(post.info.name)) {
+      [, post.info.name, post.info.tripcode] = post.info.name.match(/(.*?) ?(!.*)/);
+    }
+  }
+
   parseDate(node) {
     return new Date(node.dataset.utc * 1000);
   },
