@@ -285,72 +285,72 @@ var ImageExpand = {
     }
 
     if (Conf['Image Media Controls']) {
-      const controls = $.el('div', MediaControls());
-      const [y, x] = Conf['imageMediaControlsPosition'].split('-');
-      [...controls.childNodes][0].classList.add(`media-controls-${x}`, `media-controls-${y}`);
-      const container = $.el('div', {className: 'media-controls-container'});
-      const wrapper = $.el('div', {className: 'media-controls-wrapper'});
-      file.imageMediaControls = container;
-      $.add(container, [...controls.childNodes]);
-      $.add(wrapper, el);
-      $.add(container, wrapper);
-      $.prepend(thumbLink, container);
+     const controls = $.el('div', MediaControls());
+     const [y, x] = Conf['imageMediaControlsPosition'].split('-');
+     [...controls.childNodes][0].classList.add(`media-controls-${x}`, `media-controls-${y}`);
+     const container = $.el('div', {className: 'media-controls-container'});
+     const wrapper = $.el('div', {className: 'media-controls-wrapper'});
+     file.imageMediaControls = container;
+     $.add(container, [...controls.childNodes]);
+     $.add(wrapper, el);
+     $.add(container, wrapper);
+     $.prepend(thumbLink, container);
 
-      const totalRotationStates = 4;
-      let currentRotationState = 0;
+     const totalRotationStates = 4;
+     let currentRotationState = 0;
+     let initialImageContentWidth = 0;
 
+     function positiveModulo(a: number, n: number): number {
+       return ((a % n) + n) % n;
+     }
 
-      const { width } = el.getBoundingClientRect();
-      const initialImageContentWidth = width;
+     const compensateTransformedSize = () => {
+       const rotationState = positiveModulo(currentRotationState, totalRotationStates);
+       const { width, height } = wrapper.getBoundingClientRect();
+       if (rotationState === 1 || rotationState === 3) {
+         el.style.maxHeight = `${initialImageContentWidth}px`;
+       } else {
+         el.style.maxHeight = '';
+       }
+       Object.assign(container.style, { width: `${width}px`, height: `${height}px` });
+     };
 
-      el.style.maxWidth = `${initialImageContentWidth}px`;
-      el.style.maxHeight = '';
+     const compensateTransformedSizeObserver = new ResizeObserver(compensateTransformedSize);
 
-      function positiveModulo(a: number, n: number): number {
-        return ((a % n) + n) % n;
-      }
+     // Capture width once the element is actually laid out, regardless of
+     // whether expansion was triggered by click or keybinding.
+     const initWidthObserver = new ResizeObserver((entries, obs) => {
+       const w = entries[0]?.contentRect.width ?? 0;
+       if (w > 0) {
+         initialImageContentWidth = w;
+         el.style.maxWidth = `${w}px`;
+         el.style.maxHeight = '';
+         obs.disconnect();
+       }
+     });
+     initWidthObserver.observe(el);
 
+     function updateRotation() {
+       compensateTransformedSizeObserver.observe(wrapper);
+       wrapper.setAttribute('rotation', String(positiveModulo(currentRotationState, totalRotationStates)));
+       compensateTransformedSize();
+     }
 
-      const compensateTransformedSize = () => {
-        const rotationState = positiveModulo(currentRotationState, totalRotationStates);
-        const { width, height } = wrapper.getBoundingClientRect();
-
-        if (rotationState === 1 || rotationState === 3) {
-          el.style.maxHeight = `${initialImageContentWidth}px`;
-        } else {
-          el.style.maxHeight = ''; 
-        }
-
-        Object.assign(container.style, { width: `${width}px`, height: `${height}px` });
-      };
-
-      const compensateTransformedSizeObserver = new ResizeObserver(
-        compensateTransformedSize,
-      );
-
-      function updateRotation() {
-        compensateTransformedSizeObserver.observe(wrapper);
-        wrapper.setAttribute('rotation', String(positiveModulo(currentRotationState, totalRotationStates)));
-        compensateTransformedSize(); 
-      }
-
-      const leftBtn = thumbLink.querySelector('[data-action="rotateLeft"]');
-      const rightBtn = thumbLink.querySelector('[data-action="rotateRight"]');
-
-      $.on(leftBtn, 'click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        currentRotationState--;
-        updateRotation();
-      });
-
-      $.on(rightBtn, 'click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        currentRotationState++;
-        updateRotation();
-      });
-    }
+     const leftBtn = thumbLink.querySelector('[data-action="rotateLeft"]');
+     const rightBtn = thumbLink.querySelector('[data-action="rotateRight"]');
+     $.on(leftBtn, 'click', (e) => {
+       e.preventDefault();
+       e.stopPropagation();
+       currentRotationState--;
+       updateRotation();
+     });
+     $.on(rightBtn, 'click', (e) => {
+       e.preventDefault();
+       e.stopPropagation();
+       currentRotationState++;
+       updateRotation();
+     });
+   }
   },
 
   completeExpand(post) {
