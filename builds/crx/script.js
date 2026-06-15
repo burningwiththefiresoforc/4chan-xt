@@ -85,8 +85,8 @@
   'use strict';
 
   var version = {
-    "version": "2.26.2",
-    "date": "2026-06-14T20:20:20Z"
+    "version": "2.26.3",
+    "date": "2026-06-15T20:20:20Z"
   }
   ;
 
@@ -3383,7 +3383,6 @@ body.hasDropDownNav{
   display: inline;
 }
 :root.sw-yotsuba .fileText {
-  max-width: auto;
   white-space: normal;
 }
 
@@ -8029,10 +8028,7 @@ svg.icon {
         $.prepend(thumbLink, container);
         const totalRotationStates = 4;
         let currentRotationState = 0;
-        const { width } = el.getBoundingClientRect();
-        const initialImageContentWidth = width;
-        el.style.maxWidth = `${initialImageContentWidth}px`;
-        el.style.maxHeight = '';
+        let initialImageContentWidth = 0;
         function positiveModulo(a, n) {
           return ((a % n) + n) % n;
         }
@@ -8047,6 +8043,18 @@ svg.icon {
           Object.assign(container.style, { width: `${width}px`, height: `${height}px` });
         };
         const compensateTransformedSizeObserver = new ResizeObserver(compensateTransformedSize);
+        // Capture width once the element is actually laid out, regardless of
+        // whether expansion was triggered by click or keybinding.
+        const initWidthObserver = new ResizeObserver((entries, obs) => {
+          const w = entries[0]?.contentRect.width ?? 0;
+          if (w > 0) {
+            initialImageContentWidth = w;
+            el.style.maxWidth = `${w}px`;
+            el.style.maxHeight = '';
+            obs.disconnect();
+          }
+        });
+        initWidthObserver.observe(el);
         function updateRotation() {
           compensateTransformedSizeObserver.observe(wrapper);
           wrapper.setAttribute('rotation', String(positiveModulo(currentRotationState, totalRotationStates)));

@@ -2,6 +2,11 @@
 
 4chan XT uses a different user script namespace than 4chan X, so to migrate you need to export settings from 4chan X, and import them in XT.
 
+### 2.26.3 (2026-06-15)
+
+- Fixed image expansion keybind issue due to image rotation controls
+- Removed an invalid property
+
 ### 2.26.2 (2026-06-14)
 
 - Converted upstream patch to fix tripcode filtering
