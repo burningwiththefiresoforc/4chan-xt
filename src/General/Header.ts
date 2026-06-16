@@ -1,5 +1,5 @@
 import Redirect from "../Archive/Redirect";
-import Notice from "../classes/Notice";
+import Notice, { noticesRoot } from "../classes/Notice";
 import { Conf, d, doc, E, g } from "../globals/globals";
 import PageReady from "../main/PageReady";
 import CatalogLinks from "../Miscellaneous/CatalogLinks";
@@ -22,7 +22,7 @@ var Header = {
   init() {
     $.onExists(doc, 'body', () => {
       if (!PageReady.isThisPageLegit()) { return; }
-      $.add(this.bar, [this.noticesRoot, this.toggle]);
+      $.add(this.bar, [noticesRoot, this.toggle]);
       $.prepend(d.body, this.bar);
       $.add(d.body, Header.hover);
       return this.setBarPosition(Conf['Bottom Header']);
@@ -157,9 +157,6 @@ var Header = {
 
   bar: $.el('div',
     {id: 'header-bar'}),
-
-  noticesRoot: $.el('div',
-    {id: 'notifications'}),
 
   shortcuts: $.el('span',
     {id: 'shortcuts'}),
@@ -507,7 +504,7 @@ var Header = {
 
     $.addClass(doc, args[0]);
     $.rmClass(doc, args[1]);
-    return $[args[2]](Header.bar, Header.noticesRoot);
+    return $[args[2]](Header.bar, noticesRoot);
   },
 
   toggleBarPosition() {

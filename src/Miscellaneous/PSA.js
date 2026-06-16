@@ -1,6 +1,5 @@
 import Notice from "../classes/Notice";
 import { g, Conf, doc } from "../globals/globals";
-import Main from "../main/Main";
 import $ from "../platform/$";
 
 /*

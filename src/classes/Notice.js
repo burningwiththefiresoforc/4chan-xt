@@ -1,8 +1,9 @@
-import Header from "../General/Header";
 import { d } from "../globals/globals";
 import $ from "../platform/$";
 import { SECOND } from "../platform/helpers";
 import Icon from '../Icons/icon';
+
+export const noticesRoot = $.el('div', { id: 'notifications' });
 
 export default class Notice {
   constructor(type, content, timeout, onclose) {
@@ -35,7 +36,7 @@ export default class Notice {
       return;
     }
     $.off(d, 'visibilitychange', this.add);
-    $.add(Header.noticesRoot, this.el);
+    $.add(noticesRoot, this.el);
     this.el.clientHeight; // force reflow
     this.el.style.opacity = 1;
     if (this.timeout) { this.timeoutId = setTimeout(this.close, this.timeout * SECOND); }
