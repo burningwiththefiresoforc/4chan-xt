@@ -4,6 +4,7 @@ import Callbacks from '../classes/Callbacks';
 import Notice from '../classes/Notice';
 import Post from '../classes/Post';
 import Main from '../main/Main';
+import PageReady from '../main/PageReady';
 import Config from '../config/Config';
 import Settings from '../General/Settings';
 import QuoteThreading from '../Quotelinks/QuoteThreading';
@@ -61,7 +62,7 @@ var ThreadUpdater = {
     const updateLink = $.el('span',
       {className: 'brackets-wrap updatelink'});
     $.extend(updateLink, {innerHTML: '<a href="javascript:;">Update</a>'});
-    Main.ready(function() {
+    PageReady.ready(function() {
       let navLinksBot;
       if (navLinksBot = $('.navLinksBot')) { return $.add(navLinksBot, [$.tn(' '), updateLink]); }
     });

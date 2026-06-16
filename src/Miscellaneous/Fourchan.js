@@ -1,7 +1,7 @@
 import Callbacks from "../classes/Callbacks";
 import BoardConfig from "../General/BoardConfig";
 import { d, doc, g } from "../globals/globals";
-import Main from "../main/Main";
+import PageReady from "../main/PageReady";
 import $ from "../platform/$";
 import $$ from "../platform/$$";
 import ExpandComment from "./ExpandComment";
@@ -15,7 +15,7 @@ var Fourchan = {
   init() {
     if ((g.SITE.software !== 'yotsuba') || !['index', 'thread', 'archive'].includes(g.VIEW)) { return; }
     BoardConfig.ready(this.initBoard);
-    return Main.ready(this.initReady);
+    return PageReady.ready(this.initReady);
   },
 
   initBoard() {

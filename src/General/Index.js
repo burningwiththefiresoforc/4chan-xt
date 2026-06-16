@@ -15,6 +15,7 @@ import Filter from '../Filtering/Filter';
 import PostHiding from '../Filtering/PostHiding';
 import ThreadHiding from '../Filtering/ThreadHiding';
 import Main from '../main/Main';
+import PageReady from '../main/PageReady';
 import CatalogLinks from '../Miscellaneous/CatalogLinks';
 import RelativeDates from '../Miscellaneous/RelativeDates';
 import ThreadWatcher from '../Monitoring/ThreadWatcher';
@@ -229,7 +230,7 @@ var Index = {
       if (timeEl.dataset.utc) { return RelativeDates.update(timeEl); }
     });
 
-    return Main.ready(function() {
+    return PageReady.ready(function() {
       let pagelist;
       if (pagelist = $('.pagelist')) {
         $.replace(pagelist, Index.pagelist);

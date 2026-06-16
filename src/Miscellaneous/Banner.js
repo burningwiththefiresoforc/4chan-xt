@@ -1,6 +1,6 @@
 import DataBoard from "../classes/DataBoard";
 import { Conf, d, g } from "../globals/globals";
-import Main from "../main/Main";
+import PageReady from "../main/PageReady";
 import Unread from "../Monitoring/Unread";
 import $ from "../platform/$";
 import $$ from "../platform/$$";
@@ -22,7 +22,7 @@ var Banner = {
 
     // Let 4chan's JS load the banner if enabled; otherwise, load it ourselves.
     if (g.BOARD.ID !== 'f') {
-      return Main.ready(() => $.queueTask(Banner.load));
+      return PageReady.ready(() => $.queueTask(Banner.load));
     }
   },
 

@@ -89,6 +89,7 @@ import Get from "../General/Get";
 import { dict, platform } from "../platform/helpers";
 import RestoreDeletedFromArchive from "../Archive/RestoreDeletedFromArchive";
 import ScrollMarkers from "../Miscellaneous/ScrollMarkers";
+import PageReady from "./PageReady";
 // #region tests_enabled
 import Test from "../General/Test";
 // #endregion
@@ -231,7 +232,7 @@ var Main = {
         // Fresh install
         } else if ((items.previousversion == null)) {
           Main.isFirstRun = true;
-          Main.ready(function() {
+          PageReady.ready(function() {
             $.set('previousversion', g.VERSION);
             return Settings.open();
           });
@@ -356,7 +357,7 @@ var Main = {
   },
 
   initStyle() {
-    if (!Main.isThisPageLegit()) { return; }
+    if (!PageReady.isThisPageLegit()) { return; }
 
     // disable the mobile layout
     const mobileLink = $('link[href*=mobile]', d.head);
@@ -829,23 +830,6 @@ User agent: ${navigator.userAgent}\
     details = details.replace(/file:\/{3}.+\//g, ''); // Remove local file paths
     const url = meta.newIssue.replace('%title', encodeURIComponent(title)).replace('%details', encodeURIComponent(details));
     return { innerHTML: `<span class="report-error"> [<a href="${url}" target="_blank">report</a>]</span>` };
-  },
-
-  isThisPageLegit() {
-    // not 404 error page or similar.
-    if (!('thisPageIsLegit' in Main)) {
-      Main.thisPageIsLegit = g.SITE.isThisPageLegit ?
-        g.SITE.isThisPageLegit()
-      :
-        !/^[45]\d\d\b/.test(document.title) && !/\.(?:json|rss)$/.test(location.pathname);
-    }
-    return Main.thisPageIsLegit;
-  },
-
-  ready(cb) {
-    return $.ready(function() {
-      if (Main.isThisPageLegit()) { return cb(); }
-    });
   },
 
   mounted(cb) {

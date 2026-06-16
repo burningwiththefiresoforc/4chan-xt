@@ -4,7 +4,7 @@ import Thread from "../classes/Thread";
 import Index from "../General/Index";
 import UI from "../General/UI";
 import { g, Conf, d, doc } from "../globals/globals";
-import Main from "../main/Main";
+import PageReady from "../main/PageReady";
 import Menu from "../Menu/Menu";
 import $ from "../platform/$";
 import $$ from "../platform/$$";
@@ -45,7 +45,7 @@ var ThreadHiding = {
   catalogWatch() {
     if (!$.hasStorage || (g.SITE.software !== 'yotsuba')) { return; }
     this.hiddenThreads = JSON.parse(localStorage.getItem(`4chan-hide-t-${g.BOARD}`)) || {};
-    return Main.ready(() => // 4chan's catalog sets the style to "display: none;" when hiding or unhiding a thread.
+    return PageReady.ready(() => // 4chan's catalog sets the style to "display: none;" when hiding or unhiding a thread.
     new MutationObserver(ThreadHiding.catalogSave).observe($.id('threads'), {
       attributes: true,
       subtree: true,

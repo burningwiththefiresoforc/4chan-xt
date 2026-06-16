@@ -3,7 +3,7 @@ import Header from '../General/Header';
 import UI from '../General/UI';
 import { g, Conf, d, doc, E } from '../globals/globals';
 import ImageHost from '../Images/ImageHost';
-import Main from '../main/Main';
+import PageReady from '../main/PageReady';
 import $ from '../platform/$';
 import $$ from '../platform/$$';
 import CrossOrigin from '../platform/CrossOrigin';
@@ -126,7 +126,7 @@ var Embedding = {
   },
 
   ready() {
-    if (!Main.isThisPageLegit()) { return; }
+    if (!PageReady.isThisPageLegit()) { return; }
     $.addClass(Embedding.dialog, 'empty');
     const close = $('.close', Embedding.dialog);
     const jump = $('.jump', Embedding.dialog)

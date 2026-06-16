@@ -5,7 +5,7 @@ import Callbacks from '../classes/Callbacks';
 import DataBoard from '../classes/DataBoard';
 import Thread from '../classes/Thread';
 import Filter from '../Filtering/Filter';
-import Main from '../main/Main';
+import PageReady from '../main/PageReady';
 import $$ from '../platform/$$';
 import Config from '../config/Config';
 import CrossOrigin from '../platform/CrossOrigin';
@@ -175,7 +175,7 @@ var ThreadWatcher = {
   }, // Also on mousedown to prevent highlighting thumbnail in Firefox.
 
   addDialog() {
-    if (!Main.isThisPageLegit()) { return; }
+    if (!PageReady.isThisPageLegit()) { return; }
     ThreadWatcher.build();
     return $.prepend(d.body, ThreadWatcher.dialog);
   },

@@ -1,7 +1,7 @@
 import Redirect from "../Archive/Redirect";
 import Notice from "../classes/Notice";
 import { Conf, d, doc, E, g } from "../globals/globals";
-import Main from "../main/Main";
+import PageReady from "../main/PageReady";
 import CatalogLinks from "../Miscellaneous/CatalogLinks";
 import $ from "../platform/$";
 import $$ from "../platform/$$";
@@ -21,7 +21,7 @@ import Icon from "../Icons/icon";
 var Header = {
   init() {
     $.onExists(doc, 'body', () => {
-      if (!Main.isThisPageLegit()) { return; }
+      if (!PageReady.isThisPageLegit()) { return; }
       $.add(this.bar, [this.noticesRoot, this.toggle]);
       $.prepend(d.body, this.bar);
       $.add(d.body, Header.hover);
@@ -118,7 +118,7 @@ var Header = {
 
     $.onExists(doc, `${g.SITE.selectors.boardList} + *`, Header.generateFullBoardList);
 
-    Main.ready(function() {
+    PageReady.ready(function() {
       let footer;
       if ((g.SITE.software === 'yotsuba') && !(footer = $.id('boardNavDesktopFoot'))) {
         let absbot;
