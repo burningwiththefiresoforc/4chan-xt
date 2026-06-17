@@ -93,6 +93,7 @@ var Gallery = {
       thumbs:  '.gal-thumbnails',
       next:    '.gal-image a',
       current: '.gal-image img'
+      dimensions: '.gal-dimensions'
     };
     for (var key in object) { var value = object[key]; nodes[key] = $(value, dialog); }
 
@@ -247,6 +248,11 @@ var Gallery = {
     nodes.name.href         = thumb.href;
     nodes.frame.scrollTop   = 0;
     nodes.next.focus();
+
+    if (Conf['Image Resolution'] && (post = g.posts.get(file.dataset.post)) && post.file.dimensions) {
+      const [w, h] = post.file.dimensions.split('x');
+      nodes.dimensions.innerText = `${w} x ${h} px`;
+    }
 
     // Set sauce links
     $.rmAll(nodes.sauce);
