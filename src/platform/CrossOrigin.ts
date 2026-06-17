@@ -1,4 +1,4 @@
-import QR from "../Posting/QR";
+// import QR from "../Posting/QR";
 import $ from "./$";
 import { dict, platform } from "./helpers";
 
@@ -99,10 +99,10 @@ var CrossOrigin = {
       if (match) {
         name = match.replace(/\\"/g, '"');
       }
-      if (/^text\/plain;\s*charset=x-user-defined$/i.test(mime)) {
-        // In JS Blocker (Safari) content type comes back as 'text/plain; charset=x-user-defined'; guess from filename instead.
-        mime = $.getOwn(QR.typeFromExtension, name.match(/[^.]*$/)[0].toLowerCase()) || 'application/octet-stream';
-      }
+      // if (/^text\/plain;\s*charset=x-user-defined$/i.test(mime)) {
+      //   // In JS Blocker (Safari) content type comes back as 'text/plain; charset=x-user-defined'; guess from filename instead.
+      //   mime = $.getOwn(QR.typeFromExtension, name.match(/[^.]*$/)[0].toLowerCase()) || 'application/octet-stream';
+      // } This appears to be have been deprecated
       cb(new File([data], name, { type: mime }));
     });
   },

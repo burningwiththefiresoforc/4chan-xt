@@ -33,7 +33,7 @@ var QR = {
 
   // will be set at init
   // captcha: undefined as typeof Captcha.v2 | typeof Captcha.t,
-  captcha: typeof Captcha.t,
+  captcha: null,
   min_width: 0,
   min_height: 0,
   max_width: 0,
