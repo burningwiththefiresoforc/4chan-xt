@@ -1,7 +1,7 @@
 import Callbacks from "../classes/Callbacks";
 import Post from "../classes/Post";
 import Get from "../General/Get";
-import Index from "../General/Index";
+import { indexEnabled } from "../General/State";
 import { g, Conf, d } from "../globals/globals";
 import Main from "../main/Main";
 import $ from "../platform/$";
@@ -113,7 +113,7 @@ var ExpandThread = {
       if ('file' in Get.postFromRoot(reply)) { filesCount++; }
       $.rm(reply);
     }
-    if (Index.enabled) { // otherwise handled by Main.addPosts
+    if (indexEnabled) { // otherwise handled by Main.addPosts
       $.event('PostsRemoved', null, a.parentNode);
     }
     a.textContent = g.SITE.Build.summaryText('+', postsCount, filesCount);

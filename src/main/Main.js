@@ -14,6 +14,7 @@ import PostHiding from "../Filtering/PostHiding";
 import Recursive from "../Filtering/Recursive";
 import ThreadHiding from "../Filtering/ThreadHiding";
 import Index from "../General/Index";
+import { indexEnabled } from "../General/State";
 import Settings from "../General/Settings";
 import FappeTyme from "../Images/FappeTyme";
 import Gallery from "../Images/Gallery";
@@ -492,7 +493,7 @@ var Main = {
     // Parse HTML or skip it and start building from JSON.
     if (g.VIEW === 'catalog') {
       Main.initCatalog();
-    } else if (!Index.enabled) {
+    } else if (!indexEnabled) {
       if (g.SITE.awaitBoard) {
         g.SITE.awaitBoard(Main.initThread);
       } else {

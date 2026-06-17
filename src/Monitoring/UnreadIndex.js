@@ -3,6 +3,7 @@ import DataBoard from "../classes/DataBoard";
 import Get from "../General/Get";
 import Header from "../General/Header";
 import Index from "../General/Index";
+import { indexEnabled } from "../General/State";
 import { g, Conf, d } from "../globals/globals";
 import ExpandThread from "../Miscellaneous/ExpandThread";
 import $ from "../platform/$";
@@ -41,7 +42,7 @@ var UnreadIndex = {
       boardID: this.board.ID,
       threadID: this.ID
     }) || 0;
-    if (!Index.enabled) { // let onIndexRefresh handle JSON Index
+    if (!indexEnabled) { // let onIndexRefresh handle JSON Index
       return UnreadIndex.update(this);
     }
   },
@@ -114,7 +115,7 @@ var UnreadIndex = {
 
     const hasUnread = repliesShown ?
       firstUnread || !repliesRead
-    : Index.enabled ?
+    : indexEnabled ?
       thread.lastPost > lastReadPost
     :
       thread.OP.ID > lastReadPost;

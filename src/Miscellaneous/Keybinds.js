@@ -6,6 +6,7 @@ import BoardConfig from "../General/BoardConfig";
 import Get from "../General/Get";
 import Header from "../General/Header";
 import Index from "../General/Index";
+import { indexEnabled } from "../General/State";
 import Settings from "../General/Settings";
 import { Conf, d, g } from "../globals/globals";
 import FappeTyme from "../Images/FappeTyme";
@@ -156,7 +157,7 @@ var Keybinds = {
           hasAction = true;
         break;
         case 'index':
-          if (Index.enabled) Index.update();
+          if (indexEnabled) Index.update();
           hasAction = true;
       }
     }
@@ -206,7 +207,7 @@ var Keybinds = {
     }
     // Board Navigation
     if (key === Conf['Front page']) {
-      if (Index.enabled) {
+      if (indexEnabled) {
         Index.userPageNav(1);
       } else {
         location.href = `/${g.BOARD}/`;
@@ -218,7 +219,7 @@ var Keybinds = {
       hasAction = true;
     }
     if (key === Conf['Next page'] && g.VIEW === 'index' && !g.SITE.isOnePage?.(g.BOARD)) {
-      if (Index.enabled) {
+      if (indexEnabled) {
         if (!['paged', 'infinite'].includes(Conf['Index Mode'])) { return; }
         $('.next button', Index.pagelist).click();
       } else {
@@ -227,7 +228,7 @@ var Keybinds = {
       hasAction = true;
     }
     if (key === Conf['Previous page'] && g.VIEW === 'index' && !g.SITE.isOnePage?.(g.BOARD)) {
-      if (Index.enabled) {
+      if (indexEnabled) {
         if (!['paged', 'infinite'].includes(Conf['Index Mode'])) { return; }
         $('.prev button', Index.pagelist).click();
       } else {
@@ -236,7 +237,7 @@ var Keybinds = {
       hasAction = true;
     }
     if (key === Conf['Search form'] && g.VIEW === 'index') {
-      var searchInput = Index.enabled ?
+      var searchInput = indexEnabled ?
         Index.searchInput
       : g.SITE.selectors.searchBox ?
         $(g.SITE.selectors.searchBox)
@@ -260,7 +261,7 @@ var Keybinds = {
     if (key === Conf['Open catalog'] && (catalog = CatalogLinks.catalog())) {
       location.href = catalog;
     }
-    if (key === Conf['Cycle sort type'] && Index.enabled) {
+    if (key === Conf['Cycle sort type'] && indexEnabled) {
       Index.cycleSortType();
       hasAction = true;
     }

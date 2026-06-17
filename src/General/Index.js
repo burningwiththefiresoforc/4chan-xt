@@ -26,6 +26,7 @@ import { c, Conf, d, doc, g } from '../globals/globals';
 import Header from './Header';
 import UI from './UI';
 import Menu from '../Menu/Menu';
+import { setIndexEnabled } from "./State"
 
 import NavLinksPage from './Index/NavLinks.html';
 import PageList from './Index/PageList.html';
@@ -52,7 +53,7 @@ var Index = {
 
     if (!this.enabledOn(g.BOARD)) { return; }
 
-    this.enabled = true;
+    setIndexEnabled(true);
 
     Callbacks.Post.push({
       name: 'Index Page Numbers',
