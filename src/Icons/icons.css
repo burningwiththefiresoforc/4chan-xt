@@ -20,3 +20,41 @@ svg.icon {
 @keyframes spin {
   100% {transform:rotate(1turn)}
 }
+
+/* linkify */
+.linkify {
+  white-space: nowrap;
+}
+.linkify.youtube .linkify-icon svg {
+  color: red;
+}
+.linkify.twitter .linkify-icon svg {
+  background-color: black;
+  color: white;
+}
+.linkify.pastebin .linkify-icon svg {
+  height: 24px;
+  width: 24px;
+}
+.linkify.bitchute .linkify-icon svg {
+  color: red;
+}
+.linkify.clyp .linkify-icon svg {
+  color: #3dbeb3;
+}
+.linkify.peertube .linkify-icon svg {
+  color: #f1680d;
+}
+.linkify.twitchtv .linkify-icon svg {
+  color: #9146ff;
+}
+.linkify.streamable .linkify-icon svg {
+  color: #0f90fa;
+}
+.linkify.gist .linkify-icon svg {
+  color: white;
+  background-color: black;
+}
+.linkify.soundcloud .linkify-icon svg {
+  color: orange;
+}

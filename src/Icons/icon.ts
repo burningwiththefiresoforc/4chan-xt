@@ -33,10 +33,45 @@ import { svgPathData as stopSvg, width as stopW, height as stopH } from "@fas/fa
 import { svgPathData as arrowUpLongSvg, width as arrowUpLongW, height as arrowUpLongH } from "@fas/faArrowUpLong";
 import { svgPathData as arrowDownLongSvg, width as arrowDownLongW, height as arrowDownLongH } from "@fas/faArrowDownLong";
 
+//linkification
+import { body as peerBody, width as peerW, height as peerH } from './Assets/linkify.peertube.svg'; // svgregpo.com
+import { body as streamBody, width as streamW, height as streamH } from './Assets/linkify.streamable.svg'; // streamable.com
+import { body as bitchBody, width as bitchW, height as bitchH } from './Assets/linkify.bitchute.svg'; // github.com/jerryjappinen/lateralnord-svg
+import { body as clypBody, width as clypW, height as clypH } from './Assets/linkify.clyp.svg'; // svgrepo.com
+import { body as pbBody, width as pbW, height as pbH } from './Assets/linkify.pastebin.svg'; // thesvg.org
+import { body as twitchBody, width as twitchW, height as twitchH } from './Assets/linkify.twitchtv.svg'; // vectorlogo.zone
+import { svgPathData as vidlSvg, width as vidlW, height as vidlH } from '@fas/faPlay';
+import { svgPathData as vocaSvg, width as vocaW, height as vocaH } from '@fas/faMicrophone';
+import { svgPathData as imgSvg, width as imgW, height as imgH } from "@fas/faFileImage";
+import { svgPathData as audSvg, width as audW, height as audH } from "@fas/faFileAudio";
+import { svgPathData as vidSvg, width as vidW, height as vidH } from "@fas/faFileVideo";
+import { svgPathData as twitSvg, width as twitW, height as twitH } from "@fab/faXTwitter";
+import { svgPathData as scSvg, width as scW, height as scH } from "@fab/faSoundcloud";
+import { svgPathData as dmSvg, width as dmW, height as dmH } from "@fab/faDailymotion";
+import { svgPathData as gistSvg, width as gistW, height as gistH } from "@fab/faGithub";
+import { svgPathData as vimeoSvg, width as vimeoW, height as vimeoH } from "@fab/faVimeo";
+import { svgPathData as ytSvg, width as ytW, height as ytH } from "@fab/faYoutube";
+// import linkifyInstallgentoo from './linkify.installgentoo.png';
+
 const toSvg = (svgPathData: string, width: string | number, height: string | number) => {
   return `<svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 ${width} ${height}">` +
     `<path d="${svgPathData}" fill="currentColor" /></svg>`;
 }
+
+// Handles both FA path strings and raw SVG markup
+const toLinkifySvg = (data: string, w: number | string, h: number | string): string => {
+  if (data.trimStart().startsWith('<svg')) {
+    // Complete SVG markup
+    return data.replace(/fill="[^"]*"/g, 'fill="currentColor"');
+  } else if (data.trimStart().startsWith('<')) {
+    // Inner markup only (path, g, etc.) — wrap it
+    return `<svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 ${w} ${h}">${data}</svg>`;
+  } else {
+    // FA-style path data string
+    return `<svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 ${w} ${h}">` +
+           `<path d="${data}" fill="currentColor"/></svg>`;
+  }
+};
 
 const icons = {
    image:           toSvg(imgSvg, imgW, imgH),
@@ -73,6 +108,26 @@ const icons = {
    arrowDownLong:   toSvg(arrowDownLongSvg, arrowDownLongW, arrowDownLongH)
 } as const;
 
+const linkifyIcons: Record<string, string> = {
+  peertube:    toLinkifySvg(peerBody,    peerW,    peerH),
+  streamable:  toLinkifySvg(streamBody,  streamW,  streamH),
+  bitchute:    toLinkifySvg(bitchBody,   bitchW,   bitchH),
+  clyp:        toLinkifySvg(clypBody,    clypW,    clypH),
+  pastebin:    toLinkifySvg(pbBody,      pbW,      pbH),
+  twitchtv:    toLinkifySvg(twitchBody,  twitchW,  twitchH),
+  vocaroo:     toLinkifySvg(vocaSvg,     vocaW,    vocaH),
+  vidlii:      toLinkifySvg(vidlSvg,     vidlW,    vidlH),
+  image:       toLinkifySvg(imgSvg,      imgW,     imgH),
+  video:       toLinkifySvg(vidSvg,      vidW,     vidH),
+  audio:       toLinkifySvg(audSvg,      audW,     audH),
+  youtube:     toLinkifySvg(ytSvg,       ytW,      ytH),
+  twitter:     toLinkifySvg(twitSvg,     twitW,    twitH),
+  soundcloud:  toLinkifySvg(scSvg,       scW,      scH),
+  dailymotion: toLinkifySvg(dmSvg,       dmW,      dmH),
+  gist:        toLinkifySvg(gistSvg,     gistW,    gistH),
+  vimeo:       toLinkifySvg(vimeoSvg,    vimeoW,   vimeoH),
+};
+
 var Icon = {
   /** Sets an icon in an HTML element */
   set (node: HTMLElement, name: keyof typeof icons, altText?: string) {
@@ -84,6 +139,16 @@ var Icon = {
       node.innerHTML = html;
     }
   },
+
+  setLinkify(el: HTMLElement) {
+    if (el.querySelector('.linkify-icon')) return;
+    const iconName = [...el.classList].find(c => c in linkifyIcons) as keyof typeof linkifyIcons | undefined;
+    if (!iconName) return;
+    const span = document.createElement('span');
+    span.className = 'linkify-icon icon';
+    span.innerHTML = linkifyIcons[iconName];
+    el.prepend(span);
+  }
 
   /** Get the raw SVG string for an icon. */
   get(name: keyof typeof icons): string {
