@@ -274,7 +274,7 @@ const Config = {
       ],
       'Image Resolution': [
         false,
-        'Shows the dimensions of the image you\'re viewing in the gallery.'
+        'Shows the dimensions of the image you\'re viewing in the gallery.',
         1
       ],
       'Sauce': [

@@ -92,7 +92,7 @@ var Gallery = {
       sauce:   '.gal-sauce',
       thumbs:  '.gal-thumbnails',
       next:    '.gal-image a',
-      current: '.gal-image img'
+      current: '.gal-image img',
       dimensions: '.gal-dimensions'
     };
     for (var key in object) { var value = object[key]; nodes[key] = $(value, dialog); }

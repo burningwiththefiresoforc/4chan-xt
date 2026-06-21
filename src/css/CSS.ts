@@ -21,7 +21,7 @@ const mainCSS = style + variableBase + yotsuba +yotsubaB+futaba+burichan+tomorro
 
 const CSS = {
 
-  boards: mainCSS
+  boards: mainCSS,
 
   report,
 

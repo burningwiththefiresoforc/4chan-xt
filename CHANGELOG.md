@@ -2,6 +2,10 @@
 
 4chan XT uses a different user script namespace than 4chan X, so to migrate you need to export settings from 4chan X, and import them in XT.
 
+### 2.27.1 (2026-06-20)
+
+- Linkify SVG icons are now styleable
+
 ### 2.27.0 (2026-06-17)
 
 - Converted [this](https://github.com/ccd0/4chan-x/pull/3391) old upstream pull request to JS/TS.

@@ -148,7 +148,7 @@ var Icon = {
     span.className = 'linkify-icon icon';
     span.innerHTML = linkifyIcons[iconName];
     el.prepend(span);
-  }
+  },
 
   /** Get the raw SVG string for an icon. */
   get(name: keyof typeof icons): string {
