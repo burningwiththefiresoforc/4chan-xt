@@ -53,21 +53,12 @@ import { svgPathData as vimeoSvg, width as vimeoW, height as vimeoH } from "@fab
 import { svgPathData as ytSvg, width as ytW, height as ytH } from "@fab/faYoutube";
 // import linkifyInstallgentoo from './linkify.installgentoo.png';
 
-const toSvg = (svgPathData: string, width: string | number, height: string | number) => {
-  return `<svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 ${width} ${height}">` +
-    `<path d="${svgPathData}" fill="currentColor" /></svg>`;
-}
-
-// Handles both FA path strings and raw SVG markup
-const toLinkifySvg = (data: string, w: number | string, h: number | string): string => {
+const toSvg = (data: string, w: number | string, h: number | string): string => {
   if (data.trimStart().startsWith('<svg')) {
-    // Complete SVG markup
     return data.replace(/fill="[^"]*"/g, 'fill="currentColor"');
   } else if (data.trimStart().startsWith('<')) {
-    // Inner markup only (path, g, etc.) — wrap it
-    return `<svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 ${w} ${h}">${data}</svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 ${w} ${h}" fill="currentColor">${data}</svg>`;
   } else {
-    // FA-style path data string
     return `<svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 ${w} ${h}">` +
            `<path d="${data}" fill="currentColor"/></svg>`;
   }
@@ -109,23 +100,23 @@ const icons = {
 } as const;
 
 const linkifyIcons: Record<string, string> = {
-  peertube:    toLinkifySvg(peerBody,    peerW,    peerH),
-  streamable:  toLinkifySvg(streamBody,  streamW,  streamH),
-  bitchute:    toLinkifySvg(bitchBody,   bitchW,   bitchH),
-  clyp:        toLinkifySvg(clypBody,    clypW,    clypH),
-  pastebin:    toLinkifySvg(pbBody,      pbW,      pbH),
-  twitchtv:    toLinkifySvg(twitchBody,  twitchW,  twitchH),
-  vocaroo:     toLinkifySvg(vocaSvg,     vocaW,    vocaH),
-  vidlii:      toLinkifySvg(vidlSvg,     vidlW,    vidlH),
-  image:       toLinkifySvg(imgSvg,      imgW,     imgH),
-  video:       toLinkifySvg(vidSvg,      vidW,     vidH),
-  audio:       toLinkifySvg(audSvg,      audW,     audH),
-  youtube:     toLinkifySvg(ytSvg,       ytW,      ytH),
-  twitter:     toLinkifySvg(twitSvg,     twitW,    twitH),
-  soundcloud:  toLinkifySvg(scSvg,       scW,      scH),
-  dailymotion: toLinkifySvg(dmSvg,       dmW,      dmH),
-  gist:        toLinkifySvg(gistSvg,     gistW,    gistH),
-  vimeo:       toLinkifySvg(vimeoSvg,    vimeoW,   vimeoH),
+  peertube:    toSvg(peerBody,    peerW,    peerH),
+  streamable:  toSvg(streamBody,  streamW,  streamH),
+  bitchute:    toSvg(bitchBody,   bitchW,   bitchH),
+  clyp:        toSvg(clypBody,    clypW,    clypH),
+  pastebin:    toSvg(pbBody,      pbW,      pbH),
+  twitchtv:    toSvg(twitchBody,  twitchW,  twitchH),
+  vocaroo:     toSvg(vocaSvg,     vocaW,    vocaH),
+  vidlii:      toSvg(vidlSvg,     vidlW,    vidlH),
+  image:       toSvg(imgSvg,      imgW,     imgH),
+  video:       toSvg(vidSvg,      vidW,     vidH),
+  audio:       toSvg(audSvg,      audW,     audH),
+  youtube:     toSvg(ytSvg,       ytW,      ytH),
+  twitter:     toSvg(twitSvg,     twitW,    twitH),
+  soundcloud:  toSvg(scSvg,       scW,      scH),
+  dailymotion: toSvg(dmSvg,       dmW,      dmH),
+  gist:        toSvg(gistSvg,     gistW,    gistH),
+  vimeo:       toSvg(vimeoSvg,    vimeoW,   vimeoH),
 };
 
 var Icon = {
