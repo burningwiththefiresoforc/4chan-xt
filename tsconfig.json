@@ -4,7 +4,7 @@
     "noImplicitAny": false,
     "removeComments": false,
     "sourceMap": true,
-    "target": "ES2020",
+    "target": "ES2022",
     "allowJs": true,
     "checkJs": true,
     "noEmit": true,
@@ -12,6 +12,7 @@
     "jsx": "react",
     "jsxFactory": "h",
     "jsxFragmentFactory": "hFragment",
+    "useDefineForClassFields": false,
     "types": [
       "@violentmonkey/types",
       "@types/chrome"
@@ -19,7 +20,7 @@
     "lib": [
       "DOM",
       "DOM.Iterable",
-      "ES2020"
+      "ES2022"
     ],
     // needs to be in the deepest dir used as target in the rollup build
     // https://stackoverflow.com/q/40460790, https://github.com/rollup/plugins/issues/243

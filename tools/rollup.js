@@ -30,7 +30,31 @@ const buildForTest = process.argv.includes('-test');
 
 // https://github.com/rollup/plugins/discussions/1777
 const tsPlugin = typescript({
-  compilerOptions: { outDir: buildDir, },
+  compilerOptions: {
+          outDir: buildDir,
+          "target": "ES2020",          // Matches your Terser ecma: 2020
+          "module": "ES2020",          // Keep ES modules for Rollup's tree-shaking
+          "moduleResolution": "bundler", // Correct for Rollup; avoids resolution overhead
+
+          // Avoid helper bloat — tslib inlines less code than per-file helpers
+          "importHelpers": true,        // Requires tslib in your dependencies
+          "noEmitHelpers": false,       // Let importHelpers handle it
+
+          // Strip dead code before it reaches Rollup/Terser
+          "noUnusedLocals": true,
+          "noUnusedParameters": true,
+
+          // Don't emit class fields as Object.defineProperty — faster runtime access
+          "useDefineForClassFields": false,
+
+          // Avoid namespace/enum overhead from legacy TS patterns
+          // If your CS→TS conversion used enums, consider const enum:
+          "preserveConstEnums": false,
+
+          // Skip lib type checking — build speed, no runtime impact
+          "skipLibCheck": true,
+
+  },
 });
 
 (async () => {
@@ -194,10 +218,27 @@ const tsPlugin = typescript({
       // file: '../builds/test/rollupOutput.js',
       file: resolve(buildDir, fileName),
       plugins: minify ? [terser({
-        format: {
-          max_line_len: 1000,
-          comments: /^(?: ==\/?UserScript==| @|!)|license|\bcc\b|copyright/i,
+        ecma: 2020,
+        compress: {
+          ecma: 2020,
+          passes: 3,
+          unsafe: true,
+          dead_code: true,
+          drop_debugger: true,
+          conditionals: true,
+          evaluate: true,
+          booleans: true,
+          unused: true,
+          collapse_vars: true,   // Add: good complement to unused for CS→TS artifacts
+          reduce_vars: true,     // Add: helps with constants the TS compiler emits
         },
+        format: {
+          comments: /^(?: ==\/?UserScript==| @|!)|license|\bcc\b|copyright/i,
+          preamble: null,  // explicit no-op, just documents intent
+        },
+        mangle: {
+          toplevel: true,
+       }
       })] : [],
       sourcemap: minify,
     });
