@@ -23,7 +23,12 @@ svg.icon {
 
 /* linkify */
 .linkify {
-  white-space: nowrap;
+  display: inline-flex;
+  overflow-wrap: break-word;
+}
+.linkify-icon {
+  display: inline-block;
+  flex-shrink: 0;
 }
 .linkify.youtube .linkify-icon svg {
   color: red;
@@ -31,25 +36,19 @@ svg.icon {
 .linkify.twitter .linkify-icon svg {
   background-color: black;
   color: white;
+  height: 14px;
+  width: 14px;
 }
 .linkify.pastebin .linkify-icon svg {
-  height: 24px;
-  width: 24px;
+  height: 18px;
+  width: 18px;
+  fill: blue;
 }
 .linkify.bitchute .linkify-icon svg {
   color: red;
 }
-.linkify.clyp .linkify-icon svg {
-  color: #3dbeb3;
-}
-.linkify.peertube .linkify-icon svg {
-  color: #f1680d;
-}
 .linkify.twitchtv .linkify-icon svg {
   color: #9146ff;
-}
-.linkify.streamable .linkify-icon svg {
-  color: #0f90fa;
 }
 .linkify.gist .linkify-icon svg {
   color: white;
@@ -57,4 +56,7 @@ svg.icon {
 }
 .linkify.soundcloud .linkify-icon svg {
   color: orange;
+}
+.linkify.vocaroo .linkify-icon svg {
+  color: #d5f97e;
 }
