@@ -81,6 +81,7 @@
     }
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.0",
     "@fortawesome/free-regular-svg-icons": "^6.5.1",
     "@fortawesome/free-solid-svg-icons": "^6.5.1",
     "@rollup/plugin-alias": "^5.1.1",
