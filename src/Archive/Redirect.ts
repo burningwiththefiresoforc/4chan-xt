@@ -19,9 +19,9 @@ var Redirect = {
 
   init() {
     this.selectArchives();
-    if (Conf['archiveAutoUpdate']) {
+    if (Conf.archiveAutoUpdate) {
       const now = Date.now();
-      if (now - (2 * DAY) >= Conf['lastarchivecheck'] || Conf['lastarchivecheck'] > now) this.update();
+      if (now - (2 * DAY) >= Conf.lastarchivecheck || Conf.lastarchivecheck > now) this.update();
     }
   },
 
@@ -34,7 +34,7 @@ var Redirect = {
     };
 
     const archives = dict();
-    for (const data of Conf['archives']) {
+    for (const data of Conf.archives) {
       for (var key of ['boards', 'files']) {
         if (!(data[key] instanceof Array)) { data[key] = []; }
       }
@@ -51,8 +51,8 @@ var Redirect = {
       }
     }
 
-    for (const boardID in Conf['selectedArchives']) {
-      var record = Conf['selectedArchives'][boardID];
+    for (const boardID in Conf.selectedArchives) {
+      var record = Conf.selectedArchives[boardID];
       for (const [type, id] of Object.entries(record)) {
         var archive;
         if ((archive = archives[JSON.stringify(id)]) && $.hasOwn(o, type)) {
@@ -70,7 +70,7 @@ var Redirect = {
     const urls = [];
     const responses = [];
     let nloaded = 0;
-    for (url of Conf['archiveLists'].split('\n')) {
+    for (url of Conf.archiveLists.split('\n')) {
       if (url[0] !== '#') {
         url = url.trim();
         if (url) { urls.push(url); }
@@ -233,7 +233,7 @@ var Redirect = {
 
   report(boardID) {
     const urls = [];
-    for (var archive of Conf['archives']) {
+    for (var archive of Conf.archives) {
       var {software, https, reports, boards, name, domain} = archive;
       if ((software === 'foolfuuka') && https && reports && boards instanceof Array && boards.includes(boardID)) {
         urls.push([name, `https://${domain}/_/api/chan/offsite_report/`]);

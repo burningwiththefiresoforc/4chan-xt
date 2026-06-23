@@ -183,14 +183,14 @@ var Main = {
     for (var db of DataBoard.keys) {
       Conf[db] = dict();
     }
-    Conf['customTitles'] = dict.clone({'4chan.org': {}});
-    Conf['boardConfig'] = {boards: dict()};
-    Conf['archives'] = Redirect.archives;
-    Conf['selectedArchives'] = dict();
-    Conf['cooldowns'] = dict();
+    Conf.customTitles = dict.clone({'4chan.org': {}});
+    Conf.boardConfig = {boards: dict()};
+    Conf.archives = Redirect.archives;
+    Conf.selectedArchives = dict();
+    Conf.cooldowns = dict();
     Conf['Index Sort'] = dict();
     for (let i = 0; i < 2; i++) { Conf[`Last Long Reply Thresholds ${i}`] = dict(); }
-    Conf['siteProperties'] = dict();
+    Conf.siteProperties = dict();
 
     // XXX old key names
     Conf['Except Archives from Encryption'] = false;
@@ -200,11 +200,11 @@ var Main = {
     Conf['QR Shortcut'] = true;
     Conf['Bottom QR Link'] = true;
     Conf['Toggleable Thread Watcher'] = true;
-    Conf['siteSoftware'] = '';
+    Conf.siteSoftware = '';
     Conf['Use Faster Image Host'] = 'true';
     Conf['Captcha Fixes'] = true;
-    Conf['captchaServiceDomain'] = '';
-    Conf['captchaServiceKey'] = dict();
+    Conf.captchaServiceDomain = '';
+    Conf.captchaServiceKey = dict();
 
     // Enforce JS whitelist
     if (
@@ -213,7 +213,7 @@ var Main = {
       !SW.yotsuba.regexp.captcha.test(location.href) &&
       !$$('script:not([src])', d).filter(s => /this\[/.test(s.textContent)).length
     ) {
-      ($.getSync || $.get)({'jsWhitelist': Conf['jsWhitelist']}, ({jsWhitelist}) => {
+      ($.getSync || $.get)({'jsWhitelist': Conf.jsWhitelist}, ({jsWhitelist}) => {
         const parsedList = jsWhitelist.replace(/^#.*$/mg, '').replace(/[\s;]+/g, ' ').trim();
         if (/\S/.test(parsedList)) $.addCSP(`script-src ${parsedList}`);
       });
@@ -222,7 +222,7 @@ var Main = {
     // Get saved values as items
     const items = dict();
     for (const key in Conf) items[key] = undefined;
-    items['previousversion'] = undefined;
+    items.previousversion = undefined;
     ($.getSync || $.get)(items, function(items) {
       $.asap(docSet, function() {
 

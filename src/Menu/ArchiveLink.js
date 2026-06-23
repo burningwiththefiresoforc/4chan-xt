@@ -11,7 +11,7 @@ import Menu from "./Menu";
  */
 const ArchiveLink = {
   init() {
-    if ((g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW) || !Conf['Menu'] || !Conf['Archive Link']) { return; }
+    if ((g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf['Archive Link']) { return; }
 
     const div = $.el('div',
       {textContent: 'Archive'});

@@ -120,7 +120,7 @@ var ThreadUpdater = {
       if (post.file) { return ThreadUpdater.fileIDs.push(post.ID); }
     });
 
-    ThreadUpdater.cb.interval.call($.el('input', {value: Conf['Interval']}));
+    ThreadUpdater.cb.interval.call($.el('input', {value: Conf.Interval}));
 
     $.on(d,      'QRPostSuccessful', ThreadUpdater.cb.checkpost);
     $.on(d,      'visibilitychange', ThreadUpdater.cb.visibility);
@@ -418,8 +418,8 @@ var ThreadUpdater = {
       if (d.hidden || !d.hasFocus()) {
         if (Conf['Beep Quoting You'] && (Unread.postsQuotingYou?.size > unreadQYCount)) {
           ThreadUpdater.playBeep();
-          if (Conf['Beep']) { ThreadUpdater.playBeep(); }
-        } else if (Conf['Beep'] && (Unread.posts?.size > 0) && (unreadCount === 0)) {
+          if (Conf.Beep) { ThreadUpdater.playBeep(); }
+        } else if (Conf.Beep && (Unread.posts?.size > 0) && (unreadCount === 0)) {
           ThreadUpdater.playBeep();
         }
       }

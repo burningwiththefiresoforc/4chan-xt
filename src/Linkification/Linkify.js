@@ -16,7 +16,7 @@ import Embedding from "./Embedding";
  */
 var Linkify = {
   init() {
-    if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf['Linkify']) { return; }
+    if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf.Linkify) { return; }
 
     if (Conf['Comment Expansion']) {
       ExpandComment.callbacks.push(this.node);

@@ -355,7 +355,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     }
     $.get(Conf2, function(Conf2) {
       // Don't export cached JSON data.
-      delete Conf2['boardConfig'];
+      delete Conf2.boardConfig;
       Settings.downloadExport({version: g.VERSION, date: Date.now(), Conf: Conf2});
     });
   },
@@ -430,13 +430,13 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       }
     }
     if (compareString < '00001.00014.00016.00001') {
-      if (data['archiveLists'] != null) {
-        set('archiveLists', data['archiveLists'].replace('https://mayhemydg.github.io/archives.json/archives.json', 'https://nstepien.github.io/archives.json/archives.json'));
+      if (data.archiveLists != null) {
+        set('archiveLists', data.archiveLists.replace('https://mayhemydg.github.io/archives.json/archives.json', 'https://nstepien.github.io/archives.json/archives.json'));
       }
     }
     if (compareString < '00001.00014.00016.00007') {
-      if (data['sauces'] != null) {
-        set('sauces', data['sauces'].replace(
+      if (data.sauces != null) {
+        set('sauces', data.sauces.replace(
           /https:\/\/www\.deviantart\.com\/gallery\/#\/d%\$1%\$2;regexp:\/\^\\w\+_by_\\w\+\[_-\]d\(\[\\da-z\]\{6\}\)\\b\|\^d\(\[\\da-z\]\{6\}\)-\[\\da-z\]\{8\}-\//g,
           'javascript:void(open("https://www.deviantart.com/"+%$1.replace(/_/g,"-")+"/art/"+parseInt(%$2,36)));regexp:/^\\w+_by_(\\w+)[_-]d([\\da-z]{6})\\b/'
         ).replace(
@@ -447,26 +447,26 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       }
     }
     if (compareString < '00001.00014.00017.00002') {
-      if (data['jsWhitelist'] != null) {
-        set('jsWhitelist', data['jsWhitelist'] + '\n\nhttps://hcaptcha.com\nhttps://*.hcaptcha.com');
+      if (data.jsWhitelist != null) {
+        set('jsWhitelist', data.jsWhitelist + '\n\nhttps://hcaptcha.com\nhttps://*.hcaptcha.com');
       }
     }
     if (compareString < '00001.00014.00020.00004') {
-      if (data['archiveLists'] != null) {
-        set('archiveLists', data['archiveLists'].replace('https://nstepien.github.io/archives.json/archives.json', 'https://4chenz.github.io/archives.json/archives.json'));
+      if (data.archiveLists != null) {
+        set('archiveLists', data.archiveLists.replace('https://nstepien.github.io/archives.json/archives.json', 'https://4chenz.github.io/archives.json/archives.json'));
       }
     }
     if (compareString < '00001.00014.00022.00003') {
-      if (data['sauces']) {
-        set('sauces', data['sauces'].replace(/^#?\s*https:\/\/www\.google\.com\/searchbyimage\?image_url=%(IMG|T?URL)&safe=off(?=$|;)/mg, 'https://www.google.com/searchbyimage?sbisrc=4chanx&image_url=%$1&safe=off'));
-        if (compareString === '00001.00014.00022.00002' && !/\bsbisrc=/.test(data['sauces'])) {
-          set('sauces', data['sauces'].replace(/^#?\s*https:\/\/lens\.google\.com\/uploadbyurl\?url=%(IMG|T?URL)(?=$|;)/m, 'https://www.google.com/searchbyimage?sbisrc=4chanx&image_url=%$1&safe=off'));
+      if (data.sauces) {
+        set('sauces', data.sauces.replace(/^#?\s*https:\/\/www\.google\.com\/searchbyimage\?image_url=%(IMG|T?URL)&safe=off(?=$|;)/mg, 'https://www.google.com/searchbyimage?sbisrc=4chanx&image_url=%$1&safe=off'));
+        if (compareString === '00001.00014.00022.00002' && !/\bsbisrc=/.test(data.sauces)) {
+          set('sauces', data.sauces.replace(/^#?\s*https:\/\/lens\.google\.com\/uploadbyurl\?url=%(IMG|T?URL)(?=$|;)/m, 'https://www.google.com/searchbyimage?sbisrc=4chanx&image_url=%$1&safe=off'));
         }
       }
     }
     if (compareString < '00002.00003.00001.00000') {
-      if (data['boardnav']) {
-        set('boardnav', data['boardnav'].replace(
+      if (data.boardnav) {
+        set('boardnav', data.boardnav.replace(
           '[external-text:"FAQ","4chan XT"]',
           `[external-text:"FAQ","${meta.faq}"]`
         ));
@@ -535,15 +535,15 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       .join(',\u200B'); // \u200B is zero width space, to control where line breaks happen on a narrow screen
     $.extend(div, { innerHTML: FilterGuidePage });
     $('#filterTypes', div).textContent = `type:\u200B${filterTypes};`;
-    $('.warning', div).hidden = Conf['Filter'];
+    $('.warning', div).hidden = Conf.Filter;
   },
 
   sauce(section) {
     $.extend(section, { innerHTML: SaucePage });
-    $('.warning', section).hidden = Conf['Sauce'];
+    $('.warning', section).hidden = Conf.Sauce;
     const ta = $('textarea', section);
-    $.get('sauces', Conf['sauces'], function(item) {
-      ta.value = item['sauces'];
+    $.get('sauces', Conf.sauces, function(item) {
+      ta.value = item.sauces;
       ta.hidden = false;
     }); // XXX prevent Firefox from adding initialization to undo queue
     $.on(ta, 'change', $.cb.value);
@@ -559,9 +559,9 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       inputs[input.name] = input;
     }
 
-    $.on(inputs['archiveLists'], 'change', function() {
+    $.on(inputs.archiveLists, 'change', function() {
       $.set('lastarchivecheck', 0);
-      Conf['lastarchivecheck'] = 0;
+      Conf.lastarchivecheck = 0;
       $.id('lastarchivecheck').textContent = 'never';
     });
 
@@ -597,14 +597,14 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       $.add(listImageHost, $.el('option', {textContent}));
     }
 
-    const interval  : HTMLInputElement  = inputs['Interval'];
+    const interval  : HTMLInputElement  = inputs.Interval;
     const customCSS : HTMLInputElement  = inputs['Custom CSS'];
     const applyCSS  : HTMLButtonElement = $('#apply-css', section);
     const timeLocale: HTMLInputElement  = inputs.timeLocale;
 
-    interval.value             =  Conf['Interval'];
+    interval.value             =  Conf.Interval;
     customCSS.checked          =  Conf['Custom CSS'];
-    inputs['usercss'].disabled = !Conf['Custom CSS'];
+    inputs.usercss.disabled = !Conf['Custom CSS'];
     applyCSS.disabled          = !Conf['Custom CSS'];
     timeLocale.value           =  Conf.timeLocale;
 
@@ -638,10 +638,10 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
 
   addArchiveTable(section) {
     let boardID, o;
-    $('#lastarchivecheck', section).textContent = Conf['lastarchivecheck'] === 0 ?
+    $('#lastarchivecheck', section).textContent = Conf.lastarchivecheck === 0 ?
       'never'
     :
-      new Date(Conf['lastarchivecheck']).toLocaleString();
+      new Date(Conf.lastarchivecheck).toLocaleString();
 
     const boardSelect = $('#archive-board-select', section);
     const table       = $('#archive-table', section);
@@ -651,7 +651,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     $.rmAll(tbody);
 
     const archBoards = dict();
-    for (var {uid, name, boards, files, software} of Conf['archives']) {
+    for (var {uid, name, boards, files, software} of Conf.archives) {
       if (!['fuuka', 'foolfuuka'].includes(software)) { continue; }
       for (boardID of boards) {
         o = archBoards[boardID] || (archBoards[boardID] = {
@@ -705,8 +705,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     $.add(boardSelect, boardOptions);
     $.add(tbody, rows);
 
-    for (boardID in Conf['selectedArchives']) {
-      var data = Conf['selectedArchives'][boardID];
+    for (boardID in Conf.selectedArchives) {
+      var data = Conf.selectedArchives[boardID];
       for (var type in data) {
         var select;
         var id = data[type];
@@ -752,10 +752,10 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
   },
 
   saveSelectedArchive() {
-    $.get('selectedArchives', Conf['selectedArchives'], ({selectedArchives}) => {
+    $.get('selectedArchives', Conf.selectedArchives, ({selectedArchives}) => {
       (selectedArchives[this.dataset.boardid] || (selectedArchives[this.dataset.boardid] = dict()))[this.dataset.type] = JSON.parse(this.value);
       $.set('selectedArchives', selectedArchives);
-      Conf['selectedArchives'] = selectedArchives;
+      Conf.selectedArchives = selectedArchives;
       Redirect.selectArchives();
     });
   },
@@ -835,7 +835,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
   keybinds(section) {
     let key;
     $.extend(section, { innerHTML: KeybindsPage });
-    $('.warning', section).hidden = Conf['Keybinds'];
+    $('.warning', section).hidden = Conf.Keybinds;
 
     const tbody  = $('tbody', section);
     const items  = dict();

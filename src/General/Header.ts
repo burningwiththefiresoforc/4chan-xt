@@ -179,7 +179,7 @@ var Header = {
     $.prepend(Header.bar, [Header.boardList, Header.shortcuts]);
 
     Header.setCustomNav(Conf['Custom Board Navigation']);
-    Header.generateBoardList(Conf['boardnav']);
+    Header.generateBoardList(Conf.boardnav);
 
     $.sync('Custom Board Navigation', Header.setCustomNav);
     return $.sync('boardnav', Header.generateBoardList);

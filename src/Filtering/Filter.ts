@@ -60,7 +60,7 @@ var Filter = {
   filters: new Map<FilterType, FilterObj[] | Map<string, FilterObj[]>>(),
 
   init(this: typeof Filter) {
-    if (!['index', 'thread', 'catalog'].includes(g.VIEW) || !Conf['Filter']) return;
+    if (!['index', 'thread', 'catalog'].includes(g.VIEW) || !Conf.Filter) return;
     if ((g.VIEW === 'catalog') && !Conf['Filter in Native Catalog']) return;
 
     if (!Conf['Filtered Backlinks']) {
@@ -136,7 +136,7 @@ var Filter = {
             case 'no':
               return false;
             default:
-              return Conf['Stubs'];
+              return Conf.Stubs;
           } })();
 
           // Desktop notification
@@ -569,7 +569,7 @@ var Filter = {
 
   menu: {
     init() {
-      if (!['index', 'thread'].includes(g.VIEW) || !Conf['Menu'] || !Conf['Filter']) { return; }
+      if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf.Filter) { return; }
 
       const div = $.el('div',
         {textContent: 'Filter'});

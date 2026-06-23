@@ -16,11 +16,11 @@ import { dict } from "../platform/helpers";
 var Sauce = {
   init() {
     let link;
-    if (!['index', 'thread'].includes(g.VIEW) || !Conf['Sauce']) { return; }
+    if (!['index', 'thread'].includes(g.VIEW) || !Conf.Sauce) { return; }
     $.addClass(doc, 'show-sauce');
 
     const links = [];
-    for (link of Conf['sauces'].split('\n')) {
+    for (link of Conf.sauces.split('\n')) {
       var linkData;
       if ((link[0] !== '#') && (linkData = this.parseLink(link))) {
         links.push(linkData);
@@ -47,23 +47,23 @@ var Sauce = {
     for (let i = 0; i < iterable.length; i++) {
       var part = iterable[i];
       if (i === 0) {
-        parts['url'] = part;
+        parts.url = part;
       } else {
         var m = part.match(/^(\w*):?(.*)$/);
         parts[m[1]] = m[2];
       }
     }
-    if (!parts['text']) { parts['text'] = parts['url'].match(/(\w+)\.\w+\//)?.[1] || '?'; }
+    if (!parts.text) { parts.text = parts.url.match(/(\w+)\.\w+\//)?.[1] || '?'; }
     if ('boards' in parts) {
-      parts['boards'] = Filter.parseBoards(parts['boards']);
+      parts.boards = Filter.parseBoards(parts.boards);
     }
     if ('regexp' in parts) {
       try {
         let regexp;
-        if (regexp = parts['regexp'].match(/^\/(.*)\/(\w*)$/)) {
-          parts['regexp'] = RegExp(regexp[1], regexp[2]);
+        if (regexp = parts.regexp.match(/^\/(.*)\/(\w*)$/)) {
+          parts.regexp = RegExp(regexp[1], regexp[2]);
         } else {
-          parts['regexp'] = RegExp(parts['regexp']);
+          parts.regexp = RegExp(parts.regexp);
         }
       } catch (err) {
         new Notice('warning', [
@@ -85,9 +85,9 @@ var Sauce = {
     const parts = dict();
     $.extend(parts, link);
 
-    if (!!parts['boards'] && !parts['boards'][`${post.siteID}/${post.boardID}`] && !parts['boards'][`${post.siteID}/*`]) { return null; }
-    if (!!parts['types']  && (needle = ext, !parts['types'].split(',').includes(needle))) { return null; }
-    if (!!parts['regexp'] && (!(matches = file.name.match(parts['regexp'])))) { return null; }
+    if (!!parts.boards && !parts.boards[`${post.siteID}/${post.boardID}`] && !parts.boards[`${post.siteID}/*`]) { return null; }
+    if (!!parts.types  && (needle = ext, !parts.types.split(',').includes(needle))) { return null; }
+    if (!!parts.regexp && (!(matches = file.name.match(parts.regexp)))) { return null; }
 
     const missing = [];
     for (var key of ['url', 'text']) {
@@ -105,7 +105,7 @@ var Sauce = {
         }
 
         if ((key === 'url') && !['%', 'semi'].includes(parameter)) {
-          if (/^javascript:/i.test(parts['url'])) { type = JSON.stringify(type); }
+          if (/^javascript:/i.test(parts.url)) { type = JSON.stringify(type); }
           type = encodeURIComponent(type);
         }
         return type;
@@ -121,9 +121,9 @@ var Sauce = {
     if (missing.length) { return null; }
 
     a = Sauce.link.cloneNode(false);
-    a.href = parts['url'];
-    a.textContent = parts['text'];
-    if (/^javascript:/i.test(parts['url'])) { a.removeAttribute('target'); }
+    a.href = parts.url;
+    a.textContent = parts.text;
+    if (/^javascript:/i.test(parts.url)) { a.removeAttribute('target'); }
     return a;
   },
 

@@ -125,7 +125,7 @@ var CatalogLinks = {
 
   externalParse() {
     CatalogLinks.externalList = dict();
-    for (var line of Conf['externalCatalogURLs'].split('\n')) {
+    for (var line of Conf.externalCatalogURLs.split('\n')) {
       if (line[0] === '#') { continue; }
       var url = line.split(';')[0];
       var boards   = Filter.parseBoards(line.match(/;boards:([^;]+)/)?.[1] || '*');

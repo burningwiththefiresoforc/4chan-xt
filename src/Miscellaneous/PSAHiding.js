@@ -54,7 +54,7 @@ var PSAHiding = {
       $.prepend(psa, btn);
     }
 
-    PSAHiding.sync(Conf['hiddenPSAList']);
+    PSAHiding.sync(Conf.hiddenPSAList);
     $.rmClass(doc, 'hide-announcement');
 
     return $.sync('hiddenPSAList', PSAHiding.sync);
@@ -69,9 +69,9 @@ var PSAHiding = {
         return delete hiddenPSAList[g.SITE.ID];
       }
     };
-    set(Conf['hiddenPSAList']);
-    PSAHiding.sync(Conf['hiddenPSAList']);
-    return $.get('hiddenPSAList', Conf['hiddenPSAList'], function({hiddenPSAList}) {
+    set(Conf.hiddenPSAList);
+    PSAHiding.sync(Conf.hiddenPSAList);
+    return $.get('hiddenPSAList', Conf.hiddenPSAList, function({hiddenPSAList}) {
       set(hiddenPSAList);
       return $.set('hiddenPSAList', hiddenPSAList);
     });

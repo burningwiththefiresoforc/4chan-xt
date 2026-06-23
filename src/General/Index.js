@@ -264,7 +264,7 @@ var Index = {
 
   menu: {
     init() {
-      if ((g.VIEW !== 'index') || !Conf['Menu'] || !Conf['Thread Hiding Link'] || !Index.enabledOn(g.BOARD)) { return; }
+      if ((g.VIEW !== 'index') || !Conf.Menu || !Conf['Thread Hiding Link'] || !Index.enabledOn(g.BOARD)) { return; }
 
       return Menu.menu.addEntry({
         el: $.el('a', {

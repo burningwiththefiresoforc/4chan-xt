@@ -17,9 +17,9 @@ var Site = {
   },
 
   init(cb) {
-    $.extend(Conf['siteProperties'], Site.defaultProperties);
+    $.extend(Conf.siteProperties, Site.defaultProperties);
     let hostname = Site.resolve();
-    if (hostname && $.hasOwn(SW, Conf['siteProperties'][hostname].software)) {
+    if (hostname && $.hasOwn(SW, Conf.siteProperties[hostname].software)) {
       this.set(hostname);
       cb();
     }
@@ -29,7 +29,7 @@ var Site = {
         if (changes = SW[software].detect?.()) {
           changes.software = software;
           hostname = location.hostname.replace(/^www\./, '');
-          var properties = (Conf['siteProperties'][hostname] || (Conf['siteProperties'][hostname] = dict()));
+          var properties = (Conf.siteProperties[hostname] || (Conf.siteProperties[hostname] = dict()));
           var changed = 0;
           for (var key in changes) {
             if (properties[key] !== changes[key]) {
@@ -38,7 +38,7 @@ var Site = {
             }
           }
           if (changed) {
-            $.set('siteProperties', Conf['siteProperties']);
+            $.set('siteProperties', Conf.siteProperties);
           }
           if (!g.SITE) {
             this.set(hostname);
@@ -52,12 +52,12 @@ var Site = {
 
   resolve(url=location) {
     let {hostname} = url;
-    while (hostname && !$.hasOwn(Conf['siteProperties'], hostname)) {
+    while (hostname && !$.hasOwn(Conf.siteProperties, hostname)) {
       hostname = hostname.replace(/^[^.]*\.?/, '');
     }
     if (hostname) {
       let canonical;
-      if (canonical = Conf['siteProperties'][hostname].canonical) { hostname = canonical; }
+      if (canonical = Conf.siteProperties[hostname].canonical) { hostname = canonical; }
     }
     return hostname;
   },
@@ -68,9 +68,9 @@ var Site = {
   },
 
   set(hostname) {
-    for (var ID in Conf['siteProperties']) {
+    for (var ID in Conf.siteProperties) {
       var site;
-      var properties = Conf['siteProperties'][ID];
+      var properties = Conf.siteProperties[ID];
       if (properties.canonical) { continue; }
       var {
         software

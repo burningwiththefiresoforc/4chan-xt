@@ -34,7 +34,7 @@ import Nav from "./Nav";
  */
 var Keybinds = {
   init() {
-    if (!Conf['Keybinds']) { return; }
+    if (!Conf.Keybinds) { return; }
 
     for (var hotkey in Config.hotkeys) {
       $.sync(hotkey, Keybinds.sync);
@@ -88,7 +88,7 @@ var Keybinds = {
       Settings.open();
       hasAction = true;
     }
-    if (key === Conf['Close']) {
+    if (key === Conf.Close) {
       if (Settings.dialog) {
         Settings.close();
       } else if ((notifications = $$('.notification')).length) {
@@ -150,7 +150,7 @@ var Keybinds = {
       hasAction = true;
     }
     // Index/Thread related
-    if (key === Conf['Update']) {
+    if (key === Conf.Update) {
       switch (g.VIEW) {
         case 'thread':
           if (ThreadUpdater.enabled) ThreadUpdater.update();
@@ -161,7 +161,7 @@ var Keybinds = {
           hasAction = true;
       }
     }
-    if (key === Conf['Watch'] && ThreadWatcher.enabled && thread) {
+    if (key === Conf.Watch && ThreadWatcher.enabled && thread) {
       ThreadWatcher.toggle(thread);
       hasAction = true;
     }
@@ -197,11 +197,11 @@ var Keybinds = {
       Gallery.cb.toggle();
       hasAction = true;
     }
-    if (key === Conf['fappeTyme'] && FappeTyme.nodes?.fappe) {
+    if (key === Conf.fappeTyme && FappeTyme.nodes?.fappe) {
       FappeTyme.toggle('fappe');
       hasAction = true;
     }
-    if (key === Conf['werkTyme'] && FappeTyme.nodes?.werk) {
+    if (key === Conf.werkTyme && FappeTyme.nodes?.werk) {
       FappeTyme.toggle('werk');
       hasAction = true;
     }
@@ -301,7 +301,7 @@ var Keybinds = {
       Keybinds.hl(0, threadRoot);
       hasAction = true;
     }
-    if (key === Conf['Hide'] && thread && ThreadHiding.db) {
+    if (key === Conf.Hide && thread && ThreadHiding.db) {
       Header.scrollTo(threadRoot);
       ThreadHiding.toggle(thread);
       hasAction = true;

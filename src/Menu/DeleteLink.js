@@ -14,7 +14,7 @@ var DeleteLink = {
   auto: [dict(), dict()],
 
   init() {
-    if (!['index', 'thread'].includes(g.VIEW) || !Conf['Menu'] || !Conf['Delete Link']) { return; }
+    if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf['Delete Link']) { return; }
 
     const div = $.el('div', {
       className: 'delete-link',
@@ -137,7 +137,7 @@ var DeleteLink = {
     } else if (msg = resDoc.getElementById('errmsg')) { // error!
       new Notice('warning', msg.textContent, 20);
       if (post.fullID === DeleteLink.post.fullID) { $.on(link, 'click', DeleteLink.toggle); }
-      if (QR.cooldown.data && Conf['Cooldown'] && /\bwait\b/i.test(msg.textContent)) {
+      if (QR.cooldown.data && Conf.Cooldown && /\bwait\b/i.test(msg.textContent)) {
         DeleteLink.cooldown.start(post, 5);
         DeleteLink.auto[+fileOnly][post.fullID] = true;
         return DeleteLink.nodes.links[+fileOnly].textContent = DeleteLink.linkText(fileOnly);
@@ -168,7 +168,7 @@ var DeleteLink = {
 
     count(post) {
       if (post.fullID === DeleteLink.post.fullID) { DeleteLink.nodes.menu.textContent = DeleteLink.menuText(); }
-      if ((DeleteLink.cooldown.seconds[post.fullID] > 0) && Conf['Cooldown']) {
+      if ((DeleteLink.cooldown.seconds[post.fullID] > 0) && Conf.Cooldown) {
         DeleteLink.cooldown.seconds[post.fullID]--;
         setTimeout(DeleteLink.cooldown.count, 1000, post);
       } else {

@@ -88,7 +88,7 @@ var ThreadWatcher = {
     ThreadWatcher.fetchAuto();
     $.on(window, 'visibilitychange focus', () => $.queueTask(ThreadWatcher.fetchAuto));
 
-    if (Conf['Menu'] && indexEnabled) {
+    if (Conf.Menu && indexEnabled) {
       Menu.menu.addEntry({
         el: $.el('a', {
           href:      'javascript:;',
@@ -346,7 +346,7 @@ var ThreadWatcher = {
   },
 
   initLastModified() {
-    const lm = ($.lastModified['ThreadWatcher'] || ($.lastModified['ThreadWatcher'] = dict()));
+    const lm = ($.lastModified.ThreadWatcher || ($.lastModified.ThreadWatcher = dict()));
     for (var siteID in ThreadWatcher.dbLM.data) {
       var boards = ThreadWatcher.dbLM.data[siteID];
       for (var boardID in boards.boards) {

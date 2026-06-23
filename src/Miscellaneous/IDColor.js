@@ -12,7 +12,7 @@ var IDColor = {
   init() {
     if (!['index', 'thread'].includes(g.VIEW) || !Conf['Color User IDs']) { return; }
     this.ids = dict();
-    this.ids['Heaven'] = [0, 0, 0, '#fff'];
+    this.ids.Heaven = [0, 0, 0, '#fff'];
 
     return Callbacks.Post.push({
       name: 'Color User IDs',

@@ -72,32 +72,32 @@ const SWTinyboard = {
 
   urls: {
     thread({siteID, boardID, threadID}, isArchived) {
-      return `${Conf['siteProperties'][siteID]?.root || `http://${siteID}/`}${boardID}/${isArchived ? 'archive/' : ''}res/${threadID}.html`;
+      return `${Conf.siteProperties[siteID]?.root || `http://${siteID}/`}${boardID}/${isArchived ? 'archive/' : ''}res/${threadID}.html`;
     },
     post({postID})                   { return `#${postID}`; },
-    index({siteID, boardID})          { return `${Conf['siteProperties'][siteID]?.root || `http://${siteID}/`}${boardID}/`; },
-    catalog({siteID, boardID})          { return `${Conf['siteProperties'][siteID]?.root || `http://${siteID}/`}${boardID}/catalog.html`; },
+    index({siteID, boardID})          { return `${Conf.siteProperties[siteID]?.root || `http://${siteID}/`}${boardID}/`; },
+    catalog({siteID, boardID})          { return `${Conf.siteProperties[siteID]?.root || `http://${siteID}/`}${boardID}/catalog.html`; },
     threadJSON({siteID, boardID, threadID}, isArchived) {
-      const root = Conf['siteProperties'][siteID]?.root;
+      const root = Conf.siteProperties[siteID]?.root;
       if (root) { return `${root}${boardID}/${isArchived ? 'archive/' : ''}res/${threadID}.json`; } else { return ''; }
     },
     archivedThreadJSON(thread) {
       return SWTinyboard.urls.threadJSON(thread, true);
     },
     threadsListJSON({siteID, boardID}) {
-      const root = Conf['siteProperties'][siteID]?.root;
+      const root = Conf.siteProperties[siteID]?.root;
       if (root) { return `${root}${boardID}/threads.json`; } else { return ''; }
     },
     archiveListJSON({siteID, boardID}) {
-      const root = Conf['siteProperties'][siteID]?.root;
+      const root = Conf.siteProperties[siteID]?.root;
       if (root) { return `${root}${boardID}/archive/archive.json`; } else { return ''; }
     },
     catalogJSON({siteID, boardID}) {
-      const root = Conf['siteProperties'][siteID]?.root;
+      const root = Conf.siteProperties[siteID]?.root;
       if (root) { return `${root}${boardID}/catalog.json`; } else { return ''; }
     },
     file({siteID, boardID}, filename) {
-      return `${Conf['siteProperties'][siteID]?.root || `http://${siteID}/`}${boardID}/${filename}`;
+      return `${Conf.siteProperties[siteID]?.root || `http://${siteID}/`}${boardID}/${filename}`;
     },
     thumb(board, filename) {
       return SWTinyboard.urls.file(board, filename);

@@ -9,7 +9,7 @@ import $$ from "../platform/$$";
  */
 var ImageHost = {
   init() {
-    if ((!(this.useFaster = /\S/.test(Conf['fourchanImageHost']))) || (g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW)) { return; }
+    if ((!(this.useFaster = /\S/.test(Conf.fourchanImageHost))) || (g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW)) { return; }
     return Callbacks.Post.push({
       name: 'Image Host Rewriting',
       cb:   this.node
@@ -19,7 +19,7 @@ var ImageHost = {
   suggestions: ['i.4cdn.org', 'is2.4chan.org'],
 
   host() {
-    return Conf['fourchanImageHost'].trim() || 'i.4cdn.org';
+    return Conf.fourchanImageHost.trim() || 'i.4cdn.org';
   },
   flashHost() {
     return 'i.4cdn.org';

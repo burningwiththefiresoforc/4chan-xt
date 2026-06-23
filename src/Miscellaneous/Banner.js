@@ -67,7 +67,7 @@ var Banner = {
   cb: {
     toggle() {
       if (!Banner.choices?.length) {
-        Banner.choices = Conf['knownBanners'].split(',').slice();
+        Banner.choices = Conf.knownBanners.split(',').slice();
       }
       const i = Math.floor(Banner.choices.length * Math.random());
       const banner = Banner.choices.splice(i, 1);

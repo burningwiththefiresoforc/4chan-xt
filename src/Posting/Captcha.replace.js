@@ -11,7 +11,7 @@ const CaptchaReplace = {
       return;
     }
 
-    if (Conf['captchaLanguage'].trim()) {
+    if (Conf.captchaLanguage.trim()) {
       // if (['boards.4chan.org', 'boards.4channel.org'].includes(location.hostname)) {
       if (location.hostname === 'boards.4chan.org') {
         $.onExists(doc, '#captchaFormPart', node => $.onExists(node, 'iframe[src^="https://www.google.com/recaptcha/"]', this.iframe));
@@ -41,7 +41,7 @@ const CaptchaReplace = {
 
   iframe(iframe) {
     let lang;
-    if (lang = Conf['captchaLanguage'].trim()) {
+    if (lang = Conf.captchaLanguage.trim()) {
       const src = /[?&]hl=/.test(iframe.src) ?
         iframe.src.replace(/([?&]hl=)[^&]*/, '$1' + encodeURIComponent(lang))
       :

@@ -121,7 +121,7 @@ var Favicon = {
         Metro_unreadNSFWY,
       ]
     };
-    items = $.getOwn(items, Conf['favicon']);
+    items = $.getOwn(items, Conf.favicon);
 
     const f = Favicon;
     const t = 'data:image/png;base64,';

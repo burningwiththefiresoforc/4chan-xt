@@ -18,7 +18,7 @@ import Icon from '../Icons/icon';
  */
 var ThreadHiding = {
   init() {
-    if (!['index', 'catalog'].includes(g.VIEW) || (!Conf['Thread Hiding Buttons'] && !(Conf['Menu'] && Conf['Thread Hiding Link']) && !Conf['JSON Index'])) { return; }
+    if (!['index', 'catalog'].includes(g.VIEW) || (!Conf['Thread Hiding Buttons'] && !(Conf.Menu && Conf['Thread Hiding Link']) && !Conf['JSON Index'])) { return; }
     this.db = new DataBoard('hiddenThreads');
     if (g.VIEW === 'catalog') { return this.catalogWatch(); }
     this.catalogSet(g.BOARD);
@@ -61,7 +61,7 @@ var ThreadHiding = {
         ThreadHiding.db.set({
           boardID:  g.BOARD.ID,
           threadID,
-          val:      {makeStub: Conf['Stubs']}});
+          val:      {makeStub: Conf.Stubs}});
       }
     }
     for (threadID in ThreadHiding.hiddenThreads) {
@@ -103,7 +103,7 @@ var ThreadHiding = {
 
   menu: {
     init() {
-      if ((g.VIEW !== 'index') || !Conf['Menu'] || !Conf['Thread Hiding Link']) { return; }
+      if ((g.VIEW !== 'index') || !Conf.Menu || !Conf['Thread Hiding Link']) { return; }
 
       let div = $.el('div', {
         className: 'hide-thread-link',
@@ -244,7 +244,7 @@ var ThreadHiding = {
 
     thread.stub = $.el('div', {className: 'stub'});
 
-    if (Conf['Menu']) {
+    if (Conf.Menu) {
       $.add(thread.stub, [a, Menu.makeButton(thread.OP)]);
     } else {
       $.add(thread.stub, a);
@@ -285,7 +285,7 @@ var ThreadHiding = {
     return ThreadHiding.saveHiddenState(thread);
   },
 
-  hide(thread, makeStub=Conf['Stubs'], reason) {
+  hide(thread, makeStub=Conf.Stubs, reason) {
     if (thread.isHidden) { return; }
     const threadRoot = thread.nodes.root;
     thread.isHidden = true;

@@ -73,7 +73,7 @@ var ImageExpand = {
       const {file} = post;
       if (file.isExpanded && ImageCommon.onControls(e)) { return; }
       e.preventDefault();
-      if (!Conf['Autoplay'] && file.fullImage?.paused) {
+      if (!Conf.Autoplay && file.fullImage?.paused) {
         return file.fullImage.play();
       } else {
         return ImageExpand.toggle(post);
@@ -286,7 +286,7 @@ var ImageExpand = {
 
     if (Conf['Image Media Controls']) {
      const controls = $.el('div', MediaControls());
-     const [y, x] = Conf['imageMediaControlsPosition'].split('-');
+     const [y, x] = Conf.imageMediaControlsPosition.split('-');
      [...controls.childNodes][0].classList.add(`media-controls-${x}`, `media-controls-${y}`);
      const container = $.el('div', {className: 'media-controls-container'});
      const wrapper = $.el('div', {className: 'media-controls-wrapper'});
@@ -381,7 +381,7 @@ var ImageExpand = {
     }
 
     if (file.isVideo) {
-      return ImageExpand.setupVideo(post, Conf['Autoplay'], Conf['Show Controls']);
+      return ImageExpand.setupVideo(post, Conf.Autoplay, Conf['Show Controls']);
     }
   },
 

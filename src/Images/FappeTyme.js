@@ -16,7 +16,7 @@ var FappeTyme = {
     this.nodes = {};
     this.enabled = {
       fappe: false,
-      werk:  Conf['werk']
+      werk:  Conf.werk
     };
 
     for (var type of ["Fappe", "Werk"]) {

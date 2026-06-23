@@ -41,7 +41,7 @@ var FileInfo = {
     $.add(oldInfo, [this.file.link.previousSibling, this.file.link, this.file.link.nextSibling]);
 
     const info = $.el('span', {className: 'file-info'});
-    FileInfo.format(Conf['fileInfo'], this, info);
+    FileInfo.format(Conf.fileInfo, this, info);
     return $.prepend(this.file.text, info);
   },
 

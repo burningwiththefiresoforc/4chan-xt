@@ -74,7 +74,7 @@ var ImageHover = {
         el.loop = true;
         el.controls = false;
         Volume.setup(el);
-        if (Conf['Autoplay']) {
+        if (Conf.Autoplay) {
           el.play();
           if (this.nodeName === 'VIDEO') {
             this.currentTime = el.currentTime;

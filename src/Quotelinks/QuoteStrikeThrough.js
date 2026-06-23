@@ -11,7 +11,7 @@ import $ from "../platform/$";
 const QuoteStrikeThrough = {
   init() {
     if (!['index', 'thread'].includes(g.VIEW) ||
-      (!Conf['Reply Hiding Buttons'] && (!Conf['Menu'] || !Conf['Reply Hiding Link']) && !Conf['Filter'])) { return; }
+      (!Conf['Reply Hiding Buttons'] && (!Conf.Menu || !Conf['Reply Hiding Link']) && !Conf.Filter)) { return; }
 
     return Callbacks.Post.push({
       name: 'Strike-through Quotes',

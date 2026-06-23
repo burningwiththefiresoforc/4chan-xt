@@ -23,7 +23,7 @@ import Icon from '../Icons/icon';
 
 var Gallery = {
   init() {
-    if (!(this.enabled = Conf['Gallery'] && ['index', 'thread'].includes(g.VIEW))) { return; }
+    if (!(this.enabled = Conf.Gallery && ['index', 'thread'].includes(g.VIEW))) { return; }
 
     this.delay = Conf['Slide Delay'];
 
@@ -134,7 +134,7 @@ var Gallery = {
     }
 
     $.on(d, 'keydown', cb.keybinds);
-    if (Conf['Keybinds']) { $.off(d, 'keydown', Keybinds.keydown); }
+    if (Conf.Keybinds) { $.off(d, 'keydown', Keybinds.keydown); }
 
     $.on(window, 'resize', Gallery.cb.setHeight);
 
@@ -237,7 +237,7 @@ var Gallery = {
     if (file.nodeName === 'VIDEO') {
       file.loop = true;
       Volume.setup(file);
-      if (Conf['Autoplay']) { file.play(); }
+      if (Conf.Autoplay) { file.play(); }
       if (Conf['Show Controls']) file.controls = true;
     }
 
@@ -256,7 +256,7 @@ var Gallery = {
 
     // Set sauce links
     $.rmAll(nodes.sauce);
-    if (Conf['Sauce'] && Sauce.links && (post = g.posts.get(file.dataset.post))) {
+    if (Conf.Sauce && Sauce.links && (post = g.posts.get(file.dataset.post))) {
       const sauces = [];
       for (var link of Sauce.links) {
         var node;
@@ -342,7 +342,7 @@ var Gallery = {
       if (!(key = Keybinds.keyCode(e))) { return; }
 
       const cb = (() => { switch (key) {
-        case Conf['Close']: case Conf['Open Gallery']:
+        case Conf.Close: case Conf['Open Gallery']:
           return Gallery.cb.close;
         case Conf['Next Gallery Image']:
           return Gallery.cb.next;
@@ -350,9 +350,9 @@ var Gallery = {
           return Gallery.cb.advance;
         case Conf['Previous Gallery Image']:
           return Gallery.cb.prev;
-        case Conf['Pause']:
+        case Conf.Pause:
           return Gallery.cb.pause;
-        case Conf['Slideshow']:
+        case Conf.Slideshow:
           return Gallery.cb.toggleSlideshow;
         case Conf['Rotate image anticlockwise']:
           return Gallery.cb.rotateLeft;
@@ -396,7 +396,7 @@ var Gallery = {
       return Gallery.cb.advance();
     },
 
-    advance() { if (!Conf['Autoplay'] && Gallery.nodes.current.paused) { return Gallery.nodes.current.play(); } else { return Gallery.cb.next(); } },
+    advance() { if (!Conf.Autoplay && Gallery.nodes.current.paused) { return Gallery.nodes.current.play(); } else { return Gallery.cb.next(); } },
     toggle() { return (Gallery.nodes ? Gallery.cb.close : Gallery.build)(); },
     blank(e) { if (e.target === this) { return Gallery.cb.close(); } },
     toggleSlideshow() {  return Gallery.cb[Gallery.slideshow ? 'stop' : 'start'](); },
@@ -453,7 +453,7 @@ var Gallery = {
       doc.style.overflow = '';
 
       $.off(d, 'keydown', Gallery.cb.keybinds);
-      if (Conf['Keybinds']) { $.on(d, 'keydown', Keybinds.keydown); }
+      if (Conf.Keybinds) { $.on(d, 'keydown', Keybinds.keydown); }
       $.off(window, 'resize', Gallery.cb.setHeight);
       return clearTimeout(Gallery.timeoutID);
     },

@@ -55,7 +55,7 @@ const Sound = {
     }
     audioEl.loop = true;
     audioEl.controls = Conf['Show Controls'];
-    audioEl.autoplay = Conf['Autoplay'];
+    audioEl.autoplay = Conf.Autoplay;
 
     el.after(audioEl);
     file.audio = audioEl;

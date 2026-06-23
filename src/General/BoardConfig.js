@@ -17,11 +17,11 @@ var BoardConfig = {
     let middle;
     if (g.SITE.software !== 'yotsuba') { return; }
     const now = Date.now();
-    if (now - (2 * HOUR) >= ((middle = Conf['boardConfig'].lastChecked || 0)) || middle > now) {
+    if (now - (2 * HOUR) >= ((middle = Conf.boardConfig.lastChecked || 0)) || middle > now) {
       return $.ajax(`${location.protocol}//a.4cdn.org/boards.json`,
         {onloadend: this.load});
     } else {
-      const {boards} = Conf['boardConfig'];
+      const {boards} = Conf.boardConfig;
       return this.set(boards);
     }
   },
@@ -35,7 +35,7 @@ var BoardConfig = {
       }
       $.set('boardConfig', {boards, lastChecked: Date.now()});
     } else {
-      ({boards} = Conf['boardConfig']);
+      ({boards} = Conf.boardConfig);
       const err = (() => { switch (this.status) {
         case 0:   return 'Connection Error';
         case 200: return 'Invalid Data';
@@ -68,7 +68,7 @@ var BoardConfig = {
   sfwBoards(sfw) {
     return (() => {
       const result = [];
-      const object = this.boards || Conf['boardConfig'].boards;
+      const object = this.boards || Conf.boardConfig.boards;
       for (var board in object) {
         var data = object[board];
         if (!!data.ws_board === sfw) {
@@ -80,7 +80,7 @@ var BoardConfig = {
   },
 
   isSFW(board) {
-    return !!(this.boards || Conf['boardConfig'].boards)[board]?.ws_board;
+    return !!(this.boards || Conf.boardConfig.boards)[board]?.ws_board;
   },
 
   domain(board) {
@@ -90,18 +90,18 @@ var BoardConfig = {
 
   isArchived(board) {
     // assume archive exists if no data available to prevent cleaning of archived threads
-    const data = (this.boards || Conf['boardConfig'].boards)[board];
+    const data = (this.boards || Conf.boardConfig.boards)[board];
     return !data || data.is_archived;
   },
 
   noAudio(boardID) {
     if (g.SITE.software !== 'yotsuba') { return false; }
-    const boards = this.boards || Conf['boardConfig'].boards;
+    const boards = this.boards || Conf.boardConfig.boards;
     return boards && boards[boardID] && !boards[boardID].webm_audio;
   },
 
   title(boardID) {
-    return (this.boards || Conf['boardConfig'].boards)?.[boardID]?.title || '';
+    return (this.boards || Conf.boardConfig.boards)?.[boardID]?.title || '';
   }
 };
 export default BoardConfig;

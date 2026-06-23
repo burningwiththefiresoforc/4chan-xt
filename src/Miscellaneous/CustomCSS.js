@@ -14,7 +14,7 @@ const CustomCSS = {
   },
 
   addStyle() {
-    return this.style = $.addStyle(CSS.sub(Conf['usercss']), 'custom-css', '#fourchanx-css');
+    return this.style = $.addStyle(CSS.sub(Conf.usercss), 'custom-css', '#fourchanx-css');
   },
 
   rmStyle() {
@@ -28,7 +28,7 @@ const CustomCSS = {
     if (!this.style) {
       return this.addStyle();
     }
-    return this.style.textContent = CSS.sub(Conf['usercss']);
+    return this.style.textContent = CSS.sub(Conf.usercss);
   }
 };
 export default CustomCSS;

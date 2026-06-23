@@ -22,7 +22,7 @@ const Test = {
   init() {
     if ((g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW)) { return; }
 
-    if (Conf['Menu']) {
+    if (Conf.Menu) {
       const a = $.el('a',
         {textContent: 'Test HTML building'});
       $.on(a, 'click', this.cb.testOne);

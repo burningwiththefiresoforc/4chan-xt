@@ -10,7 +10,7 @@ import Menu from "./Menu";
  */
 const DownloadLink = {
   init() {
-    if (!['index', 'thread'].includes(g.VIEW) || !Conf['Menu'] || !Conf['Download Link']) { return; }
+    if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf['Download Link']) { return; }
 
     const a = $.el('a', {
       className: 'download-link',

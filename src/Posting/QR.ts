@@ -163,7 +163,7 @@ var QR = {
     let origToggle;
     // const captchaVersion = $('#g-recaptcha, #captcha-forced-noscript') ? 'v2' : 't';
     // QR.captcha = Captcha[captchaVersion];
-    QR.captcha = Captcha['t'];
+    QR.captcha = Captcha.t;
     QR.postingIsEnabled = true;
 
     const {config} = g.BOARD;
@@ -325,9 +325,9 @@ var QR = {
 
   toggleSJIS(e) {
     e.preventDefault();
-    Conf['sjisPreview'] = !Conf['sjisPreview'];
-    $.set('sjisPreview', Conf['sjisPreview']);
-    return QR.nodes.el.classList.toggle('sjis-preview', Conf['sjisPreview']);
+    Conf.sjisPreview = !Conf.sjisPreview;
+    $.set('sjisPreview', Conf.sjisPreview);
+    return QR.nodes.el.classList.toggle('sjis-preview', Conf.sjisPreview);
   },
 
   texPreviewShow() {
@@ -352,7 +352,7 @@ var QR = {
   },
 
   setCustomCooldown(enabled) {
-    Conf['customCooldownEnabled'] = enabled;
+    Conf.customCooldownEnabled = enabled;
     QR.cooldown.customCooldown = enabled;
     return QR.nodes.customCooldown.classList.toggle('disabled', !enabled);
   },
@@ -646,7 +646,7 @@ var QR = {
     if (file) {
       const {type} = file;
       const blob = new Blob([file], {type});
-      blob.name = `${Conf['pastedname']}.${$.getOwn(QR.extensionFromType, type) || 'jpg'}`;
+      blob.name = `${Conf.pastedname}.${$.getOwn(QR.extensionFromType, type) || 'jpg'}`;
       QR.open();
       QR.handleFiles([blob]);
     }
@@ -784,12 +784,12 @@ var QR = {
     classList.toggle('has-spoiler',  QR.spoiler);
     classList.toggle('has-sjis',     !!config.sjis_tags);
     classList.toggle('has-math',     !!config.math_tags);
-    classList.toggle('sjis-preview', !!config.sjis_tags && Conf['sjisPreview']);
+    classList.toggle('sjis-preview', !!config.sjis_tags && Conf.sjisPreview);
     classList.toggle('show-new-thread-option', Conf['Show New Thread Option in Threads']);
 
-    if (parseInt(Conf['customCooldown'], 10) > 0) {
+    if (parseInt(Conf.customCooldown, 10) > 0) {
       $.addClass(QR.nodes.fileSubmit, 'custom-cooldown');
-      $.get('customCooldownEnabled', Conf['customCooldownEnabled'], function({customCooldownEnabled}) {
+      $.get('customCooldownEnabled', Conf.customCooldownEnabled, function({customCooldownEnabled}) {
         QR.setCustomCooldown(customCooldownEnabled);
         return $.sync('customCooldownEnabled', QR.setCustomCooldown);
       });
@@ -1319,7 +1319,7 @@ var QR = {
     // Called from Main
     init() {
       if (!Conf['Quick Reply']) { return; }
-      this.data = Conf['cooldowns'];
+      this.data = Conf.cooldowns;
       this.changes = dict();
       $.sync('cooldowns', this.sync);
     },
@@ -1345,7 +1345,7 @@ var QR = {
     start() {
       const { data } = QR.cooldown;
       if (
-        !Conf['Cooldown'] ||
+        !Conf.Cooldown ||
         !QR.cooldown.isSetup ||
         !!QR.cooldown.isCounting ||
         ((Object.keys(data[g.BOARD.ID] || {}).length + Object.keys(data.global || {}).length) <= 0)
@@ -1360,7 +1360,7 @@ var QR = {
     },
 
     add(threadID, postID) {
-      if (!Conf['Cooldown']) { return; }
+      if (!Conf.Cooldown) { return; }
       const start = Date.now();
       const boardID = g.BOARD.ID;
       QR.cooldown.set(boardID, start, { threadID, postID });
@@ -1370,7 +1370,7 @@ var QR = {
     },
 
     addDelay(post, delay) {
-      if (!Conf['Cooldown']) { return; }
+      if (!Conf.Cooldown) { return; }
       const cooldown = QR.cooldown.categorize(post);
       cooldown.delay = delay;
       QR.cooldown.set(g.BOARD.ID, Date.now(), cooldown);
@@ -1379,7 +1379,7 @@ var QR = {
     },
 
     addMute(delay) {
-      if (!Conf['Cooldown']) { return; }
+      if (!Conf.Cooldown) { return; }
       QR.cooldown.set(g.BOARD.ID, Date.now(), { type: 'mute', delay });
       QR.cooldown.save();
       QR.cooldown.start();
@@ -1399,7 +1399,7 @@ var QR = {
     },
 
     secondsDeletion(post) {
-      if (!QR.cooldown.data || !Conf['Cooldown']) { return 0; }
+      if (!QR.cooldown.data || !Conf.Cooldown) { return 0; }
       const cooldowns = QR.cooldown.data[post.board.ID] || dict();
       for (var start in cooldowns) {
         var cooldown = cooldowns[start];
@@ -1469,7 +1469,7 @@ var QR = {
       const { type, threadID } = QR.cooldown.categorize(QR.posts[0]);
       let seconds = 0;
 
-      if (Conf['Cooldown']) {
+      if (Conf.Cooldown) {
         for (var scope of [g.BOARD.ID, 'global']) {
           var cooldowns = (QR.cooldown.data[scope] || (QR.cooldown.data[scope] = dict()));
 
@@ -1501,7 +1501,7 @@ var QR = {
               :
               QR.cooldown.delays[scope === 'global' ? 'thread_global' : 'thread'];
             if (QR.cooldown.customCooldown) {
-              maxDelay = Math.max(maxDelay, parseInt(Conf['customCooldown'], 10));
+              maxDelay = Math.max(maxDelay, parseInt(Conf.customCooldown, 10));
             }
             if (maxDelay <= elapsed) {
               QR.cooldown.set(scope, start, null);
@@ -1521,7 +1521,7 @@ var QR = {
 
               // If additional cooldown is enabled, add the configured seconds to the count.
               if (QR.cooldown.customCooldown) {
-                seconds = Math.max(seconds, parseInt(Conf['customCooldown'], 10) - elapsed);
+                seconds = Math.max(seconds, parseInt(Conf.customCooldown, 10) - elapsed);
               }
             }
           }
@@ -1556,7 +1556,7 @@ var QR = {
   oekaki: {
     menu: {
       init() {
-        if (!['index', 'thread'].includes(g.VIEW) || !Conf['Menu'] || !Conf['Edit Link'] || !Conf['Quick Reply']) { return; }
+        if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf['Edit Link'] || !Conf['Quick Reply']) { return; }
 
         const a = $.el('a', {
           className: 'edit-link',
@@ -1668,7 +1668,7 @@ var QR = {
     },
 
     init() {
-      if (!Conf['Quick Reply'] && (!Conf['Menu'] || !Conf['Delete Link'])) { return; }
+      if (!Conf['Quick Reply'] && (!Conf.Menu || !Conf['Delete Link'])) { return; }
       for (var item of Conf['QR.personas'].split('\n')) {
         QR.persona.parseItem(item.trim());
       }

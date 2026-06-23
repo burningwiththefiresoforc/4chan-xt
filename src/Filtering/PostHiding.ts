@@ -25,7 +25,7 @@ var PostHiding = {
   posterIdDb: undefined as DataBoard,
 
   init() {
-    if (!['index', 'thread'].includes(g.VIEW) || (!Conf['Reply Hiding Buttons'] && !(Conf['Menu'] && Conf['Reply Hiding Link']))) { return; }
+    if (!['index', 'thread'].includes(g.VIEW) || (!Conf['Reply Hiding Buttons'] && !(Conf.Menu && Conf['Reply Hiding Link']))) { return; }
 
     if (Conf['Reply Hiding Buttons']) {
       $.addClass(doc, "reply-hide");
@@ -83,7 +83,7 @@ var PostHiding = {
     post: undefined as Post,
 
     async init() {
-      if (!['index', 'thread'].includes(g.VIEW) || !Conf['Menu'] || !Conf['Reply Hiding Link']) return;
+      if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf['Reply Hiding Link']) return;
 
       await new Promise(res => BoardConfig.ready(res));
 
@@ -98,7 +98,7 @@ var PostHiding = {
         { el: applyHide },
         { el: UI.checkbox('thisPost', 'This post', true) },
         { el: UI.checkbox('replies', 'Hide replies', Conf['Recursive Hiding']) },
-        { el: UI.checkbox('makeStub', 'Make stub', Conf['Stubs']) },
+        { el: UI.checkbox('makeStub', 'Make stub', Conf.Stubs) },
       ];
       if (g.BOARD.config.user_ids) {
         hideOptions.push({ el: UI.checkbox('byId', 'By poster id', false) });
@@ -319,7 +319,7 @@ var PostHiding = {
 
   hide(
     post: Post,
-    makeStub: boolean = Conf['Stubs'],
+    makeStub: boolean = Conf.Stubs,
     hideRecursively: boolean = Conf['Recursive Hiding'],
     reason?: string
   ) {
@@ -354,7 +354,7 @@ var PostHiding = {
     $.add(post.nodes.stub, a);
 
     if (!Conf['Filter Reason'] && reasons) post.nodes.stub.title = reasons.join(' & ');
-    if (Conf['Menu']) {
+    if (Conf.Menu) {
       $.add(post.nodes.stub, Menu.makeButton(post));
     }
     $.prepend(post.nodes.root, post.nodes.stub);

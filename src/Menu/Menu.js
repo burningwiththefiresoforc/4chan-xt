@@ -11,7 +11,7 @@ import Icon from "../Icons/icon";
  */
 var Menu = {
   init() {
-    if (!['index', 'thread'].includes(g.VIEW) || !Conf['Menu']) { return; }
+    if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu) { return; }
 
     this.button = $.el('a', {
       className: 'menu-button',
