@@ -1,7 +1,6 @@
 // cSpell:ignore installGentoo, webfont
 
 import $ from '../platform/$';
-
 import variableBase from './variableBase.css';
 import photon from './photon.css';
 import report from './report.css';
@@ -17,7 +16,7 @@ import { g } from '../globals/globals';
 import iconCss from '../Icons/icons.css';
 import fxTwitterCss from '../Linkification/Embedding/FxTwitter.css';
 
-const mainCSS = style + variableBase + yotsuba +yotsubaB+futaba+burichan+tomorrow + photon + spooky + iconCss + fxTwitterCss;
+const mainCSS = style + variableBase + yotsuba + yotsubaB + futaba + burichan + tomorrow + photon + spooky + iconCss + fxTwitterCss;
 
 const CSS = {
 
