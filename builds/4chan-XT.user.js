@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         4chan XT
-// @version      2.27.1
+// @version      2.27.2
 // @minGMVer     1.14
 // @minFFVer     115
 // @namespace    4chan-XT
@@ -157,8 +157,8 @@
   'use strict';
 
   var version = {
-    "version": "2.27.1",
-    "date": "2026-06-20T09:09:09Z"
+    "version": "2.27.2",
+    "date": "2026-06-23T09:09:09Z"
   }
   ;
 
@@ -1342,19 +1342,19 @@
 
   const width$5 = 24;
   const height$5 = 24;
-  const body$5 = "\n<path d=\"M3,0v12l9-6L3,0z M3,12v12l9-6L3,12z M12,6v12l9-6L12,6z\"/>";
+  const body$5 = "<path d=\"M3,0v12l9-6L3,0z M3,12v12l9-6L3,12z M12,6v12l9-6L12,6z\"/>\n";
 
   const width$4 = 30;
   const height$4 = 30;
-  const body$4 = "\n  <path d=\"M14.943 30C23.195 30 29.885 23.284 29.885 15C29.885 6.716 23.195 0 14.943 0C6.69 0 0 6.715 0 15C0 23.285 6.69 30 14.943 30ZM18.009 8.82C18.678 8.359 19.24 8.126 19.994 7.987C20.565 7.884 22.06 8.009 22.676 8.211C23.572 8.507 24.165 8.802 24.83 9.286C26.079 10.202 26.988 11.51 27.413 13.003C27.721 14.091 27.721 15.506 27.409 16.689C27.114 17.799 26.325 19.161 25.459 20.039C24.745 20.759 23.679 21.422 22.738 21.722C21.722 22.049 20.842 22.148 19.899 22.036C19.203 21.955 19.029 21.919 18.418 21.722C17.575 21.452 16.169 20.625 16.263 20.455C16.281 20.419 16.678 19.819 17.142 19.12L17.99 17.849L18.19 18.029C18.489 18.299 19.016 18.588 19.416 18.719C20.741 19.135 22.133 18.817 23.127 17.868C23.658 17.366 24.002 16.788 24.194 16.072C24.313 15.624 24.305 14.639 24.176 14.164C23.77 12.659 22.744 11.669 21.361 11.45C19.964 11.226 18.925 11.92 17.511 14.012C17.328 14.282 16.873 15.006 16.494 15.624C14.795 18.405 13.974 19.494 12.836 20.456C12.038 21.137 11.36 21.5 10.386 21.768C9.984 21.881 9.899 21.888 9.021 21.888C8.191 21.888 8.034 21.88 7.66 21.785C6.644 21.539 6.031 21.279 5.264 20.765C3.703 19.722 2.69 18.159 2.297 16.184C2.208 15.723 2.222 14.24 2.324 13.743C2.45 13.163 2.636 12.597 2.877 12.055C3.565 10.568 4.889 9.295 6.424 8.656C8.061 7.966 9.873 7.939 11.586 8.58C12.112 8.772 13.067 9.337 13.451 9.677L13.638 9.847L12.768 11.146C12.29 11.858 11.88 12.449 11.854 12.458C11.827 12.467 11.764 12.428 11.711 12.364C11.523 12.162 11.001 11.794 10.707 11.657C9.636 11.155 8.495 11.159 7.468 11.67C7.009 11.898 6.718 12.118 6.353 12.512C6.024 12.87 5.835 13.211 5.688 13.721C5.608 13.999 5.594 14.169 5.594 14.729C5.599 15.351 5.608 15.427 5.733 15.803C5.947 16.453 6.211 16.883 6.696 17.375C7.446 18.132 8.362 18.476 9.446 18.405C10.035 18.37 10.419 18.222 10.958 17.828C11.444 17.474 11.971 16.932 12.417 16.319C12.988 15.539 13.171 15.257 14.126 13.685C15.818 10.893 16.827 9.627 18.009 8.82Z\" />\n\n";
+  const body$4 = "<path d=\"M14.943 30C23.195 30 29.885 23.284 29.885 15C29.885 6.716 23.195 0 14.943 0C6.69 0 0 6.715 0 15C0 23.285 6.69 30 14.943 30ZM18.009 8.82C18.678 8.359 19.24 8.126 19.994 7.987C20.565 7.884 22.06 8.009 22.676 8.211C23.572 8.507 24.165 8.802 24.83 9.286C26.079 10.202 26.988 11.51 27.413 13.003C27.721 14.091 27.721 15.506 27.409 16.689C27.114 17.799 26.325 19.161 25.459 20.039C24.745 20.759 23.679 21.422 22.738 21.722C21.722 22.049 20.842 22.148 19.899 22.036C19.203 21.955 19.029 21.919 18.418 21.722C17.575 21.452 16.169 20.625 16.263 20.455C16.281 20.419 16.678 19.819 17.142 19.12L17.99 17.849L18.19 18.029C18.489 18.299 19.016 18.588 19.416 18.719C20.741 19.135 22.133 18.817 23.127 17.868C23.658 17.366 24.002 16.788 24.194 16.072C24.313 15.624 24.305 14.639 24.176 14.164C23.77 12.659 22.744 11.669 21.361 11.45C19.964 11.226 18.925 11.92 17.511 14.012C17.328 14.282 16.873 15.006 16.494 15.624C14.795 18.405 13.974 19.494 12.836 20.456C12.038 21.137 11.36 21.5 10.386 21.768C9.984 21.881 9.899 21.888 9.021 21.888C8.191 21.888 8.034 21.88 7.66 21.785C6.644 21.539 6.031 21.279 5.264 20.765C3.703 19.722 2.69 18.159 2.297 16.184C2.208 15.723 2.222 14.24 2.324 13.743C2.45 13.163 2.636 12.597 2.877 12.055C3.565 10.568 4.889 9.295 6.424 8.656C8.061 7.966 9.873 7.939 11.586 8.58C12.112 8.772 13.067 9.337 13.451 9.677L13.638 9.847L12.768 11.146C12.29 11.858 11.88 12.449 11.854 12.458C11.827 12.467 11.764 12.428 11.711 12.364C11.523 12.162 11.001 11.794 10.707 11.657C9.636 11.155 8.495 11.159 7.468 11.67C7.009 11.898 6.718 12.118 6.353 12.512C6.024 12.87 5.835 13.211 5.688 13.721C5.608 13.999 5.594 14.169 5.594 14.729C5.599 15.351 5.608 15.427 5.733 15.803C5.947 16.453 6.211 16.883 6.696 17.375C7.446 18.132 8.362 18.476 9.446 18.405C10.035 18.37 10.419 18.222 10.958 17.828C11.444 17.474 11.971 16.932 12.417 16.319C12.988 15.539 13.171 15.257 14.126 13.685C15.818 10.893 16.827 9.627 18.009 8.82Z\"/>\n";
 
   const width$3 = 16;
   const height$3 = 16;
-  const body$3 = "\n<g>\n<path d=\"M6.56737 15.9097C5.09821 15.5758 4.1633 15.1501 3.10317 14.3487C1.75088 13.322 0.649015 11.6692 0.2066 9.99133C-0.0688666 8.95625 -0.0688666 7.00294 0.2066 5.98455C0.548846 4.74913 1.00796 3.8476 1.83435 2.82921C2.76927 1.67726 4.43042 0.625478 5.98304 0.208105C6.57571 0.0495031 6.90127 0.0161133 7.98644 0.0161133C9.45559 0.0161133 10.1985 0.166368 11.3254 0.692258C11.9682 0.992767 12.9949 1.63552 12.9949 1.74404C12.9949 1.77743 12.3605 2.31167 11.5842 2.92938L10.1818 4.06463L9.68932 3.8476C9.28029 3.65561 9.03822 3.61387 8.27025 3.58048C6.64249 3.5137 5.91626 3.78917 4.8144 4.89938C4.24677 5.46701 4.05478 5.72578 3.85444 6.19324C3.61236 6.75252 3.60402 6.82764 3.59567 8.06307L3.58732 9.35693L2.31851 10.392C1.62567 10.968 1.06639 11.4438 1.08308 11.4605C1.09978 11.4772 1.83435 11.3019 2.71919 11.0682L4.33025 10.6341L4.86448 11.1767C5.79105 12.1032 6.57571 12.4121 8.02817 12.4121C9.4055 12.4121 10.115 12.1283 11.1 11.1683C11.7511 10.5339 12.1936 9.76595 12.3522 8.97294L12.4607 8.4554L14.1218 8.01298C15.04 7.77091 15.8414 7.57057 15.8998 7.57057C15.9666 7.57057 16 7.75421 16 8.23837C16 10.3503 14.8481 12.746 13.1869 14.0983C12.1017 14.9831 11.3004 15.4005 10.0232 15.7594C9.27194 15.9681 7.22682 16.0599 6.56737 15.9097Z\" fill=\"#FF00FF\"/>\n</g>\n\n\n";
+  const body$3 = "<path d=\"M6.567 15.91c-1.469-.334-2.404-.76-3.464-1.561C1.75 13.322.649 11.669.207 9.991c-.276-1.035-.276-2.988 0-4.007.342-1.235.801-2.137 1.628-3.155C2.769 1.677 4.43.625 5.983.208 6.576.05 6.901.016 7.986.016c1.47 0 2.212.15 3.34.676.642.3 1.669.943 1.669 1.052 0 .033-.634.568-1.41 1.185L10.182 4.065l-.493-.217c-.409-.192-.651-.234-1.419-.267-1.628-.067-2.354.208-3.456 1.318-.568.568-.76.826-.96 1.294-.242.559-.25.634-.259 1.87l-.008 1.293-1.269 1.036c-.692.576-1.252 1.051-1.235 1.068.017.017.752-.158 1.636-.392l1.611-.434.534.543c.927.926 1.711 1.235 3.164 1.235 1.377 0 2.087-.284 3.072-1.244.651-.634 1.094-1.402 1.252-2.195l.11-.518 1.66-.442c.919-.242 1.72-.442 1.778-.442.067 0 .1.184.1.668 0 2.112-1.152 4.508-2.813 5.86-.985.885-1.786 1.302-3.064 1.661-.75.209-2.796.301-3.455.15z\" fill=\"#FF00FF\"/>\n";
 
   const width$2 = 24;
   const height$2 = 24;
-  const body$2 = "\n<path d=\"M12 17.958a1.137 1.137 0 01-1.138-1.136V7.233a1.137 1.137 0 012.276 0v9.59c0 .627-.51 1.135-1.138 1.135m7.439 2.44A1.137 1.137 0 0118.3 19.26V4.794a1.137 1.137 0 012.276 0v14.467c0 .627-.51 1.136-1.138 1.136M15.719 24a1.137 1.137 0 01-1.138-1.136V1.136a1.137 1.137 0 012.276 0v21.728c0 .627-.509 1.136-1.138 1.136m-7.438-3.16a1.137 1.137 0 01-1.138-1.136V4.296a1.137 1.137 0 012.276 0v15.408c0 .628-.51 1.137-1.138 1.137m-3.72-4.989a1.137 1.137 0 01-1.138-1.136V9.284a1.137 1.137 0 012.276 0v5.432c0 .627-.51 1.136-1.138 1.136Z\"/>";
+  const body$2 = "<path d=\"M12 17.958a1.137 1.137 0 01-1.138-1.136V7.233a1.137 1.137 0 012.276 0v9.59c0 .627-.51 1.135-1.138 1.135m7.439 2.44A1.137 1.137 0 0118.3 19.26V4.794a1.137 1.137 0 012.276 0v14.467c0 .627-.51 1.136-1.138 1.136M15.719 24a1.137 1.137 0 01-1.138-1.136V1.136a1.137 1.137 0 012.276 0v21.728c0 .627-.509 1.136-1.138 1.136m-7.438-3.16a1.137 1.137 0 01-1.138-1.136V4.296a1.137 1.137 0 012.276 0v15.408c0 .628-.51 1.137-1.138 1.137m-3.72-4.989a1.137 1.137 0 01-1.138-1.136V9.284a1.137 1.137 0 012.276 0v5.432c0 .627-.51 1.136-1.138 1.136Z\"/>\n";
 
   const width$1 = 24;
   const height$1 = 24;
@@ -1362,7 +1362,7 @@
 
   const width = 512;
   const height = 512;
-  const body = "<rect width=\"512\" height=\"512\" rx=\"15%\" fill=\"#6441a4\"/><path d=\"m115 101-22 56v228h78v42h44l41-42h63l85-85v-199zm260 185-48 48h-78l-42 42v-42h-65v-204h233zm-48-100v85h-30v-85zm-78 0v85h-29v-85z\" fill=\"#fff\"/>";
+  const body = "<rect width=\"512\" height=\"512\" rx=\"15%\" fill=\"#6441a4\"/><path d=\"m115 101-22 56v228h78v42h44l41-42h63l85-85v-199zm260 185-48 48h-78l-42 42v-42h-65v-204h233zm-48-100v85h-30v-85zm-78 0v85h-29v-85z\" fill=\"#fff\"/>\n";
 
   const MicrophoneSvg = 'M192 0C139 0 96 43 96 96l0 160c0 53 43 96 96 96s96-43 96-96l0-160c0-53-43-96-96-96zM64 216c0-13.3-10.7-24-24-24s-24 10.7-24 24l0 40c0 89.1 66.2 162.7 152 174.4l0 33.6-48 0c-13.3 0-24 10.7-24 24s10.7 24 24 24l72 0 72 0c13.3 0 24-10.7 24-24s-10.7-24-24-24l-48 0 0-33.6c85.8-11.7 152-85.3 152-174.4l0-40c0-13.3-10.7-24-24-24s-24 10.7-24 24l0 40c0 70.7-57.3 128-128 128s-128-57.3-128-128l0-40z';
   const MicrophoneW = 384, MicrophoneH = 512;
@@ -1392,20 +1392,12 @@
   const YoutubeW = 576, YoutubeH = 512;
 
   // import linkifyInstallgentoo from './linkify.installgentoo.png';
-  const toSvg = (svgPathData, width, height) => {
-    return `<svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 ${width} ${height}">` +
-      `<path d="${svgPathData}" fill="currentColor" /></svg>`;
-  };
-  // Handles both FA path strings and raw SVG markup
-  const toLinkifySvg = (data, w, h) => {
+  const toSvg = (data, w, h) => {
     if (data.trimStart().startsWith('<svg')) {
-      // Complete SVG markup
       return data.replace(/fill="[^"]*"/g, 'fill="currentColor"');
     } else if (data.trimStart().startsWith('<')) {
-      // Inner markup only (path, g, etc.) — wrap it
-      return `<svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 ${w} ${h}">${data}</svg>`;
+      return `<svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 ${w} ${h}" fill="currentColor">${data}</svg>`;
     } else {
-      // FA-style path data string
       return `<svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 ${w} ${h}">` +
         `<path d="${data}" fill="currentColor"/></svg>`;
     }
@@ -1445,23 +1437,23 @@
     arrowDownLong: toSvg(ArrowDownLongSvg, ArrowDownLongW, ArrowDownLongH)
   };
   const linkifyIcons = {
-    peertube: toLinkifySvg(body$5, width$5, height$5),
-    streamable: toLinkifySvg(body$4, width$4, height$4),
-    bitchute: toLinkifySvg(body$3, width$3, height$3),
-    clyp: toLinkifySvg(body$2, width$2, height$2),
-    pastebin: toLinkifySvg(body$1, width$1, height$1),
-    twitchtv: toLinkifySvg(body, width, height),
-    vocaroo: toLinkifySvg(MicrophoneSvg, MicrophoneW, MicrophoneH),
-    vidlii: toLinkifySvg(PlaySvg, PlayW, PlayH),
-    image: toLinkifySvg(ImageSvg, ImageW, ImageH),
-    video: toLinkifySvg(FileVideoSvg, FileVideoW, FileVideoH),
-    audio: toLinkifySvg(FileAudioSvg, FileAudioW, FileAudioH),
-    youtube: toLinkifySvg(YoutubeSvg, YoutubeW, YoutubeH),
-    twitter: toLinkifySvg(XTwitterSvg, XTwitterW, XTwitterH),
-    soundcloud: toLinkifySvg(SoundcloudSvg, SoundcloudW, SoundcloudH),
-    dailymotion: toLinkifySvg(DailymotionSvg, DailymotionW, DailymotionH),
-    gist: toLinkifySvg(GithubSvg, GithubW, GithubH),
-    vimeo: toLinkifySvg(VimeoSvg, VimeoW, VimeoH),
+    peertube: toSvg(body$5, width$5, height$5),
+    streamable: toSvg(body$4, width$4, height$4),
+    bitchute: toSvg(body$3, width$3, height$3),
+    clyp: toSvg(body$2, width$2, height$2),
+    pastebin: toSvg(body$1, width$1, height$1),
+    twitchtv: toSvg(body, width, height),
+    vocaroo: toSvg(MicrophoneSvg, MicrophoneW, MicrophoneH),
+    vidlii: toSvg(PlaySvg, PlayW, PlayH),
+    image: toSvg(ImageSvg, ImageW, ImageH),
+    video: toSvg(FileVideoSvg, FileVideoW, FileVideoH),
+    audio: toSvg(FileAudioSvg, FileAudioW, FileAudioH),
+    youtube: toSvg(YoutubeSvg, YoutubeW, YoutubeH),
+    twitter: toSvg(XTwitterSvg, XTwitterW, XTwitterH),
+    soundcloud: toSvg(SoundcloudSvg, SoundcloudW, SoundcloudH),
+    dailymotion: toSvg(DailymotionSvg, DailymotionW, DailymotionH),
+    gist: toSvg(GithubSvg, GithubW, GithubH),
+    vimeo: toSvg(VimeoSvg, VimeoW, VimeoH),
   };
   var Icon = {
     /** Sets an icon in an HTML element */
@@ -1816,9 +1808,9 @@
     data: null,
     init() {
       this.selectArchives();
-      if (Conf['archiveAutoUpdate']) {
+      if (Conf.archiveAutoUpdate) {
         const now = Date.now();
-        if (now - (2 * DAY) >= Conf['lastarchivecheck'] || Conf['lastarchivecheck'] > now)
+        if (now - (2 * DAY) >= Conf.lastarchivecheck || Conf.lastarchivecheck > now)
           this.update();
       }
     },
@@ -1830,7 +1822,7 @@
         file: new Map(),
       };
       const archives = dict();
-      for (const data of Conf['archives']) {
+      for (const data of Conf.archives) {
         for (var key of ['boards', 'files']) {
           if (!(data[key] instanceof Array)) {
             data[key] = [];
@@ -1854,8 +1846,8 @@
           }
         }
       }
-      for (const boardID in Conf['selectedArchives']) {
-        var record = Conf['selectedArchives'][boardID];
+      for (const boardID in Conf.selectedArchives) {
+        var record = Conf.selectedArchives[boardID];
         for (const [type, id] of Object.entries(record)) {
           var archive;
           if ((archive = archives[JSON.stringify(id)]) && $.hasOwn(o, type)) {
@@ -1873,7 +1865,7 @@
       const urls = [];
       const responses = [];
       let nloaded = 0;
-      for (url of Conf['archiveLists'].split('\n')) {
+      for (url of Conf.archiveLists.split('\n')) {
         if (url[0] !== '#') {
           url = url.trim();
           if (url) {
@@ -2030,7 +2022,7 @@
     },
     report(boardID) {
       const urls = [];
-      for (var archive of Conf['archives']) {
+      for (var archive of Conf.archives) {
         var { software, https, reports, boards, name, domain } = archive;
         if ((software === 'foolfuuka') && https && reports && boards instanceof Array && boards.includes(boardID)) {
           urls.push([name, `https://${domain}/_/api/chan/offsite_report/`]);
@@ -2065,11 +2057,11 @@
               return;
           }
           const now = Date.now();
-          if (now - (2 * HOUR) >= ((middle = Conf['boardConfig'].lastChecked || 0)) || middle > now) {
+          if (now - (2 * HOUR) >= ((middle = Conf.boardConfig.lastChecked || 0)) || middle > now) {
               return $.ajax(`${location.protocol}//a.4cdn.org/boards.json`, { onloadend: this.load });
           }
           else {
-              const { boards } = Conf['boardConfig'];
+              const { boards } = Conf.boardConfig;
               return this.set(boards);
           }
       },
@@ -2083,7 +2075,7 @@
               $.set('boardConfig', { boards, lastChecked: Date.now() });
           }
           else {
-              ({ boards } = Conf['boardConfig']);
+              ({ boards } = Conf.boardConfig);
               const err = (() => {
                   switch (this.status) {
                       case 0: return 'Connection Error';
@@ -2116,7 +2108,7 @@
       sfwBoards(sfw) {
           return (() => {
               const result = [];
-              const object = this.boards || Conf['boardConfig'].boards;
+              const object = this.boards || Conf.boardConfig.boards;
               for (var board in object) {
                   var data = object[board];
                   if (!!data.ws_board === sfw) {
@@ -2127,7 +2119,7 @@
           })();
       },
       isSFW(board) {
-          return !!(this.boards || Conf['boardConfig'].boards)[board]?.ws_board;
+          return !!(this.boards || Conf.boardConfig.boards)[board]?.ws_board;
       },
       domain(board) {
           // return `boards.${BoardConfig.isSFW(board) ? '4channel' : '4chan'}.org`;
@@ -2135,18 +2127,18 @@
       },
       isArchived(board) {
           // assume archive exists if no data available to prevent cleaning of archived threads
-          const data = (this.boards || Conf['boardConfig'].boards)[board];
+          const data = (this.boards || Conf.boardConfig.boards)[board];
           return !data || data.is_archived;
       },
       noAudio(boardID) {
           if (g.SITE.software !== 'yotsuba') {
               return false;
           }
-          const boards = this.boards || Conf['boardConfig'].boards;
+          const boards = this.boards || Conf.boardConfig.boards;
           return boards && boards[boardID] && !boards[boardID].webm_audio;
       },
       title(boardID) {
-          return (this.boards || Conf['boardConfig'].boards)?.[boardID]?.title || '';
+          return (this.boards || Conf.boardConfig.boards)?.[boardID]?.title || '';
       }
   };
 
@@ -4379,7 +4371,7 @@ current-archive-text:"Archive"]
 
   var ImageHost = {
       init() {
-          if ((!(this.useFaster = /\S/.test(Conf['fourchanImageHost']))) || (g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW)) {
+          if ((!(this.useFaster = /\S/.test(Conf.fourchanImageHost))) || (g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW)) {
               return;
           }
           return Callbacks.Post.push({
@@ -4389,7 +4381,7 @@ current-archive-text:"Archive"]
       },
       suggestions: ['i.4cdn.org', 'is2.4chan.org'],
       host() {
-          return Conf['fourchanImageHost'].trim() || 'i.4cdn.org';
+          return Conf.fourchanImageHost.trim() || 'i.4cdn.org';
       },
       flashHost() {
           return 'i.4cdn.org';
@@ -7221,7 +7213,12 @@ svg.icon {
 
 /* linkify */
 .linkify {
-  white-space: nowrap;
+  display: inline-flex;
+  overflow-wrap: break-word;
+}
+.linkify-icon {
+  display: inline-block;
+  flex-shrink: 0;
 }
 .linkify.youtube .linkify-icon svg {
   color: red;
@@ -7229,25 +7226,19 @@ svg.icon {
 .linkify.twitter .linkify-icon svg {
   background-color: black;
   color: white;
+  height: 14px;
+  width: 14px;
 }
 .linkify.pastebin .linkify-icon svg {
-  height: 24px;
-  width: 24px;
+  height: 18px;
+  width: 18px;
+  fill: blue;
 }
 .linkify.bitchute .linkify-icon svg {
   color: red;
 }
-.linkify.clyp .linkify-icon svg {
-  color: #3dbeb3;
-}
-.linkify.peertube .linkify-icon svg {
-  color: #f1680d;
-}
 .linkify.twitchtv .linkify-icon svg {
   color: #9146ff;
-}
-.linkify.streamable .linkify-icon svg {
-  color: #0f90fa;
 }
 .linkify.gist .linkify-icon svg {
   color: white;
@@ -7255,6 +7246,9 @@ svg.icon {
 }
 .linkify.soundcloud .linkify-icon svg {
   color: orange;
+}
+.linkify.vocaroo .linkify-icon svg {
+  color: #d5f97e;
 }`;
 
   var fxTwitterCss = `:root {
@@ -7541,7 +7535,7 @@ svg.icon {
           return this.addStyle();
       },
       addStyle() {
-          return this.style = $.addStyle(CSS.sub(Conf['usercss']), 'custom-css', '#fourchanx-css');
+          return this.style = $.addStyle(CSS.sub(Conf.usercss), 'custom-css', '#fourchanx-css');
       },
       rmStyle() {
           if (this.style) {
@@ -7553,7 +7547,7 @@ svg.icon {
           if (!this.style) {
               return this.addStyle();
           }
-          return this.style.textContent = CSS.sub(Conf['usercss']);
+          return this.style.textContent = CSS.sub(Conf.usercss);
       }
   };
 
@@ -8030,7 +8024,7 @@ svg.icon {
   var Volume = {
       init() {
           if (!['index', 'thread'].includes(g.VIEW) ||
-              (!Conf['Image Expansion'] && !Conf['Image Hover'] && !Conf['Image Hover in Catalog'] && !Conf['Gallery'])) {
+              (!Conf['Image Expansion'] && !Conf['Image Hover'] && !Conf['Image Hover in Catalog'] && !Conf.Gallery)) {
               return;
           }
           $.sync('Allow Sound', function (x) {
@@ -8515,7 +8509,7 @@ svg.icon {
                   Metro_unreadNSFWY,
               ]
           };
-          items = $.getOwn(items, Conf['favicon']);
+          items = $.getOwn(items, Conf.favicon);
           const f = Favicon;
           const t = 'data:image/png;base64,';
           let i = 0;
@@ -8543,7 +8537,7 @@ svg.icon {
 
   var Menu = {
       init() {
-          if (!['index', 'thread'].includes(g.VIEW) || !Conf['Menu']) {
+          if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu) {
               return;
           }
           this.button = $.el('a', {
@@ -8671,7 +8665,7 @@ svg.icon {
       let origToggle;
       // const captchaVersion = $('#g-recaptcha, #captcha-forced-noscript') ? 'v2' : 't';
       // QR.captcha = Captcha[captchaVersion];
-      QR.captcha = Captcha['t'];
+      QR.captcha = Captcha.t;
       QR.postingIsEnabled = true;
       const { config } = g.BOARD;
       const prop = (key, def) => +(config[key] ?? def);
@@ -8818,9 +8812,9 @@ svg.icon {
     },
     toggleSJIS(e) {
       e.preventDefault();
-      Conf['sjisPreview'] = !Conf['sjisPreview'];
-      $.set('sjisPreview', Conf['sjisPreview']);
-      return QR.nodes.el.classList.toggle('sjis-preview', Conf['sjisPreview']);
+      Conf.sjisPreview = !Conf.sjisPreview;
+      $.set('sjisPreview', Conf.sjisPreview);
+      return QR.nodes.el.classList.toggle('sjis-preview', Conf.sjisPreview);
     },
     texPreviewShow() {
       if ($.hasClass(QR.nodes.el, 'tex-preview')) {
@@ -8843,7 +8837,7 @@ svg.icon {
       return QR.nodes.com.focus();
     },
     setCustomCooldown(enabled) {
-      Conf['customCooldownEnabled'] = enabled;
+      Conf.customCooldownEnabled = enabled;
       QR.cooldown.customCooldown = enabled;
       return QR.nodes.customCooldown.classList.toggle('disabled', !enabled);
     },
@@ -9127,7 +9121,7 @@ svg.icon {
       if (file) {
         const { type } = file;
         const blob = new Blob([file], { type });
-        blob.name = `${Conf['pastedname']}.${$.getOwn(QR.extensionFromType, type) || 'jpg'}`;
+        blob.name = `${Conf.pastedname}.${$.getOwn(QR.extensionFromType, type) || 'jpg'}`;
         QR.open();
         QR.handleFiles([blob]);
       }
@@ -9262,11 +9256,11 @@ svg.icon {
       classList.toggle('has-spoiler', QR.spoiler);
       classList.toggle('has-sjis', !!config.sjis_tags);
       classList.toggle('has-math', !!config.math_tags);
-      classList.toggle('sjis-preview', !!config.sjis_tags && Conf['sjisPreview']);
+      classList.toggle('sjis-preview', !!config.sjis_tags && Conf.sjisPreview);
       classList.toggle('show-new-thread-option', Conf['Show New Thread Option in Threads']);
-      if (parseInt(Conf['customCooldown'], 10) > 0) {
+      if (parseInt(Conf.customCooldown, 10) > 0) {
         $.addClass(QR.nodes.fileSubmit, 'custom-cooldown');
-        $.get('customCooldownEnabled', Conf['customCooldownEnabled'], function ({ customCooldownEnabled }) {
+        $.get('customCooldownEnabled', Conf.customCooldownEnabled, function ({ customCooldownEnabled }) {
           QR.setCustomCooldown(customCooldownEnabled);
           return $.sync('customCooldownEnabled', QR.setCustomCooldown);
         });
@@ -9753,7 +9747,7 @@ svg.icon {
         if (!Conf['Quick Reply']) {
           return;
         }
-        this.data = Conf['cooldowns'];
+        this.data = Conf.cooldowns;
         this.changes = dict();
         $.sync('cooldowns', this.sync);
       },
@@ -9774,7 +9768,7 @@ svg.icon {
       },
       start() {
         const { data } = QR.cooldown;
-        if (!Conf['Cooldown'] ||
+        if (!Conf.Cooldown ||
           !QR.cooldown.isSetup ||
           !!QR.cooldown.isCounting ||
           ((Object.keys(data[g.BOARD.ID] || {}).length + Object.keys(data.global || {}).length) <= 0)) {
@@ -9788,7 +9782,7 @@ svg.icon {
         QR.cooldown.start();
       },
       add(threadID, postID) {
-        if (!Conf['Cooldown']) {
+        if (!Conf.Cooldown) {
           return;
         }
         const start = Date.now();
@@ -9801,7 +9795,7 @@ svg.icon {
         QR.cooldown.start();
       },
       addDelay(post, delay) {
-        if (!Conf['Cooldown']) {
+        if (!Conf.Cooldown) {
           return;
         }
         const cooldown = QR.cooldown.categorize(post);
@@ -9811,7 +9805,7 @@ svg.icon {
         QR.cooldown.start();
       },
       addMute(delay) {
-        if (!Conf['Cooldown']) {
+        if (!Conf.Cooldown) {
           return;
         }
         QR.cooldown.set(g.BOARD.ID, Date.now(), { type: 'mute', delay });
@@ -9833,7 +9827,7 @@ svg.icon {
         QR.cooldown.save();
       },
       secondsDeletion(post) {
-        if (!QR.cooldown.data || !Conf['Cooldown']) {
+        if (!QR.cooldown.data || !Conf.Cooldown) {
           return 0;
         }
         const cooldowns = QR.cooldown.data[post.board.ID] || dict();
@@ -9902,7 +9896,7 @@ svg.icon {
         const now = Date.now();
         const { type, threadID } = QR.cooldown.categorize(QR.posts[0]);
         let seconds = 0;
-        if (Conf['Cooldown']) {
+        if (Conf.Cooldown) {
           for (var scope of [g.BOARD.ID, 'global']) {
             var cooldowns = (QR.cooldown.data[scope] || (QR.cooldown.data[scope] = dict()));
             for (var start in cooldowns) {
@@ -9931,7 +9925,7 @@ svg.icon {
                 :
                   QR.cooldown.delays[scope === 'global' ? 'thread_global' : 'thread'];
               if (QR.cooldown.customCooldown) {
-                maxDelay = Math.max(maxDelay, parseInt(Conf['customCooldown'], 10));
+                maxDelay = Math.max(maxDelay, parseInt(Conf.customCooldown, 10));
               }
               if (maxDelay <= elapsed) {
                 QR.cooldown.set(scope, start, null);
@@ -9949,7 +9943,7 @@ svg.icon {
                 seconds = Math.max(seconds, QR.cooldown.delays[type + suffix] - elapsed);
                 // If additional cooldown is enabled, add the configured seconds to the count.
                 if (QR.cooldown.customCooldown) {
-                  seconds = Math.max(seconds, parseInt(Conf['customCooldown'], 10) - elapsed);
+                  seconds = Math.max(seconds, parseInt(Conf.customCooldown, 10) - elapsed);
                 }
               }
             }
@@ -9982,7 +9976,7 @@ svg.icon {
     oekaki: {
       menu: {
         init() {
-          if (!['index', 'thread'].includes(g.VIEW) || !Conf['Menu'] || !Conf['Edit Link'] || !Conf['Quick Reply']) {
+          if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf['Edit Link'] || !Conf['Quick Reply']) {
             return;
           }
           const a = $.el('a', {
@@ -10083,7 +10077,7 @@ svg.icon {
         sub: []
       },
       init() {
-        if (!Conf['Quick Reply'] && (!Conf['Menu'] || !Conf['Delete Link'])) {
+        if (!Conf['Quick Reply'] && (!Conf.Menu || !Conf['Delete Link'])) {
           return;
         }
         for (var item of Conf['QR.personas'].split('\n')) {
@@ -10895,7 +10889,7 @@ svg.icon {
     /** poster Ids to filter */
     posterIdDb: undefined,
     init() {
-      if (!['index', 'thread'].includes(g.VIEW) || (!Conf['Reply Hiding Buttons'] && !(Conf['Menu'] && Conf['Reply Hiding Link']))) {
+      if (!['index', 'thread'].includes(g.VIEW) || (!Conf['Reply Hiding Buttons'] && !(Conf.Menu && Conf['Reply Hiding Link']))) {
         return;
       }
       if (Conf['Reply Hiding Buttons']) {
@@ -10946,7 +10940,7 @@ svg.icon {
     menu: {
       post: undefined,
       async init() {
-        if (!['index', 'thread'].includes(g.VIEW) || !Conf['Menu'] || !Conf['Reply Hiding Link'])
+        if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf['Reply Hiding Link'])
           return;
         await new Promise(res => BoardConfig.ready(res));
         // Hide
@@ -10959,7 +10953,7 @@ svg.icon {
           { el: applyHide },
           { el: UI.checkbox('thisPost', 'This post', true) },
           { el: UI.checkbox('replies', 'Hide replies', Conf['Recursive Hiding']) },
-          { el: UI.checkbox('makeStub', 'Make stub', Conf['Stubs']) },
+          { el: UI.checkbox('makeStub', 'Make stub', Conf.Stubs) },
         ];
         if (g.BOARD.config.user_ids) {
           hideOptions.push({ el: UI.checkbox('byId', 'By poster id', false) });
@@ -11153,7 +11147,7 @@ svg.icon {
       post.isHidden ? PostHiding.show(post) : PostHiding.hide(post, undefined, undefined, 'Hidden manually');
       PostHiding.saveHiddenState(post, post.isHidden);
     },
-    hide(post, makeStub = Conf['Stubs'], hideRecursively = Conf['Recursive Hiding'], reason) {
+    hide(post, makeStub = Conf.Stubs, hideRecursively = Conf['Recursive Hiding'], reason) {
       if (post.isHidden)
         return;
       post.isHidden = true;
@@ -11181,7 +11175,7 @@ svg.icon {
       $.add(post.nodes.stub, a);
       if (!Conf['Filter Reason'] && reasons)
         post.nodes.stub.title = reasons.join(' & ');
-      if (Conf['Menu']) {
+      if (Conf.Menu) {
         $.add(post.nodes.stub, Menu.makeButton(post));
       }
       $.prepend(post.nodes.root, post.nodes.stub);
@@ -12560,7 +12554,7 @@ svg.icon {
           ThreadWatcher.initLastModified();
           ThreadWatcher.fetchAuto();
           $.on(window, 'visibilitychange focus', () => $.queueTask(ThreadWatcher.fetchAuto));
-          if (Conf['Menu'] && indexEnabled) {
+          if (Conf.Menu && indexEnabled) {
               Menu.menu.addEntry({
                   el: $.el('a', {
                       href: 'javascript:;',
@@ -12827,7 +12821,7 @@ svg.icon {
           return ThreadWatcher.clearRequests();
       },
       initLastModified() {
-          const lm = ($.lastModified['ThreadWatcher'] || ($.lastModified['ThreadWatcher'] = dict()));
+          const lm = ($.lastModified.ThreadWatcher || ($.lastModified.ThreadWatcher = dict()));
           for (var siteID in ThreadWatcher.dbLM.data) {
               var boards = ThreadWatcher.dbLM.data[siteID];
               for (var boardID in boards.boards) {
@@ -14563,7 +14557,7 @@ svg.icon {
       })(),
       menu: {
           init() {
-              if ((g.VIEW !== 'index') || !Conf['Menu'] || !Conf['Thread Hiding Link'] || !Index.enabledOn(g.BOARD)) {
+              if ((g.VIEW !== 'index') || !Conf.Menu || !Conf['Thread Hiding Link'] || !Index.enabledOn(g.BOARD)) {
                   return;
               }
               return Menu.menu.addEntry({
@@ -15596,7 +15590,7 @@ svg.icon {
 
   var ThreadHiding = {
       init() {
-          if (!['index', 'catalog'].includes(g.VIEW) || (!Conf['Thread Hiding Buttons'] && !(Conf['Menu'] && Conf['Thread Hiding Link']) && !Conf['JSON Index'])) {
+          if (!['index', 'catalog'].includes(g.VIEW) || (!Conf['Thread Hiding Buttons'] && !(Conf.Menu && Conf['Thread Hiding Link']) && !Conf['JSON Index'])) {
               return;
           }
           this.db = new DataBoard('hiddenThreads');
@@ -15646,7 +15640,7 @@ svg.icon {
                   ThreadHiding.db.set({
                       boardID: g.BOARD.ID,
                       threadID,
-                      val: { makeStub: Conf['Stubs'] }
+                      val: { makeStub: Conf.Stubs }
                   });
               }
           }
@@ -15685,7 +15679,7 @@ svg.icon {
       },
       menu: {
           init() {
-              if ((g.VIEW !== 'index') || !Conf['Menu'] || !Conf['Thread Hiding Link']) {
+              if ((g.VIEW !== 'index') || !Conf.Menu || !Conf['Thread Hiding Link']) {
                   return;
               }
               let div = $.el('div', {
@@ -15809,7 +15803,7 @@ svg.icon {
               a.appendChild(reasonsSpan);
           }
           thread.stub = $.el('div', { className: 'stub' });
-          if (Conf['Menu']) {
+          if (Conf.Menu) {
               $.add(thread.stub, [a, Menu.makeButton(thread.OP)]);
           }
           else {
@@ -15851,7 +15845,7 @@ svg.icon {
           }
           return ThreadHiding.saveHiddenState(thread);
       },
-      hide(thread, makeStub = Conf['Stubs'], reason) {
+      hide(thread, makeStub = Conf.Stubs, reason) {
           if (thread.isHidden) {
               return;
           }
@@ -15909,7 +15903,7 @@ svg.icon {
           this.nodes = {};
           this.enabled = {
               fappe: false,
-              werk: Conf['werk']
+              werk: Conf.werk
           };
           for (var type of ["Fappe", "Werk"]) {
               if (Conf[`${type} Tyme`]) {
@@ -16002,12 +15996,12 @@ svg.icon {
   var Sauce = {
       init() {
           let link;
-          if (!['index', 'thread'].includes(g.VIEW) || !Conf['Sauce']) {
+          if (!['index', 'thread'].includes(g.VIEW) || !Conf.Sauce) {
               return;
           }
           $.addClass(doc, 'show-sauce');
           const links = [];
-          for (link of Conf['sauces'].split('\n')) {
+          for (link of Conf.sauces.split('\n')) {
               var linkData;
               if ((link[0] !== '#') && (linkData = this.parseLink(link))) {
                   links.push(linkData);
@@ -16035,27 +16029,27 @@ svg.icon {
           for (let i = 0; i < iterable.length; i++) {
               var part = iterable[i];
               if (i === 0) {
-                  parts['url'] = part;
+                  parts.url = part;
               }
               else {
                   var m = part.match(/^(\w*):?(.*)$/);
                   parts[m[1]] = m[2];
               }
           }
-          if (!parts['text']) {
-              parts['text'] = parts['url'].match(/(\w+)\.\w+\//)?.[1] || '?';
+          if (!parts.text) {
+              parts.text = parts.url.match(/(\w+)\.\w+\//)?.[1] || '?';
           }
           if ('boards' in parts) {
-              parts['boards'] = Filter.parseBoards(parts['boards']);
+              parts.boards = Filter.parseBoards(parts.boards);
           }
           if ('regexp' in parts) {
               try {
                   let regexp;
-                  if (regexp = parts['regexp'].match(/^\/(.*)\/(\w*)$/)) {
-                      parts['regexp'] = RegExp(regexp[1], regexp[2]);
+                  if (regexp = parts.regexp.match(/^\/(.*)\/(\w*)$/)) {
+                      parts.regexp = RegExp(regexp[1], regexp[2]);
                   }
                   else {
-                      parts['regexp'] = RegExp(parts['regexp']);
+                      parts.regexp = RegExp(parts.regexp);
                   }
               }
               catch (err) {
@@ -16076,13 +16070,13 @@ svg.icon {
           const ext = file.url.match(/[^.]*$/)[0];
           const parts = dict();
           $.extend(parts, link);
-          if (!!parts['boards'] && !parts['boards'][`${post.siteID}/${post.boardID}`] && !parts['boards'][`${post.siteID}/*`]) {
+          if (!!parts.boards && !parts.boards[`${post.siteID}/${post.boardID}`] && !parts.boards[`${post.siteID}/*`]) {
               return null;
           }
-          if (!!parts['types'] && (needle = ext, !parts['types'].split(',').includes(needle))) {
+          if (!!parts.types && (needle = ext, !parts.types.split(',').includes(needle))) {
               return null;
           }
-          if (!!parts['regexp'] && (!(matches = file.name.match(parts['regexp'])))) {
+          if (!!parts.regexp && (!(matches = file.name.match(parts.regexp)))) {
               return null;
           }
           const missing = [];
@@ -16103,7 +16097,7 @@ svg.icon {
                       }
                   }
                   if ((key === 'url') && !['%', 'semi'].includes(parameter)) {
-                      if (/^javascript:/i.test(parts['url'])) {
+                      if (/^javascript:/i.test(parts.url)) {
                           type = JSON.stringify(type);
                       }
                       type = encodeURIComponent(type);
@@ -16120,9 +16114,9 @@ svg.icon {
               return null;
           }
           a = Sauce.link.cloneNode(false);
-          a.href = parts['url'];
-          a.textContent = parts['text'];
-          if (/^javascript:/i.test(parts['url'])) {
+          a.href = parts.url;
+          a.textContent = parts.text;
+          if (/^javascript:/i.test(parts.url)) {
               a.removeAttribute('target');
           }
           return a;
@@ -16188,7 +16182,7 @@ svg.icon {
 
   var Gallery = {
       init() {
-          if (!(this.enabled = Conf['Gallery'] && ['index', 'thread'].includes(g.VIEW))) {
+          if (!(this.enabled = Conf.Gallery && ['index', 'thread'].includes(g.VIEW))) {
               return;
           }
           this.delay = Conf['Slide Delay'];
@@ -16286,7 +16280,7 @@ svg.icon {
               nodes.menu.addEntry(entry);
           }
           $.on(d, 'keydown', cb.keybinds);
-          if (Conf['Keybinds']) {
+          if (Conf.Keybinds) {
               $.off(d, 'keydown', Keybinds.keydown);
           }
           $.on(window, 'resize', Gallery.cb.setHeight);
@@ -16388,7 +16382,7 @@ svg.icon {
           if (file.nodeName === 'VIDEO') {
               file.loop = true;
               Volume.setup(file);
-              if (Conf['Autoplay']) {
+              if (Conf.Autoplay) {
                   file.play();
               }
               if (Conf['Show Controls'])
@@ -16407,7 +16401,7 @@ svg.icon {
           }
           // Set sauce links
           $.rmAll(nodes.sauce);
-          if (Conf['Sauce'] && Sauce.links && (post = g.posts.get(file.dataset.post))) {
+          if (Conf.Sauce && Sauce.links && (post = g.posts.get(file.dataset.post))) {
               const sauces = [];
               for (var link of Sauce.links) {
                   var node;
@@ -16496,7 +16490,7 @@ svg.icon {
               }
               const cb = (() => {
                   switch (key) {
-                      case Conf['Close']:
+                      case Conf.Close:
                       case Conf['Open Gallery']:
                           return Gallery.cb.close;
                       case Conf['Next Gallery Image']:
@@ -16505,9 +16499,9 @@ svg.icon {
                           return Gallery.cb.advance;
                       case Conf['Previous Gallery Image']:
                           return Gallery.cb.prev;
-                      case Conf['Pause']:
+                      case Conf.Pause:
                           return Gallery.cb.pause;
-                      case Conf['Slideshow']:
+                      case Conf.Slideshow:
                           return Gallery.cb.toggleSlideshow;
                       case Conf['Rotate image anticlockwise']:
                           return Gallery.cb.rotateLeft;
@@ -16550,7 +16544,7 @@ svg.icon {
               e.preventDefault();
               return Gallery.cb.advance();
           },
-          advance() { if (!Conf['Autoplay'] && Gallery.nodes.current.paused) {
+          advance() { if (!Conf.Autoplay && Gallery.nodes.current.paused) {
               return Gallery.nodes.current.play();
           }
           else {
@@ -16614,7 +16608,7 @@ svg.icon {
               delete Gallery.fileIDs;
               doc.style.overflow = '';
               $.off(d, 'keydown', Gallery.cb.keybinds);
-              if (Conf['Keybinds']) {
+              if (Conf.Keybinds) {
                   $.on(d, 'keydown', Keybinds.keydown);
               }
               $.off(window, 'resize', Gallery.cb.setHeight);
@@ -16702,7 +16696,7 @@ svg.icon {
 
   var Linkify = {
       init() {
-          if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf['Linkify']) {
+          if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf.Linkify) {
               return;
           }
           if (Conf['Comment Expansion']) {
@@ -16905,7 +16899,7 @@ svg.icon {
       const { textContent } = this.nodes.date;
       this.nodes.date.textContent = textContent.match(/^\s*/)[0] + Time.format(this.info.date) + textContent.match(/\s*$/)[0];
     },
-    format(date, formatString = Conf['time']) {
+    format(date, formatString = Conf.time) {
       return formatString.replace(/%(.)/g, function (s, c) {
         if ($.hasOwn(Time.formatters, c)) {
           return Time.formatters[c].call(date);
@@ -16927,7 +16921,7 @@ svg.icon {
         let formatter = Time.formatterCache.get('a');
         if (!formatter) {
           // || undefined to fall back to browser locale, an empty string gives an error
-          formatter = Intl.DateTimeFormat(Conf['timeLocale'] || undefined, { weekday: 'short' });
+          formatter = Intl.DateTimeFormat(Conf.timeLocale || undefined, { weekday: 'short' });
           Time.formatterCache.set('a', formatter);
         }
         return formatter.format(this);
@@ -16935,7 +16929,7 @@ svg.icon {
       A() {
         let formatter = Time.formatterCache.get('A');
         if (!formatter) {
-          formatter = Intl.DateTimeFormat(Conf['timeLocale'] || undefined, { weekday: 'long' });
+          formatter = Intl.DateTimeFormat(Conf.timeLocale || undefined, { weekday: 'long' });
           Time.formatterCache.set('A', formatter);
         }
         return formatter.format(this);
@@ -16943,7 +16937,7 @@ svg.icon {
       b() {
         let formatter = Time.formatterCache.get('b');
         if (!formatter) {
-          formatter = Intl.DateTimeFormat(Conf['timeLocale'] || undefined, { month: 'short' });
+          formatter = Intl.DateTimeFormat(Conf.timeLocale || undefined, { month: 'short' });
           Time.formatterCache.set('b', formatter);
         }
         return formatter.format(this);
@@ -16951,7 +16945,7 @@ svg.icon {
       B() {
         let formatter = Time.formatterCache.get('B');
         if (!formatter) {
-          formatter = Intl.DateTimeFormat(Conf['timeLocale'] || undefined, { month: 'long' });
+          formatter = Intl.DateTimeFormat(Conf.timeLocale || undefined, { month: 'long' });
           Time.formatterCache.set('B', formatter);
         }
         return formatter.format(this);
@@ -16968,7 +16962,7 @@ svg.icon {
       p() {
         let formatter = Time.formatterCache.get('p');
         if (!formatter) {
-          formatter = Intl.DateTimeFormat(Conf['timeLocale'] || undefined, { hour: 'numeric', hour12: true });
+          formatter = Intl.DateTimeFormat(Conf.timeLocale || undefined, { hour: 'numeric', hour12: true });
           Time.formatterCache.set('p', formatter);
         }
         const parts = formatter.formatToParts(this);
@@ -17171,14 +17165,14 @@ svg.icon {
 
   var Embedding = {
     init() {
-      if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf['Linkify'] || (!Conf['Embedding'] && !Conf['Link Title'] && !Conf['Cover Preview'])) {
+      if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf.Linkify || (!Conf.Embedding && !Conf['Link Title'] && !Conf['Cover Preview'])) {
         return;
       }
       this.types = dict();
       for (var type of this.ordered_types) {
         this.types[type.key] = type;
       }
-      if (Conf['Embedding'] && (g.VIEW !== 'archive')) {
+      if (Conf.Embedding && (g.VIEW !== 'archive')) {
         this.dialog = UI.dialog('embedding', { innerHTML: EmbeddingPage });
         this.media = $('#media-embed', this.dialog);
         $.one(d, '4chanXInitFinished', this.ready);
@@ -17205,7 +17199,7 @@ svg.icon {
       if (g.VIEW === 'archive') {
         return;
       }
-      if (Conf['Embedding']) {
+      if (Conf.Embedding) {
         i = 0;
         items = (post.nodes.embedlinks = $$('.embedder', post.nodes.comment));
         while ((el = items[i++])) {
@@ -17229,7 +17223,7 @@ svg.icon {
     },
     process(link, post) {
       let data;
-      if (!Conf['Embedding'] && !Conf['Link Title'] && !Conf['Cover Preview']) {
+      if (!Conf.Embedding && !Conf['Link Title'] && !Conf['Cover Preview']) {
         return;
       }
       if ($.x('ancestor::pre', link)) {
@@ -17237,7 +17231,7 @@ svg.icon {
       }
       if (data = Embedding.services(link)) {
         data.post = post;
-        if (Conf['Embedding'] && (g.VIEW !== 'archive')) {
+        if (Conf.Embedding && (g.VIEW !== 'archive')) {
           Embedding.embed(data);
         }
         if (Embedding.shouldFetchTitles())
@@ -17917,7 +17911,7 @@ svg.icon {
           return ThreadUpdater.fileIDs.push(post.ID);
         }
       });
-      ThreadUpdater.cb.interval.call($.el('input', { value: Conf['Interval'] }));
+      ThreadUpdater.cb.interval.call($.el('input', { value: Conf.Interval }));
       $.on(d, 'QRPostSuccessful', ThreadUpdater.cb.checkpost);
       $.on(d, 'visibilitychange', ThreadUpdater.cb.visibility);
       return ThreadUpdater.setInterval();
@@ -18195,10 +18189,10 @@ svg.icon {
         if (d.hidden || !d.hasFocus()) {
           if (Conf['Beep Quoting You'] && (Unread.postsQuotingYou?.size > unreadQYCount)) {
             ThreadUpdater.playBeep();
-            if (Conf['Beep']) {
+            if (Conf.Beep) {
               ThreadUpdater.playBeep();
             }
-          } else if (Conf['Beep'] && (Unread.posts?.size > 0) && (unreadCount === 0)) {
+          } else if (Conf.Beep && (Unread.posts?.size > 0) && (unreadCount === 0)) {
             ThreadUpdater.playBeep();
           }
         }
@@ -18360,7 +18354,7 @@ svg.icon {
 
   var Keybinds = {
       init() {
-          if (!Conf['Keybinds']) {
+          if (!Conf.Keybinds) {
               return;
           }
           for (var hotkey in Config.hotkeys) {
@@ -18416,7 +18410,7 @@ svg.icon {
               Settings.open();
               hasAction = true;
           }
-          if (key === Conf['Close']) {
+          if (key === Conf.Close) {
               if (Settings.dialog) {
                   Settings.close();
               }
@@ -18483,7 +18477,7 @@ svg.icon {
               hasAction = true;
           }
           // Index/Thread related
-          if (key === Conf['Update']) {
+          if (key === Conf.Update) {
               switch (g.VIEW) {
                   case 'thread':
                       if (ThreadUpdater.enabled)
@@ -18496,7 +18490,7 @@ svg.icon {
                       hasAction = true;
               }
           }
-          if (key === Conf['Watch'] && ThreadWatcher.enabled && thread) {
+          if (key === Conf.Watch && ThreadWatcher.enabled && thread) {
               ThreadWatcher.toggle(thread);
               hasAction = true;
           }
@@ -18532,11 +18526,11 @@ svg.icon {
               Gallery.cb.toggle();
               hasAction = true;
           }
-          if (key === Conf['fappeTyme'] && FappeTyme.nodes?.fappe) {
+          if (key === Conf.fappeTyme && FappeTyme.nodes?.fappe) {
               FappeTyme.toggle('fappe');
               hasAction = true;
           }
-          if (key === Conf['werkTyme'] && FappeTyme.nodes?.werk) {
+          if (key === Conf.werkTyme && FappeTyme.nodes?.werk) {
               FappeTyme.toggle('werk');
               hasAction = true;
           }
@@ -18643,7 +18637,7 @@ svg.icon {
               Keybinds.hl(0, threadRoot);
               hasAction = true;
           }
-          if (key === Conf['Hide'] && thread && ThreadHiding.db) {
+          if (key === Conf.Hide && thread && ThreadHiding.db) {
               Header.scrollTo(threadRoot);
               ThreadHiding.toggle(thread);
               hasAction = true;
@@ -20168,13 +20162,13 @@ $\
       },
       urls: {
           thread({ siteID, boardID, threadID }, isArchived) {
-              return `${Conf['siteProperties'][siteID]?.root || `http://${siteID}/`}${boardID}/${isArchived ? 'archive/' : ''}res/${threadID}.html`;
+              return `${Conf.siteProperties[siteID]?.root || `http://${siteID}/`}${boardID}/${isArchived ? 'archive/' : ''}res/${threadID}.html`;
           },
           post({ postID }) { return `#${postID}`; },
-          index({ siteID, boardID }) { return `${Conf['siteProperties'][siteID]?.root || `http://${siteID}/`}${boardID}/`; },
-          catalog({ siteID, boardID }) { return `${Conf['siteProperties'][siteID]?.root || `http://${siteID}/`}${boardID}/catalog.html`; },
+          index({ siteID, boardID }) { return `${Conf.siteProperties[siteID]?.root || `http://${siteID}/`}${boardID}/`; },
+          catalog({ siteID, boardID }) { return `${Conf.siteProperties[siteID]?.root || `http://${siteID}/`}${boardID}/catalog.html`; },
           threadJSON({ siteID, boardID, threadID }, isArchived) {
-              const root = Conf['siteProperties'][siteID]?.root;
+              const root = Conf.siteProperties[siteID]?.root;
               if (root) {
                   return `${root}${boardID}/${isArchived ? 'archive/' : ''}res/${threadID}.json`;
               }
@@ -20186,7 +20180,7 @@ $\
               return SWTinyboard.urls.threadJSON(thread, true);
           },
           threadsListJSON({ siteID, boardID }) {
-              const root = Conf['siteProperties'][siteID]?.root;
+              const root = Conf.siteProperties[siteID]?.root;
               if (root) {
                   return `${root}${boardID}/threads.json`;
               }
@@ -20195,7 +20189,7 @@ $\
               }
           },
           archiveListJSON({ siteID, boardID }) {
-              const root = Conf['siteProperties'][siteID]?.root;
+              const root = Conf.siteProperties[siteID]?.root;
               if (root) {
                   return `${root}${boardID}/archive/archive.json`;
               }
@@ -20204,7 +20198,7 @@ $\
               }
           },
           catalogJSON({ siteID, boardID }) {
-              const root = Conf['siteProperties'][siteID]?.root;
+              const root = Conf.siteProperties[siteID]?.root;
               if (root) {
                   return `${root}${boardID}/catalog.json`;
               }
@@ -20213,7 +20207,7 @@ $\
               }
           },
           file({ siteID, boardID }, filename) {
-              return `${Conf['siteProperties'][siteID]?.root || `http://${siteID}/`}${boardID}/${filename}`;
+              return `${Conf.siteProperties[siteID]?.root || `http://${siteID}/`}${boardID}/${filename}`;
           },
           thumb(board, filename) {
               return SWTinyboard.urls.file(board, filename);
@@ -20445,7 +20439,7 @@ $\
       $.prepend(this.file.link.parentNode, oldInfo);
       $.add(oldInfo, [this.file.link.previousSibling, this.file.link, this.file.link.nextSibling]);
       const info = $.el('span', { className: 'file-info' });
-      FileInfo.format(Conf['fileInfo'], this, info);
+      FileInfo.format(Conf.fileInfo, this, info);
       return $.prepend(this.file.text, info);
     },
     format(formatString, post, outputNode) {
@@ -20796,7 +20790,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       }
       $.get(Conf2, function (Conf2) {
         // Don't export cached JSON data.
-        delete Conf2['boardConfig'];
+        delete Conf2.boardConfig;
         Settings.downloadExport({ version: g.VERSION, date: Date.now(), Conf: Conf2 });
       });
     },
@@ -20867,36 +20861,36 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         }
       }
       if (compareString < '00001.00014.00016.00001') {
-        if (data['archiveLists'] != null) {
-          set('archiveLists', data['archiveLists'].replace('https://mayhemydg.github.io/archives.json/archives.json', 'https://nstepien.github.io/archives.json/archives.json'));
+        if (data.archiveLists != null) {
+          set('archiveLists', data.archiveLists.replace('https://mayhemydg.github.io/archives.json/archives.json', 'https://nstepien.github.io/archives.json/archives.json'));
         }
       }
       if (compareString < '00001.00014.00016.00007') {
-        if (data['sauces'] != null) {
-          set('sauces', data['sauces'].replace(/https:\/\/www\.deviantart\.com\/gallery\/#\/d%\$1%\$2;regexp:\/\^\\w\+_by_\\w\+\[_-\]d\(\[\\da-z\]\{6\}\)\\b\|\^d\(\[\\da-z\]\{6\}\)-\[\\da-z\]\{8\}-\//g, 'javascript:void(open("https://www.deviantart.com/"+%$1.replace(/_/g,"-")+"/art/"+parseInt(%$2,36)));regexp:/^\\w+_by_(\\w+)[_-]d([\\da-z]{6})\\b/').replace(/\/\/imgops\.com\/%URL/g, '//imgops.com/start?url=%URL'));
+        if (data.sauces != null) {
+          set('sauces', data.sauces.replace(/https:\/\/www\.deviantart\.com\/gallery\/#\/d%\$1%\$2;regexp:\/\^\\w\+_by_\\w\+\[_-\]d\(\[\\da-z\]\{6\}\)\\b\|\^d\(\[\\da-z\]\{6\}\)-\[\\da-z\]\{8\}-\//g, 'javascript:void(open("https://www.deviantart.com/"+%$1.replace(/_/g,"-")+"/art/"+parseInt(%$2,36)));regexp:/^\\w+_by_(\\w+)[_-]d([\\da-z]{6})\\b/').replace(/\/\/imgops\.com\/%URL/g, '//imgops.com/start?url=%URL'));
         }
       }
       if (compareString < '00001.00014.00017.00002') {
-        if (data['jsWhitelist'] != null) {
-          set('jsWhitelist', data['jsWhitelist'] + '\n\nhttps://hcaptcha.com\nhttps://*.hcaptcha.com');
+        if (data.jsWhitelist != null) {
+          set('jsWhitelist', data.jsWhitelist + '\n\nhttps://hcaptcha.com\nhttps://*.hcaptcha.com');
         }
       }
       if (compareString < '00001.00014.00020.00004') {
-        if (data['archiveLists'] != null) {
-          set('archiveLists', data['archiveLists'].replace('https://nstepien.github.io/archives.json/archives.json', 'https://4chenz.github.io/archives.json/archives.json'));
+        if (data.archiveLists != null) {
+          set('archiveLists', data.archiveLists.replace('https://nstepien.github.io/archives.json/archives.json', 'https://4chenz.github.io/archives.json/archives.json'));
         }
       }
       if (compareString < '00001.00014.00022.00003') {
-        if (data['sauces']) {
-          set('sauces', data['sauces'].replace(/^#?\s*https:\/\/www\.google\.com\/searchbyimage\?image_url=%(IMG|T?URL)&safe=off(?=$|;)/mg, 'https://www.google.com/searchbyimage?sbisrc=4chanx&image_url=%$1&safe=off'));
-          if (compareString === '00001.00014.00022.00002' && !/\bsbisrc=/.test(data['sauces'])) {
-            set('sauces', data['sauces'].replace(/^#?\s*https:\/\/lens\.google\.com\/uploadbyurl\?url=%(IMG|T?URL)(?=$|;)/m, 'https://www.google.com/searchbyimage?sbisrc=4chanx&image_url=%$1&safe=off'));
+        if (data.sauces) {
+          set('sauces', data.sauces.replace(/^#?\s*https:\/\/www\.google\.com\/searchbyimage\?image_url=%(IMG|T?URL)&safe=off(?=$|;)/mg, 'https://www.google.com/searchbyimage?sbisrc=4chanx&image_url=%$1&safe=off'));
+          if (compareString === '00001.00014.00022.00002' && !/\bsbisrc=/.test(data.sauces)) {
+            set('sauces', data.sauces.replace(/^#?\s*https:\/\/lens\.google\.com\/uploadbyurl\?url=%(IMG|T?URL)(?=$|;)/m, 'https://www.google.com/searchbyimage?sbisrc=4chanx&image_url=%$1&safe=off'));
           }
         }
       }
       if (compareString < '00002.00003.00001.00000') {
-        if (data['boardnav']) {
-          set('boardnav', data['boardnav'].replace('[external-text:"FAQ","4chan XT"]', `[external-text:"FAQ","${meta.faq}"]`));
+        if (data.boardnav) {
+          set('boardnav', data.boardnav.replace('[external-text:"FAQ","4chan XT"]', `[external-text:"FAQ","${meta.faq}"]`));
         }
       }
       if (compareString < '00002.00003.00006.00000') {
@@ -20962,14 +20956,14 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         .join(',\u200B'); // \u200B is zero width space, to control where line breaks happen on a narrow screen
       $.extend(div, { innerHTML: FilterGuidePage });
       $('#filterTypes', div).textContent = `type:\u200B${filterTypes};`;
-      $('.warning', div).hidden = Conf['Filter'];
+      $('.warning', div).hidden = Conf.Filter;
     },
     sauce(section) {
       $.extend(section, { innerHTML: SaucePage });
-      $('.warning', section).hidden = Conf['Sauce'];
+      $('.warning', section).hidden = Conf.Sauce;
       const ta = $('textarea', section);
-      $.get('sauces', Conf['sauces'], function (item) {
-        ta.value = item['sauces'];
+      $.get('sauces', Conf.sauces, function (item) {
+        ta.value = item.sauces;
         ta.hidden = false;
       }); // XXX prevent Firefox from adding initialization to undo queue
       $.on(ta, 'change', $.cb.value);
@@ -20984,9 +20978,9 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       for (input of $$('[name]', section)) {
         inputs[input.name] = input;
       }
-      $.on(inputs['archiveLists'], 'change', function () {
+      $.on(inputs.archiveLists, 'change', function () {
         $.set('lastarchivecheck', 0);
-        Conf['lastarchivecheck'] = 0;
+        Conf.lastarchivecheck = 0;
         $.id('lastarchivecheck').textContent = 'never';
       });
       const items = dict();
@@ -21018,13 +21012,13 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       for (var textContent of ImageHost.suggestions) {
         $.add(listImageHost, $.el('option', { textContent }));
       }
-      const interval = inputs['Interval'];
+      const interval = inputs.Interval;
       const customCSS = inputs['Custom CSS'];
       const applyCSS = $('#apply-css', section);
       const timeLocale = inputs.timeLocale;
-      interval.value = Conf['Interval'];
+      interval.value = Conf.Interval;
       customCSS.checked = Conf['Custom CSS'];
-      inputs['usercss'].disabled = !Conf['Custom CSS'];
+      inputs.usercss.disabled = !Conf['Custom CSS'];
       applyCSS.disabled = !Conf['Custom CSS'];
       timeLocale.value = Conf.timeLocale;
       $.on(interval, 'change', ThreadUpdater.cb.interval);
@@ -21053,17 +21047,17 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     },
     addArchiveTable(section) {
       let boardID, o;
-      $('#lastarchivecheck', section).textContent = Conf['lastarchivecheck'] === 0 ?
+      $('#lastarchivecheck', section).textContent = Conf.lastarchivecheck === 0 ?
         'never'
         :
-          new Date(Conf['lastarchivecheck']).toLocaleString();
+          new Date(Conf.lastarchivecheck).toLocaleString();
       const boardSelect = $('#archive-board-select', section);
       const table = $('#archive-table', section);
       const tbody = $('tbody', section);
       $.rmAll(boardSelect);
       $.rmAll(tbody);
       const archBoards = dict();
-      for (var { uid, name, boards, files, software } of Conf['archives']) {
+      for (var { uid, name, boards, files, software } of Conf.archives) {
         if (!['fuuka', 'foolfuuka'].includes(software)) {
           continue;
         }
@@ -21113,8 +21107,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       }
       $.add(boardSelect, boardOptions);
       $.add(tbody, rows);
-      for (boardID in Conf['selectedArchives']) {
-        var data = Conf['selectedArchives'][boardID];
+      for (boardID in Conf.selectedArchives) {
+        var data = Conf.selectedArchives[boardID];
         for (var type in data) {
           var select;
           var id = data[type];
@@ -21155,10 +21149,10 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       return td;
     },
     saveSelectedArchive() {
-      $.get('selectedArchives', Conf['selectedArchives'], ({ selectedArchives }) => {
+      $.get('selectedArchives', Conf.selectedArchives, ({ selectedArchives }) => {
         (selectedArchives[this.dataset.boardid] || (selectedArchives[this.dataset.boardid] = dict()))[this.dataset.type] = JSON.parse(this.value);
         $.set('selectedArchives', selectedArchives);
-        Conf['selectedArchives'] = selectedArchives;
+        Conf.selectedArchives = selectedArchives;
         Redirect.selectArchives();
       });
     },
@@ -21233,7 +21227,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     keybinds(section) {
       let key;
       $.extend(section, { innerHTML: KeybindsPage });
-      $('.warning', section).hidden = Conf['Keybinds'];
+      $('.warning', section).hidden = Conf.Keybinds;
       const tbody = $('tbody', section);
       const items = dict();
       const inputs = Settings.keyBindInputs;
@@ -21287,7 +21281,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     */
     filters: new Map(),
     init() {
-      if (!['index', 'thread', 'catalog'].includes(g.VIEW) || !Conf['Filter'])
+      if (!['index', 'thread', 'catalog'].includes(g.VIEW) || !Conf.Filter)
         return;
       if ((g.VIEW === 'catalog') && !Conf['Filter in Native Catalog'])
         return;
@@ -21355,7 +21349,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
                 case 'no':
                   return false;
                 default:
-                  return Conf['Stubs'];
+                  return Conf.Stubs;
               }
             })();
             // Desktop notification
@@ -21765,7 +21759,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     },
     menu: {
       init() {
-        if (!['index', 'thread'].includes(g.VIEW) || !Conf['Menu'] || !Conf['Filter']) {
+        if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf.Filter) {
           return;
         }
         const div = $.el('div', { textContent: 'Filter' });
@@ -21835,9 +21829,9 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           '4cdn.org': { canonical: '4chan.org' },
       },
       init(cb) {
-          $.extend(Conf['siteProperties'], Site.defaultProperties);
+          $.extend(Conf.siteProperties, Site.defaultProperties);
           let hostname = Site.resolve();
-          if (hostname && $.hasOwn(SW, Conf['siteProperties'][hostname].software)) {
+          if (hostname && $.hasOwn(SW, Conf.siteProperties[hostname].software)) {
               this.set(hostname);
               cb();
           }
@@ -21847,7 +21841,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
                   if (changes = SW[software].detect?.()) {
                       changes.software = software;
                       hostname = location.hostname.replace(/^www\./, '');
-                      var properties = (Conf['siteProperties'][hostname] || (Conf['siteProperties'][hostname] = dict()));
+                      var properties = (Conf.siteProperties[hostname] || (Conf.siteProperties[hostname] = dict()));
                       var changed = 0;
                       for (var key in changes) {
                           if (properties[key] !== changes[key]) {
@@ -21856,7 +21850,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
                           }
                       }
                       if (changed) {
-                          $.set('siteProperties', Conf['siteProperties']);
+                          $.set('siteProperties', Conf.siteProperties);
                       }
                       if (!g.SITE) {
                           this.set(hostname);
@@ -21869,12 +21863,12 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       },
       resolve(url = location) {
           let { hostname } = url;
-          while (hostname && !$.hasOwn(Conf['siteProperties'], hostname)) {
+          while (hostname && !$.hasOwn(Conf.siteProperties, hostname)) {
               hostname = hostname.replace(/^[^.]*\.?/, '');
           }
           if (hostname) {
               let canonical;
-              if (canonical = Conf['siteProperties'][hostname].canonical) {
+              if (canonical = Conf.siteProperties[hostname].canonical) {
                   hostname = canonical;
               }
           }
@@ -21885,9 +21879,9 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           return Main.parseURL(g.sites[siteID], url);
       },
       set(hostname) {
-          for (var ID in Conf['siteProperties']) {
+          for (var ID in Conf.siteProperties) {
               var site;
-              var properties = Conf['siteProperties'][ID];
+              var properties = Conf.siteProperties[ID];
               if (properties.canonical) {
                   continue;
               }
@@ -22007,7 +22001,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       },
       externalParse() {
           CatalogLinks.externalList = dict();
-          for (var line of Conf['externalCatalogURLs'].split('\n')) {
+          for (var line of Conf.externalCatalogURLs.split('\n')) {
               if (line[0] === '#') {
                   continue;
               }
@@ -22193,7 +22187,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       $.on(btn, 'click', Header.toggleBoardList);
       $.prepend(Header.bar, [Header.boardList, Header.shortcuts]);
       Header.setCustomNav(Conf['Custom Board Navigation']);
-      Header.generateBoardList(Conf['boardnav']);
+      Header.generateBoardList(Conf.boardnav);
       $.sync('Custom Board Navigation', Header.setCustomNav);
       return $.sync('boardnav', Header.generateBoardList);
     },
@@ -22712,7 +22706,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       }
       audioEl.loop = true;
       audioEl.controls = Conf['Show Controls'];
-      audioEl.autoplay = Conf['Autoplay'];
+      audioEl.autoplay = Conf.Autoplay;
       el.after(audioEl);
       file.audio = audioEl;
     }
@@ -22772,7 +22766,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           return;
         }
         e.preventDefault();
-        if (!Conf['Autoplay'] && file.fullImage?.paused) {
+        if (!Conf.Autoplay && file.fullImage?.paused) {
           return file.fullImage.play();
         } else {
           return ImageExpand.toggle(post);
@@ -22977,7 +22971,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       }
       if (Conf['Image Media Controls']) {
         const controls = $.el('div', MediaControls());
-        const [y, x] = Conf['imageMediaControlsPosition'].split('-');
+        const [y, x] = Conf.imageMediaControlsPosition.split('-');
         [...controls.childNodes][0].classList.add(`media-controls-${x}`, `media-controls-${y}`);
         const container = $.el('div', { className: 'media-controls-container' });
         const wrapper = $.el('div', { className: 'media-controls-wrapper' });
@@ -23061,7 +23055,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         }
       }
       if (file.isVideo) {
-        return ImageExpand.setupVideo(post, Conf['Autoplay'], Conf['Show Controls']);
+        return ImageExpand.setupVideo(post, Conf.Autoplay, Conf['Show Controls']);
       }
     },
     setupVideo(post, playing, controls) {
@@ -23219,7 +23213,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       };
       g.SITE.parseInfo?.(this); // parses the tripcode
       // this now has to happen after the tripcode parsing
-      this.info.nameBlock = Conf['Anonymize'] ? 'Anonymous' : `${this.info.name || ''} ${this.info.tripcode || ''}`.trim();
+      this.info.nameBlock = Conf.Anonymize ? 'Anonymous' : `${this.info.name || ''} ${this.info.tripcode || ''}`.trim();
       if (this.info.capcode) {
         this.info.nameBlock += ` ## ${this.info.capcode}`;
       }
@@ -23613,7 +23607,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
 
   const Anonymize = {
       init() {
-          if (!Conf['Anonymize']) {
+          if (!Conf.Anonymize) {
               return;
           }
           return $.addClass(doc, 'anonymize');
@@ -23673,7 +23667,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           el.loop = true;
           el.controls = false;
           Volume.setup(el);
-          if (Conf['Autoplay']) {
+          if (Conf.Autoplay) {
             el.play();
             if (this.nodeName === 'VIDEO') {
               this.currentTime = el.currentTime;
@@ -24004,7 +23998,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
 
   const ArchiveLink = {
       init() {
-          if ((g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW) || !Conf['Menu'] || !Conf['Archive Link']) {
+          if ((g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf['Archive Link']) {
               return;
           }
           const div = $.el('div', { textContent: 'Archive' });
@@ -24072,7 +24066,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
 
   var CopyTextLink = {
       init() {
-          if (!['index', 'thread'].includes(g.VIEW) || !Conf['Menu'] || !Conf['Copy Text Link']) {
+          if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf['Copy Text Link']) {
               return;
           }
           const a = $.el('a', {
@@ -24108,7 +24102,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
   var DeleteLink = {
       auto: [dict(), dict()],
       init() {
-          if (!['index', 'thread'].includes(g.VIEW) || !Conf['Menu'] || !Conf['Delete Link']) {
+          if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf['Delete Link']) {
               return;
           }
           const div = $.el('div', {
@@ -24230,7 +24224,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               if (post.fullID === DeleteLink.post.fullID) {
                   $.on(link, 'click', DeleteLink.toggle);
               }
-              if (QR.cooldown.data && Conf['Cooldown'] && /\bwait\b/i.test(msg.textContent)) {
+              if (QR.cooldown.data && Conf.Cooldown && /\bwait\b/i.test(msg.textContent)) {
                   DeleteLink.cooldown.start(post, 5);
                   DeleteLink.auto[+fileOnly][post.fullID] = true;
                   return DeleteLink.nodes.links[+fileOnly].textContent = DeleteLink.linkText(fileOnly);
@@ -24268,7 +24262,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               if (post.fullID === DeleteLink.post.fullID) {
                   DeleteLink.nodes.menu.textContent = DeleteLink.menuText();
               }
-              if ((DeleteLink.cooldown.seconds[post.fullID] > 0) && Conf['Cooldown']) {
+              if ((DeleteLink.cooldown.seconds[post.fullID] > 0) && Conf.Cooldown) {
                   DeleteLink.cooldown.seconds[post.fullID]--;
                   setTimeout(DeleteLink.cooldown.count, 1000, post);
               }
@@ -24286,7 +24280,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
 
   const DownloadLink = {
       init() {
-          if (!['index', 'thread'].includes(g.VIEW) || !Conf['Menu'] || !Conf['Download Link']) {
+          if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf['Download Link']) {
               return;
           }
           const a = $.el('a', {
@@ -24312,7 +24306,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
 
   var ReportLink = {
       init() {
-          if (!['index', 'thread'].includes(g.VIEW) || !Conf['Menu'] || !Conf['Report Link']) {
+          if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf['Report Link']) {
               return;
           }
           const a = $.el('a', {
@@ -24440,7 +24434,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       cb: {
           toggle() {
               if (!Banner.choices?.length) {
-                  Banner.choices = Conf['knownBanners'].split(',').slice();
+                  Banner.choices = Conf.knownBanners.split(',').slice();
               }
               const i = Math.floor(Banner.choices.length * Math.random());
               const banner = Banner.choices.splice(i, 1);
@@ -24627,7 +24621,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               return;
           }
           this.ids = dict();
-          this.ids['Heaven'] = [0, 0, 0, '#fff'];
+          this.ids.Heaven = [0, 0, 0, '#fff'];
           return Callbacks.Post.push({
               name: 'Color User IDs',
               cb: this.node
@@ -24925,7 +24919,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           else {
               $.prepend(psa, btn);
           }
-          PSAHiding.sync(Conf['hiddenPSAList']);
+          PSAHiding.sync(Conf.hiddenPSAList);
           $.rmClass(doc, 'hide-announcement');
           return $.sync('hiddenPSAList', PSAHiding.sync);
       },
@@ -24939,9 +24933,9 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
                   return delete hiddenPSAList[g.SITE.ID];
               }
           };
-          set(Conf['hiddenPSAList']);
-          PSAHiding.sync(Conf['hiddenPSAList']);
-          return $.get('hiddenPSAList', Conf['hiddenPSAList'], function ({ hiddenPSAList }) {
+          set(Conf.hiddenPSAList);
+          PSAHiding.sync(Conf.hiddenPSAList);
+          return $.get('hiddenPSAList', Conf.hiddenPSAList, function ({ hiddenPSAList }) {
               set(hiddenPSAList);
               return $.set('hiddenPSAList', hiddenPSAList);
           });
@@ -25449,7 +25443,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           const a = $.el('a', {
               href: g.SITE.Build.postURL(this.board.ID, this.thread.ID, this.ID),
               className: this.isHidden ? 'filtered backlink' : 'backlink',
-              textContent: Conf['backlink'].replace(/%(?:id|%)/g, x => ({ '%id': this.ID, '%%': '%' })[x])
+              textContent: Conf.backlink.replace(/%(?:id|%)/g, x => ({ '%id': this.ID, '%%': '%' })[x])
           });
           if (markYours) {
               $.add(a, QuoteYou.mark.cloneNode(true));
@@ -25598,7 +25592,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
   const QuoteStrikeThrough = {
       init() {
           if (!['index', 'thread'].includes(g.VIEW) ||
-              (!Conf['Reply Hiding Buttons'] && (!Conf['Menu'] || !Conf['Reply Hiding Link']) && !Conf['Filter'])) {
+              (!Conf['Reply Hiding Buttons'] && (!Conf.Menu || !Conf['Reply Hiding Link']) && !Conf.Filter)) {
               return;
           }
           return Callbacks.Post.push({
@@ -25834,16 +25828,16 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           for (var db of DataBoard.keys) {
               Conf[db] = dict();
           }
-          Conf['customTitles'] = dict.clone({ '4chan.org': {} });
-          Conf['boardConfig'] = { boards: dict() };
-          Conf['archives'] = Redirect.archives;
-          Conf['selectedArchives'] = dict();
-          Conf['cooldowns'] = dict();
+          Conf.customTitles = dict.clone({ '4chan.org': {} });
+          Conf.boardConfig = { boards: dict() };
+          Conf.archives = Redirect.archives;
+          Conf.selectedArchives = dict();
+          Conf.cooldowns = dict();
           Conf['Index Sort'] = dict();
           for (let i = 0; i < 2; i++) {
               Conf[`Last Long Reply Thresholds ${i}`] = dict();
           }
-          Conf['siteProperties'] = dict();
+          Conf.siteProperties = dict();
           // XXX old key names
           Conf['Except Archives from Encryption'] = false;
           Conf['JSON Navigation'] = true;
@@ -25852,17 +25846,17 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           Conf['QR Shortcut'] = true;
           Conf['Bottom QR Link'] = true;
           Conf['Toggleable Thread Watcher'] = true;
-          Conf['siteSoftware'] = '';
+          Conf.siteSoftware = '';
           Conf['Use Faster Image Host'] = 'true';
           Conf['Captcha Fixes'] = true;
-          Conf['captchaServiceDomain'] = '';
-          Conf['captchaServiceKey'] = dict();
+          Conf.captchaServiceDomain = '';
+          Conf.captchaServiceKey = dict();
           // Enforce JS whitelist
           if (/\.4chan(?:nel)?\.org$/.test(location.hostname) &&
               !SW.yotsuba.regexp.pass.test(location.href) &&
               !SW.yotsuba.regexp.captcha.test(location.href) &&
               !$$('script:not([src])', d).filter(s => /this\[/.test(s.textContent)).length) {
-              ($.getSync || $.get)({ 'jsWhitelist': Conf['jsWhitelist'] }, ({ jsWhitelist }) => {
+              ($.getSync || $.get)({ 'jsWhitelist': Conf.jsWhitelist }, ({ jsWhitelist }) => {
                   const parsedList = jsWhitelist.replace(/^#.*$/mg, '').replace(/[\s;]+/g, ' ').trim();
                   if (/\S/.test(parsedList))
                       $.addCSP(`script-src ${parsedList}`);
@@ -25872,7 +25866,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           const items = dict();
           for (const key in Conf)
               items[key] = undefined;
-          items['previousversion'] = undefined;
+          items.previousversion = undefined;
           ($.getSync || $.get)(items, function (items) {
               $.asap(docSet, function () {
                   // Don't hide the local storage warning behind a settings panel.
