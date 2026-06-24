@@ -381,10 +381,8 @@ var Keybinds = {
 
   qr(thread) {
     QR.open();
-    if (thread != null) {
-      QR.quote.call(Keybinds.post(thread));
-    }
-    return QR.nodes.com.focus();
+    if (thread) { QR.quote.call(Keybinds.post(thread)); }
+    QR.nodes.com.focus();
   },
 
   tags(tag, ta) {

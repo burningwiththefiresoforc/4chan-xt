@@ -440,7 +440,7 @@ var ImageExpand = {
     if (ImageCommon.isFromArchive(this)) {
       return ImageExpand.contract(post);
     }
-    return ImageCommon.error(this, post, post.file, 10 * SECOND, function(URL) {
+    ImageCommon.error(this, post, post.file, 10 * SECOND, function(URL) {
       if (post.file.isExpanding || post.file.isExpanded) {
         ImageExpand.contract(post);
         if (URL) { return ImageExpand.expand(post, URL); }

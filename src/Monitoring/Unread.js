@@ -131,7 +131,7 @@ var Unread = {
 
     Unread.updatePosition();
     Unread.setLine();
-    return Unread.update();
+    Unread.update();
   },
 
   sync() {
@@ -157,7 +157,7 @@ var Unread = {
 
     Unread.updatePosition();
     Unread.setLine();
-    return Unread.update();
+    Unread.update();
   },
 
   addPost() {

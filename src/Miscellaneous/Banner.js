@@ -56,11 +56,11 @@ var Banner = {
   },
 
   setTitle(title) {
-    if (Unread.title != null) {
+    if (Unread.title) {
       Unread.title = title;
-      return Unread.update();
+      Unread.update();
     } else {
-      return d.title = title;
+      d.title = title;
     }
   },
 
@@ -76,10 +76,10 @@ var Banner = {
 
     click(e) {
       if (!e.ctrlKey && !e.metaKey) { return; }
-      if (Banner.original[this.className] == null) { Banner.original[this.className] = this.cloneNode(true); }
+      Banner.original[this.className] ??= this.cloneNode(true);
       this.contentEditable = true;
       for (var br of $$('br', this)) { $.replace(br, $.tn('\n')); }
-      return this.focus();
+      this.focus();
     },
 
     keydown(e) {

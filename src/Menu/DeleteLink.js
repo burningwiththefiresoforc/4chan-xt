@@ -157,12 +157,12 @@ var DeleteLink = {
 
     start(post, seconds) {
       // Already counting.
-      if (DeleteLink.cooldown.seconds[post.fullID] != null) { return; }
+      if (DeleteLink.cooldown.seconds[post.fullID]) { return; }
 
-      if (seconds == null) { seconds = QR.cooldown.secondsDeletion(post); }
+      if (!seconds) { seconds = QR.cooldown.secondsDeletion(post); }
       if (seconds > 0) {
         DeleteLink.cooldown.seconds[post.fullID] = seconds;
-        return DeleteLink.cooldown.count(post);
+        DeleteLink.cooldown.count(post);
       }
     },
 

@@ -194,7 +194,7 @@ var QR = {
       QR.link = link.firstElementChild as HTMLElement;
       $.on(link.firstChild, 'click', function() {
         QR.open();
-        return QR.nodes.com.focus();
+        QR.nodes.com.focus();
       });
 
       $.before(origToggle, link);
@@ -209,7 +209,7 @@ var QR = {
 
       $.on(linkBot.firstElementChild, 'click', function() {
         QR.open();
-        return QR.nodes.com.focus();
+        QR.nodes.com.focus();
       });
 
       if (navLinksBot = $('.navLinksBot')) { $.prepend(navLinksBot, linkBot); }
@@ -348,7 +348,7 @@ var QR = {
       $.addClass(QR.nodes.el, 'dump');
       new QR.post(true);
     }
-    return QR.nodes.com.focus();
+    QR.nodes.com.focus();
   },
 
   setCustomCooldown(enabled) {

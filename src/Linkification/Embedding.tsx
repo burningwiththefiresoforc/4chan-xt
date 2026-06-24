@@ -241,10 +241,7 @@ var Embedding = {
       $.add(container, (el = (type = Embedding.types[a.dataset.key]).el(a)));
 
       // Set style values.
-      el.style.cssText = (type.style != null) ?
-        type.style
-      :
-        'border: none; width: 640px; height: 360px;';
+      el.style.cssText = type.style ?? 'border: none; width: 640px; height: 360px;';
 
       return container;
     },
@@ -292,7 +289,7 @@ var Embedding = {
       for (var post2 of post.clones) {
         for (var link2 of $$('a.linkify', post2.nodes.comment)) {
           if (link2.href === link.href) {
-            if (link2.dataset.original == null) { link2.dataset.original = link2.textContent; }
+            link2.dataset.original ??= link2.textContent;
             link2.textContent = text;
             Icon.setLinkify(link2);
           }

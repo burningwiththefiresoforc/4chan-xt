@@ -76,11 +76,11 @@ var ImageCommon = {
 
     if ((post.isDead || fileObj.isDead) && !ImageCommon.isFromArchive(file)) { return cb(url); }
 
-    if (delay != null) { timeoutID = setTimeout((() => cb(url)), delay); }
+    if (delay) { timeoutID = setTimeout((() => cb(url)), delay); }
     if (post.isDead || fileObj.isDead) { return; }
     const redirect = function() {
       if (!ImageCommon.isFromArchive(file)) {
-        if (delay != null) { clearTimeout(timeoutID); }
+        if (delay) { clearTimeout(timeoutID); }
         return cb(url);
       }
     };
