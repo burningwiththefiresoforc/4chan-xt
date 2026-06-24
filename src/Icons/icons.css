@@ -40,8 +40,6 @@ svg.icon {
   width: 14px;
 }
 .linkify.pastebin .linkify-icon svg {
-  height: 18px;
-  width: 18px;
   fill: blue;
 }
 .linkify.bitchute .linkify-icon svg {
