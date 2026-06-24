@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         4chan XT
-// @version      2.27.2
+// @version      2.27.3
 // @minGMVer     1.14
 // @minFFVer     115
 // @namespace    4chan-XT
@@ -42,6 +42,7 @@
 // @connect      boards.fireden.net
 // @connect      arch.b4k.dev
 // @connect      archived.moe
+// @connect      archive.palanq.win
 // @connect      api.clyp.it
 // @connect      api.dailymotion.com
 // @connect      api.github.com

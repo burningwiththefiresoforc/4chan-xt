@@ -1,4 +1,4 @@
-This is my personal fork that I only plan on merging bugfixes and minor optimizations for and isn't intended to compete with the other forks.
+Please send pull requests if you think you can optimize or improve the function of this script. It's got like 15 years of legacy and a conversion from Coffeescript to Typescript. I'm going to make the primary focus of this script INCREMENTAL optimization and modernization. Conversion to TS was also never completed. Right now the source is a maze of circular dependencies and little documentation.
 
 ### TODO
 
@@ -6,8 +6,6 @@ This is my personal fork that I only plan on merging bugfixes and minor optimiza
 
 - [ ] Add text replacement to filtering system
 - [ ] Clean up circular dependencies
-- [x] OffscreenCanvas workaround appears to be [deprecated](https://bugzilla.mozilla.org/show_bug.cgi?id=1422862)
-- [x] Captcha fallback is deprecated but leaving it in just in case it changes again
 
 </details>
 
