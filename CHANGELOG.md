@@ -2,6 +2,11 @@
 
 4chan XT uses a different user script namespace than 4chan X, so to migrate you need to export settings from 4chan X, and import them in XT.
 
+### 2.27.4 (2026-06-24)
+
+- Fixed slight issue with init in Firefox
+- Cleanup
+
 ### 2.27.3 (2026-06-24)
 
 - Re-add archive.palanq.win

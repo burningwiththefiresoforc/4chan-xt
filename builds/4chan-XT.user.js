@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         4chan XT
-// @version      2.27.3
+// @version      2.27.4
 // @minGMVer     1.14
 // @minFFVer     115
 // @namespace    4chan-XT
@@ -158,7 +158,7 @@
   'use strict';
 
   var version = {
-    "version": "2.27.3",
+    "version": "2.27.4",
     "date": "2026-06-24T09:09:09Z"
   }
   ;
@@ -7241,8 +7241,6 @@ svg.icon {
   width: 14px;
 }
 .linkify.pastebin .linkify-icon svg {
-  height: 18px;
-  width: 18px;
   fill: blue;
 }
 .linkify.bitchute .linkify-icon svg {
@@ -8209,7 +8207,7 @@ svg.icon {
           if ((post.isDead || fileObj.isDead) && !ImageCommon.isFromArchive(file)) {
               return cb(url);
           }
-          if (delay != null) {
+          if (delay) {
               timeoutID = setTimeout((() => cb(url)), delay);
           }
           if (post.isDead || fileObj.isDead) {
@@ -8217,7 +8215,7 @@ svg.icon {
           }
           const redirect = function () {
               if (!ImageCommon.isFromArchive(file)) {
-                  if (delay != null) {
+                  if (delay) {
                       clearTimeout(timeoutID);
                   }
                   return cb(url);
@@ -8698,7 +8696,7 @@ svg.icon {
         QR.link = link.firstElementChild;
         $.on(link.firstChild, 'click', function () {
           QR.open();
-          return QR.nodes.com.focus();
+          QR.nodes.com.focus();
         });
         $.before(origToggle, link);
         origToggle.firstElementChild.textContent = 'Original Form';
@@ -8709,7 +8707,7 @@ svg.icon {
         $.extend(linkBot, { innerHTML: '<a href="javascript:;" class="qr-link-bottom">Reply to Thread</a>' });
         $.on(linkBot.firstElementChild, 'click', function () {
           QR.open();
-          return QR.nodes.com.focus();
+          QR.nodes.com.focus();
         });
         if (navLinksBot = $('.navLinksBot')) {
           $.prepend(navLinksBot, linkBot);
@@ -8845,7 +8843,7 @@ svg.icon {
         $.addClass(QR.nodes.el, 'dump');
         new QR.post(true);
       }
-      return QR.nodes.com.focus();
+      QR.nodes.com.focus();
     },
     setCustomCooldown(enabled) {
       Conf.customCooldownEnabled = enabled;
@@ -11988,7 +11986,7 @@ svg.icon {
           }
           Unread.updatePosition();
           Unread.setLine();
-          return Unread.update();
+          Unread.update();
       },
       sync() {
           if (Unread.lastReadPost == null) {
@@ -12017,7 +12015,7 @@ svg.icon {
           }
           Unread.updatePosition();
           Unread.setLine();
-          return Unread.update();
+          Unread.update();
       },
       addPost() {
           if (this.isFetchedQuote || this.isClone)
@@ -17404,10 +17402,7 @@ svg.icon {
         const container = $.el('div', { className: 'media-embed' });
         $.add(container, (el = (type = Embedding.types[a.dataset.key]).el(a)));
         // Set style values.
-        el.style.cssText = (type.style != null) ?
-          type.style
-          :
-            'border: none; width: 640px; height: 360px;';
+        el.style.cssText = type.style ?? 'border: none; width: 640px; height: 360px;';
         return container;
       },
       catalogRemove() {
@@ -17418,6 +17413,7 @@ svg.icon {
         }
       },
       title(req, data) {
+        var _a;
         let text;
         const { key, uid, options, link, post } = data;
         const service = Embedding.types[key].title;
@@ -17453,9 +17449,7 @@ svg.icon {
         for (var post2 of post.clones) {
           for (var link2 of $$('a.linkify', post2.nodes.comment)) {
             if (link2.href === link.href) {
-              if (link2.dataset.original == null) {
-                link2.dataset.original = link2.textContent;
-              }
+              (_a = link2.dataset).original ?? (_a.original = link2.textContent);
               link2.textContent = text;
               Icon.setLinkify(link2);
             }
@@ -18736,10 +18730,10 @@ svg.icon {
       },
       qr(thread) {
           QR.open();
-          if (thread != null) {
+          if (thread) {
               QR.quote.call(Keybinds.post(thread));
           }
-          return QR.nodes.com.focus();
+          QR.nodes.com.focus();
       },
       tags(tag, ta) {
           BoardConfig.ready(function () {
@@ -23129,7 +23123,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       if (ImageCommon.isFromArchive(this)) {
         return ImageExpand.contract(post);
       }
-      return ImageCommon.error(this, post, post.file, 10 * SECOND, function (URL) {
+      ImageCommon.error(this, post, post.file, 10 * SECOND, function (URL) {
         if (post.file.isExpanding || post.file.isExpanded) {
           ImageExpand.contract(post);
           if (URL) {
@@ -24258,15 +24252,15 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           seconds: dict(),
           start(post, seconds) {
               // Already counting.
-              if (DeleteLink.cooldown.seconds[post.fullID] != null) {
+              if (DeleteLink.cooldown.seconds[post.fullID]) {
                   return;
               }
-              if (seconds == null) {
+              if (!seconds) {
                   seconds = QR.cooldown.secondsDeletion(post);
               }
               if (seconds > 0) {
                   DeleteLink.cooldown.seconds[post.fullID] = seconds;
-                  return DeleteLink.cooldown.count(post);
+                  DeleteLink.cooldown.count(post);
               }
           },
           count(post) {
@@ -24434,12 +24428,12 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           }
       },
       setTitle(title) {
-          if (Unread.title != null) {
+          if (Unread.title) {
               Unread.title = title;
-              return Unread.update();
+              Unread.update();
           }
           else {
-              return d.title = title;
+              d.title = title;
           }
       },
       cb: {
@@ -24452,17 +24446,16 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               return $('img', this.parentNode).src = `//s.4cdn.org/image/title/${banner}`;
           },
           click(e) {
+              var _a, _b;
               if (!e.ctrlKey && !e.metaKey) {
                   return;
               }
-              if (Banner.original[this.className] == null) {
-                  Banner.original[this.className] = this.cloneNode(true);
-              }
+              (_a = Banner.original)[_b = this.className] ?? (_a[_b] = this.cloneNode(true));
               this.contentEditable = true;
               for (var br of $$('br', this)) {
                   $.replace(br, $.tn('\n'));
               }
-              return this.focus();
+              this.focus();
           },
           keydown(e) {
               e.stopPropagation();
@@ -25839,7 +25832,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           for (var db of DataBoard.keys) {
               Conf[db] = dict();
           }
-          Conf.customTitles = dict.clone({ '4chan.org': {} });
+          Conf['customTitles'] = dict.clone({ '4chan.org': { boards: {} } });
           Conf.boardConfig = { boards: dict() };
           Conf.archives = Redirect.archives;
           Conf.selectedArchives = dict();
