@@ -183,7 +183,7 @@ var Main = {
     for (var db of DataBoard.keys) {
       Conf[db] = dict();
     }
-    Conf.customTitles = dict.clone({'4chan.org': {}});
+    Conf['customTitles'] = dict.clone({'4chan.org': {boards: {}}});
     Conf.boardConfig = {boards: dict()};
     Conf.archives = Redirect.archives;
     Conf.selectedArchives = dict();
