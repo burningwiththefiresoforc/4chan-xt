@@ -98,7 +98,7 @@ var Sauce = {
           type = matches[parameter.slice(1)] || '';
         } else {
           type = Sauce.formatters[parameter](post, file, ext);
-          if ((type == null)) {
+          if (!type) {
             missing.push(parameter);
             return '';
           }

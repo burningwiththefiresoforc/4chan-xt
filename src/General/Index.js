@@ -242,7 +242,7 @@ var Index = {
 
   scroll() {
     if (Index.req || !Index.liveThreadData || (Conf['Index Mode'] !== 'infinite') || (window.scrollY <= (doc.scrollHeight - (300 + window.innerHeight)))) { return; }
-    if (Index.pageNum == null) { Index.pageNum = Index.currentPage; } // Avoid having to pushState to keep track of the current page
+    Index.pageNum ??= Index.currentPage; // Avoid having to pushState to keep track of the current page
 
     const pageNum = ++Index.pageNum;
     if (pageNum > Index.pagesNum) { return Index.endNotice(); }
@@ -292,8 +292,8 @@ var Index = {
   },
 
   node() {
-    if (this.isReply || this.isClone || (Index.threadPosition[this.ID] == null)) { return; }
-    return this.thread.setPage(Math.floor(Index.threadPosition[this.ID] / Index.threadsNumPerPage) + 1);
+    if (this.isReply || this.isClone || !Index.threadPosition[this.ID]) { return; }
+    this.thread.setPage(Math.floor(Index.threadPosition[this.ID] / Index.threadsNumPerPage) + 1);
   },
 
   catalogNode() {
@@ -686,7 +686,7 @@ var Index = {
         nodes.push($.tn('['), a, $.tn('] '));
       }
       $.rmAll(pagesRoot);
-      return $.add(pagesRoot, nodes);
+      $.add(pagesRoot, nodes);
     }
   },
 
@@ -716,7 +716,7 @@ var Index = {
 
     if (a = pagesRoot.children[pageNum - 1]) {
       $.before(a, strong);
-      return $.add(strong, a);
+      $.add(strong, a);
     }
   },
 

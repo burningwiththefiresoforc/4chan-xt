@@ -100,7 +100,7 @@ var Volume = {
   catalogNode() {
     const file = this.thread.OP.files[0];
     if (!file?.isVideo) { return; }
-    return $.on(this.nodes.thumb, 'wheel', Volume.wheel.bind(Header.hover));
+    $.on(this.nodes.thumb, 'wheel', Volume.wheel.bind(Header.hover));
   },
 
   wheel(e) {
@@ -112,7 +112,7 @@ var Volume = {
     if (e.deltaY < 0) { volume *= 1.1; }
     if (e.deltaY > 0) { volume /= 1.1; }
     el.volume = $.minmax(volume - 0.1, 0, 1);
-    return e.preventDefault();
+    e.preventDefault();
   }
 };
 export default Volume;

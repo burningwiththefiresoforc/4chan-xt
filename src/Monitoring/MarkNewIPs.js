@@ -20,7 +20,7 @@ var MarkNewIPs = {
   node() {
     MarkNewIPs.ipCount = this.ipCount;
     MarkNewIPs.postCount = this.posts.keys.length;
-    return $.on(d, 'ThreadUpdate', MarkNewIPs.onUpdate);
+    $.on(d, 'ThreadUpdate', MarkNewIPs.onUpdate);
   },
 
   onUpdate(e) {
@@ -42,7 +42,7 @@ var MarkNewIPs = {
         break;
     }
     MarkNewIPs.ipCount = ipCount;
-    return MarkNewIPs.postCount = postCount;
+    MarkNewIPs.postCount = postCount;
   },
 
   markNew(post, ipCount) {

@@ -24,7 +24,8 @@ export interface CrossOriginAjaxOptions {
 var CrossOrigin = {
   binary(url, cb, headers = dict()) {
     // XXX https://forums.lanik.us/viewtopic.php?f=64&t=24173&p=78310
-    url = url.replace(/^((?:https?:)?\/\/(?:\w+\.)?(?:4chan(?:nel)?|4cdn)\.org)\/adv\//, '$1//adv/');
+    // url = url.replace(/^((?:https?:)?\/\/(?:\w+\.)?(?:4chan(?:nel)?|4cdn)\.org)\/adv\//, '$1//adv/');
+    url = url.replace(/^((?:https?:)?\/\/(?:\w+\.)?(?:4chan|4cdn)\.org)\/adv\//, '$1//adv/');
     if (platform === 'crx') {
     $.eventPageRequest({type: 'ajax', url, headers, responseType: 'arraybuffer'})
       .then(({response, responseHeaderString}: any) => {
@@ -152,7 +153,7 @@ var CrossOrigin = {
   ajax(url: string, options: CrossOriginAjaxOptions ={}) {
     let gmReq;
     let {onloadend, timeout, responseType, headers} = options;
-    if (responseType == null) { responseType = 'json'; }
+    responseType ??= 'json';
 
     const req = new CrossOrigin.Request();
     req.onloadend = onloadend;

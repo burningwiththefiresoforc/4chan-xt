@@ -24,7 +24,7 @@ var Metadata = {
     for (let i = 0; i < this.files.length; i++) {
       var file = this.files[i];
       if (/webm$/i.test(file.url)) {var el;
-      
+
         if (this.isClone) {
           el = $('.webm-title', file.text);
         } else {
@@ -46,11 +46,11 @@ var Metadata = {
     const {index} = this.parentNode.dataset;
     return CrossOrigin.binary(Get.postFromNode(this).files[+index].url, data => {
       $.rmClass(this.parentNode, 'loading');
-      if (data != null) {
+      if (data) {
         const title = Metadata.parse(data);
         const output = $.el('span',
           {textContent: title || ''});
-        if (title == null) { $.addClass(this.parentNode, 'not-found'); }
+        if (!title) { $.addClass(this.parentNode, 'not-found'); }
         $.before(this, output);
         this.parentNode.tabIndex = 0;
         if (d.activeElement === this) { this.parentNode.focus(); }
