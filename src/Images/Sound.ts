@@ -1,41 +1,38 @@
 import { Conf } from "../globals/globals";
 import { File } from "../classes/Post";
 import Volume from "./Volume";
+import $ from "../platform/$";
 
 const Sound = {
   /** Add event listeners for videos with audio from a third party */
   setupSync(video: HTMLVideoElement, audio: HTMLAudioElement) {
-    audio.addEventListener('playing', () => {
+    const syncTime = () => {
       video.currentTime = audio.currentTime % video.duration;
+    };
+
+    $.on(audio, 'playing play', () => {
+      syncTime();
       video.play();
     });
 
-    audio.addEventListener('play', () => {
-      video.currentTime = audio.currentTime % video.duration;
-      video.play();
-    });
+    $.on(audio, 'seeked waiting', syncTime);
 
-    audio.addEventListener('pause', () => {
+    $.on(audio, 'pause', () => {
       video.pause();
     });
 
-    audio.addEventListener('seeked', () => {
-      video.currentTime = audio.currentTime % video.duration;
-    });
-
-    audio.addEventListener('ratechange', () => {
+    $.on(audio, 'ratechange', () => {
       video.currentTime = audio.currentTime;
       video.playbackRate = audio.playbackRate;
     });
 
-    audio.addEventListener('waiting', () => {
-      video.currentTime = audio.currentTime % video.duration;
+    $.on(audio, 'waiting', () => {
       video.pause();
     });
 
-    audio.addEventListener('canplay', () => {
+    $.one(audio, 'canplay', () => {
       if (audio.currentTime < .1) video.currentTime = 0;
-    }, { once: true });
+    });
   },
 
   setupSoundpost(el: HTMLElement, file: File) {
