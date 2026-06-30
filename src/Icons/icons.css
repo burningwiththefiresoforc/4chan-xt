@@ -22,13 +22,34 @@ svg.icon {
 }
 
 /* linkify */
-.linkify {
-  display: inline-flex;
-  overflow-wrap: break-word;
+.linkify.peertube,
+.linkify.streamable,
+.linkify.bitchute,
+.linkify.clyp,
+.linkify.pastebin,
+.linkify.twitchtv,
+.linkify.vocaroo,
+.linkify.vidlii,
+.linkify.image,
+.linkify.video,
+.linkify.audio,
+.linkify.youtube,
+.linkify.twitter,
+.linkify.soundcloud,
+.linkify.dailymotion,
+.linkify.gist,
+.linkify.vimeo {
+  position: relative;
+  padding-left: 18px;
 }
 .linkify-icon {
-  display: inline-block;
-  flex-shrink: 0;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
 }
 .linkify.youtube .linkify-icon svg {
   color: red;
