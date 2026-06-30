@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         4chan XT
-// @version      2.27.4
+// @version      2.28.0
 // @minGMVer     1.14
 // @minFFVer     115
 // @namespace    4chan-XT
@@ -158,8 +158,8 @@
   'use strict';
 
   var version = {
-    "version": "2.27.4",
-    "date": "2026-06-24T09:09:09Z"
+    "version": "2.28.0",
+    "date": "2026-06-30T09:09:09Z"
   }
   ;
 
@@ -576,7 +576,8 @@
         options.type = (options.form && 'post') || 'get';
       }
       // XXX https://forums.lanik.us/viewtopic.php?f=64&t=24173&p=78310
-      url = url.replace(/^((?:https?:)?\/\/(?:\w+\.)?(?:4chan(?:nel)?|4cdn)\.org)\/adv\//, '$1//adv/');
+      // url = url.replace(/^((?:https?:)?\/\/(?:\w+\.)?(?:4chan(?:nel)?|4cdn)\.org)\/adv\//, '$1//adv/');
+      url = url.replace(/^((?:https?:)?\/\/(?:\w+\.)?(?:4chan|4cdn)\.org)\/adv\//, '$1//adv/');
       const { onloadend, timeout, responseType, withCredentials, type, onprogress, form, headers } = options;
       const r = new pageXHR();
       try {
@@ -1546,7 +1547,8 @@
   var CrossOrigin = {
     binary(url, cb, headers = dict()) {
       // XXX https://forums.lanik.us/viewtopic.php?f=64&t=24173&p=78310
-      url = url.replace(/^((?:https?:)?\/\/(?:\w+\.)?(?:4chan(?:nel)?|4cdn)\.org)\/adv\//, '$1//adv/');
+      // url = url.replace(/^((?:https?:)?\/\/(?:\w+\.)?(?:4chan(?:nel)?|4cdn)\.org)\/adv\//, '$1//adv/');
+      url = url.replace(/^((?:https?:)?\/\/(?:\w+\.)?(?:4chan|4cdn)\.org)\/adv\//, '$1//adv/');
 
         const fallback = function () {
           return $.ajax(url, {
@@ -1666,9 +1668,7 @@
     ajax(url, options = {}) {
       let gmReq;
       let { onloadend, timeout, responseType, headers } = options;
-      if (responseType == null) {
-        responseType = 'json';
-      }
+      responseType ?? (responseType = 'json');
       const req = new CrossOrigin.Request();
       req.onloadend = onloadend;
 
@@ -7223,13 +7223,34 @@ svg.icon {
 }
 
 /* linkify */
-.linkify {
-  display: inline-flex;
-  overflow-wrap: break-word;
+.linkify.peertube,
+.linkify.streamable,
+.linkify.bitchute,
+.linkify.clyp,
+.linkify.pastebin,
+.linkify.twitchtv,
+.linkify.vocaroo,
+.linkify.vidlii,
+.linkify.image,
+.linkify.video,
+.linkify.audio,
+.linkify.youtube,
+.linkify.twitter,
+.linkify.soundcloud,
+.linkify.dailymotion,
+.linkify.gist,
+.linkify.vimeo {
+  position: relative;
+  padding-left: 18px;
 }
 .linkify-icon {
-  display: inline-block;
-  flex-shrink: 0;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
 }
 .linkify.youtube .linkify-icon svg {
   color: red;
@@ -8116,7 +8137,7 @@ svg.icon {
           if (!file?.isVideo) {
               return;
           }
-          return $.on(this.nodes.thumb, 'wheel', Volume.wheel.bind(Header.hover));
+          $.on(this.nodes.thumb, 'wheel', Volume.wheel.bind(Header.hover));
       },
       wheel(e) {
           let el;
@@ -8137,7 +8158,7 @@ svg.icon {
               volume /= 1.1;
           }
           el.volume = $.minmax(volume - 0.1, 0, 1);
-          return e.preventDefault();
+          e.preventDefault();
       }
   };
 
@@ -14542,9 +14563,7 @@ svg.icon {
           if (Index.req || !Index.liveThreadData || (Conf['Index Mode'] !== 'infinite') || (window.scrollY <= (doc.scrollHeight - (300 + window.innerHeight)))) {
               return;
           }
-          if (Index.pageNum == null) {
-              Index.pageNum = Index.currentPage;
-          } // Avoid having to pushState to keep track of the current page
+          Index.pageNum ?? (Index.pageNum = Index.currentPage); // Avoid having to pushState to keep track of the current page
           const pageNum = ++Index.pageNum;
           if (pageNum > Index.pagesNum) {
               return Index.endNotice();
@@ -14597,10 +14616,10 @@ svg.icon {
           }
       },
       node() {
-          if (this.isReply || this.isClone || (Index.threadPosition[this.ID] == null)) {
+          if (this.isReply || this.isClone || !Index.threadPosition[this.ID]) {
               return;
           }
-          return this.thread.setPage(Math.floor(Index.threadPosition[this.ID] / Index.threadsNumPerPage) + 1);
+          this.thread.setPage(Math.floor(Index.threadPosition[this.ID] / Index.threadsNumPerPage) + 1);
       },
       catalogNode() {
           return $.on(this.nodes.root, 'click', e => {
@@ -15017,7 +15036,7 @@ svg.icon {
                   nodes.push($.tn('['), a, $.tn('] '));
               }
               $.rmAll(pagesRoot);
-              return $.add(pagesRoot, nodes);
+              $.add(pagesRoot, nodes);
           }
       },
       setPage() {
@@ -15046,7 +15065,7 @@ svg.icon {
           }
           if (a = pagesRoot.children[pageNum - 1]) {
               $.before(a, strong);
-              return $.add(strong, a);
+              $.add(strong, a);
           }
       },
       updateHideLabel() {
@@ -16100,7 +16119,7 @@ svg.icon {
                   }
                   else {
                       type = Sauce.formatters[parameter](post, file, ext);
-                      if ((type == null)) {
+                      if (!type) {
                           missing.push(parameter);
                           return '';
                       }
@@ -22668,42 +22687,41 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
   const Sound = {
     /** Add event listeners for videos with audio from a third party */
     setupSync(video, audio) {
-      audio.addEventListener('playing', () => {
+      const syncTime = () => {
         video.currentTime = audio.currentTime % video.duration;
+      };
+      $.on(audio, 'playing play', () => {
+        syncTime();
         video.play();
       });
-      audio.addEventListener('play', () => {
-        video.currentTime = audio.currentTime % video.duration;
-        video.play();
-      });
-      audio.addEventListener('pause', () => {
+      $.on(audio, 'seeked waiting', syncTime);
+      $.on(audio, 'pause', () => {
         video.pause();
       });
-      audio.addEventListener('seeked', () => {
-        video.currentTime = audio.currentTime % video.duration;
-      });
-      audio.addEventListener('ratechange', () => {
+      $.on(audio, 'ratechange', () => {
         video.currentTime = audio.currentTime;
         video.playbackRate = audio.playbackRate;
       });
-      audio.addEventListener('waiting', () => {
-        video.currentTime = audio.currentTime % video.duration;
+      $.on(audio, 'waiting', () => {
         video.pause();
       });
-      audio.addEventListener('canplay', () => {
+      $.one(audio, 'canplay', () => {
         if (audio.currentTime < .1)
           video.currentTime = 0;
-      }, { once: true });
+      });
     },
     setupSoundpost(el, file) {
-      const soundUrlMatch = file.name.match(/\[sound=([^\]]+)]/i);
+      const soundUrlMatch = file.name.match(/\[sound=([^\]]+\.(?:webm|ogg|mp3|wav|m4a))]/i);
       if (!soundUrlMatch)
         return;
-      let src = decodeURIComponent(soundUrlMatch[1]);
-      if (!src.startsWith('http')) {
-        src = `https://${src}`;
+      let url;
+      try {
+        const src = decodeURIComponent(soundUrlMatch[1]);
+        url = new URL(src.startsWith('http') ? src : `https://${src}`);
+      } catch {
+        return;
       }
-      const audioEl = new Audio(src);
+      const audioEl = new Audio(url.href);
       Volume.setup(audioEl);
       if (el instanceof HTMLVideoElement) {
         Sound.setupSync(el, audioEl);
@@ -23918,10 +23936,10 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           const { index } = this.parentNode.dataset;
           return CrossOrigin.binary(Get.postFromNode(this).files[+index].url, data => {
               $.rmClass(this.parentNode, 'loading');
-              if (data != null) {
+              if (data) {
                   const title = Metadata.parse(data);
                   const output = $.el('span', { textContent: title || '' });
-                  if (title == null) {
+                  if (!title) {
                       $.addClass(this.parentNode, 'not-found');
                   }
                   $.before(this, output);
@@ -25040,7 +25058,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       node() {
           MarkNewIPs.ipCount = this.ipCount;
           MarkNewIPs.postCount = this.posts.keys.length;
-          return $.on(d, 'ThreadUpdate', MarkNewIPs.onUpdate);
+          $.on(d, 'ThreadUpdate', MarkNewIPs.onUpdate);
       },
       onUpdate(e) {
           let fullID;
@@ -25062,7 +25080,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
                   break;
           }
           MarkNewIPs.ipCount = ipCount;
-          return MarkNewIPs.postCount = postCount;
+          MarkNewIPs.postCount = postCount;
       },
       markNew(post, ipCount) {
           const suffix = ((Math.floor(ipCount / 10)) % 10) === 1 ?
