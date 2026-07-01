@@ -1,4 +1,5 @@
 import { E } from '../globals/globals';
+import $ from '../platform/$';
 import { isEscaped, type EscapedHtml } from '../globals/jsx';
 import { svgPathData as imgSvg, width as imgW, height as imgH } from "@fa/faImage";
 import { svgPathData as eyeSvg, width as eyeW, height as eyeH } from "@fa/faEye";

@@ -45,10 +45,12 @@ svg.icon {
 .linkify-icon {
   position: absolute;
   left: 0;
-  top: 50%;
-  transform: translateY(-50%);
+  top: var(--linkify-icon-top, 0);
+  line-height: inherit;
   width: 14px;
-  height: 14px;
+  height: 1lh;
+  display: flex;
+  align-items: center;
   pointer-events: none;
 }
 .linkify.youtube .linkify-icon svg {

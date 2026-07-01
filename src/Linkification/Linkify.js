@@ -2,7 +2,7 @@ import Callbacks from "../classes/Callbacks";
 // #region tests_enabled
 import Test from "../General/Test";
 // #endregion
-import { g, Conf } from "../globals/globals";
+import { g, Conf, d, doc } from "../globals/globals";
 import ImageHost from "../Images/ImageHost";
 import ExpandComment from "../Miscellaneous/ExpandComment";
 import $ from "../platform/$";
@@ -21,6 +21,9 @@ var Linkify = {
     if (Conf['Comment Expansion']) {
       ExpandComment.callbacks.push(this.node);
     }
+
+    const isFirefox = CSS.supports('-moz-appearance', 'none');
+    doc.style.setProperty('--linkify-icon-top', isFirefox ? '-0.1em' : '0');
 
     Callbacks.Post.push({
       name: 'Linkify',
