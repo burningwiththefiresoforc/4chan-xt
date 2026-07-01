@@ -47,7 +47,7 @@ var Keybinds = {
         node.removeAttribute('accesskey');
       }
     };
-    return $.on(d, '4chanXInitFinished', init);
+    $.on(d, '4chanXInitFinished', init);
   },
 
   sync(key, hotkey) {

@@ -18,7 +18,7 @@ var AntiAutoplay = {
       name: 'Disable Autoplaying Sounds',
       cb:   this.node
     });
-    return $.ready(() => this.process(d.body));
+    $.ready(() => this.process(d.body));
   },
 
   stop(audio) {
@@ -27,7 +27,7 @@ var AntiAutoplay = {
     audio.autoplay = false;
     if (audio.controls) { return; }
     audio.controls = true;
-    return $.addClass(audio, 'controls-added');
+    $.addClass(audio, 'controls-added');
   },
 
   node() {
@@ -46,7 +46,7 @@ var AntiAutoplay = {
   processVideo(el, attr) {
     el[attr] = el[attr].replace(/\?autoplay=1&?/, '?').replace('&autoplay=1', '');
     if (window.getComputedStyle(el).display === 'none') { el.style.display = 'block'; }
-    return $.addClass(el, 'autoplay-removed');
+    $.addClass(el, 'autoplay-removed');
   }
 };
 export default AntiAutoplay;

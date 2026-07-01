@@ -135,10 +135,10 @@ var Icon = {
     if (el.querySelector('.linkify-icon')) return;
     const iconName = [...el.classList].find(c => c in linkifyIcons) as keyof typeof linkifyIcons | undefined;
     if (!iconName) return;
-    const span = document.createElement('span');
-    span.className = 'linkify-icon icon';
-    span.innerHTML = linkifyIcons[iconName];
-    el.prepend(span);
+    $.prepend(el, $.el('span', {
+      className: 'linkify-icon icon',
+      innerHTML: linkifyIcons[iconName],
+    }));
   },
 
   /** Get the raw SVG string for an icon. */

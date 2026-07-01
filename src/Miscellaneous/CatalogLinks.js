@@ -81,7 +81,7 @@ var CatalogLinks = {
   toggle() {
     $.event('CloseMenu');
     $.set('Header catalog links', this.checked);
-    return CatalogLinks.set(this.checked);
+    CatalogLinks.set(this.checked);
   },
 
   set(useCatalog) {

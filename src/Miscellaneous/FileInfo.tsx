@@ -42,7 +42,7 @@ var FileInfo = {
 
     const info = $.el('span', {className: 'file-info'});
     FileInfo.format(Conf.fileInfo, this, info);
-    return $.prepend(this.file.text, info);
+    $.prepend(this.file.text, info);
   },
 
   format(formatString, post, outputNode) {

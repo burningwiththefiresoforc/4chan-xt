@@ -45,7 +45,7 @@ var RelativeDates = {
       dateEl.title = dateEl.textContent;
     }
 
-    return RelativeDates.update(this);
+    RelativeDates.update(this);
   },
 
   /** @param diff is milliseconds from now. */

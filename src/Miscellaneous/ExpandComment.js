@@ -22,7 +22,7 @@ var ExpandComment = {
   node() {
     let a;
     if (a = $('.abbr > a:not([onclick])', this.nodes.comment)) {
-      return $.on(a, 'click', ExpandComment.cb);
+      $.on(a, 'click', ExpandComment.cb);
     }
   },
 
@@ -30,7 +30,7 @@ var ExpandComment = {
 
   cb(e) {
     e.preventDefault();
-    return ExpandComment.expand(Get.postFromNode(this));
+    ExpandComment.expand(Get.postFromNode(this));
   },
 
   expand(post) {

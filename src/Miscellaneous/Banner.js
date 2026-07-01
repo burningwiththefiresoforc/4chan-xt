@@ -51,7 +51,7 @@ var Banner = {
         src: '//s.4cdn.org/image/title/' + bannerCnt.dataset.src
       }
       );
-      return $.add(bannerCnt, img);
+      $.add(bannerCnt, img);
     }
   },
 

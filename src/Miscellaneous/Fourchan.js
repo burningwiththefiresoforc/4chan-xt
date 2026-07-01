@@ -15,7 +15,7 @@ var Fourchan = {
   init() {
     if ((g.SITE.software !== 'yotsuba') || !['index', 'thread', 'archive'].includes(g.VIEW)) { return; }
     BoardConfig.ready(this.initBoard);
-    return PageReady.ready(this.initReady);
+    PageReady.ready(this.initReady);
   },
 
   initBoard() {
