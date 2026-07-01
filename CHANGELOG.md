@@ -2,9 +2,13 @@
 
 4chan XT uses a different user script namespace than 4chan X, so to migrate you need to export settings from 4chan X, and import them in XT.
 
+### 2.28.1 (2026-07-01)
+
+- Embed icons more consistent between Firefox and Chromium.
+
 ### 2.28.0 (2026-06-30)
 
-- Linkification now should work a lot better
+- Embed icons now should work a lot better
 - Soundposts seemed maybe a little unsafe so added some extra safeguards.
 
 ### 2.27.4 (2026-06-24)

@@ -85,8 +85,8 @@
   'use strict';
 
   var version = {
-    "version": "2.28.0",
-    "date": "2026-06-30T09:09:09Z"
+    "version": "2.28.1",
+    "date": "2026-07-01T09:09:09Z"
   }
   ;
 
@@ -1336,10 +1336,10 @@
       const iconName = [...el.classList].find(c => c in linkifyIcons);
       if (!iconName)
         return;
-      const span = document.createElement('span');
-      span.className = 'linkify-icon icon';
-      span.innerHTML = linkifyIcons[iconName];
-      el.prepend(span);
+      $.prepend(el, $.el('span', {
+        className: 'linkify-icon icon',
+        innerHTML: linkifyIcons[iconName],
+      }));
     },
     /** Get the raw SVG string for an icon. */
     get(name) {
@@ -7026,10 +7026,12 @@ svg.icon {
 .linkify-icon {
   position: absolute;
   left: 0;
-  top: 50%;
-  transform: translateY(-50%);
+  top: var(--linkify-icon-top, 0);
+  line-height: inherit;
   width: 14px;
-  height: 14px;
+  height: 1lh;
+  display: flex;
+  align-items: center;
   pointer-events: none;
 }
 .linkify.youtube .linkify-icon svg {
@@ -7314,7 +7316,7 @@ svg.icon {
 
   // cSpell:ignore installGentoo, webfont
   const mainCSS = style + variableBase + yotsuba + yotsubaB + futaba + burichan + tomorrow + photon + spooky + iconCss + fxTwitterCss;
-  const CSS = {
+  const CSS$1 = {
     boards: mainCSS,
     report,
     www,
@@ -7345,7 +7347,7 @@ svg.icon {
           return this.addStyle();
       },
       addStyle() {
-          return this.style = $.addStyle(CSS.sub(Conf.usercss), 'custom-css', '#fourchanx-css');
+          return this.style = $.addStyle(CSS$1.sub(Conf.usercss), 'custom-css', '#fourchanx-css');
       },
       rmStyle() {
           if (this.style) {
@@ -7357,7 +7359,7 @@ svg.icon {
           if (!this.style) {
               return this.addStyle();
           }
-          return this.style.textContent = CSS.sub(Conf.usercss);
+          return this.style.textContent = CSS$1.sub(Conf.usercss);
       }
   };
 
@@ -11046,7 +11048,7 @@ svg.icon {
         dateEl.dataset.fullTime = dateEl.textContent;
         dateEl.title = dateEl.textContent;
       }
-      return RelativeDates.update(this);
+      RelativeDates.update(this);
     },
     /** @param diff is milliseconds from now. */
     relative(diff, now, date, abbrev) {
@@ -11237,13 +11239,13 @@ svg.icon {
       node() {
           let a;
           if (a = $('.abbr > a:not([onclick])', this.nodes.comment)) {
-              return $.on(a, 'click', ExpandComment.cb);
+              $.on(a, 'click', ExpandComment.cb);
           }
       },
       callbacks: [],
       cb(e) {
           e.preventDefault();
-          return ExpandComment.expand(Get.postFromNode(this));
+          ExpandComment.expand(Get.postFromNode(this));
       },
       expand(post) {
           let a;
@@ -16510,6 +16512,8 @@ svg.icon {
           if (Conf['Comment Expansion']) {
               ExpandComment.callbacks.push(this.node);
           }
+          const isFirefox = CSS.supports('-moz-appearance', 'none');
+          doc.style.setProperty('--linkify-icon-top', isFirefox ? '-0.1em' : '0');
           Callbacks.Post.push({
               name: 'Linkify',
               cb: this.node
@@ -18171,7 +18175,7 @@ svg.icon {
                   node.removeAttribute('accesskey');
               }
           };
-          return $.on(d, '4chanXInitFinished', init);
+          $.on(d, '4chanXInitFinished', init);
       },
       sync(key, hotkey) {
           return Conf[hotkey] = key;
@@ -18981,7 +18985,7 @@ svg.icon {
           return $.ready(this.ready);
       },
       ready() {
-          $.addStyle(CSS.report);
+          $.addStyle(CSS$1.report);
           if (Conf['Archive Report']) {
               Report.archive();
           }
@@ -19395,7 +19399,7 @@ $\
       switch (location.hostname) {
         // case 'www.4chan.org': case 'www.4channel.org':
         case 'www.4chan.org':
-          $.onExists(doc, 'body', () => $.addStyle(CSS.www));
+          $.onExists(doc, 'body', () => $.addStyle(CSS$1.www));
           Captcha.replace.init();
           return;
         // case 'sys.4chan.org': case 'sys.4channel.org':
@@ -20244,7 +20248,7 @@ $\
       $.add(oldInfo, [this.file.link.previousSibling, this.file.link, this.file.link.nextSibling]);
       const info = $.el('span', { className: 'file-info' });
       FileInfo.format(Conf.fileInfo, this, info);
-      return $.prepend(this.file.text, info);
+      $.prepend(this.file.text, info);
     },
     format(formatString, post, outputNode) {
       let a;
@@ -21765,7 +21769,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       toggle() {
           $.event('CloseMenu');
           $.set('Header catalog links', this.checked);
-          return CatalogLinks.set(this.checked);
+          CatalogLinks.set(this.checked);
       },
       set(useCatalog) {
           Conf['Header catalog links'] = useCatalog;
@@ -24155,7 +24159,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               name: 'Disable Autoplaying Sounds',
               cb: this.node
           });
-          return $.ready(() => this.process(d.body));
+          $.ready(() => this.process(d.body));
       },
       stop(audio) {
           if (!audio.autoplay) {
@@ -24167,7 +24171,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               return;
           }
           audio.controls = true;
-          return $.addClass(audio, 'controls-added');
+          $.addClass(audio, 'controls-added');
       },
       node() {
           return AntiAutoplay.process(this.nodes.comment);
@@ -24185,7 +24189,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           if (window.getComputedStyle(el).display === 'none') {
               el.style.display = 'block';
           }
-          return $.addClass(el, 'autoplay-removed');
+          $.addClass(el, 'autoplay-removed');
       }
   };
 
@@ -24222,7 +24226,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
                   alt: '4chan',
                   src: '//s.4cdn.org/image/title/' + bannerCnt.dataset.src
               });
-              return $.add(bannerCnt, img);
+              $.add(bannerCnt, img);
           }
       },
       setTitle(title) {
@@ -24332,7 +24336,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               return;
           }
           BoardConfig.ready(this.initBoard);
-          return PageReady.ready(this.initReady);
+          PageReady.ready(this.initReady);
       },
       initBoard() {
           if (g.BOARD.config.code_tags) {
@@ -25818,7 +25822,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
                   return $.toggleClass(doc, 'autohiding-scrollbar');
               }
           });
-          $.addStyle(CSS.sub(CSS.boards), 'fourchanx-css');
+          $.addStyle(CSS$1.sub(CSS$1.boards), 'fourchanx-css');
           Main.bgColorStyle = $.el('style', { id: 'fourchanx-bgcolor-css' });
           return Main.setClass();
       },
