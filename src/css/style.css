@@ -1276,30 +1276,30 @@ textarea.copy-text-element {
   max-height: calc(100vh - 25px);
   max-width: 100vw;
 }
-/* WEBM Metadata */
-.webm-title > a::before {
-  content: "title";
-  text-decoration: underline;
-}
-.webm-title.loading > a::after {
-  content: "...";
-}
-.webm-title.error > a:hover::before,
-.webm-title.error > a:focus::before {
-  content: "error";
-  text-decoration: none;
-}
-.webm-title > span {
-  cursor: text;
-}
-.webm-title.not-found > span::before {
-  content: "not found";
-}
-.webm-title:not(:hover):not(:focus) > span,
-.webm-title:hover > span + a,
-.webm-title:focus > span + a {
-  display: none;
-}
+/* /* WEBM Metadata */ */
+/* .webm-title > a::before { */
+/*   content: "title"; */
+/*   text-decoration: underline; */
+/* } */
+/* .webm-title.loading > a::after { */
+/*   content: "..."; */
+/* } */
+/* .webm-title.error > a:hover::before, */
+/* .webm-title.error > a:focus::before { */
+/*   content: "error"; */
+/*   text-decoration: none; */
+/* } */
+/* .webm-title > span { */
+/*   cursor: text; */
+/* } */
+/* .webm-title.not-found > span::before { */
+/*   content: "not found"; */
+/* } */
+/* .webm-title:not(:hover):not(:focus) > span, */
+/* .webm-title:hover > span + a, */
+/* .webm-title:focus > span + a { */
+/*   display: none; */
+/* } */
 /* Volume control */
 input[name="Default Volume"] {
   width: 4em;

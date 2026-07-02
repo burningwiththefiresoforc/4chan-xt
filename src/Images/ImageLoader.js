@@ -41,7 +41,7 @@ var ImageLoader = {
 
     $.on(el, 'click', this.toggle);
 
-    return Header.addShortcut('prefetch', el, 525);
+    Header.addShortcut('prefetch', el, 525);
   },
 
   node() {
@@ -69,7 +69,7 @@ var ImageLoader = {
     video.src         = file.url;
     $.replace(thumb, video);
     file.thumb      = video;
-    return file.videoThumb = true;
+    file.videoThumb = true;
   },
 
   prefetch(post, file) {

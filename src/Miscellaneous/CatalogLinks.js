@@ -72,7 +72,8 @@ var CatalogLinks = {
   node() {
     for (var a of $$('a', this.nodes.comment)) {
       var m;
-      if (m = a.href.match(/^https?:\/\/(boards\.4chan(?:nel)?\.org\/[^\/]+)\/catalog(#s=.*)?/)) {
+      // if (m = a.href.match(/^https?:\/\/(boards\.4chan(?:nel)?\.org\/[^\/]+)\/catalog(#s=.*)?/)) {
+      if (m = a.href.match(/^https?:\/\/(boards\.4chan\.org\/[^\/]+)\/catalog(#s=.*)?/)) {
         a.href = `//${m[1]}/${m[2] || '#catalog'}`;
       }
     }

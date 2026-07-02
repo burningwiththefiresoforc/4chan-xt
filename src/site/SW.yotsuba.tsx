@@ -121,25 +121,26 @@ const SWYotsuba = {
     replyContainer: 'div[contains(@class,"replyContainer")]'
   },
 
+// ^https?://boards\\.4chan(?:nel)?\\.org/+\
   regexp: {
     quotelink:
       new RegExp(`\
-^https?://boards\\.4chan(?:nel)?\\.org/+\
+^https?://boards\\.4chan\\.org/+\
 ([^/]+)\
 /+thread/+\
 (\\d+)\
 (?:[/?][^#]*)?\
-(?:#p\
-(\\d+)\
-)?\
-$\
+(?:#p(\\d+))?$\
 `),
+      // /<a [^>]*\bhref="(?:(?:\/\/boards\.4chan(?:nel)?\.org)?\/([^\/]+)\/thread\/)?(\d+)?(?:#p(\d+))?"/g,
+      // /^https?:\/\/www\.4chan(?:nel)?\.org\/+pass(?:$|[?#])/,
+      // /^https?:\/\/sys\.4chan(?:nel)?\.org\/+captcha(?:$|[?#])/,
     quotelinkHTML:
-      /<a [^>]*\bhref="(?:(?:\/\/boards\.4chan(?:nel)?\.org)?\/([^\/]+)\/thread\/)?(\d+)?(?:#p(\d+))?"/g,
+      /<a [^>]*\bhref="(?:(?:\/\/boards\.4chan\.org)?\/([^\/]+)\/thread\/)?(\d+)?(?:#p(\d+))?"/g,
     pass:
-      /^https?:\/\/www\.4chan(?:nel)?\.org\/+pass(?:$|[?#])/,
+      /^https?:\/\/www\.4chan\.org\/+pass(?:$|[?#])/,
     captcha:
-      /^https?:\/\/sys\.4chan(?:nel)?\.org\/+captcha(?:$|[?#])/,
+      /^https?:\/\/sys\.4chan\.org\/+captcha(?:$|[?#])/,
   },
 
   bgColoredEl() {

@@ -281,10 +281,10 @@ const Config = {
         true,
         'Add sauce links to images.'
       ],
-      'WEBM Metadata': [
-        true,
-        'Add link to fetch title metadata from webm videos.'
-      ],
+      // 'WEBM Metadata': [
+      //   true,
+      //   'Add link to fetch title metadata from webm videos.'
+      // ],
       'Reveal Spoiler Thumbnails': [
         false,
         'Replace spoiler thumbnails with the original image.'

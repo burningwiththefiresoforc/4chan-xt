@@ -22,7 +22,6 @@ import ImageExpand from "../Images/ImageExpand";
 import ImageHost from "../Images/ImageHost";
 import ImageHover from "../Images/ImageHover";
 import ImageLoader from "../Images/ImageLoader";
-import Metadata from "../Images/Metadata";
 import RevealSpoilers from "../Images/RevealSpoilers";
 import Sauce from "../Images/Sauce";
 import Volume from "../Images/Volume";
@@ -85,7 +84,6 @@ import Header from "../General/Header";
 import { c, Conf, d, doc, docSet, E, g } from "../globals/globals";
 import Menu from "../Menu/Menu";
 import BoardConfig from "../General/BoardConfig";
-// import CaptchaReplace from "../Posting/Captcha.replace";
 import Get from "../General/Get";
 import { dict, platform } from "../platform/helpers";
 import RestoreDeletedFromArchive from "../Archive/RestoreDeletedFromArchive";
@@ -94,6 +92,8 @@ import PageReady from "./PageReady";
 // #region tests_enabled
 import Test from "../General/Test";
 // #endregion
+// import CaptchaReplace from "../Posting/Captcha.replace";
+// import Metadata from "../Images/Metadata";
 
 /*
  * decaffeinate suggestions:
@@ -208,7 +208,8 @@ var Main = {
 
     // Enforce JS whitelist
     if (
-      /\.4chan(?:nel)?\.org$/.test(location.hostname) &&
+      // /\.4chan(?:nel)?\.org$/.test(location.hostname) &&
+      /\.4chan\.org$/.test(location.hostname) &&
       !SW.yotsuba.regexp.pass.test(location.href) &&
       !SW.yotsuba.regexp.captcha.test(location.href) &&
       !$$('script:not([src])', d).filter(s => /this\[/.test(s.textContent)).length
@@ -847,7 +848,6 @@ User agent: ${navigator.userAgent}\
     ['Board Configuration',       BoardConfig],
     ['Normalize URL',             NormalizeURL],
     ['Delay Redirect on Post',    PostRedirect],
-    // ['Captcha Configuration',     CaptchaReplace],
     ['Image Host Rewriting',      ImageHost],
     ['Redirect',                  Redirect],
     ['Header',                    Header],
@@ -906,7 +906,6 @@ User agent: ${navigator.userAgent}\
     ['Image Loading',             ImageLoader],
     ['Image Hover',               ImageHover],
     ['Volume Control',            Volume],
-    ['WEBM Metadata',             Metadata],
     ['Comment Expansion',         ExpandComment],
     ['Thread Expansion',          ExpandThread],
     ['Favicon',                   Favicon],
@@ -927,6 +926,8 @@ User agent: ${navigator.userAgent}\
     ['Mod Contact Links',         ModContact],
     ['Restore deleted posts from archive', RestoreDeletedFromArchive],
     ['Mark posts on scroll bar',  ScrollMarkers],
+    // ['WEBM Metadata',             Metadata],
+    // ['Captcha Configuration',     CaptchaReplace],
   ]
 };
 export default Main;
