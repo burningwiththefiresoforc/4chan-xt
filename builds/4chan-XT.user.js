@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         4chan XT
-// @version      2.28.1
+// @version      2.28.2
 // @minGMVer     1.14
 // @minFFVer     115
 // @namespace    4chan-XT
@@ -158,8 +158,8 @@
   'use strict';
 
   var version = {
-    "version": "2.28.1",
-    "date": "2026-07-01T09:09:09Z"
+    "version": "2.28.2",
+    "date": "2026-07-02T09:09:09Z"
   }
   ;
 
@@ -3075,10 +3075,10 @@ div.boardTitle {
                   true,
                   'Add sauce links to images.'
               ],
-              'WEBM Metadata': [
-                  true,
-                  'Add link to fetch title metadata from webm videos.'
-              ],
+              // 'WEBM Metadata': [
+              //   true,
+              //   'Add link to fetch title metadata from webm videos.'
+              // ],
               'Reveal Spoiler Thumbnails': [
                   false,
                   'Replace spoiler thumbnails with the original image.'
@@ -5979,30 +5979,30 @@ textarea.copy-text-element {
   max-height: calc(100vh - 25px);
   max-width: 100vw;
 }
-/* WEBM Metadata */
-.webm-title > a::before {
-  content: "title";
-  text-decoration: underline;
-}
-.webm-title.loading > a::after {
-  content: "...";
-}
-.webm-title.error > a:hover::before,
-.webm-title.error > a:focus::before {
-  content: "error";
-  text-decoration: none;
-}
-.webm-title > span {
-  cursor: text;
-}
-.webm-title.not-found > span::before {
-  content: "not found";
-}
-.webm-title:not(:hover):not(:focus) > span,
-.webm-title:hover > span + a,
-.webm-title:focus > span + a {
-  display: none;
-}
+/* /* WEBM Metadata */ */
+/* .webm-title > a::before { */
+/*   content: "title"; */
+/*   text-decoration: underline; */
+/* } */
+/* .webm-title.loading > a::after { */
+/*   content: "..."; */
+/* } */
+/* .webm-title.error > a:hover::before, */
+/* .webm-title.error > a:focus::before { */
+/*   content: "error"; */
+/*   text-decoration: none; */
+/* } */
+/* .webm-title > span { */
+/*   cursor: text; */
+/* } */
+/* .webm-title.not-found > span::before { */
+/*   content: "not found"; */
+/* } */
+/* .webm-title:not(:hover):not(:focus) > span, */
+/* .webm-title:hover > span + a, */
+/* .webm-title:focus > span + a { */
+/*   display: none; */
+/* } */
 /* Volume control */
 input[name="Default Volume"] {
   width: 4em;
@@ -16738,7 +16738,7 @@ svg.icon {
               name: 'Linkify',
               cb: this.node
           });
-          return Embedding.init();
+          Embedding.init();
       },
       node() {
           let link;
@@ -19570,21 +19570,22 @@ svg.icon {
       postContainer: 'div[contains(@class,"postContainer")]',
       replyContainer: 'div[contains(@class,"replyContainer")]'
     },
+    // ^https?://boards\\.4chan(?:nel)?\\.org/+\
     regexp: {
       quotelink: new RegExp(`\
-^https?://boards\\.4chan(?:nel)?\\.org/+\
+^https?://boards\\.4chan\\.org/+\
 ([^/]+)\
 /+thread/+\
 (\\d+)\
 (?:[/?][^#]*)?\
-(?:#p\
-(\\d+)\
-)?\
-$\
+(?:#p(\\d+))?$\
 `),
-      quotelinkHTML: /<a [^>]*\bhref="(?:(?:\/\/boards\.4chan(?:nel)?\.org)?\/([^\/]+)\/thread\/)?(\d+)?(?:#p(\d+))?"/g,
-      pass: /^https?:\/\/www\.4chan(?:nel)?\.org\/+pass(?:$|[?#])/,
-      captcha: /^https?:\/\/sys\.4chan(?:nel)?\.org\/+captcha(?:$|[?#])/,
+      // /<a [^>]*\bhref="(?:(?:\/\/boards\.4chan(?:nel)?\.org)?\/([^\/]+)\/thread\/)?(\d+)?(?:#p(\d+))?"/g,
+      // /^https?:\/\/www\.4chan(?:nel)?\.org\/+pass(?:$|[?#])/,
+      // /^https?:\/\/sys\.4chan(?:nel)?\.org\/+captcha(?:$|[?#])/,
+      quotelinkHTML: /<a [^>]*\bhref="(?:(?:\/\/boards\.4chan\.org)?\/([^\/]+)\/thread\/)?(\d+)?(?:#p(\d+))?"/g,
+      pass: /^https?:\/\/www\.4chan\.org\/+pass(?:$|[?#])/,
+      captcha: /^https?:\/\/sys\.4chan\.org\/+captcha(?:$|[?#])/,
     },
     bgColoredEl() {
       return $.el('div', { className: 'reply' });
@@ -21981,7 +21982,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       node() {
           for (var a of $$('a', this.nodes.comment)) {
               var m;
-              if (m = a.href.match(/^https?:\/\/(boards\.4chan(?:nel)?\.org\/[^\/]+)\/catalog(#s=.*)?/)) {
+              // if (m = a.href.match(/^https?:\/\/(boards\.4chan(?:nel)?\.org\/[^\/]+)\/catalog(#s=.*)?/)) {
+              if (m = a.href.match(/^https?:\/\/(boards\.4chan\.org\/[^\/]+)\/catalog(#s=.*)?/)) {
                   a.href = `//${m[1]}/${m[2] || '#catalog'}`;
               }
           }
@@ -22770,16 +22772,16 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           // If we clone a post where the image is still loading,
           // make it loading in the clone too.
           ImageExpand.contract(this);
-          return ImageExpand.expand(this);
+          ImageExpand.expand(this);
         } else if (this.file.isExpanded && this.file.isVideo) {
           Volume.setup(this.file.fullImage);
           ImageExpand.setupVideoCB(this);
-          return ImageExpand.setupVideo(this, !this.origin.file.fullImage?.paused || this.origin.file.wasPlaying, this.file.fullImage.controls);
+          ImageExpand.setupVideo(this, !this.origin.file.fullImage?.paused || this.origin.file.wasPlaying, this.file.fullImage.controls);
         }
       } else if (ImageExpand.on && !this.isHidden && !this.isFetchedQuote &&
         (Conf['Expand spoilers'] || !this.file.isSpoiler) &&
         (Conf['Expand videos'] || !this.file.isVideo)) {
-        return ImageExpand.expand(this);
+        ImageExpand.expand(this);
       }
     },
     cb: {
@@ -22794,9 +22796,9 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         }
         e.preventDefault();
         if (!Conf.Autoplay && file.fullImage?.paused) {
-          return file.fullImage.play();
+          file.fullImage.play();
         } else {
-          return ImageExpand.toggle(post);
+          ImageExpand.toggle(post);
         }
       },
       toggleAll() {
@@ -22872,7 +22874,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           }
         }
         if (next) {
-          return Header.scrollTo(next);
+          Header.scrollTo(next);
         }
       }
     },
@@ -23124,7 +23126,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         $.on(post.file.fullImage, eventName, cb);
       }
       if (post.file.videoControls) {
-        return $.on(post.file.videoControls.firstElementChild, 'click', () => ImageExpand.toggle(post));
+        $.on(post.file.videoControls.firstElementChild, 'click', () => ImageExpand.toggle(post));
       }
     },
     error() {
@@ -23637,7 +23639,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           if (!Conf.Anonymize) {
               return;
           }
-          return $.addClass(doc, 'anonymize');
+          $.addClass(doc, 'anonymize');
       }
   };
 
@@ -23665,7 +23667,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       const file = this.thread.OP.files[0];
       if (!file || (!file.isImage && !file.isVideo))
         return;
-      return $.on(this.nodes.thumb, 'mouseover', ImageHover.mouseover(this.thread.OP, file));
+      $.on(this.nodes.thumb, 'mouseover', ImageHover.mouseover(this.thread.OP, file));
     },
     mouseover(post, file) {
       return function (e) {
@@ -23787,7 +23789,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           });
           Icon.set(el, 'bolt', 'Prefetch');
           $.on(el, 'click', this.toggle);
-          return Header.addShortcut('prefetch', el, 525);
+          Header.addShortcut('prefetch', el, 525);
       },
       node() {
           if (this.isClone) {
@@ -23818,7 +23820,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           video.src = file.url;
           $.replace(thumb, video);
           file.thumb = video;
-          return file.videoThumb = true;
+          file.videoThumb = true;
       },
       prefetch(post, file) {
           let clone, type;
@@ -23901,93 +23903,6 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
                   }
               }
           });
-      }
-  };
-
-  var Metadata = {
-      init() {
-          if (!Conf['WEBM Metadata'] || !['index', 'thread'].includes(g.VIEW)) {
-              return;
-          }
-          return Callbacks.Post.push({
-              name: 'WEBM Metadata',
-              cb: this.node
-          });
-      },
-      node() {
-          for (let i = 0; i < this.files.length; i++) {
-              var file = this.files[i];
-              if (/webm$/i.test(file.url)) {
-                  var el;
-                  if (this.isClone) {
-                      el = $('.webm-title', file.text);
-                  }
-                  else {
-                      el = $.el('span', { className: 'webm-title' });
-                      el.dataset.index = i;
-                      $.extend(el, { innerHTML: "<a href=\"javascript:;\"></a>" });
-                      $.add(file.text, [$.tn(' '), el]);
-                  }
-                  if (el.children.length === 1) {
-                      $.one(el.lastElementChild, 'mouseover focus', Metadata.load);
-                  }
-              }
-          }
-      },
-      load() {
-          $.rmClass(this.parentNode, 'error');
-          $.addClass(this.parentNode, 'loading');
-          const { index } = this.parentNode.dataset;
-          return CrossOrigin.binary(Get.postFromNode(this).files[+index].url, data => {
-              $.rmClass(this.parentNode, 'loading');
-              if (data) {
-                  const title = Metadata.parse(data);
-                  const output = $.el('span', { textContent: title || '' });
-                  if (!title) {
-                      $.addClass(this.parentNode, 'not-found');
-                  }
-                  $.before(this, output);
-                  this.parentNode.tabIndex = 0;
-                  if (d.activeElement === this) {
-                      this.parentNode.focus();
-                  }
-                  return this.tabIndex = -1;
-              }
-              else {
-                  $.addClass(this.parentNode, 'error');
-                  return $.one(this, 'click', Metadata.load);
-              }
-          }, { Range: 'bytes=0-9999' });
-      },
-      parse(data) {
-          const readInt = function () {
-              let n = data[i++];
-              let len = 0;
-              while (n < (0x80 >> len)) {
-                  len++;
-              }
-              n ^= (0x80 >> len);
-              while (len-- && (i < data.length)) {
-                  n = (n << 8) ^ data[i++];
-              }
-              return n;
-          };
-          var i = 0;
-          while (i < data.length) {
-              var element = readInt();
-              var size = readInt();
-              if (element === 0x3BA9) { // Title
-                  var title = '';
-                  while (size-- && (i < data.length)) {
-                      title += String.fromCharCode(data[i++]);
-                  }
-                  return decodeURIComponent(escape(title)); // UTF-8 decoding
-              }
-              else if (![0x8538067, 0x549A966].includes(element)) { // Segment, Info
-                  i += size;
-              }
-          }
-          return null;
       }
   };
 
@@ -25767,6 +25682,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       }
   };
 
+  // import CaptchaReplace from "../Posting/Captcha.replace";
+  // import Metadata from "../Images/Metadata";
   var Main = {
       init() {
           // Return if the url is exactly https://www.4chan.org, this is only the home page which has a cloudflare checking
@@ -25878,7 +25795,9 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           Conf.captchaServiceDomain = '';
           Conf.captchaServiceKey = dict();
           // Enforce JS whitelist
-          if (/\.4chan(?:nel)?\.org$/.test(location.hostname) &&
+          if (
+          // /\.4chan(?:nel)?\.org$/.test(location.hostname) &&
+          /\.4chan\.org$/.test(location.hostname) &&
               !SW.yotsuba.regexp.pass.test(location.href) &&
               !SW.yotsuba.regexp.captcha.test(location.href) &&
               !$$('script:not([src])', d).filter(s => /this\[/.test(s.textContent)).length) {
@@ -26509,7 +26428,6 @@ User agent: ${navigator.userAgent}\
           ['Board Configuration', BoardConfig],
           ['Normalize URL', NormalizeURL],
           ['Delay Redirect on Post', PostRedirect],
-          // ['Captcha Configuration',     CaptchaReplace],
           ['Image Host Rewriting', ImageHost],
           ['Redirect', Redirect],
           ['Header', Header],
@@ -26568,7 +26486,6 @@ User agent: ${navigator.userAgent}\
           ['Image Loading', ImageLoader],
           ['Image Hover', ImageHover],
           ['Volume Control', Volume],
-          ['WEBM Metadata', Metadata],
           ['Comment Expansion', ExpandComment],
           ['Thread Expansion', ExpandThread],
           ['Favicon', Favicon],
@@ -26589,6 +26506,8 @@ User agent: ${navigator.userAgent}\
           ['Mod Contact Links', ModContact],
           ['Restore deleted posts from archive', RestoreDeletedFromArchive],
           ['Mark posts on scroll bar', ScrollMarkers],
+          // ['WEBM Metadata',             Metadata],
+          // ['Captcha Configuration',     CaptchaReplace],
       ]
   };
   $.ready(() => Main.init());
