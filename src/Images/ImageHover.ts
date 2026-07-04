@@ -43,7 +43,7 @@ var ImageHover = {
     const file = this.thread.OP.files[0];
     if (!file || (!file.isImage && !file.isVideo)) return;
 
-    return $.on(this.nodes.thumb, 'mouseover', ImageHover.mouseover(this.thread.OP, file));
+    $.on(this.nodes.thumb, 'mouseover', ImageHover.mouseover(this.thread.OP, file));
   },
 
   mouseover(post: Post, file: File) {

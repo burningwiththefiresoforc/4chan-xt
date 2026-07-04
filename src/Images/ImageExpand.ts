@@ -51,18 +51,18 @@ var ImageExpand = {
         // If we clone a post where the image is still loading,
         // make it loading in the clone too.
         ImageExpand.contract(this);
-        return ImageExpand.expand(this);
+        ImageExpand.expand(this);
 
       } else if (this.file.isExpanded && this.file.isVideo) {
         Volume.setup(this.file.fullImage);
         ImageExpand.setupVideoCB(this);
-        return ImageExpand.setupVideo(this, !this.origin.file.fullImage?.paused || this.origin.file.wasPlaying, this.file.fullImage.controls);
+        ImageExpand.setupVideo(this, !this.origin.file.fullImage?.paused || this.origin.file.wasPlaying, this.file.fullImage.controls);
       }
 
     } else if (ImageExpand.on && !this.isHidden && !this.isFetchedQuote &&
       (Conf['Expand spoilers'] || !this.file.isSpoiler) &&
       (Conf['Expand videos'] || !this.file.isVideo)) {
-        return ImageExpand.expand(this);
+      ImageExpand.expand(this);
       }
   },
 
@@ -74,9 +74,9 @@ var ImageExpand = {
       if (file.isExpanded && ImageCommon.onControls(e)) { return; }
       e.preventDefault();
       if (!Conf.Autoplay && file.fullImage?.paused) {
-        return file.fullImage.play();
+        file.fullImage.play();
       } else {
-        return ImageExpand.toggle(post);
+        ImageExpand.toggle(post);
       }
     },
 
@@ -153,7 +153,7 @@ var ImageExpand = {
         if (!$('.stub', next) && (next.offsetHeight !== 0)) { break; }
       }
       if (next) {
-        return Header.scrollTo(next);
+        Header.scrollTo(next);
       }
     }
   },

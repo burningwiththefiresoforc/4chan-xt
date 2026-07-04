@@ -2,6 +2,10 @@
 
 4chan XT uses a different user script namespace than 4chan X, so to migrate you need to export settings from 4chan X, and import them in XT.
 
+### 2.28.2 (2026-07-02)
+
+- Removed option for WEBM metadata, 4chan has been stripping it for years.
+
 ### 2.28.1 (2026-07-01)
 
 - Embed icons more consistent between Firefox and Chromium.
