@@ -30,7 +30,7 @@ var Linkify = {
       cb:   this.node
     });
 
-    return Embedding.init();
+    Embedding.init();
   },
 
   node() {

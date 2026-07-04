@@ -420,7 +420,7 @@ var ImageExpand = {
       $.on(post.file.fullImage, eventName, cb);
     }
     if (post.file.videoControls) {
-      return $.on(post.file.videoControls.firstElementChild, 'click', () => ImageExpand.toggle(post));
+      $.on(post.file.videoControls.firstElementChild, 'click', () => ImageExpand.toggle(post));
     }
   },
 
