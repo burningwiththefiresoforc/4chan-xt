@@ -57,12 +57,12 @@ var MarkNewIPs = {
     );
     post.nodes.nameBlock.title = `This is the ${ipCount}${suffix} IP in the thread.`;
     $.add(post.nodes.nameBlock, [$.tn(' '), counter]);
-    return $.addClass(post.nodes.root, 'new-ip');
+    $.addClass(post.nodes.root, 'new-ip');
   },
 
   markOld(post) {
     post.nodes.nameBlock.title = 'Not the first post from this IP.';
-    return $.addClass(post.nodes.root, 'old-ip');
+    $.addClass(post.nodes.root, 'old-ip');
   }
 };
 export default MarkNewIPs;
