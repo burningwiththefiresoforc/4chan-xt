@@ -10,7 +10,7 @@ import { Conf } from "../globals/globals";
 const CustomCSS = {
   init() {
     if (!Conf['Custom CSS']) { return; }
-    return this.addStyle();
+    this.addStyle();
   },
 
   addStyle() {
@@ -20,7 +20,7 @@ const CustomCSS = {
   rmStyle() {
     if (this.style) {
       $.rm(this.style);
-      return delete this.style;
+      delete this.style;
     }
   },
 

@@ -70,13 +70,6 @@ var ReplyPruning = {
     return ReplyPruning.active = this.checked;
   },
 
-  showIfHidden(id) {
-    if (ReplyPruning.container && $(`#${id}`, ReplyPruning.container)) {
-      ReplyPruning.inputs.enabled.checked = false;
-      return $.event('change', null, ReplyPruning.inputs.enabled);
-    }
-  },
-
   node() {
     let middle;
     ReplyPruning.thread = this;
@@ -112,7 +105,7 @@ var ReplyPruning = {
     $.on(d, 'ThreadUpdate', ReplyPruning.updateCount);
     $.on(d, 'ThreadUpdate', ReplyPruning.update);
 
-    return ReplyPruning.update();
+    ReplyPruning.update();
   },
 
   updateCount(e) {

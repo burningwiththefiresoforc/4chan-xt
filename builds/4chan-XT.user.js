@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         4chan XT
-// @version      2.28.2
+// @version      2.28.3
 // @minGMVer     1.14
 // @minFFVer     115
 // @namespace    4chan-XT
@@ -158,8 +158,8 @@
   'use strict';
 
   var version = {
-    "version": "2.28.2",
-    "date": "2026-07-02T09:09:09Z"
+    "version": "2.28.3",
+    "date": "2026-07-05T09:09:09Z"
   }
   ;
 
@@ -2129,13 +2129,14 @@
               return result;
           })();
       },
-      isSFW(board) {
-          return !!(this.boards || Conf.boardConfig.boards)[board]?.ws_board;
-      },
-      domain(board) {
-          // return `boards.${BoardConfig.isSFW(board) ? '4channel' : '4chan'}.org`;
-          return 'boards.4chan.org';
-      },
+      // isSFW(board) {
+      //   return !!(this.boards || Conf.boardConfig.boards)[board]?.ws_board;
+      // },
+      //
+      // domain(board) {
+      //   // return `boards.${BoardConfig.isSFW(board) ? '4channel' : '4chan'}.org`;
+      //   return 'boards.4chan.org';
+      // },
       isArchived(board) {
           // assume archive exists if no data available to prevent cleaning of archived threads
           const data = (this.boards || Conf.boardConfig.boards)[board];
@@ -7564,7 +7565,7 @@ svg.icon {
           if (!Conf['Custom CSS']) {
               return;
           }
-          return this.addStyle();
+          this.addStyle();
       },
       addStyle() {
           return this.style = $.addStyle(CSS$1.sub(Conf.usercss), 'custom-css', '#fourchanx-css');
@@ -7572,7 +7573,7 @@ svg.icon {
       rmStyle() {
           if (this.style) {
               $.rm(this.style);
-              return delete this.style;
+              delete this.style;
           }
       },
       update() {
@@ -13658,12 +13659,6 @@ svg.icon {
           }
           return ReplyPruning.active = this.checked;
       },
-      showIfHidden(id) {
-          if (ReplyPruning.container && $(`#${id}`, ReplyPruning.container)) {
-              ReplyPruning.inputs.enabled.checked = false;
-              return $.event('change', null, ReplyPruning.inputs.enabled);
-          }
-      },
       node() {
           let middle;
           ReplyPruning.thread = this;
@@ -13693,7 +13688,7 @@ svg.icon {
           $.on(ReplyPruning.inputs.replies, 'change', ReplyPruning.update);
           $.on(d, 'ThreadUpdate', ReplyPruning.updateCount);
           $.on(d, 'ThreadUpdate', ReplyPruning.update);
-          return ReplyPruning.update();
+          ReplyPruning.update();
       },
       updateCount(e) {
           if (e.detail[404]) {
@@ -19464,39 +19459,27 @@ svg.icon {
           thread.isClosed ? h("img", { src: `${staticPath}closed${gifIcon}`, class: "closedIcon", title: "Closed" }) : '')));
   }
 
+  const getBaseUrl = (boardID) => `${location.protocol}//boards.4chan.org/${boardID}`;
+  const getApiUrl = (boardID) => `${location.protocol}//a.4cdn.org/${boardID}`;
   const SWYotsuba = {
     isOPContainerThread: false,
     hasIPCount: true,
     archivedBoardsKnown: true,
     urls: {
-      thread({ boardID, threadID }) { return `${location.protocol}//${BoardConfig.domain(boardID)}/${boardID}/thread/${threadID}`; },
-      post({ postID }) { return `#p${postID}`; },
-      index({ boardID }) { return `${location.protocol}//${BoardConfig.domain(boardID)}/${boardID}/`; },
-      catalog({ boardID }) { if (boardID === 'f') {
-        return undefined;
-      } else {
-        return `${location.protocol}//${BoardConfig.domain(boardID)}/${boardID}/catalog`;
-      } },
-      archive({ boardID }) { if (BoardConfig.isArchived(boardID)) {
-        return `${location.protocol}//${BoardConfig.domain(boardID)}/${boardID}/archive`;
-      } else {
-        return undefined;
-      } },
-      threadJSON({ boardID, threadID }) { return `${location.protocol}//a.4cdn.org/${boardID}/thread/${threadID}.json`; },
-      threadsListJSON({ boardID }) { return `${location.protocol}//a.4cdn.org/${boardID}/threads.json`; },
-      archiveListJSON({ boardID }) { if (BoardConfig.isArchived(boardID)) {
-        return `${location.protocol}//a.4cdn.org/${boardID}/archive.json`;
-      } else {
-        return '';
-      } },
-      catalogJSON({ boardID }) { return `${location.protocol}//a.4cdn.org/${boardID}/catalog.json`; },
+      post: ({ postID }) => `#p${postID}`,
+      index: ({ boardID }) => `${getBaseUrl(boardID)}/`,
+      thread: ({ boardID, threadID }) => `${getBaseUrl(boardID)}/thread/${threadID}`,
+      catalog: ({ boardID }) => boardID === 'f' ? undefined : `${getBaseUrl(boardID)}/catalog`,
+      archive: ({ boardID }) => BoardConfig.isArchived(boardID) ? `${getBaseUrl(boardID)}/archive` : undefined,
+      threadJSON: ({ boardID, threadID }) => `${getApiUrl(boardID)}/thread/${threadID}.json`,
+      threadsListJSON: ({ boardID }) => `${getApiUrl(boardID)}/threads.json`,
+      catalogJSON: ({ boardID }) => `${getApiUrl(boardID)}/catalog.json`,
+      archiveListJSON: ({ boardID }) => BoardConfig.isArchived(boardID) ? `${getApiUrl(boardID)}/archive.json` : '',
       file({ boardID }, filename) {
-        const hostname = boardID === 'f' ? ImageHost.flashHost() : ImageHost.host();
-        return `${location.protocol}//${hostname}/${boardID}/${filename}`;
+        const host = boardID === 'f' ? ImageHost.flashHost() : ImageHost.host();
+        return `${location.protocol}//${host}/${boardID}/${filename}`;
       },
-      thumb({ boardID }, filename) {
-        return `${location.protocol}//${ImageHost.thumbHost()}/${boardID}/${filename}`;
-      }
+      thumb: ({ boardID }, filename) => `${location.protocol}//${ImageHost.thumbHost()}/${boardID}/${filename}`
     },
     isPrunedByAge({ boardID }) { return boardID === 'f'; },
     areMD5sDeferred({ boardID }) { return boardID === 'f'; },
@@ -19829,7 +19812,7 @@ svg.icon {
       },
       threadURL(boardID, threadID) {
         if (boardID !== g.BOARD.ID) {
-          return `//${BoardConfig.domain(boardID)}/${boardID}/thread/${threadID}`;
+          return `//boards.4chan.org/${boardID}/thread/${threadID}`;
         } else if ((g.VIEW !== 'thread') || (+threadID !== g.THREADID)) {
           return `/${boardID}/thread/${threadID}`;
         } else {
@@ -22340,7 +22323,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           });
         }
         a = $.el('a', {
-          href: `//${BoardConfig.domain(boardID)}/${boardID}/`,
+          // href: `//${BoardConfig.domain(boardID)}/${boardID}/`,
+          href: `//boards.4chan.org/${boardID}/`,
           textContent: boardID,
           title: BoardConfig.title(boardID)
         });
@@ -22386,7 +22370,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       }
       if (/-expired/.test(t)) {
         if (BoardConfig.isArchived(boardID)) {
-          a.href = `//${BoardConfig.domain(boardID)}/${boardID}/archive`;
+          // a.href = `//${BoardConfig.domain(boardID)}/${boardID}/archive`;
+          a.href = `//boards.4chan.org/${boardID}/archive`;
         } else {
           return a.firstChild; // Its text node.
         }
@@ -25012,11 +24997,11 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           });
           post.nodes.nameBlock.title = `This is the ${ipCount}${suffix} IP in the thread.`;
           $.add(post.nodes.nameBlock, [$.tn(' '), counter]);
-          return $.addClass(post.nodes.root, 'new-ip');
+          $.addClass(post.nodes.root, 'new-ip');
       },
       markOld(post) {
           post.nodes.nameBlock.title = 'Not the first post from this IP.';
-          return $.addClass(post.nodes.root, 'old-ip');
+          $.addClass(post.nodes.root, 'old-ip');
       }
   };
 

@@ -313,7 +313,8 @@ var Header = {
       }
 
       a = $.el('a', {
-        href: `//${BoardConfig.domain(boardID)}/${boardID}/`,
+        // href: `//${BoardConfig.domain(boardID)}/${boardID}/`,
+        href: `//boards.4chan.org/${boardID}/`,
         textContent: boardID,
         title: BoardConfig.title(boardID)
       }
@@ -361,7 +362,8 @@ var Header = {
 
     if (/-expired/.test(t)) {
       if (BoardConfig.isArchived(boardID)) {
-        a.href = `//${BoardConfig.domain(boardID)}/${boardID}/archive`;
+        // a.href = `//${BoardConfig.domain(boardID)}/${boardID}/archive`;
+        a.href = `//boards.4chan.org/${boardID}/archive`;
       } else {
         return a.firstChild; // Its text node.
       }
