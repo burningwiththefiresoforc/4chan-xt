@@ -79,14 +79,14 @@ var BoardConfig = {
     })();
   },
 
-  isSFW(board) {
-    return !!(this.boards || Conf.boardConfig.boards)[board]?.ws_board;
-  },
-
-  domain(board) {
-    // return `boards.${BoardConfig.isSFW(board) ? '4channel' : '4chan'}.org`;
-    return 'boards.4chan.org';
-  },
+  // isSFW(board) {
+  //   return !!(this.boards || Conf.boardConfig.boards)[board]?.ws_board;
+  // },
+  //
+  // domain(board) {
+  //   // return `boards.${BoardConfig.isSFW(board) ? '4channel' : '4chan'}.org`;
+  //   return 'boards.4chan.org';
+  // },
 
   isArchived(board) {
     // assume archive exists if no data available to prevent cleaning of archived threads

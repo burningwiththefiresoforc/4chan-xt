@@ -21,8 +21,8 @@ import { dict, MINUTE } from "../platform/helpers";
  * DS205: Consider reworking code to avoid use of IIFEs
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const getBaseUrl = (boardID) => `${location.protocol}//boards.4chan.org/${boardID}/`;
-const getApiUrl  = (boardID) => `${location.protocol}//a.4cdn.org/${boardID}/`;
+const getBaseUrl = (boardID) => `${location.protocol}//boards.4chan.org/${boardID}`;
+const getApiUrl  = (boardID) => `${location.protocol}//a.4cdn.org/${boardID}`;
 
 const SWYotsuba = {
   isOPContainerThread: false,
@@ -405,7 +405,7 @@ const SWYotsuba = {
 
     threadURL(boardID, threadID) {
       if (boardID !== g.BOARD.ID) {
-        return `//${BoardConfig.domain(boardID)}/${boardID}/thread/${threadID}`;
+        return `//boards.4chan.org/${boardID}/thread/${threadID}`;
       } else if ((g.VIEW !== 'thread') || (+threadID !== g.THREADID)) {
         return `/${boardID}/thread/${threadID}`;
       } else {
