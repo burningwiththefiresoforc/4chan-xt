@@ -21,28 +21,32 @@ import { dict, MINUTE } from "../platform/helpers";
  * DS205: Consider reworking code to avoid use of IIFEs
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
+const getBaseUrl = (boardID) => `${location.protocol}//boards.4chan.org/${boardID}/`;
+const getApiUrl  = (boardID) => `${location.protocol}//a.4cdn.org/${boardID}/`;
+
 const SWYotsuba = {
   isOPContainerThread: false,
   hasIPCount: true,
   archivedBoardsKnown: true,
 
   urls: {
-    thread({boardID, threadID}) { return `${location.protocol}//${BoardConfig.domain(boardID)}/${boardID}/thread/${threadID}`; },
-    post({postID})            { return `#p${postID}`; },
-    index({boardID})           { return `${location.protocol}//${BoardConfig.domain(boardID)}/${boardID}/`; },
-    catalog({boardID})           { if (boardID === 'f') { return undefined; } else { return `${location.protocol}//${BoardConfig.domain(boardID)}/${boardID}/catalog`; } },
-    archive({boardID})           { if (BoardConfig.isArchived(boardID)) { return `${location.protocol}//${BoardConfig.domain(boardID)}/${boardID}/archive`; } else { return undefined; } },
-    threadJSON({boardID, threadID}) { return `${location.protocol}//a.4cdn.org/${boardID}/thread/${threadID}.json`; },
-    threadsListJSON({boardID})      { return `${location.protocol}//a.4cdn.org/${boardID}/threads.json`; },
-    archiveListJSON({boardID})      { if (BoardConfig.isArchived(boardID)) { return `${location.protocol}//a.4cdn.org/${boardID}/archive.json`; } else { return ''; } },
-    catalogJSON({boardID})      { return `${location.protocol}//a.4cdn.org/${boardID}/catalog.json`; },
+    post:    ({postID}) => `#p${postID}`,
+    index:   ({boardID}) => `${getBaseUrl(boardID)}/`,
+    thread:  ({boardID, threadID}) => `${getBaseUrl(boardID)}/thread/${threadID}`,
+
+    catalog: ({boardID}) => boardID === 'f' ? undefined : `${getBaseUrl(boardID)}/catalog`,
+    archive: ({boardID}) => BoardConfig.isArchived(boardID) ? `${getBaseUrl(boardID)}/archive` : undefined,
+
+    threadJSON:      ({boardID, threadID}) => `${getApiUrl(boardID)}/thread/${threadID}.json`,
+    threadsListJSON: ({boardID}) => `${getApiUrl(boardID)}/threads.json`,
+    catalogJSON:     ({boardID}) => `${getApiUrl(boardID)}/catalog.json`,
+    archiveListJSON: ({boardID}) => BoardConfig.isArchived(boardID) ? `${getApiUrl(boardID)}/archive.json` : '',
+
     file({boardID}, filename) {
-      const hostname = boardID === 'f' ? ImageHost.flashHost() : ImageHost.host();
-      return `${location.protocol}//${hostname}/${boardID}/${filename}`;
+      const host = boardID === 'f' ? ImageHost.flashHost() : ImageHost.host();
+      return `${location.protocol}//${host}/${boardID}/${filename}`;
     },
-    thumb({boardID}, filename) {
-      return `${location.protocol}//${ImageHost.thumbHost()}/${boardID}/${filename}`;
-    }
+    thumb: ({boardID}, filename) => `${location.protocol}//${ImageHost.thumbHost()}/${boardID}/${filename}`
   },
 
   isPrunedByAge({boardID}) { return boardID === 'f'; },
