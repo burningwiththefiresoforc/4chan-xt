@@ -20,11 +20,15 @@ import { dict } from "../platform/helpers";
 var CatalogLinks = {
   init() {
     if ((g.SITE.software === 'yotsuba') && (Conf['External Catalog'] || Conf['JSON Index']) && !(Conf['JSON Index'] && (g.VIEW === 'index'))) {
-      const selector = (() => { switch (g.VIEW) {
-        case 'thread': case 'archive': return '.navLinks.desktop > a';
-        case 'catalog':           return '.navLinks > :first-child > a';
-        case 'index':             return '#ctrl-top > a, .cataloglink > a';
-      } })();
+
+      const selectors = {
+        thread: '.navLinks.desktop > a',
+        archive: '.navLinks.desktop > a',
+        catalog: '.navLinks > :first-child > a',
+        index: '#ctrl-top > a, .cataloglink > a'
+      };
+      const selector = selectors[g.VIEW];
+
       $.ready(function() {
         for (var link of $$(selector)) {
           var catalogURL;
