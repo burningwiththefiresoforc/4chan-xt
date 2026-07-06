@@ -22,8 +22,8 @@ import { dict, MINUTE } from "../platform/helpers";
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 
-function boardOrigin(boardID) { return `${location.protocol}//boards.4chan.org`; }
-function cdnOrigin() { return `${location.protocol}//a.4cdn.org`; }
+const boardOrigin = () => `${location.protocol}//boards.4chan.org`;
+const cdnOrigin = () => `${location.protocol}//a.4cdn.org`;
 
 const SWYotsuba = {
   isOPContainerThread: false,
@@ -31,35 +31,20 @@ const SWYotsuba = {
   archivedBoardsKnown: true,
 
   urls: {
-    post({postID}) { return `#p${postID}`; },
-    index({boardID}) { return `${boardOrigin(boardID)}/${boardID}/`; },
-    thread({boardID, threadID}) {
-      return `${boardOrigin(boardID)}/${boardID}/thread/${threadID}`;
-    },
-    catalog({boardID}) {
-      if (boardID === 'f') { return undefined; }
-      return `${boardOrigin(boardID)}/${boardID}/catalog`;
-    },
-    archive({boardID}) {
-      if (!BoardConfig.isArchived(boardID)) { return undefined; }
-      return `${boardOrigin(boardID)}/${boardID}/archive`;
-    },
-    threadJSON({boardID, threadID}) {
-      return `${cdnOrigin()}/${boardID}/thread/${threadID}.json`;
-    },
-    threadsListJSON({boardID}) { return `${cdnOrigin()}/${boardID}/threads.json`; },
-    archiveListJSON({boardID}) {
-      if (!BoardConfig.isArchived(boardID)) { return ''; }
-      return `${cdnOrigin()}/${boardID}/archive.json`;
-    },
-    catalogJSON({boardID}) { return `${cdnOrigin()}/${boardID}/catalog.json`; },
-    file({boardID}, filename) {
+    post: ({postID}) => `#p${postID}`,
+    index: ({boardID}) => `${boardOrigin(boardID)}/${boardID}/`,
+    thread: ({boardID, threadID}) => `${boardOrigin(boardID)}/${boardID}/thread/${threadID}`,
+    threadJSON: ({boardID, threadID}) => `${cdnOrigin()}/${boardID}/thread/${threadID}.json`,
+    threadsListJSON: ({boardID}) => `${cdnOrigin()}/${boardID}/threads.json`,
+    catalogJSON: ({boardID}) => `${cdnOrigin()}/${boardID}/catalog.json`,
+    thumb: ({boardID}, filename) => `${location.protocol}//${ImageHost.thumbHost()}/${boardID}/${filename}`,
+    catalog: ({boardID}) => boardID === 'f' ? undefined : `${boardOrigin(boardID)}/${boardID}/catalog`,
+    archive: ({boardID}) => BoardConfig.isArchived(boardID) ? `${boardOrigin(boardID)}/${boardID}/archive` : undefined,
+    archiveListJSON: ({boardID}) => BoardConfig.isArchived(boardID) ? `${cdnOrigin()}/${boardID}/archive.json` : '',
+    file: ({boardID}, filename) => {
       const hostname = boardID === 'f' ? ImageHost.flashHost() : ImageHost.host();
       return `${location.protocol}//${hostname}/${boardID}/${filename}`;
     },
-    thumb({boardID}, filename) {
-      return `${location.protocol}//${ImageHost.thumbHost()}/${boardID}/${filename}`;
-    }
   },
 
   isPrunedByAge({boardID}) { return boardID === 'f'; },

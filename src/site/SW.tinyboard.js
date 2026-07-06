@@ -11,13 +11,8 @@ import SWYotsuba from "./SW.yotsuba";
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 
-function rootFor({siteID}) {
-  return Conf.siteProperties[siteID]?.root || `http://${siteID}/`;
-}
-
-function rootOrEmptyFor({siteID}) {
-  return Conf.siteProperties[siteID]?.root || '';
-}
+const rootFor = ({siteID}) => Conf.siteProperties[siteID]?.root || `http://${siteID}/`;
+const rootOrEmptyFor = ({siteID}) => Conf.siteProperties[siteID]?.root || '';
 
 const SWTinyboard = {
   isOPContainerThread: true,
@@ -80,24 +75,17 @@ const SWTinyboard = {
   },
 
   urls: {
-    thread({siteID, boardID, threadID}, isArchived) {
-      return `${rootFor({siteID})}${boardID}/${isArchived ? 'archive/' : ''}res/${threadID}.html`;
-    },
-    post({postID}) {
-      return `#${postID}`;
-    },
-    index({siteID, boardID}) {
-      return `${rootFor({siteID})}${boardID}/`;
-    },
-    catalog({siteID, boardID}) {
-      return `${rootFor({siteID})}${boardID}/catalog.html`;
-    },
-    threadJSON({siteID, boardID, threadID}, isArchived) {
+    post: ({postID}) => `#${postID}`,
+    index: ({siteID, boardID}) => `${rootFor({siteID})}${boardID}/`,
+    catalog: ({siteID, boardID}) => `${rootFor({siteID})}${boardID}/catalog.html`,
+    file: ({siteID, boardID}, filename) => `${rootFor({siteID})}${boardID}/${filename}`,
+    archivedThreadJSON: (thread) => SWTinyboard.urls.threadJSON(thread, true),
+    thumb: (board, filename) => SWTinyboard.urls.file(board, filename),
+    thread: ({siteID, boardID, threadID}, isArchived) =>
+      `${rootFor({siteID})}${boardID}/${isArchived ? 'archive/' : ''}res/${threadID}.html`,
+    threadJSON: ({siteID, boardID, threadID}, isArchived) => {
       const root = rootOrEmptyFor({siteID});
       return root && `${root}${boardID}/${isArchived ? 'archive/' : ''}res/${threadID}.json`;
-    },
-    archivedThreadJSON(thread) {
-      return SWTinyboard.urls.threadJSON(thread, true);
     },
     threadsListJSON({siteID, boardID}) {
       const root = rootOrEmptyFor({siteID});
@@ -111,12 +99,6 @@ const SWTinyboard = {
       const root = rootOrEmptyFor({siteID});
       return root && `${root}${boardID}/catalog.json`;
     },
-    file({siteID, boardID}, filename) {
-      return `${rootFor({siteID})}${boardID}/${filename}`;
-    },
-    thumb(board, filename) {
-      return SWTinyboard.urls.file(board, filename);
-    }
   },
 
   selectors: {
