@@ -19,7 +19,7 @@ var QuoteInline = {
       ExpandComment.callbacks.push(this.node);
     }
 
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Quote Inlining',
       cb:   this.node
     });
@@ -37,7 +37,7 @@ var QuoteInline = {
     if (Conf['Quote Hash Navigation']) {
       if (!clone) { $.after(link, QuoteInline.qiQuote(link, $.hasClass(link, 'filtered'))); }
     }
-    return $.on(link, 'click', QuoteInline.toggle);
+    $.on(link, 'click', QuoteInline.toggle);
   },
 
   qiQuote(link, hidden) {

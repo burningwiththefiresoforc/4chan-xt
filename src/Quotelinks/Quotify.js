@@ -21,7 +21,7 @@ var Quotify = {
       ExpandComment.callbacks.push(this.node);
     }
 
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Resurrect Quotes',
       cb:   this.node
     });
@@ -140,7 +140,7 @@ var Quotify = {
       $.before(deadlink, green);
       $.add(green, deadlink);
     }
-    return $.replace(deadlink, [...deadlink.childNodes]);
+    $.replace(deadlink, [...deadlink.childNodes]);
   }
 };
 export default Quotify;

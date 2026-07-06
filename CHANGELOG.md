@@ -2,6 +2,10 @@
 
 4chan XT uses a different user script namespace than 4chan X, so to migrate you need to export settings from 4chan X, and import them in XT.
 
+### 2.28.3 (2026-07-06)
+
+- Deprecated Pale Moon workaround dropped, cloneInto is defined [here](https://repo.palemoon.org/MoonchildProductions/UXP/src/branch/master/js/xpconnect/idl/xpccomponents.idl) since 2017 and [this](https://github.com/SthephanShinkufag/Dollchan-Extension-Tools/issues/1079) old Dollchan issue appears to be related, please let me know if I broke your script. GM support is now 4+ on Pale Moon.
+
 ### 2.28.3 (2026-07-04) 🇺🇸🦅🇺🇸🇺🇸🇺🇸🦅🦅🇺🇸🦅
 
 - More refactoring to remove 4channel support

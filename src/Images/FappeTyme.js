@@ -58,7 +58,7 @@ var FappeTyme = {
       cb:   this.node
     });
 
-    return Callbacks.CatalogThread.push({
+    Callbacks.CatalogThread.push({
       name: 'Werk Tyme',
       cb:   this.catalogNode
     });
@@ -74,9 +74,8 @@ var FappeTyme = {
     const filename = $.el('div', {
       textContent: file.name,
       className:   'werkTyme-filename'
-    }
-    );
-    return $.add(this.nodes.thumb.parentNode, filename);
+    });
+    $.add(this.nodes.thumb.parentNode, filename);
   },
 
   set(type, enabled) {

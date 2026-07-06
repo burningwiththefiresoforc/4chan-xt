@@ -30,7 +30,7 @@ var QuotePreview = {
       ExpandComment.callbacks.push(this.node);
     }
 
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Quote Previewing',
       cb:   this.node
     });
