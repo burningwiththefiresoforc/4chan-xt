@@ -58,13 +58,13 @@ var Volume = {
     $.on(this.inputs.volume, 'change', $.cb.value);
 
     Header.menu.addEntry({el: unmuteEntry, order: 200});
-    return Header.menu.addEntry({el: volumeEntry, order: 201});
+    Header.menu.addEntry({el: volumeEntry, order: 201});
   },
 
   setup(video) {
     video.muted  = !Conf['Allow Sound'];
     video.volume = Conf['Default Volume'];
-    return $.on(video, 'volumechange', Volume.change);
+    $.on(video, 'volumechange', Volume.change);
   },
 
   change() {

@@ -14,7 +14,7 @@ var IDColor = {
     this.ids = dict();
     this.ids.Heaven = [0, 0, 0, '#fff'];
 
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Color User IDs',
       cb:   this.node
     });
@@ -45,7 +45,7 @@ var IDColor = {
       hash & 0xFF
     ];
 
-    // Weight color luminance values, assign a font color that should be readable. 
+    // Weight color luminance values, assign a font color that should be readable.
     rgb.push($.luma(rgb) > 125 ?
       '#000'
     :

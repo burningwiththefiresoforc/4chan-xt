@@ -34,7 +34,7 @@ var UnreadIndex = {
     });
 
     $.on(d, 'IndexRefreshInternal', this.onIndexRefresh);
-    return $.on(d, 'PostsInserted PostsRemoved', this.onPostsInserted);
+    $.on(d, 'PostsInserted PostsRemoved', this.onPostsInserted);
   },
 
   node() {

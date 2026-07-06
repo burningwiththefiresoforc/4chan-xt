@@ -9,7 +9,7 @@ import $ from "../platform/$";
 var Flash = {
   init() {
     if ((g.BOARD.ID === 'f') && Conf['Enable Native Flash Embedding']) {
-      return $.ready(Flash.initReady);
+      $.ready(Flash.initReady);
     }
   },
 

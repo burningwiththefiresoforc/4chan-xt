@@ -17,7 +17,7 @@ var FileInfo = {
   init() {
     if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf['File Info Formatting']) { return; }
 
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'File Info Formatting',
       cb:   this.node
     });

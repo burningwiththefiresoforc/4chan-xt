@@ -334,7 +334,7 @@ var QR = {
     if ($.hasClass(QR.nodes.el, 'tex-preview')) { return QR.texPreviewHide(); }
     $.addClass(QR.nodes.el, 'tex-preview');
     QR.nodes.texPreview.textContent = QR.nodes.com.value;
-    return $.event('mathjax', null, QR.nodes.texPreview);
+    $.event('mathjax', null, QR.nodes.texPreview);
   },
 
   texPreviewHide() {
@@ -575,7 +575,7 @@ var QR = {
   },
 
   getFile() {
-    return $.event('QRFile', QR.selected?.file);
+    $.event('QRFile', QR.selected?.file);
   },
 
   drawFile(e) {

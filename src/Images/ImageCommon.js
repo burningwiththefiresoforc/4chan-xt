@@ -33,7 +33,7 @@ var ImageCommon = {
 
   pushCache(el) {
     ImageCommon.cache = el;
-    return $.on(el, 'error', ImageCommon.cacheError);
+    $.on(el, 'error', ImageCommon.cacheError);
   },
 
   popCache() {

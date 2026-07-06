@@ -497,7 +497,7 @@ var Filter = {
     const select = $('select[name=filter]', section);
     select.value = type;
     Settings.selectFilter.call(select);
-    return $.onExists(section, 'textarea', function(ta) {
+    $.onExists(section, 'textarea', function(ta) {
       const tl = ta.textLength;
       ta.setSelectionRange(tl, tl);
       return ta.focus();
@@ -603,7 +603,7 @@ var Filter = {
         entry.subEntries.push(Filter.menu.createSubEntry(type[0], type[1]));
       }
 
-      return Menu.menu.addEntry(entry);
+      Menu.menu.addEntry(entry);
     },
 
     createSubEntry(text, type) {

@@ -23,7 +23,7 @@ var QuoteOP = {
       className:   'qmark-op'
     }
     );
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Mark OP Quotes',
       cb:   this.node
     });

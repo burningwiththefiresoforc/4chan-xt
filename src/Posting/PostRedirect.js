@@ -8,11 +8,11 @@ import $ from "../platform/$";
  */
 const PostRedirect = {
   init() {
-    return $.on(d, 'QRPostSuccessful', e => {
+    $.on(d, 'QRPostSuccessful', e => {
       if (!e.detail.redirect) { return; }
       this.event = e;
       this.delays = 0;
-      return $.queueTask(() => {
+      $.queueTask(() => {
         if ((e === this.event) && (this.delays === 0)) {
           return location.href = e.detail.redirect;
         }

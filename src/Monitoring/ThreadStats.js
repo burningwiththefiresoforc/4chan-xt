@@ -53,7 +53,7 @@ var ThreadStats = {
 
     if (this.pageCountEl) { $.on(this.pageCountEl, 'click', ThreadStats.fetchPage); }
 
-    return Callbacks.Thread.push({
+    Callbacks.Thread.push({
       name: 'Thread Stats',
       cb:   this.node
     });
@@ -65,7 +65,7 @@ var ThreadStats = {
     ThreadStats.update();
     ThreadStats.fetchPage();
     $.on(d, 'PostsInserted', () => $.queueTask(ThreadStats.onPostsInserted));
-    return $.on(d, 'ThreadUpdate', ThreadStats.onUpdate);
+    $.on(d, 'ThreadUpdate', ThreadStats.onUpdate);
   },
 
   count() {

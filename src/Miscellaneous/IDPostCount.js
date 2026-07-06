@@ -15,7 +15,7 @@ var IDPostCount = {
       name: 'Count Posts by ID',
       cb() { return IDPostCount.thread = this; }
     });
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Count Posts by ID',
       cb:   this.node
     });
@@ -23,7 +23,7 @@ var IDPostCount = {
 
   node() {
     if (this.nodes.uniqueID && (this.thread === IDPostCount.thread)) {
-      return $.on(this.nodes.uniqueID, 'mouseover', IDPostCount.count);
+      $.on(this.nodes.uniqueID, 'mouseover', IDPostCount.count);
     }
   },
 

@@ -13,7 +13,7 @@ var ExpandComment = {
   init() {
     if ((g.VIEW !== 'index') || !Conf['Comment Expansion'] || Conf['JSON Index']) { return; }
 
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Comment Expansion',
       cb:   this.node
     });

@@ -152,7 +152,7 @@ var Header = {
       $.on(cs, 'click', () => $.id('settingsWindowLink').click());
     }
 
-    return this.enableDesktopNotifications();
+    this.enableDesktopNotifications();
   },
 
   bar: $.el('div',

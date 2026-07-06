@@ -37,11 +37,12 @@ var QuoteBacklink = {
       name: 'Quote Backlinking Part 1',
       cb:   this.firstNode
     });
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Quote Backlinking Part 2',
       cb:   this.secondNode
     });
   },
+
   firstNode() {
     if (this.isClone || !this.quotes.length || this.isRebuilt) { return; }
     const markYours = Conf['Mark Quotes of You'] && QuoteYou.isYou(this);

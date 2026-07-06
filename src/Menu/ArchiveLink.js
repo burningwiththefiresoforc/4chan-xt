@@ -39,7 +39,7 @@ const ArchiveLink = {
       entry.subEntries.push(this.createSubEntry(type[0], type[1]));
     }
 
-    return Menu.menu.addEntry(entry);
+    Menu.menu.addEntry(entry);
   },
 
   createSubEntry(text, type) {

@@ -10,7 +10,7 @@ import $$ from "../platform/$$";
 var ImageHost = {
   init() {
     if ((!(this.useFaster = /\S/.test(Conf.fourchanImageHost))) || (g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW)) { return; }
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Image Host Rewriting',
       cb:   this.node
     });

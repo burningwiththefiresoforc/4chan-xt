@@ -14,7 +14,7 @@ var ThreadLinks = {
       name: 'Thread Links',
       cb:   this.node
     });
-    return Callbacks.CatalogThread.push({
+    Callbacks.CatalogThread.push({
       name: 'Thread Links',
       cb:   this.catalogNode
     });

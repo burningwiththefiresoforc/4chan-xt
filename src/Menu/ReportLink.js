@@ -19,7 +19,7 @@ var ReportLink = {
     );
     $.on(a, 'click', ReportLink.report);
 
-    return Menu.menu.addEntry({
+    Menu.menu.addEntry({
       el: a,
       order: 10,
       open(post) {

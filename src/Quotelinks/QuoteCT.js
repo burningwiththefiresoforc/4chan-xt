@@ -23,7 +23,7 @@ var QuoteCT = {
       className:   'qmark-ct'
     }
     );
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Mark Cross-thread Quotes',
       cb:   this.node
     });

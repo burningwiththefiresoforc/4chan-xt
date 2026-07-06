@@ -49,7 +49,7 @@ var Nav = {
       $.off(d, '4chanXInitFinished', append);
       return $.add(d.body, span);
     };
-    return $.on(d, '4chanXInitFinished', append);
+    $.on(d, '4chanXInitFinished', append);
   },
 
   prev() {

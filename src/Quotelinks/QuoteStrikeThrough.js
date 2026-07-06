@@ -13,7 +13,7 @@ const QuoteStrikeThrough = {
     if (!['index', 'thread'].includes(g.VIEW) ||
       (!Conf['Reply Hiding Buttons'] && (!Conf.Menu || !Conf['Reply Hiding Link']) && !Conf.Filter)) { return; }
 
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Strike-through Quotes',
       cb:   this.node
     });

@@ -231,7 +231,7 @@ var Index = {
       if (timeEl.dataset.utc) { return RelativeDates.update(timeEl); }
     });
 
-    return PageReady.ready(function() {
+    PageReady.ready(function() {
       let pagelist;
       if (pagelist = $('.pagelist')) {
         $.replace(pagelist, Index.pagelist);
@@ -297,7 +297,7 @@ var Index = {
   },
 
   catalogNode() {
-    return $.on(this.nodes.root, 'click', e => {
+    $.on(this.nodes.root, 'click', e => {
       if ((e.button !== 0) || !e.shiftKey) return;
       e.preventDefault();
       getSelection().removeAllRanges();
@@ -328,7 +328,7 @@ var Index = {
       if (type.selected) { break; }
     }
     types[(i + 1) % types.length].selected = true;
-    return $.event('change', null, Index.selectSort);
+    $.event('change', null, Index.selectSort);
   },
 
   cb: {
@@ -487,7 +487,7 @@ var Index = {
         const {style} = this.post;
         style.left = `${x}px`;
         style.right = `${-x}px`;
-        return $.one(this.root, 'mouseleave', () => style.left = (style.right = null));
+        $.one(this.root, 'mouseleave', () => style.left = (style.right = null));
       }
     }
   },

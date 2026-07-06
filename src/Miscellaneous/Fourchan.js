@@ -86,7 +86,7 @@ var Fourchan = {
     var cb = () => {
       if (!doc.contains(this.nodes.comment)) { return; }
       $.off(d, 'PostsInserted', cb);
-      return $.event('mathjax', null, this.nodes.comment);
+      $.event('mathjax', null, this.nodes.comment);
     };
     $.on(d, 'PostsInserted', cb);
     return cb();

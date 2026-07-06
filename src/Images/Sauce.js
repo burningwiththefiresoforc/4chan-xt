@@ -34,7 +34,7 @@ var Sauce = {
       className: 'sauce'
     }
     );
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Sauce',
       cb:   this.node
     });

@@ -10,7 +10,7 @@ const RevealSpoilers = {
   init() {
     if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf['Reveal Spoiler Thumbnails']) { return; }
 
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Reveal Spoiler Thumbnails',
       cb:   this.node
     });

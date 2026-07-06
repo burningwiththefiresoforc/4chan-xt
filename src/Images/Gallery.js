@@ -37,7 +37,7 @@ var Gallery = {
 
     Header.addShortcut('gallery', el, 530);
 
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Gallery',
       cb:   this.node
     });

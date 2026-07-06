@@ -442,7 +442,7 @@ const hoverstart = function ({ root, el, latestEvent, endEvents, height, width, 
 
   // Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=674955
   o.workaround = function(e) { if (!root.contains(e.target)) { return o.hoverend(e); } };
-  return $.on(doc,  'mousemove', o.workaround);
+  $.on(doc,  'mousemove', o.workaround);
 };
 
 hoverstart.padding = 25;

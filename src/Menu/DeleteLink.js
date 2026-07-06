@@ -54,7 +54,7 @@ var DeleteLink = {
       }
     };
 
-    return Menu.menu.addEntry({
+    Menu.menu.addEntry({
       el: div,
       order: 40,
       open(post) {

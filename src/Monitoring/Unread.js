@@ -47,7 +47,7 @@ var Unread = {
       cb:   this.node
     });
 
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Unread',
       cb:   this.addPost
     });

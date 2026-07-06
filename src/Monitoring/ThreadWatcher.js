@@ -119,7 +119,7 @@ var ThreadWatcher = {
       name: 'Thread Watcher',
       cb:   this.node
     });
-    return Callbacks.CatalogThread.push({
+    Callbacks.CatalogThread.push({
       name: 'Thread Watcher',
       cb:   this.catalogNode
     });
@@ -167,17 +167,17 @@ var ThreadWatcher = {
 
   catalogNode() {
     if (ThreadWatcher.isWatched(this.thread)) { $.addClass(this.nodes.root, 'watched'); }
-    return $.on(this.nodes.root, 'mousedown click', e => {
+    $.on(this.nodes.root, 'mousedown click', e => {
       if ((e.button !== 0) || !e.altKey) return;
       if (e.type === 'click') ThreadWatcher.toggle(this.thread, true);
-      return e.preventDefault();
+      e.preventDefault();
     });
   }, // Also on mousedown to prevent highlighting thumbnail in Firefox.
 
   addDialog() {
     if (!PageReady.isThisPageLegit()) { return; }
     ThreadWatcher.build();
-    return $.prepend(d.body, ThreadWatcher.dialog);
+    $.prepend(d.body, ThreadWatcher.dialog);
   },
 
   toggleWatcher() {

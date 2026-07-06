@@ -47,7 +47,7 @@ import { Conf, d } from '../globals/globals';
 
 var Favicon = {
   init() {
-    return $.asap((() => d.head && (Favicon.el = $('link[rel="shortcut icon"]', d.head))), Favicon.initAsap);
+    $.asap((() => d.head && (Favicon.el = $('link[rel="shortcut icon"]', d.head))), Favicon.initAsap);
   },
 
   set(status) {

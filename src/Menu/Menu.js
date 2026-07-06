@@ -27,7 +27,7 @@ var Menu = {
       cb:   this.node
     });
 
-    return Callbacks.CatalogThread.push({
+    Callbacks.CatalogThread.push({
       name: 'Menu',
       cb:   this.catalogNode
     });

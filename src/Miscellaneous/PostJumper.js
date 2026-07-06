@@ -9,7 +9,7 @@ import Icon from "../Icons/icon";
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-var PostJumper = { 
+var PostJumper = {
   init() {
     if (!Conf['Unique ID and Capcode Navigation'] || !['index', 'thread'].includes(g.VIEW)) { return; }
 
@@ -17,7 +17,7 @@ var PostJumper = {
     Icon.set(this.buttons.firstChild, 'arrowUpLong');
     Icon.set(this.buttons.lastChild, 'arrowDownLong');
 
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Post Jumper',
       cb:   this.node
     });
@@ -50,7 +50,7 @@ var PostJumper = {
 
   addListeners(buttons) {
     $.on(buttons.firstChild, 'click', PostJumper.buttonClick);
-    return $.on(buttons.lastChild, 'click', PostJumper.buttonClick);
+    $.on(buttons.lastChild, 'click', PostJumper.buttonClick);
   },
 
   buttonClick() {

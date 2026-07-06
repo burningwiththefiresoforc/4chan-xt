@@ -99,7 +99,7 @@ var ThreadUpdater = {
     }
     );
 
-    return Callbacks.Thread.push({
+    Callbacks.Thread.push({
       name: 'Thread Updater',
       cb:   this.node
     });
@@ -218,7 +218,7 @@ var ThreadUpdater = {
   kill() {
     ThreadUpdater.thread.kill();
     ThreadUpdater.setInterval();
-    return $.event('ThreadUpdate', {
+    $.event('ThreadUpdate', {
       404: true,
       threadID: ThreadUpdater.thread.fullID
     }
@@ -452,7 +452,7 @@ var ThreadUpdater = {
       ipCountEl.nextSibling.textContent = ipCountEl.nextSibling.textContent.replace(/\bposters?\b/, OP.unique_ips === 1 ? 'poster' : 'posters');
     }
 
-    return $.event('ThreadUpdate', {
+    $.event('ThreadUpdate', {
       404: false,
       threadID: thread.fullID,
       newPosts,

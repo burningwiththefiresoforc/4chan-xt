@@ -49,7 +49,7 @@ var ReplyPruning = {
       order: 190
     });
 
-    return Callbacks.Thread.push({
+    Callbacks.Thread.push({
       name: 'Reply Pruning',
       cb:   this.node
     });

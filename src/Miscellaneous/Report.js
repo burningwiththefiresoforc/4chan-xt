@@ -17,7 +17,7 @@ var Report = {
     if (!(match = location.search.match(/\bno=(\d+)/))) { return; }
     Captcha.replace.init();
     this.postID = +match[1];
-    return $.ready(this.ready);
+    $.ready(this.ready);
   },
 
   ready() {

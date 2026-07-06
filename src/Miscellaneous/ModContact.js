@@ -10,7 +10,7 @@ import { g } from "../globals/globals";
 var ModContact = {
   init() {
     if ((g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW)) { return; }
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Mod Contact Links',
       cb:   this.node
     });

@@ -19,7 +19,7 @@ var CopyTextLink = {
     );
     $.on(a, 'click', CopyTextLink.copy);
 
-    return Menu.menu.addEntry({
+    Menu.menu.addEntry({
       el: a,
       order: 12,
       open(post) {

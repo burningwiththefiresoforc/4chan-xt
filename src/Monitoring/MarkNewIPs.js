@@ -11,7 +11,7 @@ import $ from "../platform/$";
 var MarkNewIPs = {
   init() {
     if ((g.SITE.software !== 'yotsuba') || (g.VIEW !== 'thread') || !Conf['Mark New IPs']) { return; }
-    return Callbacks.Thread.push({
+    Callbacks.Thread.push({
       name: 'Mark New IPs',
       cb:   this.node
     });

@@ -11,7 +11,7 @@ var IDHighlight = {
   init() {
     if (!['index', 'thread'].includes(g.VIEW)) { return; }
 
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Highlight by User ID',
       cb:   this.node
     });

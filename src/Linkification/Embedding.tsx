@@ -191,7 +191,7 @@ var Embedding = {
     let service;
     const {key, uid, link} = data;
     if (!(service = Embedding.types[key].preview)) { return; }
-    return $.on(link, 'mouseover', function(e) {
+    $.on(link, 'mouseover', function(e) {
       const src = service.url(uid);
       const {height} = service;
       const el = $.el('img', {

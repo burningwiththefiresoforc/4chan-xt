@@ -36,7 +36,7 @@ var ImageExpand = {
     this.videoControls = $.el('span', {className: 'video-controls'});
     $.extend(this.videoControls, {innerHTML: " <a href=\"javascript:;\" title=\"You can also contract the video by dragging it to the left.\">contract</a>"});
 
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Image Expansion',
       cb: this.node
     });
