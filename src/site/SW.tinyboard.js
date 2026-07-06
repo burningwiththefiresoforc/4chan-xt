@@ -10,6 +10,15 @@ import SWYotsuba from "./SW.yotsuba";
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
+
+function rootFor({siteID}) {
+  return Conf.siteProperties[siteID]?.root || `http://${siteID}/`;
+}
+
+function rootOrEmptyFor({siteID}) {
+  return Conf.siteProperties[siteID]?.root || '';
+}
+
 const SWTinyboard = {
   isOPContainerThread: true,
   mayLackJSON: true,
@@ -72,32 +81,38 @@ const SWTinyboard = {
 
   urls: {
     thread({siteID, boardID, threadID}, isArchived) {
-      return `${Conf.siteProperties[siteID]?.root || `http://${siteID}/`}${boardID}/${isArchived ? 'archive/' : ''}res/${threadID}.html`;
+      return `${rootFor({siteID})}${boardID}/${isArchived ? 'archive/' : ''}res/${threadID}.html`;
     },
-    post({postID})                   { return `#${postID}`; },
-    index({siteID, boardID})          { return `${Conf.siteProperties[siteID]?.root || `http://${siteID}/`}${boardID}/`; },
-    catalog({siteID, boardID})          { return `${Conf.siteProperties[siteID]?.root || `http://${siteID}/`}${boardID}/catalog.html`; },
+    post({postID}) {
+      return `#${postID}`;
+    },
+    index({siteID, boardID}) {
+      return `${rootFor({siteID})}${boardID}/`;
+    },
+    catalog({siteID, boardID}) {
+      return `${rootFor({siteID})}${boardID}/catalog.html`;
+    },
     threadJSON({siteID, boardID, threadID}, isArchived) {
-      const root = Conf.siteProperties[siteID]?.root;
-      if (root) { return `${root}${boardID}/${isArchived ? 'archive/' : ''}res/${threadID}.json`; } else { return ''; }
+      const root = rootOrEmptyFor({siteID});
+      return root && `${root}${boardID}/${isArchived ? 'archive/' : ''}res/${threadID}.json`;
     },
     archivedThreadJSON(thread) {
       return SWTinyboard.urls.threadJSON(thread, true);
     },
     threadsListJSON({siteID, boardID}) {
-      const root = Conf.siteProperties[siteID]?.root;
-      if (root) { return `${root}${boardID}/threads.json`; } else { return ''; }
+      const root = rootOrEmptyFor({siteID});
+      return root && `${root}${boardID}/threads.json`;
     },
     archiveListJSON({siteID, boardID}) {
-      const root = Conf.siteProperties[siteID]?.root;
-      if (root) { return `${root}${boardID}/archive/archive.json`; } else { return ''; }
+      const root = rootOrEmptyFor({siteID});
+      return root && `${root}${boardID}/archive/archive.json`;
     },
     catalogJSON({siteID, boardID}) {
-      const root = Conf.siteProperties[siteID]?.root;
-      if (root) { return `${root}${boardID}/catalog.json`; } else { return ''; }
+      const root = rootOrEmptyFor({siteID});
+      return root && `${root}${boardID}/catalog.json`;
     },
     file({siteID, boardID}, filename) {
-      return `${Conf.siteProperties[siteID]?.root || `http://${siteID}/`}${boardID}/${filename}`;
+      return `${rootFor({siteID})}${boardID}/${filename}`;
     },
     thumb(board, filename) {
       return SWTinyboard.urls.file(board, filename);
