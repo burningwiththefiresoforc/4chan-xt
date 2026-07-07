@@ -32,6 +32,7 @@ import Nav from "./Nav";
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
+
 var Keybinds = {
   init() {
     if (!Conf.Keybinds) { return; }
@@ -55,9 +56,25 @@ var Keybinds = {
   },
 
   keydown(e) {
-    let key, thread, threadRoot;
-    let catalog, notifications;
+    let key, thread, threadRoot, catalog, notifications;
     if (!(key = Keybinds.keyCode(e))) { return; }
+    const tag = {
+      [Conf['Spoiler tags']]: 'spoiler',
+      [Conf['Code tags']]: 'code',
+      [Conf['Eqn tags']]: 'eqn',
+      [Conf['Math tags']]: 'math',
+      [Conf['SJIS tags']]: 'sjis',
+    }[key];
+    const mode = {
+      [Conf['Paged mode']]: 'paged',
+      [Conf['Infinite scrolling mode']]: 'infinite',
+      [Conf['All pages mode']]: 'all-pages'
+    }[key];
+    const dir = {
+      [Conf['Next reply']]: 1,
+      [Conf['Previous reply']]: -1,
+      [Conf['Deselect reply']]: 0
+    }[key];
     const {target} = e;
     if (['INPUT', 'TEXTAREA'].includes(target.nodeName)) {
       if (!/(Esc|Alt|Ctrl|Meta|Shift\+\w{2,})/.test(key) || !!/^Alt\+(\d|Up|Down|Left|Right)$/.test(key)) { return; }
@@ -68,20 +85,27 @@ var Keybinds = {
     }
     let hasAction = false;
     // QR & Options
+    if (QR.postingIsEnabled) {
+      if (key === Conf['Open empty QR']) {
+        Keybinds.qr();
+        hasAction = true;
+      } else if (key === Conf['Post from URL']) {
+        QR.handleUrl('');
+        hasAction = true;
+      } else if (key === Conf['Add new post']) {
+        QR.addPost();
+        hasAction = true;
+      } else if (key === Conf['Open QR'] && threadRoot) {
+        Keybinds.qr(threadRoot);
+        hasAction = true;
+      }
+    }
     if (key === Conf['Toggle board list'] && Conf['Custom Board Navigation']) {
       Header.toggleBoardList();
       hasAction = true;
     }
     if (key === Conf['Toggle header']) {
       Header.toggleBarVisibility();
-      hasAction = true;
-    }
-    if (key === Conf['Open empty QR'] && QR.postingIsEnabled) {
-      Keybinds.qr();
-      hasAction = true;
-    }
-    if (key === Conf['Open QR'] && QR.postingIsEnabled && threadRoot) {
-      Keybinds.qr(threadRoot);
       hasAction = true;
     }
     if (key === Conf['Open settings']) {
@@ -108,46 +132,23 @@ var Keybinds = {
       }
       hasAction = true;
     }
-    if (key === Conf['Spoiler tags'] && target.nodeName === 'TEXTAREA') {
-      Keybinds.tags('spoiler', target);
+    if (target.nodeName === 'TEXTAREA' && tag) {
+      Keybinds.tags(tag, target);
       hasAction = true;
     }
-    if (key === Conf['Code tags'] && target.nodeName === 'TEXTAREA') {
-      Keybinds.tags('code', target);
-      hasAction = true;
-    }
-    if (key === Conf['Eqn tags'] && target.nodeName === 'TEXTAREA') {
-      Keybinds.tags('eqn', target);
-      hasAction = true;
-    }
-    if (key === Conf['Math tags'] && target.nodeName === 'TEXTAREA') {
-      Keybinds.tags('math', target);
-      hasAction = true;
-    }
-    if (key === Conf['SJIS tags'] && target.nodeName === 'TEXTAREA') {
-      Keybinds.tags('sjis', target);
-      hasAction = true;
-    }
-    if (key === Conf['Toggle sage'] && QR.nodes && !QR.nodes.el.hidden) {
-      Keybinds.sage();
-      hasAction = true;
-    }
-    if (key === Conf['Toggle Cooldown'] && QR.nodes && !QR.nodes.el.hidden
-      && $.hasClass(QR.nodes.fileSubmit, 'custom-cooldown')) {
-      QR.toggleCustomCooldown();
-      hasAction = true;
-    }
-    if (key === Conf['Post from URL'] && QR.postingIsEnabled) {
-      QR.handleUrl('');
-      hasAction = true;
-    }
-    if (key === Conf['Add new post'] && QR.postingIsEnabled) {
-      QR.addPost();
-      hasAction = true;
-    }
-    if (key === Conf['Submit QR'] && QR.nodes && !QR.nodes.el.hidden && !QR.status()) {
-      QR.submit();
-      hasAction = true;
+    if (QR.nodes && !QR.nodes.el.hidden) {
+      if (key === Conf['Toggle sage']) {
+        Keybinds.sage();
+        hasAction = true;
+      }
+      if (key === Conf['Toggle Cooldown'] && $.hasClass(QR.nodes.fileSubmit, 'custom-cooldown')) {
+        QR.toggleCustomCooldown();
+        hasAction = true;
+      }
+      if (key === Conf['Submit QR'] && !QR.status()) {
+        QR.submit();
+        hasAction = true;
+      }
     }
     // Index/Thread related
     if (key === Conf.Update) {
@@ -161,37 +162,37 @@ var Keybinds = {
           hasAction = true;
       }
     }
-    if (key === Conf.Watch && ThreadWatcher.enabled && thread) {
-      ThreadWatcher.toggle(thread);
-      hasAction = true;
-    }
-    if (key === Conf['Update thread watcher'] && ThreadWatcher.enabled) {
-      ThreadWatcher.buttonFetchAll();
-      hasAction = true;
-    }
-    if (key === Conf['Toggle thread watcher'] && ThreadWatcher.enabled) {
-      ThreadWatcher.toggleWatcher();
-      hasAction = true;
+    if (ThreadWatcher.enabled) {
+      if (key === Conf.Watch && thread) {
+        ThreadWatcher.toggle(thread);
+        hasAction = true;
+      }
+      if (key === Conf['Update thread watcher']) {
+        ThreadWatcher.buttonFetchAll();
+        hasAction = true;
+      }
+      if (key === Conf['Toggle thread watcher']) {
+        ThreadWatcher.toggleWatcher();
+        hasAction = true;
+      }
     }
     if (key === Conf['Toggle threading'] && QuoteThreading.ready) {
       QuoteThreading.toggleThreading();
       hasAction = true;
     }
-    if (key === Conf['Mark thread read'] && g.VIEW === 'index' && thread && UnreadIndex.enabled) {
-      UnreadIndex.markRead.call(threadRoot);
-      hasAction = true;
-    }
     // Images
-    if (key === Conf['Expand image'] && ImageExpand.enabled && threadRoot) {
-      var post = Get.postFromNode(Keybinds.post(threadRoot));
-      if (post.file) {
-        ImageExpand.toggle(post);
+    if (ImageExpand.enabled) {
+      if (key === Conf['Expand image'] && threadRoot) {
+        var post = Get.postFromNode(Keybinds.post(threadRoot));
+        if (post.file) {
+          ImageExpand.toggle(post);
+          hasAction = true;
+        }
+      }
+      if (key === Conf['Expand images']) {
+        ImageExpand.cb.toggleAll();
         hasAction = true;
       }
-    }
-    if (key === Conf['Expand images'] && ImageExpand.enabled) {
-      ImageExpand.cb.toggleAll();
-      hasAction = true;
     }
     if (key === Conf['Open Gallery'] && Gallery.enabled) {
       Gallery.cb.toggle();
@@ -218,45 +219,47 @@ var Keybinds = {
       $.open(`${location.origin}/${g.BOARD}/`);
       hasAction = true;
     }
-    if (key === Conf['Next page'] && g.VIEW === 'index' && !g.SITE.isOnePage?.(g.BOARD)) {
-      if (indexEnabled) {
-        if (!['paged', 'infinite'].includes(Conf['Index Mode'])) { return; }
-        $('.next button', Index.pagelist).click();
-      } else {
-        $(g.SITE.selectors.nav.next)?.click();
+    if (g.VIEW === 'index') {
+      if (!g.SITE.isOnePage?.(g.BOARD)) {
+        if (key === Conf['Next page']) {
+          if (indexEnabled) {
+            if (!['paged', 'infinite'].includes(Conf['Index Mode'])) { return; }
+            $('.next button', Index.pagelist).click();
+          } else {
+            $(g.SITE.selectors.nav.next)?.click();
+          }
+          hasAction = true;
+        }
+        if (key === Conf['Previous page']) {
+          if (indexEnabled) {
+            if (!['paged', 'infinite'].includes(Conf['Index Mode'])) { return; }
+            $('.prev button', Index.pagelist).click();
+          } else {
+            $(g.SITE.selectors.nav.prev)?.click();
+          }
+          hasAction = true;
+        }
       }
-      hasAction = true;
-    }
-    if (key === Conf['Previous page'] && g.VIEW === 'index' && !g.SITE.isOnePage?.(g.BOARD)) {
-      if (indexEnabled) {
-        if (!['paged', 'infinite'].includes(Conf['Index Mode'])) { return; }
-        $('.prev button', Index.pagelist).click();
-      } else {
-        $(g.SITE.selectors.nav.prev)?.click();
+      if (key === Conf['Search form']) {
+        var searchInput = indexEnabled ? Index.searchInput
+          : g.SITE.selectors.searchBox ? $(g.SITE.selectors.searchBox)
+          : undefined;
+        if (searchInput) {
+          Header.scrollToIfNeeded(searchInput);
+          searchInput.focus();
+          hasAction = true;
+        }
       }
-      hasAction = true;
-    }
-    if (key === Conf['Search form'] && g.VIEW === 'index') {
-      var searchInput = indexEnabled ?
-        Index.searchInput
-      : g.SITE.selectors.searchBox ?
-        $(g.SITE.selectors.searchBox)
-      :
-        undefined;
-      if (searchInput) {
-        Header.scrollToIfNeeded(searchInput);
-        searchInput.focus();
+      if (key === Conf['Mark thread read'] && thread && UnreadIndex.enabled) {
+        UnreadIndex.markRead.call(threadRoot);
         hasAction = true;
       }
     }
-    if (key === Conf['Paged mode'] && Index.enabledOn(g.BOARD)) {
-      location.href = g.VIEW === 'index' ? '#paged' : `/${g.BOARD}/#paged`;
-    }
-    if (key === Conf['Infinite scrolling mode'] && Index.enabledOn(g.BOARD)) {
-      location.href = g.VIEW === 'index' ? '#infinite' : `/${g.BOARD}/#infinite`;
-    }
-    if (key === Conf['All pages mode'] && Index.enabledOn(g.BOARD)) {
-      location.href = g.VIEW === 'index' ? '#all-pages' : `/${g.BOARD}/#all-pages`;
+    if (mode && Index.enabledOn(g.BOARD)) {
+      location.href =
+        g.VIEW === 'index'
+          ? `#${mode}`
+          : `/${g.BOARD}/#${mode}`;
     }
     if (key === Conf['Open catalog'] && (catalog = CatalogLinks.catalog())) {
       location.href = catalog;
@@ -266,58 +269,52 @@ var Keybinds = {
       hasAction = true;
     }
     // Thread Navigation
-    if (key === Conf['Next thread'] && g.VIEW === 'index' && threadRoot) {
-      Nav.scroll(+1);
-      hasAction = true;
-    }
-    if (key === Conf['Previous thread'] && g.VIEW === 'index' && threadRoot) {
-      Nav.scroll(-1);
-      hasAction = true;
-    }
-    if (key === Conf['Expand thread'] && g.VIEW === 'index' && threadRoot) {
-      ExpandThread.toggle(thread);
-      // Keep thread from moving off screen when contracted.
-      Header.scrollTo(threadRoot);
-      hasAction = true;
-    }
-    if (key === Conf['Open thread'] && g.VIEW === 'index' && threadRoot) {
-      Keybinds.open(thread);
-      hasAction = true;
-    }
-    if (key === Conf['Open thread tab'] && g.VIEW === 'index' && threadRoot) {
-      Keybinds.open(thread, true);
-      hasAction = true;
-    }
-    // Reply Navigation
-    if (key === Conf['Next reply'] && threadRoot) {
-      Keybinds.hl(+1, threadRoot);
-      hasAction = true;
-    }
-    if (key === Conf['Previous reply'] && threadRoot) {
-      Keybinds.hl(-1, threadRoot);
-      hasAction = true;
-    }
-    if (key === Conf['Deselect reply'] && threadRoot) {
-      Keybinds.hl(0, threadRoot);
-      hasAction = true;
+    if (threadRoot) {
+      if (g.VIEW === 'index') {
+        if (key === Conf['Next thread']) {
+          Nav.scroll(+1);
+          hasAction = true;
+        } else if (key === Conf['Previous thread']) {
+          Nav.scroll(-1);
+          hasAction = true;
+        } else if (key === Conf['Expand thread']) {
+          ExpandThread.toggle(thread);
+          // Keep thread from moving off screen when contracted.
+          Header.scrollTo(threadRoot);
+          hasAction = true;
+        } else if (key === Conf['Open thread']) {
+          Keybinds.open(thread);
+          hasAction = true;
+        } else if (key === Conf['Open thread tab']) {
+          Keybinds.open(thread, true);
+          hasAction = true;
+        }
+      }
+      // Reply Navigation
+      if (dir !== undefined) {
+        Keybinds.hl(dir, threadRoot);
+        hasAction = true;
+      }
+      if (key === Conf['Quick Filter MD5']) {
+        post = Keybinds.post(threadRoot);
+        Keybinds.hl(+1, threadRoot);
+        Filter.quickFilterMD5.call(post, e);
+        hasAction = true;
+      }
+      if (QuoteYou.db) {
+        if (key === Conf['Previous Post Quoting You']) {
+          QuoteYou.cb.seek('preceding');
+          hasAction = true;
+        }
+        if (key === Conf['Next Post Quoting You']) {
+          QuoteYou.cb.seek('following');
+          hasAction = true;
+        }
+      }
     }
     if (key === Conf.Hide && thread && ThreadHiding.db) {
       Header.scrollTo(threadRoot);
       ThreadHiding.toggle(thread);
-      hasAction = true;
-    }
-    if (key === Conf['Quick Filter MD5'] && threadRoot) {
-      post = Keybinds.post(threadRoot);
-      Keybinds.hl(+1, threadRoot);
-      Filter.quickFilterMD5.call(post, e);
-      hasAction = true;
-    }
-    if (key === Conf['Previous Post Quoting You'] && threadRoot && QuoteYou.db) {
-      QuoteYou.cb.seek('preceding');
-      hasAction = true;
-    }
-    if (key === Conf['Next Post Quoting You'] && threadRoot && QuoteYou.db) {
-      QuoteYou.cb.seek('following');
       hasAction = true;
     }
     if (hasAction) {

@@ -22,7 +22,7 @@ var IDHighlight = {
   node() {
     if (this.nodes.uniqueIDRoot) { $.on(this.nodes.uniqueIDRoot, 'click', IDHighlight.click(this)); }
     if (this.nodes.capcode) { $.on(this.nodes.capcode,      'click', IDHighlight.click(this)); }
-    if (!this.isClone) { return IDHighlight.set(this); }
+    if (!this.isClone) { IDHighlight.set(this); }
   },
 
   set(post) {
@@ -33,7 +33,7 @@ var IDHighlight = {
   click(post) { return function() {
     const uniqueID = post.info.uniqueID || post.info.capcode;
     IDHighlight.uniqueID = IDHighlight.uniqueID === uniqueID ? null : uniqueID;
-    return g.posts.forEach(IDHighlight.set);
+    g.posts.forEach(IDHighlight.set);
   }; }
 };
 export default IDHighlight;
