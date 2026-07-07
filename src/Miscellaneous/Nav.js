@@ -23,8 +23,7 @@ var Nav = {
         return;
     }
 
-    const span = $.el('span',
-      {id: 'navlinks'});
+    const span = $.el('span', {id: 'navlinks'});
     const prev = $.el('a', {
       textContent: '▲',
       className: 'navlinks-navlink navlink-prev',
@@ -54,17 +53,17 @@ var Nav = {
 
   prev() {
     if (g.VIEW === 'thread') {
-      return window.scrollTo(0, 0);
+      window.scrollTo(0, 0);
     } else {
-      return Nav.scroll(-1);
+      Nav.scroll(-1);
     }
   },
 
   next() {
     if (g.VIEW === 'thread') {
-      return window.scrollTo(0, d.body.scrollHeight);
+      window.scrollTo(0, d.body.scrollHeight);
     } else {
-      return Nav.scroll(+1);
+      Nav.scroll(+1);
     }
   },
 
@@ -81,17 +80,13 @@ var Nav = {
   },
 
   scroll(delta) {
-    let next;
     d.activeElement?.blur();
     let thread = Nav.getThread();
     if (!thread) { return; }
-    const axis = delta === +1 ?
-      'following'
-    :
-      'preceding';
-    if (next = $.x(`${axis}-sibling::${g.SITE.xpath.thread}[not(@hidden)][1]`, thread)) {
-      // Unless we're not at the beginning of the current thread,
-      // and thus wanting to move to beginning,
+    const axis = delta === +1 ? 'following' : 'preceding';
+    const next = $.x(`${axis}-sibling::${g.SITE.xpath.thread}[not(@hidden)][1]`, thread);
+    if (next) {
+      // Unless we're not at the beginning of the current thread, and thus wanting to move to beginning,
       // or we're above the first thread and don't want to skip it.
       const top = Header.getTopOf(thread);
       if (((delta === +1) && (top < 5)) || ((delta === -1) && (top > -5))) { thread = next; }
@@ -104,18 +99,18 @@ var Nav = {
 
     if ((extra > 0) && !Nav.haveExtra) {
       Nav.haveExtra = true;
-      return $.on(d, 'scroll', Nav.removeExtra);
+      $.on(d, 'scroll', Nav.removeExtra);
     }
   },
 
   removeExtra() {
     const extra = doc.clientHeight - d.body.getBoundingClientRect().bottom;
     if (extra > 0) {
-      return d.body.style.marginBottom = `${extra}px`;
+      d.body.style.marginBottom = `${extra}px`;
     } else {
       d.body.style.marginBottom = '';
       delete Nav.haveExtra;
-      return $.off(d, 'scroll', Nav.removeExtra);
+      $.off(d, 'scroll', Nav.removeExtra);
     }
   }
 };

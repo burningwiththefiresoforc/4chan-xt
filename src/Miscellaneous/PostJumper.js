@@ -36,7 +36,7 @@ var PostJumper = {
     }
 
     if (this.nodes.capcode) {
-      return PostJumper.addButtons(this,'capcode');
+      PostJumper.addButtons(this,'capcode');
     }
   },
 
@@ -45,7 +45,7 @@ var PostJumper = {
     const buttons = PostJumper.buttons.cloneNode(true);
     $.extend(buttons.dataset, {type, value});
     $.after(post.nodes[type+(type === 'capcode' ? '' : 'Root')], buttons);
-    return PostJumper.addListeners(buttons);
+    PostJumper.addListeners(buttons);
   },
 
   addListeners(buttons) {
@@ -54,28 +54,30 @@ var PostJumper = {
   },
 
   buttonClick() {
-    let toJumper;
     const dir = $.hasClass(this, 'prev') ? -1 : 1;
-    if (toJumper = PostJumper.find(this.parentNode, dir)) {
-      return PostJumper.scroll(this.parentNode, toJumper);
+    const toJumper = PostJumper.find(this.parentNode, dir);
+    if (toJumper) {
+      PostJumper.scroll(this.parentNode, toJumper);
     }
   },
 
   find(jumper, dir) {
     const {type, value} = jumper.dataset;
-    const xpath = `span[contains(@class,\"postJumper\") and @data-value=\"${value}\" and @data-type=\"${type}\"]`;
+    const xpath = `span[contains(@class,"postJumper") and @data-value="${value}" and @data-type="${type}"]`;
     const axis = dir < 0 ? 'preceding' : 'following';
-    let jumper2 = jumper;
-    while (jumper2 = $.x(`${axis}::${xpath}`, jumper2)) {
-      if (jumper2.getBoundingClientRect().height) { return jumper2; }
+    let node = jumper;
+    let wrapped = false;
+    while (true) {
+      node = $.x(`${axis}::${xpath}`, node);
+      if (!node) {
+        if (wrapped) { return null; } // full circle
+        node = $.x(`(//${xpath})[${dir < 0 ? 'last()' : '1'}]`);
+        wrapped = true;
+        if (!node) { return null; }
+      }
+      if (node === jumper) { return null; } // full circle
+      if (node.getBoundingClientRect().height) { return node; }
     }
-    if (jumper2 = $.x(`(//${xpath})[${dir < 0 ? 'last()' : '1'}]`)) {
-      if (jumper2.getBoundingClientRect().height) { return jumper2; }
-    }
-    while ((jumper2 = $.x(`${axis}::${xpath}`, jumper2)) && (jumper2 !== jumper)) {
-      if (jumper2.getBoundingClientRect().height) { return jumper2; }
-    }
-    return null;
   },
 
   makeButtons() {
@@ -92,7 +94,7 @@ var PostJumper = {
   scroll(fromJumper, toJumper) {
     const prevPos = fromJumper.getBoundingClientRect().top;
     const destPos = toJumper.getBoundingClientRect().top;
-    return window.scrollBy(0, destPos-prevPos);
+    window.scrollBy(0, destPos-prevPos);
   }
 };
 export default PostJumper;

@@ -24,9 +24,9 @@ var FileInfo = {
   },
 
   node() {
+    let a;
     if (!this.file) { return; }
     if (this.isClone) {
-      let a;
       for (a of $$('.file-info .download-button', this.file.text)) {
         $.on(a, 'click', ImageCommon.download);
       }
