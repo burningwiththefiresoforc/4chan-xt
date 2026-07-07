@@ -13,6 +13,7 @@ import SW from "../site/SW";
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
+
 var FileInfo = {
   init() {
     if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf['File Info Formatting']) { return; }
@@ -46,27 +47,37 @@ var FileInfo = {
   },
 
   format(formatString, post, outputNode) {
-    let a;
-    const output = [];
-    formatString.replace(/%(.)|[^%]+/g, function(s, c) {
-      output.push($.hasOwn(FileInfo.formatters, c) ?
-        FileInfo.formatters[c].call(post)
-      :
-        {innerHTML: E(s)}
-      );
+    const tokens = FileInfo.getTokens(formatString);
+    const output = tokens.map(t => typeof t === 'function' ? t.call(post) : t);
+    $.extend(outputNode, {innerHTML: E.cat(output)});
+    FileInfo.bindFileButtons(outputNode);
+  },
+
+  getTokens(formatString) {
+    if (FileInfo._tokensKey === formatString) return FileInfo._tokens;
+    const tokens = [];
+    const FORMAT_REGEX = /%(.)|[^%]+/g;
+    formatString.replace(FORMAT_REGEX, (s, c) => {
+      tokens.push($.hasOwn(FileInfo.formatters, c) ? FileInfo.formatters[c] : {innerHTML: E(s)});
       return '';
     });
-    $.extend(outputNode, {innerHTML: E.cat(output)});
-    for (a of $$('.download-button', outputNode)) {
-      $.on(a, 'click', ImageCommon.download);
-    }
-    for (a of $$('.quick-filter-md5', outputNode)) {
-      $.on(a, 'click', Filter.quickFilterMD5);
+    FileInfo._tokensKey = formatString;
+    FileInfo._tokens = tokens;
+    return tokens;
+  },
+
+  bindFileButtons(container) {
+    for (const a of $$('.download-button, .quick-filter-md5', container)) {
+      if (a.classList.contains('download-button')) {
+        $.on(a, 'click', ImageCommon.download);
+      } else {
+        $.on(a, 'click', Filter.quickFilterMD5);
+      }
     }
   },
 
   formatters: {
-    t() { return { innerHTML: E(this.file.url.match(/[^/]*$/)[0]), [isEscaped]: true }; },
+    t() { return { innerHTML: E(this.file.url.slice(this.file.url.lastIndexOf('/') + 1)), [isEscaped]: true }; },
     T() { return <a href={this.file.url} target="_blank">{FileInfo.formatters.t.call(this)}</a> },
     l() { return <a href={this.file.url} target="_blank">{FileInfo.formatters.n.call(this)}</a> },
     L() { return <a href={this.file.url} target="_blank">{FileInfo.formatters.N.call(this)}</a> },
