@@ -9,7 +9,7 @@ import Icon from "../Icons/icon";
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-var PostJumper = {
+const PostJumper = {
   init() {
     if (!Conf['Unique ID and Capcode Navigation'] || !['index', 'thread'].includes(g.VIEW)) { return; }
 
@@ -25,7 +25,7 @@ var PostJumper = {
 
   node() {
     if (this.isClone) {
-      for (var buttons of $$('.postJumper', this.nodes.info)) {
+      for (const buttons of $$('.postJumper', this.nodes.info)) {
         PostJumper.addListeners(buttons);
       }
       return;

@@ -12,7 +12,7 @@ import { dict } from "../platform/helpers";
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-var Banner = {
+const Banner = {
   init() {
     if (Conf['Custom Board Titles']) {
       this.db = new DataBoard('customTitles', null, true);
@@ -78,7 +78,7 @@ var Banner = {
       if (!e.ctrlKey && !e.metaKey) { return; }
       Banner.original[this.className] ??= this.cloneNode(true);
       this.contentEditable = true;
-      for (var br of $$('br', this)) { $.replace(br, $.tn('\n')); }
+      for (const br of $$('br', this)) { $.replace(br, $.tn('\n')); }
       this.focus();
     },
 
@@ -88,7 +88,7 @@ var Banner = {
     },
 
     blur() {
-      for (var br of $$('br', this)) { $.replace(br, $.tn('\n')); }
+      for (const br of $$('br', this)) { $.replace(br, $.tn('\n')); }
       if (this.textContent = this.textContent.replace(/\n*$/, '')) {
         this.contentEditable = false;
         return Banner.db.set({
@@ -118,7 +118,7 @@ var Banner = {
     child.title = `Ctrl/\u2318+click to edit board ${className.slice(5).toLowerCase()}`;
     child.spellcheck = false;
 
-    for (var event of ['click', 'keydown', 'blur']) {
+    for (const event of ['click', 'keydown', 'blur']) {
       $.on(child, event, Banner.cb[event]);
     }
 

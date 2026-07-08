@@ -7,7 +7,7 @@ import archives from './archives.json';
 
 type Archive = (typeof archives)[number];
 
-var Redirect = {
+const Redirect = {
   archives,
   /** List of archives by compatible functions. */
   data: null as {
@@ -35,7 +35,7 @@ var Redirect = {
 
     const archives = dict();
     for (const data of Conf.archives) {
-      for (var key of ['boards', 'files']) {
+      for (const key of ['boards', 'files']) {
         if (!(data[key] instanceof Array)) { data[key] = []; }
       }
       const { uid, name, boards, files, software } = data;
@@ -52,9 +52,9 @@ var Redirect = {
     }
 
     for (const boardID in Conf.selectedArchives) {
-      var record = Conf.selectedArchives[boardID];
+      const record = Conf.selectedArchives[boardID];
       for (const [type, id] of Object.entries(record)) {
-        var archive;
+        let archive;
         if ((archive = archives[JSON.stringify(id)]) && $.hasOwn(o, type)) {
           const boards = type === 'file' ? archive.files : archive.boards;
           if (boards.includes(boardID)) { o[type].set(boardID, archive); }
@@ -94,7 +94,7 @@ var Redirect = {
       for (let i = 0; i < urls.length; i++) {
         url = urls[i];
         if (['[', '{'].includes(url[0])) {
-          var response;
+          let response;
           try {
             response = JSON.parse(url);
           } catch (err) {
@@ -115,9 +115,9 @@ var Redirect = {
   parse(responses, cb) {
     const archives = [];
     const archiveUIDs = dict();
-    for (var response of responses) {
-      for (var data of response) {
-        var uid = JSON.stringify(data.uid ?? data.name);
+    for (const response of responses) {
+      for (const data of response) {
+        const uid = JSON.stringify(data.uid ?? data.name);
         if (uid in archiveUIDs) {
           $.extend(archiveUIDs[uid], data);
         } else {
@@ -162,10 +162,7 @@ var Redirect = {
       path += '/';
     }
     if (threadID && postID) {
-      path += archive.software === 'foolfuuka' ?
-        `#${postID}`
-      :
-        `#p${postID}`;
+      path += archive.software === 'foolfuuka' ? `#${postID}` : `#p${postID}`;
     }
     return `${Redirect.protocol(archive)}${archive.domain}/${path}`;
   },
@@ -206,12 +203,7 @@ var Redirect = {
   },
 
   search(archive, {boardID, type, value}) {
-    type = type === 'name' ?
-      'username'
-    : type === 'MD5' ?
-      'image'
-    :
-      type;
+    type = type === 'name' ? 'username' : type === 'MD5' ? 'image' : type;
     if (type === 'capcode') {
       // https://github.com/pleebe/FoolFuuka/blob/bf4224eed04637a4d0bd4411c2bf5f9945dfec0b/src/Model/Search.php#L363
       value = $.getOwn({
@@ -224,17 +216,15 @@ var Redirect = {
     value = encodeURIComponent(value);
     const path  = archive.software === 'foolfuuka' ?
       `${boardID}/search/${type}/${value}/`
-    : type === 'image' ?
-      `${boardID}/image/${value}`
-    :
-      `${boardID}/?task=search2&search_${type}=${value}`;
+      : type === 'image' ? `${boardID}/image/${value}`
+      : `${boardID}/?task=search2&search_${type}=${value}`;
     return `${Redirect.protocol(archive)}${archive.domain}/${path}`;
   },
 
   report(boardID) {
     const urls = [];
-    for (var archive of Conf.archives) {
-      var {software, https, reports, boards, name, domain} = archive;
+    for (const archive of Conf.archives) {
+      const {software, https, reports, boards, name, domain} = archive;
       if ((software === 'foolfuuka') && https && reports && boards instanceof Array && boards.includes(boardID)) {
         urls.push([name, `https://${domain}/_/api/chan/offsite_report/`]);
       }

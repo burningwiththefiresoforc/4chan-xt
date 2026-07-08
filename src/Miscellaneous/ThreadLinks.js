@@ -22,11 +22,11 @@ var ThreadLinks = {
 
   node() {
     if (this.isReply || this.isClone) { return; }
-    return ThreadLinks.process(this.nodes.reply);
+    ThreadLinks.process(this.nodes.reply);
   },
 
   catalogNode() {
-    return ThreadLinks.process(this.nodes.thumb.parentNode);
+    ThreadLinks.process(this.nodes.thumb.parentNode);
   },
 
   process(link) {

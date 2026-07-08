@@ -8,7 +8,7 @@ import $$ from "../platform/$$";
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-var RemoveSpoilers = {
+const RemoveSpoilers = {
   init() {
     if (Conf['Reveal Spoilers']) {
       $.addClass(doc, 'reveal-spoilers');
@@ -32,8 +32,8 @@ var RemoveSpoilers = {
 
   unspoiler(el) {
     const spoilers = $$(g.SITE.selectors.spoiler, el);
-    for (var spoiler of spoilers) {
-      var span = $.el('span', {className: 'removed-spoiler'});
+    for (const spoiler of spoilers) {
+      const span = $.el('span', {className: 'removed-spoiler'});
       $.replace(spoiler, span);
       $.add(span, [...spoiler.childNodes]);
     }

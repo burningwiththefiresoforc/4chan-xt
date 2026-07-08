@@ -107,7 +107,7 @@ var QuoteInline = {
     // Decrease the unread count if this post
     // is in the array of unread posts.
     if (!Unread.posts) { return; }
-    return Unread.readSinglePost(post);
+    Unread.readSinglePost(post);
   },
 
   rm(quotelink, boardID, threadID, postID, context) {

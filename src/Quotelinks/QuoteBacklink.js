@@ -90,9 +90,9 @@ var QuoteBacklink = {
     const container = QuoteBacklink.getContainer(this.fullID);
     this.nodes.backlinkContainer = container;
     if (QuoteBacklink.bottomBacklinks) {
-      return $.add(this.nodes.post, container);
+      $.add(this.nodes.post, container);
     } else {
-      return $.add(this.nodes.info, container);
+      $.add(this.nodes.info, container);
     }
   },
   getContainer(id) {

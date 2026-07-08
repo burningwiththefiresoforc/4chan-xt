@@ -21,8 +21,8 @@ const QuoteStrikeThrough = {
 
   node() {
     if (this.isClone) { return; }
-    for (var quotelink of this.nodes.quotelinks) {
-      var {boardID, postID} = Get.postDataFromLink(quotelink);
+    for (const quotelink of this.nodes.quotelinks) {
+      const {boardID, postID} = Get.postDataFromLink(quotelink);
       if (g.posts.get(`${boardID}.${postID}`)?.isHidden) {
         $.addClass(quotelink, 'filtered');
       }

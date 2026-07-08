@@ -157,7 +157,7 @@ var QuoteYou = {
       }
 
       const posts = $$('.quotesYou');
-      return QuoteYou.cb.scroll(posts[type === 'following' ? 0 : posts.length - 1]);
+      QuoteYou.cb.scroll(posts[type === 'following' ? 0 : posts.length - 1]);
     },
 
     scroll(root) {

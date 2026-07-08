@@ -40,7 +40,7 @@ var CopyTextLink = {
     try {
       d.execCommand('copy');
     } catch (error) {}
-    return $.rm(el);
+    $.rm(el);
   }
 };
 export default CopyTextLink;

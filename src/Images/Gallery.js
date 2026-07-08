@@ -21,7 +21,7 @@ import Get from '../General/Get';
 import { debounce, dict, SECOND } from '../platform/helpers';
 import Icon from '../Icons/icon';
 
-var Gallery = {
+const Gallery = {
   init() {
     if (!(this.enabled = Conf.Gallery && ['index', 'thread'].includes(g.VIEW))) { return; }
 
@@ -46,7 +46,7 @@ var Gallery = {
   node() {
     return (() => {
       const result = [];
-      for (var file of this.files) {
+      for (const file of this.files) {
         if (file.thumb) {
           if (Gallery.nodes) {
             Gallery.generateThumb(this, file);
@@ -95,7 +95,7 @@ var Gallery = {
       current: '.gal-image img',
       dimensions: '.gal-dimensions'
     };
-    for (var key in object) { var value = object[key]; nodes[key] = $(value, dialog); }
+    for (const key in object) { const value = object[key]; nodes[key] = $(value, dialog); }
 
     const menuButton = $('.menu-button', dialog);
     nodes.menu = new UI.Menu('gallery');
@@ -128,7 +128,7 @@ var Gallery = {
     Icon.set(prev, 'caretLeft');
     Icon.set(next, 'caretRight');
 
-    for (var entry of Gallery.menu.createSubEntries()) {
+    for (const entry of Gallery.menu.createSubEntries()) {
       entry.order = 0;
       nodes.menu.addEntry(entry);
     }
@@ -138,15 +138,15 @@ var Gallery = {
 
     $.on(window, 'resize', Gallery.cb.setHeight);
 
-    for (var postThumb of $$(g.SITE.selectors.file.thumb)) {
-      var post;
+    for (const postThumb of $$(g.SITE.selectors.file.thumb)) {
+      let post;
       if (!(post = Get.postFromNode(postThumb))) { continue; }
-      for (var file of post.files) {
+      for (const file of post.files) {
         if (file.thumb) {
           Gallery.generateThumb(post, file);
           // If no image to open is given, pick image we have scrolled to.
           if (!image && Gallery.fileIDs[`${post.fullID}.${file.index}`]) {
-            var candidate = file.thumbLink;
+            const candidate = file.thumbLink;
             if ((Header.getTopOf(candidate) + candidate.getBoundingClientRect().height) >= 0) {
               image = candidate;
             }
@@ -166,7 +166,7 @@ var Gallery = {
     if (thumb) { Gallery.open(thumb); }
 
     doc.style.overflow = 'hidden';
-    return nodes.total.textContent = Gallery.images.length;
+    nodes.total.textContent = Gallery.images.length;
   },
 
   generateThumb(post, file) {
@@ -181,8 +181,7 @@ var Gallery = {
       href:      file.url,
       target:    '_blank',
       title:     file.name
-    }
-    );
+    });
 
     thumb.dataset.id   = Gallery.images.length;
     thumb.dataset.post = post.fullID;
@@ -195,7 +194,7 @@ var Gallery = {
     $.on(thumb, 'click', Gallery.cb.open);
 
     Gallery.images.push(thumb);
-    return $.add(Gallery.nodes.thumbs, thumb);
+    $.add(Gallery.nodes.thumbs, thumb);
   },
 
   load(thumb, errorCB) {
@@ -215,7 +214,7 @@ var Gallery = {
     const newID = +thumb.dataset.id;
 
     // Highlight, center selected thumbnail
-    if (el = Gallery.images[oldID]) { $.rmClass(el,    'gal-highlight'); }
+    if (el = Gallery.images[oldID]) { $.rmClass(el, 'gal-highlight'); }
     $.addClass(thumb, 'gal-highlight');
     nodes.thumbs.scrollTop = (thumb.offsetTop + (thumb.offsetHeight/2)) - (nodes.thumbs.clientHeight/2);
 
@@ -258,8 +257,8 @@ var Gallery = {
     $.rmAll(nodes.sauce);
     if (Conf.Sauce && Sauce.links && (post = g.posts.get(file.dataset.post))) {
       const sauces = [];
-      for (var link of Sauce.links) {
-        var node;
+      for (const link of Sauce.links) {
+        let node;
         if (node = Sauce.createSauceLink(link, post, post.files[+file.dataset.file])) {
           sauces.push($.tn(' '), node);
         }
@@ -300,14 +299,14 @@ var Gallery = {
   },
 
   cacheError() {
-    return delete Gallery.cache;
+    delete Gallery.cache;
   },
 
   cleanupTimer() {
     clearTimeout(Gallery.timeoutID);
     const {current} = Gallery.nodes;
     $.off(current, 'canplaythrough load', Gallery.startTimer);
-    return $.off(current, 'ended', Gallery.cb.next);
+    $.off(current, 'ended', Gallery.cb.next);
   },
 
   startTimer() {
@@ -380,12 +379,12 @@ var Gallery = {
     },
 
     prev() {
-      return Gallery.cb.open.call(
+      Gallery.cb.open.call(
         Gallery.images[+Gallery.nodes.current.dataset.id - 1] || Gallery.images[Gallery.images.length - 1]
       );
     },
     next() {
-      return Gallery.cb.open.call(
+      Gallery.cb.open.call(
         Gallery.images[+Gallery.nodes.current.dataset.id + 1] || Gallery.images[0]
       );
     },
@@ -393,7 +392,7 @@ var Gallery = {
     click(e) {
       if (ImageCommon.onControls(e)) { return; }
       e.preventDefault();
-      return Gallery.cb.advance();
+      Gallery.cb.advance();
     },
 
     advance() { if (!Conf.Autoplay && Gallery.nodes.current.paused) { return Gallery.nodes.current.play(); } else { return Gallery.cb.next(); } },
@@ -403,7 +402,7 @@ var Gallery = {
 
     download() {
       const name = $('.gal-name');
-      return name.click();
+      name.click();
     },
 
     pause() {
@@ -415,7 +414,7 @@ var Gallery = {
     start() {
       $.addClass(Gallery.nodes.buttons, 'gal-playing');
       Gallery.slideshow = true;
-      return Gallery.setupTimer();
+      Gallery.setupTimer();
     },
 
     stop() {
@@ -435,7 +434,7 @@ var Gallery = {
       if (current.nodeName === 'IFRAME') { return; }
       current.dataRotate = ((current.dataRotate || 0) + delta) % 360;
       current.style.transform = `rotate(${current.dataRotate}deg)`;
-      return Gallery.cb.setHeight();
+      Gallery.cb.setHeight();
     }),
 
     close() {
@@ -445,8 +444,10 @@ var Gallery = {
       $.rmClass(doc, 'gallery-open');
       if (Conf['Fullscreen Gallery']) {
         $.off(d, 'fullscreenchange mozfullscreenchange webkitfullscreenchange', Gallery.cb.close);
-        d.mozCancelFullScreen?.();
-        d.webkitExitFullscreen?.();
+        if (d.fullscreenElement || d.mozFullScreenElement || d.webkitFullscreenElement) {
+          d.mozCancelFullScreen?.();
+          d.webkitExitFullscreen?.();
+        }
       }
       delete Gallery.nodes;
       delete Gallery.fileIDs;
@@ -455,7 +456,7 @@ var Gallery = {
       $.off(d, 'keydown', Gallery.cb.keybinds);
       if (Conf.Keybinds) { $.on(d, 'keydown', Keybinds.keydown); }
       $.off(window, 'resize', Gallery.cb.setHeight);
-      return clearTimeout(Gallery.timeoutID);
+      clearTimeout(Gallery.timeoutID);
     },
 
     setFitness() {
@@ -501,10 +502,9 @@ var Gallery = {
       const el = $.el('span', {
         textContent: 'Gallery',
         className: 'gallery-link'
-      }
-      );
+      });
 
-      return Header.menu.addEntry({
+      Header.menu.addEntry({
         el,
         order: 105,
         subEntries: Gallery.menu.createSubEntries()

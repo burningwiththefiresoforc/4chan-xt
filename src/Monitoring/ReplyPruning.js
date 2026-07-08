@@ -25,7 +25,7 @@ var ReplyPruning = {
     this.summary.style.cursor = 'pointer';
     $.on(this.summary, 'click', () => {
       this.inputs.enabled.checked = !this.inputs.enabled.checked;
-      return $.event('change', null, this.inputs.enabled);
+      $.event('change', null, this.inputs.enabled);
     });
 
     const label = UI.checkbox('Prune Replies', 'Show Last', Conf['Prune All Threads']);
@@ -120,9 +120,7 @@ var ReplyPruning = {
     let boardTop, node, post;
     const hidden1 = ReplyPruning.hidden;
     const hidden2 = ReplyPruning.active ?
-      Math.max(ReplyPruning.total - +Conf["Max Replies"], 0)
-    :
-      0;
+      Math.max(ReplyPruning.total - +Conf["Max Replies"], 0) : 0;
 
     // Record position from bottom of document
     const oldPos = d.body.clientHeight - window.scrollY;
@@ -163,7 +161,7 @@ var ReplyPruning = {
 
     // Maintain position in thread when posts are added/removed above
     if ((hidden1 !== hidden2) && ((boardTop = Header.getTopOf($('.board'))) < 0)) {
-      return window.scrollBy(0, Math.max(d.body.clientHeight - oldPos, window.scrollY + boardTop) - window.scrollY);
+      window.scrollBy(0, Math.max(d.body.clientHeight - oldPos, window.scrollY + boardTop) - window.scrollY);
     }
   }
 };

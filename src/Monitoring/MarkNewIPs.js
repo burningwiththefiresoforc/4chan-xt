@@ -47,9 +47,7 @@ var MarkNewIPs = {
 
   markNew(post, ipCount) {
     const suffix = ((Math.floor(ipCount / 10)) % 10) === 1 ?
-      'th'
-    :
-      ['st', 'nd', 'rd'][(ipCount % 10) - 1] || 'th'; // fuck switches
+      'th' : ['st', 'nd', 'rd'][(ipCount % 10) - 1] || 'th'; // fuck switches
     const counter = $.el('span', {
       className: 'ip-counter',
       textContent: `(${ipCount})`

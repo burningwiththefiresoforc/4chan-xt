@@ -97,7 +97,7 @@ var DeleteLink = {
     this.textContent = DeleteLink.linkText(fileOnly);
 
     if (!DeleteLink.cooldown.seconds[post.fullID]) {
-      return DeleteLink.delete(post, fileOnly);
+      DeleteLink.delete(post, fileOnly);
     }
   },
 

@@ -5,7 +5,7 @@ import { g, Conf, d, doc } from "../globals/globals";
 import $ from "../platform/$";
 import { DAY, HOUR, MINUTE, SECOND } from "../platform/helpers";
 
-var RelativeDates = {
+const RelativeDates = {
   INTERVAL: 30000,
 
   init() {
@@ -107,7 +107,7 @@ var RelativeDates = {
     if (d.hidden) { return; }
 
     const now = new Date();
-    for (var data of RelativeDates.stale) { RelativeDates.update(data, now); }
+    for (const data of RelativeDates.stale) { RelativeDates.update(data, now); }
     RelativeDates.stale = [];
 
     // Reset automatic flush.
@@ -137,7 +137,7 @@ var RelativeDates = {
     const diff = now - date;
     const relative = RelativeDates.relative(diff, now, date, abbrev);
     if (isPost) {
-      for (var singlePost of [data].concat(data.clones)) {
+      for (const singlePost of [data].concat(data.clones)) {
         const node = singlePost.nodes.date;
         if (Conf.RelativeTime === 'Show') {
           node.textContent = relative;

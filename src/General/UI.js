@@ -82,7 +82,7 @@ var Menu = (function() {
       }
 
       if (!this.entries.length) { return; }
-      return this.open(button, data);
+      this.open(button, data);
     }
 
     open(button, data) {
@@ -112,7 +112,7 @@ var Menu = (function() {
       //   entry = prevEntry
       this.focus(entry);
 
-      return menu.focus();
+      menu.focus();
     }
 
     setPosition() {
@@ -121,15 +121,11 @@ var Menu = (function() {
       const cHeight = doc.clientHeight;
       const cWidth  = doc.clientWidth;
       const [top, bottom] = (bRect.top + bRect.height + mRect.height) < cHeight ?
-        [`${bRect.bottom}px`, '']
-      :
-        ['', `${cHeight - bRect.top}px`];
+        [`${bRect.bottom}px`, ''] : ['', `${cHeight - bRect.top}px`];
       const [left, right] = (bRect.left + mRect.width) < cWidth ?
-        [`${bRect.left}px`, '']
-      :
-        ['', `${cWidth - bRect.right}px`];
+        [`${bRect.left}px`, ''] : ['', `${cWidth - bRect.right}px`];
       $.extend(this.menu.style, {top, right, bottom, left});
-      return this.menu.classList.toggle('left', right);
+      this.menu.classList.toggle('left', right);
     }
 
     insertEntry(entry, parent, data) {
@@ -168,7 +164,7 @@ var Menu = (function() {
       lastToggledButton = null;
       $.off(d, 'click scroll CloseMenu', this.close);
       $.off(d, 'scroll', this.setPosition);
-      return $.off(window, 'resize', this.setPosition);
+      $.off(window, 'resize', this.setPosition);
     }
 
     findNextEntry(entry, direction) {
@@ -194,14 +190,10 @@ var Menu = (function() {
           entry.click();
           break;
         case 38: // Up
-          if (next = this.findNextEntry(entry, -1)) {
-            this.focus(next);
-          }
+          if (next = this.findNextEntry(entry, -1)) { this.focus(next); }
           break;
         case 40: // Down
-          if (next = this.findNextEntry(entry, +1)) {
-            this.focus(next);
-          }
+          if (next = this.findNextEntry(entry, +1)) { this.focus(next); }
           break;
         case 39: // Right
           if ((submenu = $('.submenu', entry)) && (next = submenu.firstElementChild)) {
@@ -213,21 +205,18 @@ var Menu = (function() {
           }
           break;
         case 37: // Left
-          if (next = $.x('parent::*[contains(@class,"submenu")]/parent::*', entry)) {
-            this.focus(next);
-          }
+          if (next = $.x('parent::*[contains(@class,"submenu")]/parent::*', entry)) { this.focus(next); }
           break;
-        default:
-          return;
+        default: return;
       }
 
       e.preventDefault();
-      return e.stopPropagation();
+      e.stopPropagation();
     }
 
     onFocus(e) {
       e.stopPropagation();
-      return this.focus(e.target);
+      this.focus(e.target);
     }
 
     focus(entry) {
@@ -247,23 +236,19 @@ var Menu = (function() {
       const cHeight = doc.clientHeight;
       const cWidth  = doc.clientWidth;
       const [top, bottom] = (eRect.top + sRect.height) < cHeight ?
-        ['0px', 'auto']
-      :
-        ['auto', '0px'];
+        ['0px', 'auto'] : ['auto', '0px'];
       const [left, right] = (eRect.right + sRect.width) < (cWidth - 150) ?
-        ['100%', 'auto']
-      :
-        ['auto', '100%'];
+        ['100%', 'auto'] : ['auto', '100%'];
       const {style} = submenu;
       style.top    = top;
       style.bottom = bottom;
       style.left   = left;
-      return style.right  = right;
+      style.right  = right;
     }
 
     addEntry(entry) {
       this.parseEntry(entry);
-      return this.entries.push(entry);
+      this.entries.push(entry);
     }
 
     parseEntry(entry) {
@@ -312,12 +297,9 @@ export var dragstart = function (e) {
     isTouching
   };
 
-  [o.topBorder, o.bottomBorder] = Conf['Header auto-hide'] || !Conf['Fixed Header'] ?
-    [0, 0]
-  : Conf['Bottom Header'] ?
-    [0, Header.bar.getBoundingClientRect().height]
-  :
-    [Header.bar.getBoundingClientRect().height, 0];
+  [o.topBorder, o.bottomBorder] = Conf['Header auto-hide'] || !Conf['Fixed Header'] ? [0, 0]
+    : Conf['Bottom Header'] ? [0, Header.bar.getBoundingClientRect().height]
+    : [Header.bar.getBoundingClientRect().height, 0];
 
   if (isTouching) {
     o.identifier = e.identifier;
@@ -329,7 +311,7 @@ export var dragstart = function (e) {
     o.move = drag.bind(o);
     o.up   = dragend.bind(o);
     $.on(d, 'mousemove', o.move);
-    return $.on(d, 'mouseup',   o.up);
+    $.on(d, 'mouseup',   o.up);
   }
 };
 
@@ -346,30 +328,17 @@ export var drag = function (e) {
   const {clientX, clientY} = e;
 
   let left = clientX - this.dx;
-  left = left < 10 ?
-    0
-  : (this.width - left) < 10 ?
-    ''
-  :
-    ((left / this.screenWidth) * 100) + '%';
+  left = left < 10 ? 0 : (this.width - left) < 10 ? ''
+  : ((left / this.screenWidth) * 100) + '%';
 
   let top = clientY - this.dy;
-  top = top < (10 + this.topBorder) ?
-    this.topBorder + 'px'
-  : (this.height - top) < (10 + this.bottomBorder) ?
-    ''
-  :
-    ((top / this.screenHeight) * 100) + '%';
+  top = top < (10 + this.topBorder) ? this.topBorder + 'px'
+    : (this.height - top) < (10 + this.bottomBorder) ? ''
+    : ((top / this.screenHeight) * 100) + '%';
 
-  const right = left === '' ?
-    0
-  :
-    '';
+  const right = left === '' ? 0 : '';
 
-  const bottom = top === '' ?
-    this.bottomBorder + 'px'
-  :
-    '';
+  const bottom = top === '' ? this.bottomBorder + 'px' : '';
 
   const {style} = this;
   style.left   = left;
@@ -468,7 +437,7 @@ export var hover = function (e) {
   const {style} = this;
   style.top   = top + 'px';
   style.left  = left;
-  return style.right = right;
+  style.right = right;
 };
 
 export var hoverend = function (e) {

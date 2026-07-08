@@ -9,7 +9,7 @@ import $ from "../platform/$";
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-var FappeTyme = {
+const FappeTyme = {
   init() {
     if ((!Conf['Fappe Tyme'] && !Conf['Werk Tyme']) || !['index', 'thread', 'archive'].includes(g.VIEW)) { return; }
 
@@ -19,10 +19,10 @@ var FappeTyme = {
       werk:  Conf.werk
     };
 
-    for (var type of ["Fappe", "Werk"]) {
+    for (const type of ["Fappe", "Werk"]) {
       if (Conf[`${type} Tyme`]) {
-        var lc = type.toLowerCase();
-        var el = UI.checkbox(lc, `${type} Tyme`, false);
+        const lc = type.toLowerCase();
+        const el = UI.checkbox(lc, `${type} Tyme`, false);
         el.title = `${type} Tyme`;
 
         this.nodes[lc] = el.firstElementChild;
@@ -34,7 +34,7 @@ var FappeTyme = {
           order: 97
         });
 
-        var indicator = $.el('span', {
+        const indicator = $.el('span', {
           className: 'indicator',
           textContent: type[0],
           title: `${type} Tyme active`
@@ -65,7 +65,7 @@ var FappeTyme = {
   },
 
   node() {
-    return this.nodes.root.classList.toggle('noFile', !this.files.length);
+    this.nodes.root.classList.toggle('noFile', !this.files.length);
   },
 
   catalogNode() {

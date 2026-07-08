@@ -9,7 +9,7 @@ import $ from "../platform/$";
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-var ImageLoader = {
+const ImageLoader = {
   init() {
     if (!['index', 'thread', 'archive'].includes(g.VIEW)) { return; }
     const replace = Conf['Replace JPG'] || Conf['Replace PNG'] || Conf['Replace GIF'] || Conf['Replace WEBM'];
@@ -46,7 +46,7 @@ var ImageLoader = {
 
   node() {
     if (this.isClone) { return; }
-    for (var file of this.files) {
+    for (const file of this.files) {
       if (Conf['Replace WEBM'] && file.isVideo) { ImageLoader.replaceVideo(this, file); }
       ImageLoader.prefetch(this, file);
     }
@@ -65,7 +65,7 @@ var ImageLoader = {
     );
     video.setAttribute('muted', 'muted');
     video.dataset.md5 = thumb.dataset.md5;
-    for (var attr of ['height', 'width', 'maxHeight', 'maxWidth']) { video.style[attr] = thumb.style[attr]; }
+    for (const attr of ['height', 'width', 'maxHeight', 'maxWidth']) { video.style[attr] = thumb.style[attr]; }
     video.src         = file.url;
     $.replace(thumb, video);
     file.thumb      = video;
@@ -109,7 +109,7 @@ var ImageLoader = {
   },
 
   prefetchAll(post) {
-    for (var file of post.files) {
+    for (const file of post.files) {
       ImageLoader.prefetch(post, file);
     }
   },
@@ -127,9 +127,9 @@ var ImageLoader = {
     const qpClone = $.id('qp')?.firstElementChild;
     return g.posts.forEach(function(post) {
       for (post of [post, ...post.clones]) {
-        for (var file of post.files) {
+        for (const file of post.files) {
           if (file.videoThumb) {
-            var {thumb} = file;
+            const {thumb} = file;
             if (Header.isNodeVisible(thumb) || (post.nodes.root === qpClone)) { thumb.play(); } else { thumb.pause(); }
           }
         }

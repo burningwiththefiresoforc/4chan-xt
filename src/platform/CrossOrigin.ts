@@ -225,8 +225,7 @@ var CrossOrigin = {
   },
 
   cache(url, cb) {
-    return $.cache(url, cb,
-      {ajax: CrossOrigin.ajax});
+    return $.cache(url, cb, {ajax: CrossOrigin.ajax});
   },
 
   cachePromise(url: string) : Promise<XMLHttpRequest> {

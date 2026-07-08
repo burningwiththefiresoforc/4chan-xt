@@ -49,8 +49,7 @@ export interface FilterResults {
   reasons?: string[];
 };
 
-type FilterType = "postID" | "name" | "uniqueID" | "tripcode" | "capcode" | "pass" | "email" | "subject" | "comment"
-  | "flag" | "filename" | "dimensions" | "filesize" | "MD5";
+type FilterType = "postID" | "name" | "uniqueID" | "tripcode" | "capcode" | "pass" | "email" | "subject" | "comment" | "flag" | "filename" | "dimensions" | "filesize" | "MD5";
 
 var Filter = {
   /**
@@ -486,7 +485,7 @@ var Filter = {
       const filterArray = Array.isArray(res) ? res : [...res.values()].flat();
       const r = filterArray.map(Filter.escape).join('|');
       save = save.replace(RegExp(`(?:$\n|^)(?:${r})$`, 'mg'), '');
-      return $.set(type, save, cb);
+      $.set(type, save, cb);
     });
   },
 
@@ -500,7 +499,7 @@ var Filter = {
     $.onExists(section, 'textarea', function(ta) {
       const tl = ta.textLength;
       ta.setSelectionRange(tl, tl);
-      return ta.focus();
+      ta.focus();
     });
   },
 
@@ -546,7 +545,7 @@ var Filter = {
   quickFilterCB: {
     show() {
       Filter.showFilters('MD5');
-      return this.close();
+      this.close();
     },
     undo() {
       Filter.removeFilters('MD5', this.filters);
@@ -557,7 +556,7 @@ var Filter = {
           ThreadHiding.show(post.thread);
         }
       }
-      return this.close();
+      this.close();
     }
   },
 
@@ -635,7 +634,7 @@ var Filter = {
         }
       }).join('\n');
 
-      return Filter.addFilter(type, res, () => Filter.showFilters(type));
+      Filter.addFilter(type, res, () => Filter.showFilters(type));
     }
   }
 };

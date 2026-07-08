@@ -10,7 +10,7 @@ import $ from "../platform/$";
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-var Volume = {
+const Volume = {
   init() {
     if (!['index', 'thread'].includes(g.VIEW) ||
       (!Conf['Image Expansion'] && !Conf['Image Hover'] && !Conf['Image Hover in Catalog'] && !Conf.Gallery)) { return; }
@@ -73,8 +73,8 @@ var Volume = {
       'Allow Sound': !muted,
       'Default Volume': volume
     };
-    for (var key in items) {
-      var val = items[key];
+    for (const key in items) {
+      const val = items[key];
       if (Conf[key] === val) {
         delete items[key];
       }
@@ -83,13 +83,13 @@ var Volume = {
     $.extend(Conf, items);
     if (Volume.inputs) {
       Volume.inputs.unmute.checked = !muted;
-      return Volume.inputs.volume.value = volume;
+      Volume.inputs.volume.value = volume;
     }
   },
 
   node() {
     if (g.SITE.noAudio?.(this.board)) { return; }
-    for (var file of this.files) {
+    for (const file of this.files) {
       if (file.isVideo) {
         if (file.thumb) { $.on(file.thumb, 'wheel', Volume.wheel.bind(Header.hover)); }
         $.on(($('.file-info', file.text) || file.link), 'wheel', Volume.wheel.bind(file.thumbLink));

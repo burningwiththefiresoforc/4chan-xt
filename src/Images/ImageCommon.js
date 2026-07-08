@@ -111,7 +111,7 @@ var ImageCommon = {
         return url = fileObj.url;
       }
     };
-    return $.ajax(threadJSON, {onloadend() { return parseJSON.call(this); }});
+    $.ajax(threadJSON, {onloadend() { return parseJSON.call(this); }});
   },
 
   // XXX Estimate whether clicks are on the video controls and should be ignored.

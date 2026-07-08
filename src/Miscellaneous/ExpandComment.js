@@ -9,7 +9,7 @@ import $$ from "../platform/$$";
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-var ExpandComment = {
+const ExpandComment = {
   init() {
     if ((g.VIEW !== 'index') || !Conf['Comment Expansion'] || Conf['JSON Index']) { return; }
 
@@ -93,7 +93,7 @@ var ExpandComment = {
     post.parseComment();
     post.parseQuotes();
 
-    for (var callback of ExpandComment.callbacks) {
+    for (const callback of ExpandComment.callbacks) {
       callback.call(post);
     }
   }

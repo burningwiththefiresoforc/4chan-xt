@@ -89,26 +89,17 @@ var Header = {
     this.addShortcut('menu', menuButton, 900);
 
     this.menu.addEntry({
-      el: $.el('span',
-        {textContent: 'Header'}),
+      el: $.el('span', {textContent: 'Header'}),
       order: 107,
       subEntries: [
-          {el: barFixedToggler}
-        ,
-          {el: headerToggler}
-        ,
-          {el: scrollHeaderToggler}
-        ,
-          {el: barPositionToggler}
-        ,
-          {el: linkJustifyToggler}
-        ,
-          {el: footerToggler}
-        ,
-          {el: shortcutToggler}
-        ,
-          {el: customNavToggler}
-        ,
+          {el: barFixedToggler},
+          {el: headerToggler},
+          {el: scrollHeaderToggler},
+          {el: barPositionToggler},
+          {el: linkJustifyToggler},
+          {el: footerToggler},
+          {el: shortcutToggler},
+          {el: customNavToggler},
           {el: editCustomNav}
       ]});
 
@@ -134,7 +125,7 @@ var Header = {
         for (var a of $$('a', Header.bottomBoardList)) {
           if ((a.hostname === location.hostname) && (a.pathname.split('/')[1] === g.BOARD.ID)) { a.className = 'current'; }
         }
-        return CatalogLinks.setLinks(Header.bottomBoardList);
+        CatalogLinks.setLinks(Header.bottomBoardList);
       }
     });
 
@@ -155,17 +146,10 @@ var Header = {
     this.enableDesktopNotifications();
   },
 
-  bar: $.el('div',
-    {id: 'header-bar'}),
-
-  shortcuts: $.el('span',
-    {id: 'shortcuts'}),
-
-  hover: $.el('div',
-    {id: 'hoverUI'}),
-
-  toggle: $.el('div',
-    {id: 'scroll-marker'}),
+  bar: $.el('div', {id: 'header-bar'}),
+  shortcuts: $.el('span', {id: 'shortcuts'}),
+  hover: $.el('div', {id: 'hoverUI'}),
+  toggle: $.el('div', {id: 'scroll-marker'}),
 
   setBoardList() {
     let boardList;
@@ -182,7 +166,7 @@ var Header = {
     Header.generateBoardList(Conf.boardnav);
 
     $.sync('Custom Board Navigation', Header.setCustomNav);
-    return $.sync('boardnav', Header.generateBoardList);
+    $.sync('boardnav', Header.generateBoardList);
   },
 
   generateFullBoardList() {
@@ -197,7 +181,7 @@ var Header = {
     for (var a of $$('a', fullBoardList)) {
       if ((a.hostname === location.hostname) && (a.pathname.split('/')[1] === g.BOARD.ID)) { a.className = 'current'; }
     }
-    return CatalogLinks.setLinks(fullBoardList);
+    CatalogLinks.setLinks(fullBoardList);
   },
 
   generateBoardList(boardnav: string) {
@@ -224,7 +208,7 @@ var Header = {
         segmentNodes.forEach(node => currentContainer.appendChild(node));
       }
     });
-    return CatalogLinks.setLinks(list);
+    CatalogLinks.setLinks(list);
   },
 
   mapCustomNavigation(t) {
@@ -308,8 +292,7 @@ var Header = {
           title: '4chan Twitter',
           className: 'navSmall',
           textContent: '@'
-        }
-        );
+        });
       }
 
       a = $.el('a', {
@@ -317,8 +300,7 @@ var Header = {
         href: `//boards.4chan.org/${boardID}/`,
         textContent: boardID,
         title: BoardConfig.title(boardID)
-      }
-      );
+      });
       if (['catalog', 'archive'].includes(g.VIEW) && (urlV = Get.url(g.VIEW, {siteID: '4chan.org', boardID}))) {
         a.href = urlV;
       }
@@ -328,10 +310,8 @@ var Header = {
 
     a.textContent = /-title/.test(t) || (/-replace/.test(t) && (a.hostname === location.hostname) && (boardID === g.BOARD.ID)) ?
       a.title || a.textContent
-    : /-full/.test(t) ?
-      (`/${boardID}/`) + (a.title ? ` - ${a.title}` : '')
-    :
-      text || boardID;
+      : /-full/.test(t) ? (`/${boardID}/`) + (a.title ? ` - ${a.title}` : '')
+      : text || boardID;
 
     if (m = t.match(/-(index|catalog)/)) {
       const urlIC = CatalogLinks[m[1]]({siteID: '4chan.org', boardID});
@@ -383,15 +363,15 @@ var Header = {
     const full   = $('#full-board-list',   bar);
     const showBoardList = !full.hidden;
     custom.hidden = !showBoardList;
-    return full.hidden   =  showBoardList;
+    full.hidden   =  showBoardList;
   },
 
   setLinkJustify(centered) {
     Header.linkJustifyToggler.checked = centered;
     if (centered) {
-      return $.addClass(doc, 'centered-links');
+      $.addClass(doc, 'centered-links');
     } else {
-      return $.rmClass(doc, 'centered-links');
+      $.rmClass(doc, 'centered-links');
     }
   },
 
@@ -400,17 +380,17 @@ var Header = {
     const centered = this.nodeName === 'INPUT' ?
       this.checked : undefined;
     Header.setLinkJustify(centered);
-    return $.set('Centered links', centered);
+    $.set('Centered links', centered);
   },
 
   setBarFixed(fixed) {
     Header.barFixedToggler.checked = fixed;
     if (fixed) {
       $.addClass(doc, 'fixed');
-      return $.addClass(Header.bar, 'dialog');
+      $.addClass(Header.bar, 'dialog');
     } else {
       $.rmClass(doc, 'fixed');
-      return $.rmClass(Header.bar, 'dialog');
+      $.rmClass(Header.bar, 'dialog');
     }
   },
 
@@ -420,15 +400,15 @@ var Header = {
     Header.setBarFixed(this.checked);
 
     Conf['Fixed Header'] = this.checked;
-    return $.set('Fixed Header',  this.checked);
+    $.set('Fixed Header',  this.checked);
   },
 
   setShortcutIcons(show) {
     Header.shortcutToggler.checked = show;
     if (show) {
-      return $.addClass(doc, 'shortcut-icons');
+      $.addClass(doc, 'shortcut-icons');
     } else {
-      return $.rmClass(doc, 'shortcut-icons');
+      $.rmClass(doc, 'shortcut-icons');
     }
   },
 
@@ -438,29 +418,25 @@ var Header = {
     Header.setShortcutIcons(this.checked);
 
     Conf['Shortcut Icons'] = this.checked;
-    return $.set('Shortcut Icons',  this.checked);
+    $.set('Shortcut Icons',  this.checked);
   },
 
   setBarVisibility(hide) {
     Header.headerToggler.checked = hide;
     $.event('CloseMenu');
     (hide ? $.addClass : $.rmClass)(Header.bar, 'autohide');
-    return (hide ? $.addClass : $.rmClass)(doc, 'autohide');
+    (hide ? $.addClass : $.rmClass)(doc, 'autohide');
   },
 
   toggleBarVisibility() {
-    const hide = this.nodeName === 'INPUT' ?
-      this.checked
-    :
-      !$.hasClass(Header.bar, 'autohide');
+    const hide = this.nodeName === 'INPUT' ? this.checked
+      : !$.hasClass(Header.bar, 'autohide');
 
     Conf['Header auto-hide'] = hide;
     $.set('Header auto-hide', hide);
     Header.setBarVisibility(hide);
     const message = `The header bar will ${hide ?
-      'automatically hide itself.'
-    :
-      'remain visible.'}`;
+      'automatically hide itself.' : 'remain visible.'}`;
     return new Notice('info', message, 2);
   },
 
@@ -472,13 +448,13 @@ var Header = {
     }
     $.off(window, 'scroll', Header.hideBarOnScroll);
     $.rmClass(Header.bar, 'scroll');
-    return Header.bar.classList.toggle('autohide', Conf['Header auto-hide']);
+    Header.bar.classList.toggle('autohide', Conf['Header auto-hide']);
   },
 
   toggleHideBarOnScroll() {
     const hide = this.checked;
     $.cb.checked.call(this);
-    return Header.setHideBarOnScroll(hide);
+    Header.setHideBarOnScroll(hide);
   },
 
   hideBarOnScroll() {
@@ -511,26 +487,23 @@ var Header = {
 
   toggleBarPosition() {
     $.cb.checked.call(this);
-    return Header.setBarPosition(this.checked);
+    Header.setBarPosition(this.checked);
   },
 
   setFooterVisibility(hide) {
     Header.footerToggler.checked = hide;
-    return doc.classList.toggle('hide-bottom-board-list', hide);
+    doc.classList.toggle('hide-bottom-board-list', hide);
   },
 
   toggleFooterVisibility() {
     $.event('CloseMenu');
-    const hide = this.nodeName === 'INPUT' ?
-      this.checked
-    :
-      $.hasClass(doc, 'hide-bottom-board-list');
+    const hide = this.nodeName === 'INPUT' ? this.checked
+    : $.hasClass(doc, 'hide-bottom-board-list');
     Header.setFooterVisibility(hide);
     $.set('Bottom Board List', hide);
     const message = hide ?
       'The bottom navigation will now be hidden.'
-    :
-      'The bottom navigation will remain visible.';
+    : 'The bottom navigation will remain visible.';
     return new Notice('info', message, 2);
   },
 
@@ -544,13 +517,13 @@ var Header = {
 
   toggleCustomNav() {
     $.cb.checked.call(this);
-    return Header.setCustomNav(this.checked);
+    Header.setCustomNav(this.checked);
   },
 
   editCustomNav() {
     Settings.open('Advanced');
     const settings = $.id('fourchanx-settings');
-    return $('[name=boardnav]', settings).focus();
+    $('[name=boardnav]', settings).focus();
   },
 
   scrollTo(root: HTMLElement, down = false, needed = false) {
@@ -582,7 +555,7 @@ var Header = {
   },
 
   scrollToIfNeeded(root, down) {
-    return Header.scrollTo(root, down, true);
+    Header.scrollTo(root, down, true);
   },
 
   getTopOf(root) {
@@ -607,7 +580,7 @@ var Header = {
   isNodeVisible(node) {
     if (d.hidden || !doc.contains(node)) { return false; }
     const {height} = node.getBoundingClientRect();
-    return ((Header.getTopOf(node) + height) >= 0) && ((Header.getBottomOf(node) + height) >= 0);
+    ((Header.getTopOf(node) + height) >= 0) && ((Header.getBottomOf(node) + height) >= 0);
   },
 
   isHidden() {
@@ -632,15 +605,15 @@ var Header = {
         return;
       }
     }
-    return $.add(Header.shortcuts, shortcut);
+    $.add(Header.shortcuts, shortcut);
   },
 
   rmShortcut(el) {
-    return $.rm(el.parentElement);
+    $.rm(el.parentElement);
   },
 
   menuToggle(e) {
-    return Header.menu.toggle(e, this, g);
+    Header.menu.toggle(e, this, g);
   },
 
   createNotification(e) {
@@ -678,7 +651,7 @@ var Header = {
     }));
     $.on(disable, 'click', function() {
       $.set('Desktop Notifications', false);
-      return notice.close();
+      notice.close();
     });
     return notice = new Notice('info', el);
   }
