@@ -32,11 +32,12 @@ var Quotify = {
       this.nodes.archivelinks = $$('a.linkify.quotelink', this.nodes.comment);
       return;
     }
-    for (var link of $$('a.linkify', this.nodes.comment)) {
-      Quotify.parseArchivelink.call(this, link);
-    }
-    for (var deadlink of $$('.deadlink', this.nodes.comment)) {
-      Quotify.parseDeadlink.call(this, deadlink);
+    for (const link of $$('a.linkify, .deadlink', this.nodes.comment)) {
+      if (link.classList.contains('deadlink')) {
+        Quotify.parseDeadlink.call(this, link);
+      } else {
+        Quotify.parseArchivelink.call(this, link);
+      }
     }
   },
 
@@ -72,10 +73,7 @@ var Quotify = {
       Quotify.fixDeadlink(deadlink);
       return;
     }
-    const boardID = (m = quote.match(/^>>>\/([a-z\d]+)/)) ?
-      m[1]
-    :
-      this.board.ID;
+    const boardID = (m = quote.match(/^>>>\/([a-z\d]+)/)) ? m[1] : this.board.ID;
     const quoteID = `${boardID}.${postID}`;
 
     if (post = g.posts.get(quoteID)) {

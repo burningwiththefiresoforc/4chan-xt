@@ -90,8 +90,7 @@ var QuoteYou = {
   menu: {
     init() {
       const label = $.el('label',
-        {className: 'toggle-you'}
-      ,
+        {className: 'toggle-you'},
         {innerHTML: '<input type="checkbox"> You'});
       const input = $('input', label);
       $.on(input, 'change', QuoteYou.menu.toggle);
