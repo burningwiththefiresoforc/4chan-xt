@@ -27,7 +27,7 @@ var ImageHover = {
     }
 
     if (Conf['Image Hover in Catalog']) {
-      return Callbacks.CatalogThread.push({
+      Callbacks.CatalogThread.push({
         name: 'Image Hover',
         cb: this.catalogNode
       });

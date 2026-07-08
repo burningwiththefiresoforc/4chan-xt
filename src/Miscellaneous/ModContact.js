@@ -7,10 +7,10 @@ import { g } from "../globals/globals";
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-var ModContact = {
+const ModContact = {
   init() {
     if ((g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW)) { return; }
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Mod Contact Links',
       cb:   this.node
     });
@@ -25,7 +25,7 @@ var ModContact = {
     if ((moved = this.info.comment.match(/This thread was moved to >>>\/(\w+)\//)) && $.hasOwn(ModContact.moveNote, moved[1])) {
       const moveNote = $.el('div', {className: 'move-note'});
       $.extend(moveNote, ModContact.moveNote[moved[1]]);
-      return $.add(this.nodes.post, moveNote);
+      $.add(this.nodes.post, moveNote);
     }
   },
 

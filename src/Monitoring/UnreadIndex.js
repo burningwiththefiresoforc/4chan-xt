@@ -34,7 +34,7 @@ var UnreadIndex = {
     });
 
     $.on(d, 'IndexRefreshInternal', this.onIndexRefresh);
-    return $.on(d, 'PostsInserted PostsRemoved', this.onPostsInserted);
+    $.on(d, 'PostsInserted PostsRemoved', this.onPostsInserted);
   },
 
   node() {
@@ -66,7 +66,7 @@ var UnreadIndex = {
     const wasVisible = !!UnreadIndex.hr[thread.fullID]?.parentNode;
     UnreadIndex.update(thread);
     if (Conf['Scroll to Last Read Post'] && (e.type === 'PostsInserted') && !wasVisible && !!UnreadIndex.hr[thread.fullID]?.parentNode) {
-      return Header.scrollToIfNeeded(UnreadIndex.hr[thread.fullID], true);
+      Header.scrollToIfNeeded(UnreadIndex.hr[thread.fullID], true);
     }
   },
 
@@ -79,7 +79,7 @@ var UnreadIndex = {
       if (lastReadPost !== UnreadIndex.lastReadPost[thread.fullID]) {
         UnreadIndex.lastReadPost[thread.fullID] = lastReadPost;
         if (thread.nodes.root?.parentNode) {
-          return UnreadIndex.update(thread);
+          UnreadIndex.update(thread);
         }
       }
     });
@@ -117,8 +117,7 @@ var UnreadIndex = {
       firstUnread || !repliesRead
     : indexEnabled ?
       thread.lastPost > lastReadPost
-    :
-      thread.OP.ID > lastReadPost;
+    : thread.OP.ID > lastReadPost;
     thread.nodes.root.classList.toggle('unread-thread', hasUnread);
 
     let link = UnreadIndex.markReadLink[thread.fullID];
@@ -132,9 +131,9 @@ var UnreadIndex = {
       $.on(link, 'click', UnreadIndex.markRead);
     }
     if (divider = $(g.SITE.selectors.threadDivider, thread.nodes.root)) { // divider inside thread as in Tinyboard
-      return $.before(divider, link);
+      $.before(divider, link);
     } else {
-      return $.add(thread.nodes.root, link);
+      $.add(thread.nodes.root, link);
     }
   },
 
@@ -148,7 +147,7 @@ var UnreadIndex = {
     });
     $.rm(UnreadIndex.hr[thread.fullID]);
     thread.nodes.root.classList.remove('unread-thread');
-    return ThreadWatcher.update(g.SITE.ID, thread.board.ID, thread.ID, {
+    ThreadWatcher.update(g.SITE.ID, thread.board.ID, thread.ID, {
       last: thread.lastPost,
       unread: 0,
       quotingYou: 0

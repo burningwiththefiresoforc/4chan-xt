@@ -10,7 +10,7 @@ const RevealSpoilers = {
   init() {
     if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf['Reveal Spoiler Thumbnails']) { return; }
 
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Reveal Spoiler Thumbnails',
       cb:   this.node
     });
@@ -18,9 +18,9 @@ const RevealSpoilers = {
 
   node() {
     if (this.isClone) { return; }
-    for (var file of this.files) {
+    for (const file of this.files) {
       if (file.thumb && file.isSpoiler) {
-        var {thumb} = file;
+        const {thumb} = file;
         // Remove old width and height.
         thumb.removeAttribute('style');
         // Enforce thumbnail size if thumbnail is replaced.

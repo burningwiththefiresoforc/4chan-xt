@@ -27,7 +27,7 @@ var Menu = {
       cb:   this.node
     });
 
-    return Callbacks.CatalogThread.push({
+    Callbacks.CatalogThread.push({
       name: 'Menu',
       cb:   this.catalogNode
     });
@@ -41,7 +41,7 @@ var Menu = {
       Menu.makeButton(this, button);
       return;
     }
-    return $.add(this.nodes.info, Menu.makeButton(this));
+    $.add(this.nodes.info, Menu.makeButton(this));
   },
 
   catalogNode() {
@@ -50,9 +50,7 @@ var Menu = {
 
   makeButton(post, button) {
     if (!button) { button = Menu.button.cloneNode(true); }
-    $.on(button, 'click', function(e) {
-      return Menu.menu.toggle(e, this, post);
-    });
+    $.on(button, 'click', function(e) { Menu.menu.toggle(e, this, post); });
     return button;
   }
 };

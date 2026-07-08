@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         4chan XT
-// @version      2.28.3
-// @minGMVer     1.14
+// @version      2.29.0
+// @minGMVer     4.00
 // @minFFVer     115
 // @namespace    4chan-XT
 // @description  4chan XT is a script that adds various features to anonymous imageboards.

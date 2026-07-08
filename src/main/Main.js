@@ -355,7 +355,7 @@ var Main = {
 
     // c.timeEnd 'All initializations'
 
-    return $.ready(Main.initReady);
+    $.ready(Main.initReady);
   },
 
   initStyle() {
@@ -379,7 +379,7 @@ var Main = {
     $.addStyle(CSS.sub(CSS.boards), 'fourchanx-css');
     Main.bgColorStyle = $.el('style', {id: 'fourchanx-bgcolor-css'});
 
-    return Main.setClass();
+    Main.setClass();
   },
 
   setClass() {
@@ -667,7 +667,7 @@ var Main = {
     }
 
     Main.expectInitFinished = true;
-    return $.event('4chanXInitFinished');
+    $.event('4chanXInitFinished');
   },
 
   parseCatalogThreads(threadRoots, threads, errors) {

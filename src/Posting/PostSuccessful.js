@@ -10,7 +10,7 @@ import $ from "../platform/$";
 const PostSuccessful = {
   init() {
     if (!Conf['Remember Your Posts']) { return; }
-    return $.ready(this.ready);
+    $.ready(this.ready);
   },
 
   ready() {

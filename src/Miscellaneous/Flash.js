@@ -6,10 +6,10 @@ import $ from "../platform/$";
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-var Flash = {
+const Flash = {
   init() {
     if ((g.BOARD.ID === 'f') && Conf['Enable Native Flash Embedding']) {
-      return $.ready(Flash.initReady);
+      $.ready(Flash.initReady);
     }
   },
 

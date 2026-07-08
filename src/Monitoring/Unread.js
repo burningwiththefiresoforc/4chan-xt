@@ -47,7 +47,7 @@ var Unread = {
       cb:   this.node
     });
 
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Unread',
       cb:   this.addPost
     });
@@ -72,7 +72,7 @@ var Unread = {
     }
     );
     $.on(resetLink, 'click', Unread.reset);
-    return Header.menu.addEntry({
+    Header.menu.addEntry({
       el: resetLink,
       order: 70
     });
@@ -188,17 +188,16 @@ var Unread = {
     );
     notif.onclick = function() {
       Header.scrollToIfNeeded(post.nodes.bottom, true);
-      return window.focus();
+      window.focus();
     };
-    return notif.onshow = () => setTimeout(() => notif.close()
-    , 7 * SECOND);
+    notif.onshow = () => setTimeout(() => notif.close(), 7 * SECOND);
   },
 
   onUpdate() {
     return $.queueTask(function() { // ThreadUpdater may scroll immediately after inserting posts
       Unread.setLine();
       Unread.read();
-      return Unread.update();
+      Unread.update();
     });
   },
 
@@ -209,7 +208,7 @@ var Unread = {
     Unread.postsQuotingYou.delete(ID);
     Unread.updatePosition();
     Unread.saveLastReadPost();
-    return Unread.update();
+    Unread.update();
   },
 
   read: debounce(100, function(e) {
@@ -302,13 +301,9 @@ var Unread = {
       const {isDead} = Unread.thread;
       return Favicon.set((
         countQuotingYou ?
-          (isDead ? 'unreadDeadY' : 'unreadY')
-        : count ?
-          (isDead ? 'unreadDead' : 'unread')
-        :
-          (isDead ? 'dead' : 'default')
-      )
-      );
+          (isDead ? 'unreadDeadY' : 'unreadY') : count ?
+          (isDead ? 'unreadDead' : 'unread') : (isDead ? 'dead' : 'default')
+      ));
     }
   },
 
@@ -329,14 +324,13 @@ var Unread = {
           }
         }
       }
-      return ThreadWatcher.update(g.SITE.ID, Unread.thread.board.ID, Unread.thread.ID, {
+      ThreadWatcher.update(g.SITE.ID, Unread.thread.board.ID, Unread.thread.ID, {
         last: Unread.thread.lastPost,
         isDead: Unread.thread.isDead,
         isArchived: Unread.thread.isArchived,
         unread: Unread.posts.size,
         quotingYou: (quotingYou.last || 0)
-      }
-      );
+      });
     }
   })
 };

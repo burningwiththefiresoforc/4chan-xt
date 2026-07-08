@@ -17,17 +17,21 @@ import { dict } from "../platform/helpers";
  * DS205: Consider reworking code to avoid use of IIFEs
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-var CatalogLinks = {
+const CatalogLinks = {
   init() {
     if ((g.SITE.software === 'yotsuba') && (Conf['External Catalog'] || Conf['JSON Index']) && !(Conf['JSON Index'] && (g.VIEW === 'index'))) {
-      const selector = (() => { switch (g.VIEW) {
-        case 'thread': case 'archive': return '.navLinks.desktop > a';
-        case 'catalog':           return '.navLinks > :first-child > a';
-        case 'index':             return '#ctrl-top > a, .cataloglink > a';
-      } })();
+
+      const selectors = {
+        thread: '.navLinks.desktop > a',
+        archive: '.navLinks.desktop > a',
+        catalog: '.navLinks > :first-child > a',
+        index: '#ctrl-top > a, .cataloglink > a'
+      };
+      const selector = selectors[g.VIEW];
+
       $.ready(function() {
-        for (var link of $$(selector)) {
-          var catalogURL;
+        for (const link of $$(selector)) {
+          let catalogURL;
           switch (link.pathname.replace(/\/+/g, '/')) {
             case `/${g.BOARD}/`:
               if (Conf['JSON Index']) { link.textContent = 'Index'; }
@@ -38,8 +42,8 @@ var CatalogLinks = {
               break;
           }
           if ((g.VIEW === 'catalog') && ((catalogURL = CatalogLinks.catalog()) !== g.SITE.urls.catalog?.(g.BOARD))) {
-            var catalogLink = link.parentNode.cloneNode(true);
-            var link2 = catalogLink.firstElementChild;
+            const catalogLink = link.parentNode.cloneNode(true);
+            const link2 = catalogLink.firstElementChild;
             link2.href = catalogURL;
             link2.textContent = link2.hostname === location.hostname ? `${meta.name} Catalog` : 'External Catalog';
             $.after(link.parentNode, [$.tn(' '), catalogLink]);
@@ -62,7 +66,7 @@ var CatalogLinks = {
       const input = $('input', el);
       $.on(input, 'change', this.toggle);
       $.sync('Header catalog links', CatalogLinks.set);
-      return Header.menu.addEntry({
+      Header.menu.addEntry({
         el,
         order: 95
       });
@@ -70,8 +74,8 @@ var CatalogLinks = {
   },
 
   node() {
-    for (var a of $$('a', this.nodes.comment)) {
-      var m;
+    for (const a of $$('a', this.nodes.comment)) {
+      let m;
       // if (m = a.href.match(/^https?:\/\/(boards\.4chan(?:nel)?\.org\/[^\/]+)\/catalog(#s=.*)?/)) {
       if (m = a.href.match(/^https?:\/\/(boards\.4chan\.org\/[^\/]+)\/catalog(#s=.*)?/)) {
         a.href = `//${m[1]}/${m[2] || '#catalog'}`;
@@ -100,10 +104,10 @@ var CatalogLinks = {
     // do not transform links unless they differ from the expected value at most by this tail
     const tail = /(?:index)?(?:\.\w+)?$/;
 
-    for (var a of $$('a:not([data-only])', list)) {
-      var {siteID, boardID} = a.dataset;
+    for (const a of $$('a:not([data-only])', list)) {
+      let {siteID, boardID} = a.dataset;
       if (!siteID || !boardID) {
-        var VIEW;
+        let VIEW;
         ({siteID, boardID, VIEW} = Site.parseURL(a));
         if (
           !siteID || !boardID ||
@@ -113,8 +117,8 @@ var CatalogLinks = {
         $.extend(a.dataset, {siteID, boardID});
       }
 
-      var board = {siteID, boardID};
-      var url = Conf['Header catalog links'] ? CatalogLinks.catalog(board) : Get.url('index', board);
+      const board = {siteID, boardID};
+      const url = Conf['Header catalog links'] ? CatalogLinks.catalog(board) : Get.url('index', board);
       if (url) {
         a.href = url;
         if (a.dataset.indexOptions && (url.split('#')[0] === Get.url('index', board))) {
@@ -126,12 +130,12 @@ var CatalogLinks = {
 
   externalParse() {
     CatalogLinks.externalList = dict();
-    for (var line of Conf.externalCatalogURLs.split('\n')) {
+    for (const line of Conf.externalCatalogURLs.split('\n')) {
       if (line[0] === '#') { continue; }
-      var url = line.split(';')[0];
-      var boards   = Filter.parseBoards(line.match(/;boards:([^;]+)/)?.[1] || '*');
-      var excludes = Filter.parseBoards(line.match(/;exclude:([^;]+)/)?.[1]) || dict();
-      for (var board in boards) {
+      const url = line.split(';')[0];
+      const boards   = Filter.parseBoards(line.match(/;boards:([^;]+)/)?.[1] || '*');
+      const excludes = Filter.parseBoards(line.match(/;exclude:([^;]+)/)?.[1]) || dict();
+      for (const board in boards) {
         if (!excludes[board] && !excludes[board.split('/')[0] + '/*']) {
           CatalogLinks.externalList[board] = url;
         }

@@ -119,7 +119,7 @@ var ThreadWatcher = {
       name: 'Thread Watcher',
       cb:   this.node
     });
-    return Callbacks.CatalogThread.push({
+    Callbacks.CatalogThread.push({
       name: 'Thread Watcher',
       cb:   this.catalogNode
     });
@@ -167,17 +167,17 @@ var ThreadWatcher = {
 
   catalogNode() {
     if (ThreadWatcher.isWatched(this.thread)) { $.addClass(this.nodes.root, 'watched'); }
-    return $.on(this.nodes.root, 'mousedown click', e => {
+    $.on(this.nodes.root, 'mousedown click', e => {
       if ((e.button !== 0) || !e.altKey) return;
       if (e.type === 'click') ThreadWatcher.toggle(this.thread, true);
-      return e.preventDefault();
+      e.preventDefault();
     });
   }, // Also on mousedown to prevent highlighting thumbnail in Firefox.
 
   addDialog() {
     if (!PageReady.isThisPageLegit()) { return; }
     ThreadWatcher.build();
-    return $.prepend(d.body, ThreadWatcher.dialog);
+    $.prepend(d.body, ThreadWatcher.dialog);
   },
 
   toggleWatcher() {
@@ -291,7 +291,7 @@ var ThreadWatcher = {
       const thread = g.threads.get(e.detail.threadID);
       if (!e.detail[404] || !ThreadWatcher.isWatched(thread)) { return; }
       // Update dead status.
-      return ThreadWatcher.add(thread);
+      ThreadWatcher.add(thread);
     }
   },
 
@@ -324,14 +324,14 @@ var ThreadWatcher = {
       onloadend,
       { timeout: MINUTE, ajax }
     );
-    return ThreadWatcher.requests.push(req);
+    ThreadWatcher.requests.push(req);
   },
 
   clearRequests() {
     ThreadWatcher.requests = [];
     ThreadWatcher.fetched = 0;
     ThreadWatcher.status.textContent = '';
-    return $.rmClass(ThreadWatcher.refreshButton, 'spin');
+    $.rmClass(ThreadWatcher.refreshButton, 'spin');
   },
 
   abort() {
@@ -342,7 +342,7 @@ var ThreadWatcher = {
         req.abort();
       }
     }
-    return ThreadWatcher.clearRequests();
+    ThreadWatcher.clearRequests();
   },
 
   initLastModified() {
@@ -695,7 +695,7 @@ var ThreadWatcher = {
     $.rmAll(list);
     $.add(list, nodes);
 
-    return ThreadWatcher.refreshIcon();
+    ThreadWatcher.refreshIcon();
   },
 
   refresh(manual) {
@@ -749,9 +749,9 @@ var ThreadWatcher = {
     if (line = $(`#watched-threads > [data-site-i-d='${siteID}'][data-full-i-d='${boardID}.${threadID}']`, ThreadWatcher.dialog)) {
       const newLine = ThreadWatcher.makeLine(siteID, boardID, threadID, data);
       $.replace(line, newLine);
-      return ThreadWatcher.refreshIcon();
+      ThreadWatcher.refreshIcon();
     } else {
-      return ThreadWatcher.refresh();
+      ThreadWatcher.refresh();
     }
   },
 
@@ -771,9 +771,9 @@ var ThreadWatcher = {
     const boardID  = thread.board.ID;
     const threadID = thread.ID;
     if (ThreadWatcher.db.get({boardID, threadID})) {
-      return ThreadWatcher.rm(siteID, boardID, threadID, undefined, manual);
+      ThreadWatcher.rm(siteID, boardID, threadID, undefined, manual);
     } else {
-      return ThreadWatcher.add(thread, undefined, manual);
+      ThreadWatcher.add(thread, undefined, manual);
     }
   },
 
@@ -802,15 +802,15 @@ var ThreadWatcher = {
     ThreadWatcher.refresh(manual);
     const thread = {siteID: g.SITE.ID, boardID, threadID, data, force: true};
     if (Conf['Show Page'] && !data.isDead) {
-      return ThreadWatcher.fetchBoard([thread]);
+      ThreadWatcher.fetchBoard([thread]);
     } else if (ThreadWatcher.unreadEnabled && Conf['Show Unread Count']) {
-      return ThreadWatcher.fetchStatus(thread);
+      ThreadWatcher.fetchStatus(thread);
     }
   },
 
   rm(siteID, boardID, threadID, cb, manual) {
     ThreadWatcher.db.delete({siteID, boardID, threadID}, cb);
-    return ThreadWatcher.refresh(manual);
+    ThreadWatcher.refresh(manual);
   },
 
   menu: {
@@ -820,7 +820,7 @@ var ThreadWatcher = {
       $.on($('.menu-button', ThreadWatcher.dialog), 'click', function(e) {
         return menu.toggle(e, this, ThreadWatcher);
       });
-      return this.addMenuEntries();
+      this.addMenuEntries();
     },
 
     addHeaderMenuEntry() {

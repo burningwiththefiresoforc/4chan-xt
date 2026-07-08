@@ -31,15 +31,14 @@ var AntiAutoplay = {
   },
 
   node() {
-    return AntiAutoplay.process(this.nodes.comment);
+    AntiAutoplay.process(this.nodes.comment);
   },
 
   process(root) {
-    for (var iframe of $$('iframe[src*="youtube"][src*="autoplay=1"]', root)) {
-      AntiAutoplay.processVideo(iframe, 'src');
-    }
-    for (var object of $$('object[data*="youtube"][data*="autoplay=1"]', root)) {
-      AntiAutoplay.processVideo(object, 'data');
+    const elements = $$('iframe[src*="youtube"][src*="autoplay=1"], object[data*="youtube"][data*="autoplay=1"]', root);
+    for (const el of elements) {
+      const attr = el.tagName === 'IFRAME' ? 'src' : 'data';
+      this.processVideo(el, attr);
     }
   },
 

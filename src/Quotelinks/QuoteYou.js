@@ -90,8 +90,7 @@ var QuoteYou = {
   menu: {
     init() {
       const label = $.el('label',
-        {className: 'toggle-you'}
-      ,
+        {className: 'toggle-you'},
         {innerHTML: '<input type="checkbox"> You'});
       const input = $('input', label);
       $.on(input, 'change', QuoteYou.menu.toggle);
@@ -157,7 +156,7 @@ var QuoteYou = {
       }
 
       const posts = $$('.quotesYou');
-      return QuoteYou.cb.scroll(posts[type === 'following' ? 0 : posts.length - 1]);
+      QuoteYou.cb.scroll(posts[type === 'following' ? 0 : posts.length - 1]);
     },
 
     scroll(root) {

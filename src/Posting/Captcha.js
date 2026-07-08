@@ -15,7 +15,7 @@ const Captcha = {
       $.on(d, 'SaveCaptcha', e => {
         return this.saveAPI(e.detail);
       });
-      return $.on(d, 'NoCaptcha', e => {
+      $.on(d, 'NoCaptcha', e => {
         return this.noCaptcha(e.detail);
       });
     },
@@ -128,11 +128,11 @@ const Captcha = {
       if (this.captchas.length) {
         this.timer = setTimeout(this.clear.bind(this), this.captchas[0].timeout - Date.now());
       }
-      return this.updateCount();
+      this.updateCount();
     },
 
     updateCount() {
-      return $.event('CaptchaCount', this.captchas.length);
+      $.event('CaptchaCount', this.captchas.length);
     }
   },
   // replace: CaptchaReplace,

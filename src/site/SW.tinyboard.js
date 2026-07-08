@@ -10,6 +10,10 @@ import SWYotsuba from "./SW.yotsuba";
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
+
+const rootFor = ({siteID}) => Conf.siteProperties[siteID]?.root || `http://${siteID}/`;
+const rootOrEmptyFor = ({siteID}) => Conf.siteProperties[siteID]?.root || '';
+
 const SWTinyboard = {
   isOPContainerThread: true,
   mayLackJSON: true,
@@ -71,37 +75,30 @@ const SWTinyboard = {
   },
 
   urls: {
-    thread({siteID, boardID, threadID}, isArchived) {
-      return `${Conf.siteProperties[siteID]?.root || `http://${siteID}/`}${boardID}/${isArchived ? 'archive/' : ''}res/${threadID}.html`;
-    },
-    post({postID})                   { return `#${postID}`; },
-    index({siteID, boardID})          { return `${Conf.siteProperties[siteID]?.root || `http://${siteID}/`}${boardID}/`; },
-    catalog({siteID, boardID})          { return `${Conf.siteProperties[siteID]?.root || `http://${siteID}/`}${boardID}/catalog.html`; },
-    threadJSON({siteID, boardID, threadID}, isArchived) {
-      const root = Conf.siteProperties[siteID]?.root;
-      if (root) { return `${root}${boardID}/${isArchived ? 'archive/' : ''}res/${threadID}.json`; } else { return ''; }
-    },
-    archivedThreadJSON(thread) {
-      return SWTinyboard.urls.threadJSON(thread, true);
+    post: ({postID}) => `#${postID}`,
+    index: ({siteID, boardID}) => `${rootFor({siteID})}${boardID}/`,
+    catalog: ({siteID, boardID}) => `${rootFor({siteID})}${boardID}/catalog.html`,
+    file: ({siteID, boardID}, filename) => `${rootFor({siteID})}${boardID}/${filename}`,
+    archivedThreadJSON: (thread) => SWTinyboard.urls.threadJSON(thread, true),
+    thumb: (board, filename) => SWTinyboard.urls.file(board, filename),
+    thread: ({siteID, boardID, threadID}, isArchived) =>
+      `${rootFor({siteID})}${boardID}/${isArchived ? 'archive/' : ''}res/${threadID}.html`,
+    threadJSON: ({siteID, boardID, threadID}, isArchived) => {
+      const root = rootOrEmptyFor({siteID});
+      return root && `${root}${boardID}/${isArchived ? 'archive/' : ''}res/${threadID}.json`;
     },
     threadsListJSON({siteID, boardID}) {
-      const root = Conf.siteProperties[siteID]?.root;
-      if (root) { return `${root}${boardID}/threads.json`; } else { return ''; }
+      const root = rootOrEmptyFor({siteID});
+      return root && `${root}${boardID}/threads.json`;
     },
     archiveListJSON({siteID, boardID}) {
-      const root = Conf.siteProperties[siteID]?.root;
-      if (root) { return `${root}${boardID}/archive/archive.json`; } else { return ''; }
+      const root = rootOrEmptyFor({siteID});
+      return root && `${root}${boardID}/archive/archive.json`;
     },
     catalogJSON({siteID, boardID}) {
-      const root = Conf.siteProperties[siteID]?.root;
-      if (root) { return `${root}${boardID}/catalog.json`; } else { return ''; }
+      const root = rootOrEmptyFor({siteID});
+      return root && `${root}${boardID}/catalog.json`;
     },
-    file({siteID, boardID}, filename) {
-      return `${Conf.siteProperties[siteID]?.root || `http://${siteID}/`}${boardID}/${filename}`;
-    },
-    thumb(board, filename) {
-      return SWTinyboard.urls.file(board, filename);
-    }
   },
 
   selectors: {

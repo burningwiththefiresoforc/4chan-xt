@@ -1,5 +1,5 @@
 import Header from "../General/Header";
-import { Conf, doc, g } from "../globals/globals";
+import { Conf, doc, g, d } from "../globals/globals";
 import $ from "../platform/$";
 import { debounce } from "../platform/helpers";
 
@@ -76,7 +76,7 @@ const ScrollMarkers = {
 
       previousEl = el;
 
-      document.createElement('button')
+      d.createElement('button')
     }
 
     // Remove those that don't exist anymore

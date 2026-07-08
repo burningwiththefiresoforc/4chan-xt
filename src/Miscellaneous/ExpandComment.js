@@ -9,11 +9,11 @@ import $$ from "../platform/$$";
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-var ExpandComment = {
+const ExpandComment = {
   init() {
     if ((g.VIEW !== 'index') || !Conf['Comment Expansion'] || Conf['JSON Index']) { return; }
 
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Comment Expansion',
       cb:   this.node
     });
@@ -54,48 +54,46 @@ var ExpandComment = {
   },
 
   parse(req, a, post) {
-    let postObj, spoilerRange;
+    let spoilerRange;
     const {status} = req;
     if (![200, 304].includes(status)) {
       a.textContent = status ? `Error ${req.statusText} (${status})` : 'Connection Error';
       return;
     }
 
-    const {
-      posts
-    } = req.response;
+    const { posts } = req.response;
     if (spoilerRange = posts[0].custom_spoiler) {
       g.SITE.Build.spoilerRange[g.BOARD] = spoilerRange;
     }
 
-    for (postObj of posts) {
-      if (postObj.no === post.ID) { break; }
-    }
-    if (postObj.no !== post.ID) {
-      a.textContent = `Post No.${post} not found.`;
+    const postObj = posts.find(p => p.no === post.ID);
+    if (!postObj) {
+      a.textContent = `Post No.${post.ID} not found.`;
       return;
     }
 
     const {comment} = post.nodes;
     const clone = comment.cloneNode(false);
     clone.innerHTML = postObj.com;
+
+    const pathParts = a.pathname.split(/\/+/);
+    const threadBase = pathParts.slice(0, 4).join('/');
+    const boardBase  = pathParts.slice(0, 3).join('/');
     // Fix pathnames
-    for (var quote of $$('.quotelink', clone)) {
-      var href = quote.getAttribute('href');
-      if (href[0] === '/') { continue; } // Cross-board quote, or board link
-      if (href[0] === '#') {
-        quote.href = `${a.pathname.split(/\/+/).splice(0,4).join('/')}${href}`;
-      } else {
-        quote.href = `${a.pathname.split(/\/+/).splice(0,3).join('/')}/${href}`;
-      }
+    for (const quote of $$('.quotelink', clone)) {
+      const href = quote.getAttribute('href');
+      if (!href || href[0] === '/') { continue; }
+
+      quote.href = href[0] === '#' ? `${threadBase}${href}` : `${boardBase}/${href}`;
     }
+
     post.nodes.shortComment = comment;
     $.replace(comment, clone);
     post.nodes.comment = (post.nodes.longComment = clone);
     post.parseComment();
     post.parseQuotes();
 
-    for (var callback of ExpandComment.callbacks) {
+    for (const callback of ExpandComment.callbacks) {
       callback.call(post);
     }
   }

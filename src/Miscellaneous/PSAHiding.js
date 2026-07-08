@@ -12,7 +12,7 @@ var PSAHiding = {
     if (!Conf['Announcement Hiding'] || !g.SITE.selectors.psa) { return; }
     $.addClass(doc, 'hide-announcement');
     $.onExists(doc, g.SITE.selectors.psa, this.setup);
-    return $.ready(function() {
+    $.ready(function() {
       if (!$(g.SITE.selectors.psa)) { return $.rmClass(doc, 'hide-announcement'); }
     });
   },

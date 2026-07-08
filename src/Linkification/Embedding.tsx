@@ -20,11 +20,11 @@ import Icon from '../Icons/icon';
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 
-var Embedding = {
+const Embedding = {
   init() {
     if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf.Linkify || (!Conf.Embedding && !Conf['Link Title'] && !Conf['Cover Preview'])) { return; }
     this.types = dict();
-    for (var type of this.ordered_types) { this.types[type.key] = type; }
+    for (const type of this.ordered_types) { this.types[type.key] = type; }
 
     if (Conf.Embedding && (g.VIEW !== 'archive')) {
       this.dialog = UI.dialog('embedding',
@@ -33,7 +33,7 @@ var Embedding = {
       $.one(d, '4chanXInitFinished', this.ready);
       $.on(d, 'IndexRefreshInternal', () => g.posts.forEach(function(post) {
         for (post of [post, ...post.clones]) {
-          for (var embed of post.nodes.embedlinks) {
+          for (const embed of post.nodes.embedlinks) {
             Embedding.cb.catalogRemove.call(embed);
           }
         }
@@ -65,7 +65,7 @@ var Embedding = {
       i = 0;
       items = $$('.linkify', post.nodes.comment);
       while ((el = items[i++])) {
-        var data;
+        let data;
         if (data = Embedding.services(el)) {
           Embedding.preview(data);
         }
@@ -88,8 +88,8 @@ var Embedding = {
 
   services(link) {
     const {href} = link;
-    for (var type of Embedding.ordered_types) {
-      var match;
+    for (const type of Embedding.ordered_types) {
+      let match;
       if (match = type.regExp.exec(href)) {
         return {key: type.key, uid: match[1], options: match[2], link};
       }
@@ -106,12 +106,11 @@ var Embedding = {
     const embed = $.el('a', {
       className:   'embedder',
       href:        'javascript:;'
-    }
-    ,
-      {innerHTML: '(<span>un</span>embed)'});
+    },
+    {innerHTML: '(<span>un</span>embed)'});
 
     const object = {key, uid, options, href};
-    for (var name in object) { var value = object[name]; embed.dataset[name] = value; }
+    for (const name in object) { const value = object[name]; embed.dataset[name] = value; }
 
     $.on(embed, 'click', Embedding.cb.click);
     $.after(link, [$.tn(' '), embed]);
@@ -138,7 +137,7 @@ var Embedding = {
     });
     Icon.set(jump, 'arrowRightLong');
     Icon.set(close, 'xmark');
-    return $.add(d.body, Embedding.dialog);
+    $.add(d.body, Embedding.dialog);
   },
 
   closeFloat() {
@@ -191,17 +190,13 @@ var Embedding = {
     let service;
     const {key, uid, link} = data;
     if (!(service = Embedding.types[key].preview)) { return; }
-    return $.on(link, 'mouseover', function(e) {
+    $.on(link, 'mouseover', function(e) {
       const src = service.url(uid);
       const {height} = service;
-      const el = $.el('img', {
-        src,
-        id: 'ihover'
-      }
-      );
+      const el = $.el('img', { src, id: 'ihover' });
       el.setAttribute("referrerpolicy", "no-referrer")
       $.add(Header.hover, el);
-      return UI.hover({
+      UI.hover({
         root: link,
         el,
         latestEvent: e,
@@ -231,7 +226,7 @@ var Embedding = {
       } else {
         $.after(this, Embedding.cb.embed(this));
       }
-      return $.toggleClass(this, 'embedded');
+      $.toggleClass(this, 'embedded');
     },
 
     embed(a) {
@@ -250,7 +245,7 @@ var Embedding = {
       const isCatalog = $.hasClass(doc, 'catalog-mode');
       if ((isCatalog && $.hasClass(this, 'embedded')) || (!isCatalog && $.hasClass(this, 'embed-removed'))) {
         Embedding.cb.toggle.call(this);
-        return $.toggleClass(this, 'embed-removed');
+        $.toggleClass(this, 'embed-removed');
       }
     },
 
@@ -286,8 +281,8 @@ var Embedding = {
       link.dataset.original = link.textContent;
       link.textContent = text;
       Icon.setLinkify(link);
-      for (var post2 of post.clones) {
-        for (var link2 of $$('a.linkify', post2.nodes.comment)) {
+      for (const post2 of post.clones) {
+        for (const link2 of $$('a.linkify', post2.nodes.comment)) {
           if (link2.href === link.href) {
             link2.dataset.original ??= link2.textContent;
             link2.textContent = text;
@@ -303,12 +298,11 @@ var Embedding = {
       regExp: /^[^?#]+\.(?:mp3|m4a|oga|wav|flac)(?:[?#]|$)/i,
       style: '',
       el(a) {
-        return $.el('audio', {
+        $.el('audio', {
           controls:    true,
           preload:     'auto',
           src:         a.dataset.href
-        }
-        );
+        });
       }
     }
     , {
@@ -407,8 +401,7 @@ var Embedding = {
           const el = $.el('pre', {
             hidden: true,
             id: `gist-embed-${counter++}`
-          }
-          );
+          });
           CrossOrigin.cache(`https://api.github.com/gists/${a.dataset.uid}`, function() {
             el.textContent = Object.values(this.response.files)[0].content;
             el.className = 'prettyprint';
@@ -421,7 +414,7 @@ var Embedding = {
       title: {
         api(uid) { return `https://api.github.com/gists/${uid}`; },
         text({files}) {
-          for (var file in files) { if (files.hasOwnProperty(file)) { return file; } }
+          for (const file in files) { if (files.hasOwnProperty(file)) { return file; } }
         }
       }
     }
@@ -442,8 +435,7 @@ var Embedding = {
           controls: true,
           preload:  'auto',
           loop:     true
-        }
-        );
+        });
         if (/^http/.test(a.dataset.uid)) {
           $.add(el, $.el('source', {src: a.dataset.uid}));
           return el;
@@ -454,10 +446,10 @@ var Embedding = {
           case 'gc': return ['giant', 'fat', 'zippy'];
           default: return ['.webm', '.mp4'];
         } })();
-        for (var name of names.split(',')) {
-          for (var type of types) {
-            var base = `${name}${type}`;
-            var urls = (() => { switch (host) {
+        for (const name of names.split(',')) {
+          for (const type of types) {
+            const base = `${name}${type}`;
+            const urls = (() => { switch (host) {
               // list from src/common.py at http://loopvid.appspot.com/source.html
               case 'pf': return [`https://kastden.org/_loopvid_media/pf/${base}`, `https://web.archive.org/web/2/http://a.pomf.se/${base}`];
               case 'kd': return [`https://kastden.org/loopvid/${base}`];
@@ -480,7 +472,7 @@ var Embedding = {
               case 'fc': return [`//${ImageHost.host()}/${base}.webm`];
             } })();
 
-            for (var url of urls) {
+            for (const url of urls) {
               $.add(el, $.el('source', {src: url}));
             }
           }
@@ -577,7 +569,7 @@ var Embedding = {
           $.on(el, 'load', function() {
             return this.contentWindow.postMessage({element: 't', query: 'height'}, 'https://tf.rita.moe');
           });
-          var onMessage = function(e) {
+          const onMessage = function(e) {
             if ((e.source === el.contentWindow) && (e.origin === 'https://tf.rita.moe')) {
               $.off(window, 'message', onMessage);
               return (cont || el).style.height = `${+$.minmax(e.data.height, 250, 0.8 * doc.clientHeight)}px`;
@@ -588,7 +580,7 @@ var Embedding = {
           if ($.engine === 'gecko') {
             // XXX https://bugzilla.mozilla.org/show_bug.cgi?id=680823
             el.style.cssText = 'border: none; width: 100%; height: 100%;';
-            var cont = $.el('div');
+            const cont = $.el('div');
             $.add(cont, el);
             return cont;
           } else {

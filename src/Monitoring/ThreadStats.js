@@ -53,7 +53,7 @@ var ThreadStats = {
 
     if (this.pageCountEl) { $.on(this.pageCountEl, 'click', ThreadStats.fetchPage); }
 
-    return Callbacks.Thread.push({
+    Callbacks.Thread.push({
       name: 'Thread Stats',
       cb:   this.node
     });
@@ -65,7 +65,7 @@ var ThreadStats = {
     ThreadStats.update();
     ThreadStats.fetchPage();
     $.on(d, 'PostsInserted', () => $.queueTask(ThreadStats.onPostsInserted));
-    return $.on(d, 'ThreadUpdate', ThreadStats.onUpdate);
+    $.on(d, 'ThreadUpdate', ThreadStats.onUpdate);
   },
 
   count() {
@@ -97,7 +97,7 @@ var ThreadStats = {
     ThreadStats.count();
     ThreadStats.update();
     if (ThreadStats.showPage && (ThreadStats.pageCountEl.textContent !== '1')) {
-      return ThreadStats.fetchPage();
+      ThreadStats.fetchPage();
     }
   },
 
@@ -132,8 +132,7 @@ var ThreadStats = {
     }
     ThreadStats.timeout = setTimeout(
       ThreadStats.fetchPage,
-      Conf['Purge Position'] && ThreadStats.pageCountEl.classList.contains('warning')
-        ? (5 * SECOND) : (2 * MINUTE)
+      Conf['Purge Position'] && ThreadStats.pageCountEl.classList.contains('warning') ? (5 * SECOND) : (2 * MINUTE)
     );
     $.whenModified(
       g.SITE.urls.threadsListJSON(ThreadStats.thread),

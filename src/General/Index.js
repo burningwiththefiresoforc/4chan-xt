@@ -113,7 +113,7 @@ var Index = {
     const watchSettings = function(e) {
       if (input = $.getOwn(inputs, e.target.name)) {
         input.checked = e.target.checked;
-        return $.event('change', null, input);
+        $.event('change', null, input);
       }
     };
     $.on(d, 'OpenSettings', () => $.on($.id('fourchanx-settings'), 'change', watchSettings));
@@ -231,12 +231,12 @@ var Index = {
       if (timeEl.dataset.utc) { return RelativeDates.update(timeEl); }
     });
 
-    return PageReady.ready(function() {
+    PageReady.ready(function() {
       let pagelist;
       if (pagelist = $('.pagelist')) {
         $.replace(pagelist, Index.pagelist);
       }
-      return $.rmClass(doc, 'index-loading');
+      $.rmClass(doc, 'index-loading');
     });
   },
 
@@ -248,7 +248,7 @@ var Index = {
     if (pageNum > Index.pagesNum) { return Index.endNotice(); }
 
     const threadIDs = Index.threadsOnPage(pageNum);
-    return Index.buildStructure(threadIDs);
+    Index.buildStructure(threadIDs);
   },
 
   endNotice: (function() {
@@ -258,7 +258,7 @@ var Index = {
       if (notify) { return; }
       notify = true;
       new Notice('info', "Last page reached.", 2);
-      return setTimeout(reset, 3 * SECOND);
+      setTimeout(reset, 3 * SECOND);
     };
   })(),
 
@@ -297,7 +297,7 @@ var Index = {
   },
 
   catalogNode() {
-    return $.on(this.nodes.root, 'click', e => {
+    $.on(this.nodes.root, 'click', e => {
       if ((e.button !== 0) || !e.shiftKey) return;
       e.preventDefault();
       getSelection().removeAllRanges();
@@ -317,7 +317,7 @@ var Index = {
     } else {
       ThreadHiding.hide(thread);
     }
-    return ThreadHiding.saveHiddenState(thread);
+    ThreadHiding.saveHiddenState(thread);
   },
 
   cycleSortType() {
@@ -328,7 +328,7 @@ var Index = {
       if (type.selected) { break; }
     }
     types[(i + 1) % types.length].selected = true;
-    return $.event('change', null, Index.selectSort);
+    $.event('change', null, Index.selectSort);
   },
 
   cb: {
@@ -350,28 +350,25 @@ var Index = {
     },
 
     toggleHiddenThreads() {
-      $('#hidden-toggle a', Index.navLinks).textContent = (Index.showHiddenThreads = !Index.showHiddenThreads) ?
-        'Hide'
-      :
-        'Show';
+      $('#hidden-toggle a', Index.navLinks).textContent = (Index.showHiddenThreads = !Index.showHiddenThreads) ? 'Hide' : 'Show';
       Index.sort();
-      return Index.buildIndex();
+      Index.buildIndex();
     },
 
     mode() {
       Index.pushState({mode: this.value});
-      return Index.pageLoad(false);
+      Index.pageLoad(false);
     },
 
     sort() {
       const value = Index.selectRev.checked ? Index.selectSort.value + "-rev" : Index.selectSort.value;
       Index.pushState({sort: value});
-      return Index.pageLoad(false);
+      Index.pageLoad(false);
     },
 
     resort(e) {
       Index.changed.order = true;
-      if (!e?.detail?.deferred) { return Index.pageLoad(false); }
+      if (!e?.detail?.deferred) { Index.pageLoad(false); }
     },
 
     perBoardSort() {
@@ -393,7 +390,7 @@ var Index = {
       Index.lastLongThresholds[i] = value;
       Index.saveLastLongThresholds(i);
       Index.changed.order = true;
-      return Index.pageLoad(false);
+      Index.pageLoad(false);
     },
 
     size(e) {
@@ -407,11 +404,11 @@ var Index = {
         $.addClass(Index.root, 'catalog-large');
         $.rmClass(Index.root,  'catalog-small');
       }
-      if (e) { return Index.buildIndex(); }
+      if (e) { Index.buildIndex(); }
     },
 
     replies() {
-      return Index.buildIndex();
+      Index.buildIndex();
     },
 
     hover() {
@@ -469,7 +466,7 @@ var Index = {
 
     refreshFront() {
       Index.pushState({page: 1});
-      return Index.update();
+      Index.update();
     },
 
     catalogReplies() {
@@ -487,7 +484,7 @@ var Index = {
         const {style} = this.post;
         style.left = `${x}px`;
         style.right = `${-x}px`;
-        return $.one(this.root, 'mouseleave', () => style.left = (style.right = null));
+        $.one(this.root, 'mouseleave', () => style.left = (style.right = null));
       }
     }
   },
@@ -533,8 +530,7 @@ var Index = {
   processHash() {
     // XXX https://bugzilla.mozilla.org/show_bug.cgi?id=483304
     let hash = location.href.match(/#.*/)?.[0] || '';
-    const state =
-      {replace: true};
+    const state = {replace: true};
     const commands = hash.slice(1).split('/');
     const leftover = [];
     for (var command of commands) {
@@ -617,15 +613,15 @@ var Index = {
     } else {
       Conf[key] = value;
     }
-    return $.set(key, Conf[key]);
+    $.set(key, Conf[key]);
   },
 
   saveSort() {
-    return Index.savePerBoard('Index Sort', Index.currentSort);
+    Index.savePerBoard('Index Sort', Index.currentSort);
   },
 
   saveLastLongThresholds(i) {
-    return Index.savePerBoard(`Last Long Reply Thresholds ${i}`, Index.lastLongThresholds[i]);
+    Index.savePerBoard(`Last Long Reply Thresholds ${i}`, Index.lastLongThresholds[i]);
   },
 
   pageLoad(scroll=true) {
@@ -735,9 +731,7 @@ var Index = {
     }
     Index.hideLabel.hidden = false;
     return $('#hidden-count', Index.navLinks).textContent = hiddenCount === 1 ?
-      '1 hidden thread'
-    :
-      `${hiddenCount} hidden threads`;
+      '1 hidden thread' : `${hiddenCount} hidden threads`;
   },
 
   update(firstTime) {
@@ -773,7 +767,7 @@ var Index = {
       'Index',
       Index.load
     );
-    return $.addClass(Index.button, 'spin');
+    $.addClass(Index.button, 'spin');
   },
 
   load() {
@@ -837,7 +831,7 @@ var Index = {
     $.cleanCache(url => /^https?:\/\/a\.4cdn\.org\//.test(url));
     Index.parseThreadList(pages);
     Index.changed.threads = true;
-    return Index.pageLoad();
+    Index.pageLoad();
   },
 
   parseThreadList(pages) {
@@ -1182,16 +1176,16 @@ var Index = {
   clearSearch() {
     Index.searchInput.value = '';
     Index.onSearchInput();
-    return Index.searchInput.focus();
+    Index.searchInput.focus();
   },
 
   setupSearch() {
     Index.searchInput.value = Index.search;
     if (Index.search) {
-      return Index.searchInput.dataset.searching = 1;
+      Index.searchInput.dataset.searching = 1;
     } else {
       // XXX https://bugzilla.mozilla.org/show_bug.cgi?id=1021289
-      return Index.searchInput.removeAttribute('data-searching');
+      Index.searchInput.removeAttribute('data-searching');
     }
   },
 
@@ -1202,7 +1196,7 @@ var Index = {
       search,
       replace: !!search === !!Index.search
     });
-    return Index.pageLoad(false);
+    Index.pageLoad(false);
   },
 
   querySearch(query) {

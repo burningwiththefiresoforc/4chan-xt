@@ -19,7 +19,7 @@ var QuoteInline = {
       ExpandComment.callbacks.push(this.node);
     }
 
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Quote Inlining',
       cb:   this.node
     });
@@ -37,7 +37,7 @@ var QuoteInline = {
     if (Conf['Quote Hash Navigation']) {
       if (!clone) { $.after(link, QuoteInline.qiQuote(link, $.hasClass(link, 'filtered'))); }
     }
-    return $.on(link, 'click', QuoteInline.toggle);
+    $.on(link, 'click', QuoteInline.toggle);
   },
 
   qiQuote(link, hidden) {
@@ -67,7 +67,7 @@ var QuoteInline = {
       if ($.x(`ancestor::div[@data-full-i-d='${boardID}.${postID}']`, this)) { return; }
       QuoteInline.add(this, boardID, threadID, postID, context, quoter);
     }
-    return this.classList.toggle('inlined');
+    this.classList.toggle('inlined');
   },
 
   findRoot(quotelink, isBacklink) {
@@ -81,8 +81,7 @@ var QuoteInline = {
   add(quotelink, boardID, threadID, postID, context, quoter) {
     let post;
     const isBacklink = $.hasClass(quotelink, 'backlink');
-    const inline = $.el('div',
-      {className: 'inline'});
+    const inline = $.el('div', {className: 'inline'});
     inline.dataset.fullID = `${boardID}.${postID}`;
     const root = QuoteInline.findRoot(quotelink, isBacklink);
     $.after(root, inline);
@@ -107,7 +106,7 @@ var QuoteInline = {
     // Decrease the unread count if this post
     // is in the array of unread posts.
     if (!Unread.posts) { return; }
-    return Unread.readSinglePost(post);
+    Unread.readSinglePost(post);
   },
 
   rm(quotelink, boardID, threadID, postID, context) {
@@ -122,9 +121,7 @@ var QuoteInline = {
     $.rm(root);
     $.event('PostsRemoved', null, parentNode);
 
-    if (!$('.inline', qroot)) {
-      $.rmClass(qroot, 'hasInline');
-    }
+    if (!$('.inline', qroot)) { $.rmClass(qroot, 'hasInline'); }
 
     // Stop if it only contains text.
     if (!(el = root.firstElementChild)) { return; }

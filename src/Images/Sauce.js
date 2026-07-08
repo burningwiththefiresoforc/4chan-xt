@@ -13,7 +13,7 @@ import { dict } from "../platform/helpers";
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-var Sauce = {
+const Sauce = {
   init() {
     let link;
     if (!['index', 'thread'].includes(g.VIEW) || !Conf.Sauce) { return; }
@@ -21,7 +21,7 @@ var Sauce = {
 
     const links = [];
     for (link of Conf.sauces.split('\n')) {
-      var linkData;
+      let linkData;
       if ((link[0] !== '#') && (linkData = this.parseLink(link))) {
         links.push(linkData);
       }
@@ -34,7 +34,7 @@ var Sauce = {
       className: 'sauce'
     }
     );
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Sauce',
       cb:   this.node
     });
@@ -45,11 +45,11 @@ var Sauce = {
     const parts = dict();
     const iterable = link.split(/;(?=(?:text|boards|types|regexp|sandbox):?)/);
     for (let i = 0; i < iterable.length; i++) {
-      var part = iterable[i];
+      const part = iterable[i];
       if (i === 0) {
         parts.url = part;
       } else {
-        var m = part.match(/^(\w*):?(.*)$/);
+        const m = part.match(/^(\w*):?(.*)$/);
         parts[m[1]] = m[2];
       }
     }
@@ -90,7 +90,7 @@ var Sauce = {
     if (!!parts.regexp && (!(matches = file.name.match(parts.regexp)))) { return null; }
 
     const missing = [];
-    for (var key of ['url', 'text']) {
+    for (const key of ['url', 'text']) {
       parts[key] = parts[key].replace(/%(T?URL|IMG|[sh]?MD5|board|name|%|semi|\$\d+)/g, function(orig, parameter) {
         let type;
         if (parameter[0] === '$') {
@@ -129,7 +129,7 @@ var Sauce = {
 
   node() {
     if (this.isClone) { return; }
-    for (var file of this.files) {
+    for (const file of this.files) {
       Sauce.file(this, file);
     }
   },
@@ -147,10 +147,10 @@ var Sauce = {
     $.add(file.text, nodes);
 
     if (skipped.length) {
-      var observer = new MutationObserver(function() {
+      const observer = new MutationObserver(function() {
         if (file.text.dataset.md5) {
           for ([link, node] of skipped) {
-            var node2;
+            let node2;
             if (node2 = Sauce.createSauceLink(link, post, file)) {
               $.replace(node, node2);
             }

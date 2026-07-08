@@ -53,13 +53,13 @@ var Fourchan = {
           return Callbacks.Post.execute(post, ['Parse [math] tags'], true);
         }
       });
-      return ExpandComment.callbacks.push(Fourchan.math);
+      ExpandComment.callbacks.push(Fourchan.math);
     }
   },
 
   // Disable 4chan's ID highlighting (replaced by IDHighlight) and reported post hiding.
   initReady() {
-    return $.global('disable4chanIdHl');
+    $.global('disable4chanIdHl');
   },
 
   code() {
@@ -86,7 +86,7 @@ var Fourchan = {
     var cb = () => {
       if (!doc.contains(this.nodes.comment)) { return; }
       $.off(d, 'PostsInserted', cb);
-      return $.event('mathjax', null, this.nodes.comment);
+      $.event('mathjax', null, this.nodes.comment);
     };
     $.on(d, 'PostsInserted', cb);
     return cb();

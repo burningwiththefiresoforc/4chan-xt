@@ -77,7 +77,7 @@
     "min": {
       "chrome": "90",
       "firefox": "115",
-      "greasemonkey": "1.14"
+      "greasemonkey": "4.00"
     }
   },
   "devDependencies": {

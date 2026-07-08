@@ -21,7 +21,7 @@ const DownloadLink = {
     // Specifying the filename with the download attribute only works for same-origin links.
     $.on(a, 'click', ImageCommon.download);
 
-    return Menu.menu.addEntry({
+    Menu.menu.addEntry({
       el: a,
       order: 100,
       open({file}) {

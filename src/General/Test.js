@@ -49,7 +49,7 @@ const Test = {
         el: testOrderLink});
     }
 
-    return $.on(d, 'keydown', this.cb.keydown);
+    $.on(d, 'keydown', this.cb.keydown);
   },
 
   assert(condition) {

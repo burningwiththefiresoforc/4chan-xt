@@ -14,7 +14,7 @@ import Embedding from "./Embedding";
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-var Linkify = {
+const Linkify = {
   init() {
     if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf.Linkify) { return; }
 
@@ -57,23 +57,23 @@ var Linkify = {
     let i = 0;
     const links = [];
     while ((node = snapshot.snapshotItem(i++))) {
-      var result;
-      var {data} = node;
+      let result;
+      let {data} = node;
       if (!data || (node.parentElement.nodeName === "A")) { continue; }
 
       while ((result = test.exec(data))) {
-        var {index} = result;
-        var endNode = node;
-        var word    = result[0];
+        const {index} = result;
+        let endNode = node;
+        let word    = result[0];
         // End of node, not necessarily end of space-delimited string
         if ((length = index + word.length) === data.length) {
-          var saved;
+          let saved;
           test.lastIndex = 0;
 
           while (saved = snapshot.snapshotItem(i++)) {
-            var end;
+            let end;
             if ((saved.nodeName === 'BR') || ((saved.parentElement.nodeName === 'P') && !saved.previousSibling)) {
-              var part1, part2;
+              let part1, part2;
               if (
                 // link deliberately split
                 (part1 = word.match(/(https?:\/\/)?([a-z\d-]+\.)*[a-z\d-]+$/i)) &&
@@ -86,9 +86,7 @@ var Linkify = {
               }
             }
 
-            if ((saved.parentElement.nodeName === "A") && !Linkify.regString.test(word)) {
-              break;
-            }
+            if ((saved.parentElement.nodeName === "A") && !Linkify.regString.test(word)) { break; }
 
             endNode  = saved;
             ({data}   = saved);
@@ -147,8 +145,7 @@ var Linkify = {
   },
 
   makeLink(range) {
-    let t;
-    let encodedDomain;
+    let t,  encodedDomain;
     let text = range.toString();
 
     // Clean start of range
@@ -179,12 +176,7 @@ var Linkify = {
 
     // Make our link 'valid' if it is formatted incorrectly.
     if (!/((mailto|magnet):|.+:\/\/)/.test(text)) {
-      text = (
-        /@/.test(text) ?
-          'mailto:'
-        :
-          'http://'
-      ) + text;
+      text = ( /@/.test(text) ? 'mailto:' : 'http://') + text;
     }
 
     // Decode percent-encoded characters in domain so that they behave consistently across browsers.
@@ -199,8 +191,7 @@ var Linkify = {
       rel:       'noreferrer noopener',
       target:    '_blank',
       href:      text
-    }
-    );
+    });
 
     // Insert the range into the anchor, the anchor into the range's DOM location, and destroy the range.
     $.add(a, range.extractContents());

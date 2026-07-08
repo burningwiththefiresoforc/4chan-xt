@@ -67,9 +67,7 @@ var Settings = {
     if (Settings.dialog) { return; }
     $.event('CloseMenu');
 
-    Settings.dialog = (dialog = $.el('div',
-      { id: 'overlay' }
-      , SettingsPage));
+    Settings.dialog = (dialog = $.el('div', { id: 'overlay' } , SettingsPage));
 
     $.on($('.export', dialog), 'click',  Settings.export);
     $.on($('.import', dialog), 'click',  Settings.import);
@@ -145,13 +143,9 @@ var Settings = {
       if ($.cantSync) {
         const why = $.cantSet ? 'save your settings' : 'synchronize settings between tabs';
         cb($.el('li', {
-          textContent: `\
-${meta.name} needs local storage to ${why}.
-Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's privacy settings (may be listed as part of "local data" or "cookies").\
-`
-        }
-        )
-        );
+          textContent: `${meta.name} needs local storage to ${why}.
+Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's privacy settings (may be listed as part of "local data" or "cookies").`
+        }));
       }
     },
     ads(cb) {
@@ -162,18 +156,14 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
             To protect yourself from <a href={url} target="_blank">malicious ads</a>,
             you should <a href="https://github.com/gorhill/uBlock#ublock-origin" target="_blank">block ads</a> on 4chan.
           </>
-        )
-        );
+        ));
       }));
     }
   },
 
   main(section) {
     let key;
-    const warnings = $.el('fieldset',
-      {hidden: true}
-    ,
-      {innerHTML: '<legend>Warnings</legend><ul></ul>'});
+    const warnings = $.el('fieldset', {hidden: true}, {innerHTML: '<legend>Warnings</legend><ul></ul>'});
     const addWarning = function(item) {
       $.add($('ul', warnings), item);
       warnings.hidden = false;

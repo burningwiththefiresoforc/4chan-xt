@@ -99,7 +99,7 @@ var ThreadUpdater = {
     }
     );
 
-    return Callbacks.Thread.push({
+    Callbacks.Thread.push({
       name: 'Thread Updater',
       cb:   this.node
     });
@@ -125,7 +125,7 @@ var ThreadUpdater = {
     $.on(d,      'QRPostSuccessful', ThreadUpdater.cb.checkpost);
     $.on(d,      'visibilitychange', ThreadUpdater.cb.visibility);
 
-    return ThreadUpdater.setInterval();
+    ThreadUpdater.setInterval();
   },
 
   // http://freesound.org/people/pierrecartoons1979/sounds/90112/ cc-by-nc-3.0
@@ -157,15 +157,12 @@ var ThreadUpdater = {
       // Reset the counter when we focus this tab.
       ThreadUpdater.outdateCount = 0;
       if (ThreadUpdater.seconds > ThreadUpdater.interval) {
-        return ThreadUpdater.setInterval();
+        ThreadUpdater.setInterval();
       }
     },
 
     scrollBG() {
-      return ThreadUpdater.scrollBG = Conf['Scroll BG'] ?
-        () => true
-      :
-        () => !d.hidden;
+      return ThreadUpdater.scrollBG = Conf['Scroll BG'] ? () => true : () => !d.hidden;
     },
 
     interval(e) {
@@ -209,8 +206,7 @@ var ThreadUpdater = {
             }
           }
           });
-        default:
-          return ThreadUpdater.error(this);
+        default: ThreadUpdater.error(this);
       }
     }
   },
@@ -218,7 +214,7 @@ var ThreadUpdater = {
   kill() {
     ThreadUpdater.thread.kill();
     ThreadUpdater.setInterval();
-    return $.event('ThreadUpdate', {
+    $.event('ThreadUpdate', {
       404: true,
       threadID: ThreadUpdater.thread.fullID
     }
@@ -271,13 +267,13 @@ var ThreadUpdater = {
       ThreadUpdater.seconds = interval;
     }
 
-    return ThreadUpdater.timeout();
+    ThreadUpdater.timeout();
   },
 
   intervalShortcut() {
     Settings.open('Advanced');
     const settings = $.id('fourchanx-settings');
-    return $('input[name=Interval]', settings).focus();
+    $('input[name=Interval]', settings).focus();
   },
 
   set(name, text, klass) {
@@ -325,15 +321,8 @@ var ThreadUpdater = {
     ThreadUpdater.thread.setStatus(type, status);
     if ((type === 'Closed') && ThreadUpdater.thread.isArchived) { return; }
     const change = type === 'Sticky' ?
-      status ?
-        'now a sticky'
-      :
-        'not a sticky anymore'
-    :
-      status ?
-        'now closed'
-      :
-        'not closed anymore';
+      status ? 'now a sticky' : 'not a sticky anymore'
+    : status ? 'now closed' : 'not closed anymore';
     return new Notice('info', `The thread is ${change}.`, 30);
   },
 
@@ -452,7 +441,7 @@ var ThreadUpdater = {
       ipCountEl.nextSibling.textContent = ipCountEl.nextSibling.textContent.replace(/\bposters?\b/, OP.unique_ips === 1 ? 'poster' : 'posters');
     }
 
-    return $.event('ThreadUpdate', {
+    $.event('ThreadUpdate', {
       404: false,
       threadID: thread.fullID,
       newPosts,

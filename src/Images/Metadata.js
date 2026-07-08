@@ -14,7 +14,7 @@ var Metadata = {
   init() {
     if (!Conf['WEBM Metadata'] || !['index', 'thread'].includes(g.VIEW)) { return; }
 
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'WEBM Metadata',
       cb:   this.node
     });

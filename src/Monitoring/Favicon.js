@@ -47,7 +47,7 @@ import { Conf, d } from '../globals/globals';
 
 var Favicon = {
   init() {
-    return $.asap((() => d.head && (Favicon.el = $('link[rel="shortcut icon"]', d.head))), Favicon.initAsap);
+    $.asap((() => d.head && (Favicon.el = $('link[rel="shortcut icon"]', d.head))), Favicon.initAsap);
   },
 
   set(status) {
@@ -55,7 +55,7 @@ var Favicon = {
     if (Favicon.el) {
       Favicon.el.href = Favicon[status];
       // `favicon.href = href` doesn't work on Firefox.
-      return $.add(d.head, Favicon.el);
+      $.add(d.head, Favicon.el);
     }
   },
 
@@ -66,7 +66,7 @@ var Favicon = {
     Favicon.default = href;
     Favicon.switch();
     if (Favicon.status) {
-      return Favicon.set(Favicon.status);
+      Favicon.set(Favicon.status);
     }
   },
 
@@ -131,16 +131,16 @@ var Favicon = {
     }
 
     [f.unreadDead, f.unreadDeadY, f.unreadSFW, f.unreadSFWY, f.unreadNSFW, f.unreadNSFWY] = items;
-    return f.update();
+    f.update();
   },
 
   update() {
     if (this.isSFW) {
       this.unread  = this.unreadSFW;
-      return this.unreadY = this.unreadSFWY;
+      this.unreadY = this.unreadSFWY;
     } else {
       this.unread  = this.unreadNSFW;
-      return this.unreadY = this.unreadNSFWY;
+      this.unreadY = this.unreadNSFWY;
     }
   },
 

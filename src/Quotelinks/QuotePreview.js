@@ -30,7 +30,7 @@ var QuotePreview = {
       ExpandComment.callbacks.push(this.node);
     }
 
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Quote Previewing',
       cb:   this.node
     });
@@ -48,11 +48,7 @@ var QuotePreview = {
 
     const {boardID, threadID, postID} = Get.postDataFromLink(this);
 
-    const qp = $.el('div', {
-      id: 'qp',
-      className: 'dialog'
-    }
-    );
+    const qp = $.el('div', { id: 'qp', className: 'dialog' });
 
     $.add(Header.hover, qp);
     new Fetcher(boardID, threadID, postID, qp, Get.postFromNode(this));

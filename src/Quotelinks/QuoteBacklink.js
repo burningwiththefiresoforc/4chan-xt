@@ -37,11 +37,12 @@ var QuoteBacklink = {
       name: 'Quote Backlinking Part 1',
       cb:   this.firstNode
     });
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Quote Backlinking Part 2',
       cb:   this.secondNode
     });
   },
+
   firstNode() {
     if (this.isClone || !this.quotes.length || this.isRebuilt) { return; }
     const markYours = Conf['Mark Quotes of You'] && QuoteYou.isYou(this);
@@ -89,9 +90,9 @@ var QuoteBacklink = {
     const container = QuoteBacklink.getContainer(this.fullID);
     this.nodes.backlinkContainer = container;
     if (QuoteBacklink.bottomBacklinks) {
-      return $.add(this.nodes.post, container);
+      $.add(this.nodes.post, container);
     } else {
-      return $.add(this.nodes.info, container);
+      $.add(this.nodes.info, container);
     }
   },
   getContainer(id) {

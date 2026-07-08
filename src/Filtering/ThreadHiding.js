@@ -26,7 +26,7 @@ var ThreadHiding = {
     if (Conf['Thread Hiding Buttons']) {
       $.addClass(doc, 'thread-hide');
     }
-    return Callbacks.Post.push({
+    Callbacks.Post.push({
       name: 'Thread Hiding',
       cb:   this.node
     });
@@ -176,14 +176,14 @@ var ThreadHiding = {
       const {thread} = ThreadHiding.menu;
       ThreadHiding.hide(thread, makeStub, 'Hidden manually');
       ThreadHiding.saveHiddenState(thread, makeStub);
-      return $.event('CloseMenu');
+      $.event('CloseMenu');
     },
 
     show() {
       const {thread} = ThreadHiding.menu;
       ThreadHiding.show(thread);
       ThreadHiding.saveHiddenState(thread);
-      return $.event('CloseMenu');
+      $.event('CloseMenu');
     },
 
     hideStub() {

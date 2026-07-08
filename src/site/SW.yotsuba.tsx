@@ -21,8 +21,9 @@ import { dict, MINUTE } from "../platform/helpers";
  * DS205: Consider reworking code to avoid use of IIFEs
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const getBaseUrl = (boardID) => `${location.protocol}//boards.4chan.org/${boardID}`;
-const getApiUrl  = (boardID) => `${location.protocol}//a.4cdn.org/${boardID}`;
+
+const boardOrigin = () => `${location.protocol}//boards.4chan.org`;
+const cdnOrigin = () => `${location.protocol}//a.4cdn.org`;
 
 const SWYotsuba = {
   isOPContainerThread: false,
@@ -30,23 +31,20 @@ const SWYotsuba = {
   archivedBoardsKnown: true,
 
   urls: {
-    post:    ({postID}) => `#p${postID}`,
-    index:   ({boardID}) => `${getBaseUrl(boardID)}/`,
-    thread:  ({boardID, threadID}) => `${getBaseUrl(boardID)}/thread/${threadID}`,
-
-    catalog: ({boardID}) => boardID === 'f' ? undefined : `${getBaseUrl(boardID)}/catalog`,
-    archive: ({boardID}) => BoardConfig.isArchived(boardID) ? `${getBaseUrl(boardID)}/archive` : undefined,
-
-    threadJSON:      ({boardID, threadID}) => `${getApiUrl(boardID)}/thread/${threadID}.json`,
-    threadsListJSON: ({boardID}) => `${getApiUrl(boardID)}/threads.json`,
-    catalogJSON:     ({boardID}) => `${getApiUrl(boardID)}/catalog.json`,
-    archiveListJSON: ({boardID}) => BoardConfig.isArchived(boardID) ? `${getApiUrl(boardID)}/archive.json` : '',
-
-    file({boardID}, filename) {
-      const host = boardID === 'f' ? ImageHost.flashHost() : ImageHost.host();
-      return `${location.protocol}//${host}/${boardID}/${filename}`;
+    post: ({postID}) => `#p${postID}`,
+    index: ({boardID}) => `${boardOrigin(boardID)}/${boardID}/`,
+    thread: ({boardID, threadID}) => `${boardOrigin(boardID)}/${boardID}/thread/${threadID}`,
+    threadJSON: ({boardID, threadID}) => `${cdnOrigin()}/${boardID}/thread/${threadID}.json`,
+    threadsListJSON: ({boardID}) => `${cdnOrigin()}/${boardID}/threads.json`,
+    catalogJSON: ({boardID}) => `${cdnOrigin()}/${boardID}/catalog.json`,
+    thumb: ({boardID}, filename) => `${location.protocol}//${ImageHost.thumbHost()}/${boardID}/${filename}`,
+    catalog: ({boardID}) => boardID === 'f' ? undefined : `${boardOrigin(boardID)}/${boardID}/catalog`,
+    archive: ({boardID}) => BoardConfig.isArchived(boardID) ? `${boardOrigin(boardID)}/${boardID}/archive` : undefined,
+    archiveListJSON: ({boardID}) => BoardConfig.isArchived(boardID) ? `${cdnOrigin()}/${boardID}/archive.json` : '',
+    file: ({boardID}, filename) => {
+      const hostname = boardID === 'f' ? ImageHost.flashHost() : ImageHost.host();
+      return `${location.protocol}//${hostname}/${boardID}/${filename}`;
     },
-    thumb: ({boardID}, filename) => `${location.protocol}//${ImageHost.thumbHost()}/${boardID}/${filename}`
   },
 
   isPrunedByAge({boardID}) { return boardID === 'f'; },

@@ -39,15 +39,14 @@ const ArchiveLink = {
       entry.subEntries.push(this.createSubEntry(type[0], type[1]));
     }
 
-    return Menu.menu.addEntry(entry);
+    Menu.menu.addEntry(entry);
   },
 
   createSubEntry(text, type) {
     const el = $.el('a', {
       textContent: text,
       target: '_blank'
-    }
-    );
+    });
 
     const open = type === 'post' ?
       function({ID, thread, board}) {
@@ -58,12 +57,10 @@ const ArchiveLink = {
       function(post) {
         const typeParam = (type === 'country') && post.info.flagCodeTroll ?
           'troll_country'
-        :
-          type;
+        : type;
         const value = type === 'country' ?
           post.info.flagCode || post.info.flagCodeTroll?.toLowerCase()
-        :
-          Filter.values(type, post)[0];
+        : Filter.values(type, post)[0];
         // We want to parse the exact same stuff as the filter does already.
         if (!value) { return false; }
         el.href = Redirect.to('search', {
