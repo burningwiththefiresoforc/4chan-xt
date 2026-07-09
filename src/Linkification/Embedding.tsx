@@ -250,7 +250,6 @@ const Embedding = {
     },
 
     title(req, data) {
-      let text;
       const {key, uid, options, link, post} = data;
       const service = Embedding.types[key].title;
 
@@ -261,22 +260,19 @@ const Embedding = {
 
       if (!status) { return; }
 
-      text = `[${key}] ${(() => { switch (status) {
-        case 200: case 304:
-          text = service.text(req.response, uid);
-          if (typeof text === 'string') {
-            return text;
-          } else {
-            return text = link.textContent;
+      const statusText = () => {
+        switch (status) {
+          case 200: case 304: {
+            const text = service.text(req.response, uid);
+            return typeof text === 'string' ? text : link.textContent;
           }
-        case 404:
-          return "Not Found";
-        case 403: case 401:
-          return "Forbidden or Private";
-        default:
-          return `${status}'d`;
-      } })()
-      }`;
+          case 404: return 'Not Found';
+          case 403: case 401: return 'Forbidden or Private';
+          default: return `${status}'d`;
+        }
+      };
+
+      const text = `[${key}] ${statusText()}`;
 
       link.dataset.original = link.textContent;
       link.textContent = text;
@@ -441,36 +437,44 @@ const Embedding = {
           return el;
         }
         const [_, host, names] = a.dataset.uid.match(/(\w+)\/(.*)/);
-        const types = (() => { switch (host) {
-          case 'gd': case 'wu': case 'fc': return [''];
-          case 'gc': return ['giant', 'fat', 'zippy'];
-          default: return ['.webm', '.mp4'];
-        } })();
+        const TYPES = {
+          gd: [''],
+          wu: [''],
+          fc: [''],
+          gc: ['giant', 'fat', 'zippy'],
+        };
+
+        const types = TYPES[host] ?? ['.webm', '.mp4'];
         for (const name of names.split(',')) {
           for (const type of types) {
             const base = `${name}${type}`;
-            const urls = (() => { switch (host) {
-              // list from src/common.py at http://loopvid.appspot.com/source.html
-              case 'pf': return [`https://kastden.org/_loopvid_media/pf/${base}`, `https://web.archive.org/web/2/http://a.pomf.se/${base}`];
-              case 'kd': return [`https://kastden.org/loopvid/${base}`];
-              case 'lv': return [`https://lv.kastden.org/${base}`];
-              case 'gd': return [`https://docs.google.com/uc?export=download&id=${base}`];
-              case 'gh': return [`https://googledrive.com/host/${base}`];
-              case 'db': return [`https://dl.dropboxusercontent.com/u/${base}`];
-              case 'dx': return [`https://dl.dropboxusercontent.com/${base}`];
-              case 'nn': return [`https://kastden.org/_loopvid_media/nn/${base}`];
-              case 'ig': return [`https://i.imgur.com/${base}`];
-              case 'ky': return [`https://kastden.org/_loopvid_media/ky/${base}`];
-              case 'mf': return [`https://kastden.org/_loopvid_media/mf/${base}`, `https://web.archive.org/web/2/https://d.maxfile.ro/${base}`];
-              case 'm2': return [`https://kastden.org/_loopvid_media/m2/${base}`];
-              case 'pc': return [`https://kastden.org/_loopvid_media/pc/${base}`, `https://web.archive.org/web/2/http://a.pomf.cat/${base}`];
-              case 'pi': return [`https://kastden.org/_loopvid_media/pi/${base}`, `https://web.archive.org/web/2/https://u.pomf.is/${base}`];
-              case 'ni': return [`https://kastden.org/_loopvid_media/ni/${base}`, `https://web.archive.org/web/2/https://u.nya.is/${base}`];
-              case 'ko': return [`https://kordy.kastden.org/loopvid/${base}`];
-              case 'mm': return [`https://kastden.org/_loopvid_media/mm/${base}`, `https://web.archive.org/web/2/https://my.mixtape.moe/${base}`];
-              case 'ic': return [`https://media.8ch.net/file_store/${base}`];
-              case 'fc': return [`//${ImageHost.host()}/${base}.webm`];
-            } })();
+            const KD = (path) => `https://kastden.org/_loopvid_media/${path}`;
+            const WB = (url) => `https://web.archive.org/web/2/${url}`;
+
+            // list from src/common.py at http://loopvid.appspot.com/source.html
+            const URL_BUILDERS = {
+              kd: base => [`https://kastden.org/loopvid/${base}`],
+              lv: base => [`https://lv.kastden.org/${base}`],
+              gd: base => [`https://docs.google.com/uc?export=download&id=${base}`],
+              gh: base => [`https://googledrive.com/host/${base}`],
+              db: base => [`https://dl.dropboxusercontent.com/u/${base}`],
+              dx: base => [`https://dl.dropboxusercontent.com/${base}`],
+              ig: base => [`https://i.imgur.com/${base}`],
+              ko: base => [`https://kordy.kastden.org/loopvid/${base}`],
+              ic: base => [`https://media.8ch.net/file_store/${base}`],
+              nn: base => [KD(`nn/${base}`)],
+              ky: base => [KD(`ky/${base}`)],
+              m2: base => [KD(`m2/${base}`)],
+              pf: base => [KD(`pf/${base}`), WB(`http://a.pomf.se/${base}`)],
+              mf: base => [KD(`mf/${base}`), WB(`https://d.maxfile.ro/${base}`)],
+              pc: base => [KD(`pc/${base}`), WB(`http://a.pomf.cat/${base}`)],
+              pi: base => [KD(`pi/${base}`), WB(`https://u.pomf.is/${base}`)],
+              ni: base => [KD(`ni/${base}`), WB(`https://u.nya.is/${base}`)],
+              mm: base => [KD(`mm/${base}`), WB(`https://my.mixtape.moe/${base}`)],
+              fc: base => [`//${ImageHost.host()}/${base}.webm`],
+            };
+
+            const urls = URL_BUILDERS[host]?.(base);
 
             for (const url of urls) {
               $.add(el, $.el('source', {src: url}));
