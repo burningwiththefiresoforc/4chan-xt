@@ -150,22 +150,22 @@ var Main = {
     });
 
     // Detect "mounted" event from Kissu
-    var mountedCB = function() {
+    const mountedCB = function() {
       d.removeEventListener('mounted', mountedCB, true);
       Main.isMounted = true;
-      return Main.mountedCBs.map((cb) =>
-        (() => { try {
-          return cb();
-        } catch (error2) {} })());
+      return Main.mountedCBs.map((cb) => {
+        try { return cb();
+        } catch (error2) {}
+      });
     };
     d.addEventListener('mounted', mountedCB, true);
 
     // Flatten default values from Config into Conf
-    var flatten = function(parent, obj) {
+    const flatten = function(parent, obj) {
       if (obj instanceof Array) {
         Conf[parent] = dict.clone(obj[0]);
       } else if (typeof obj === 'object') {
-        for (var key in obj) {
+        for (const key in obj) {
           flatten(key, obj[key]);
         }
       } else { // string or number
@@ -550,15 +550,14 @@ var Main = {
 
   parseThreads(threadRoots, threads, posts, errors) {
     for (var threadRoot of threadRoots) {
-      var boardObj = (() => {
-        let boardID;
-        if (boardID = threadRoot.dataset.board) {
-        boardID = encodeURIComponent(boardID);
-        return g.boards[boardID] || new Board(boardID);
+      let boardObj;
+      const boardID = threadRoot.dataset.board;
+      if (boardID) {
+        const encoded = encodeURIComponent(boardID);
+        boardObj = g.boards[encoded] || new Board(encoded);
       } else {
-        return g.BOARD;
+        boardObj = g.BOARD;
       }
-      })();
       var threadID = +threadRoot.id.match(/\d*$/)[0];
       if (!threadID || boardObj.threads.get(threadID)?.nodes.root) { return; }
       var thread = new Thread(threadID, boardObj);
@@ -802,7 +801,6 @@ var Main = {
   },
 
   reportLink(errors) {
-    let info;
     const data = errors[0];
     let title  = data.message;
     if (errors.length > 1) { title += ` (+${errors.length - 1} other errors)`; }
@@ -820,11 +818,12 @@ URL: ${location.href}
 User agent: ${navigator.userAgent}\
 `
     );
-    if ((platform === 'userscript') && (info = (() => {
-      if (typeof GM !== 'undefined' && GM !== null) { return GM.info; } else { if (typeof GM_info !== 'undefined' && GM_info !== null) { return GM_info; }
-  }
-    })())) {
-      addDetails(`Userscript manager: ${info.scriptHandler} ${info.version}`);
+    if (platform === 'userscript') {
+      const info = (typeof GM !== 'undefined' && GM?.info)
+        || (typeof GM_info !== 'undefined' && GM_info) || null;
+      if (info) {
+        addDetails(`Userscript manager: ${info.scriptHandler} ${info.version}`);
+      }
     }
     addDetails('\n' + data.error);
     if (data.error.stack) { addDetails(data.error.stack.replace(data.error.toString(), '').trim()); }

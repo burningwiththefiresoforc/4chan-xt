@@ -30,17 +30,23 @@ var BoardConfig = {
     let boards;
     if ((this.status === 200) && this.response && this.response.boards) {
       boards = dict();
-      for (var board of this.response.boards) {
+      for (const board of this.response.boards) {
         boards[board.board] = board;
       }
       $.set('boardConfig', {boards, lastChecked: Date.now()});
     } else {
       ({boards} = Conf.boardConfig);
-      const err = (() => { switch (this.status) {
-        case 0:   return 'Connection Error';
-        case 200: return 'Invalid Data';
-        default:          return `Error ${this.statusText} (${this.status})`;
-      } })();
+      let err;
+      switch (this.status) {
+        case 0:
+          err = 'Connection Error';
+          break;
+        case 200:
+          err = 'Invalid Data';
+          break;
+        default:
+          err = `Error ${this.statusText} (${this.status})`;
+      }
       new Notice('warning', `Failed to load board configuration. ${err}`, 20);
     }
     return BoardConfig.set(boards);
@@ -66,17 +72,15 @@ var BoardConfig = {
   },
 
   sfwBoards(sfw) {
-    return (() => {
-      const result = [];
-      const object = this.boards || Conf.boardConfig.boards;
-      for (var board in object) {
-        var data = object[board];
-        if (!!data.ws_board === sfw) {
-          result.push(board);
-        }
+    const result = [];
+    const object = this.boards || Conf.boardConfig.boards;
+    for (const board in object) {
+      const data = object[board];
+      if (!!data.ws_board === sfw) {
+        result.push(board);
       }
-      return result;
-    })();
+    }
+    return result;
   },
 
   // isSFW(board) {

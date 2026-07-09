@@ -44,24 +44,21 @@ const Gallery = {
   },
 
   node() {
-    return (() => {
-      const result = [];
-      for (const file of this.files) {
-        if (file.thumb) {
-          if (Gallery.nodes) {
-            Gallery.generateThumb(this, file);
-            Gallery.nodes.total.textContent = Gallery.images.length;
-          }
-
-          if (!Conf['Image Expansion'] && ((g.SITE.software !== 'tinyboard') || !Main.jsEnabled)) {
-            result.push($.on(file.thumbLink, 'click', Gallery.cb.image));
-          } else {
-            result.push(undefined);
-          }
+    const result = [];
+    for (const file of this.files) {
+      if (file.thumb) {
+        if (Gallery.nodes) {
+          Gallery.generateThumb(this, file);
+          Gallery.nodes.total.textContent = Gallery.images.length;
+        }
+        if (!Conf['Image Expansion'] && ((g.SITE.software !== 'tinyboard') || !Main.jsEnabled)) {
+          result.push($.on(file.thumbLink, 'click', Gallery.cb.image));
+        } else {
+          result.push(undefined);
         }
       }
-      return result;
-    })();
+    }
+    return result;
   },
 
   build(image) {
@@ -337,31 +334,22 @@ const Gallery = {
 
   cb: {
     keybinds(e) {
-      let key;
-      if (!(key = Keybinds.keyCode(e))) { return; }
-
-      const cb = (() => { switch (key) {
-        case Conf.Close: case Conf['Open Gallery']:
-          return Gallery.cb.close;
-        case Conf['Next Gallery Image']:
-          return Gallery.cb.next;
-        case Conf['Advance Gallery']:
-          return Gallery.cb.advance;
-        case Conf['Previous Gallery Image']:
-          return Gallery.cb.prev;
-        case Conf.Pause:
-          return Gallery.cb.pause;
-        case Conf.Slideshow:
-          return Gallery.cb.toggleSlideshow;
-        case Conf['Rotate image anticlockwise']:
-          return Gallery.cb.rotateLeft;
-        case Conf['Rotate image clockwise']:
-          return Gallery.cb.rotateRight;
-        case Conf['Download Gallery Image']:
-          return Gallery.cb.download;
-      } })();
-
-      if (!cb) { return; }
+      const key = Keybinds.keyCode(e);
+      if (!key) return;
+      const KEY_HANDLERS = new Map([
+        [Conf.Close, Gallery.cb.close],
+        [Conf['Open Gallery'], Gallery.cb.close],
+        [Conf['Next Gallery Image'], Gallery.cb.next],
+        [Conf['Advance Gallery'], Gallery.cb.advance],
+        [Conf['Previous Gallery Image'], Gallery.cb.prev],
+        [Conf.Pause, Gallery.cb.pause],
+        [Conf.Slideshow, Gallery.cb.toggleSlideshow],
+        [Conf['Rotate image anticlockwise'], Gallery.cb.rotateLeft],
+        [Conf['Rotate image clockwise'], Gallery.cb.rotateRight],
+        [Conf['Download Gallery Image'], Gallery.cb.download],
+      ]);
+      const cb = KEY_HANDLERS.get(key);
+      if (!cb) return;
       e.stopPropagation();
       e.preventDefault();
       return cb();
