@@ -318,12 +318,7 @@ var ThreadWatcher = {
     if (force) {
       delete $.lastModified.ThreadWatcher?.[url];
     }
-    const req = $.whenModified(
-      url,
-      'ThreadWatcher',
-      onloadend,
-      { timeout: MINUTE, ajax }
-    );
+    const req = $.whenModified( url, 'ThreadWatcher', onloadend, { timeout: MINUTE, ajax });
     ThreadWatcher.requests.push(req);
   },
 
@@ -378,9 +373,9 @@ var ThreadWatcher = {
 
   buttonFetchAll() {
     if (ThreadWatcher.syncing || ThreadWatcher.requests.length) {
-      return ThreadWatcher.abort();
+      ThreadWatcher.abort();
     } else {
-      return ThreadWatcher.fetchAllStatus();
+      ThreadWatcher.fetchAllStatus();
     }
   },
 
@@ -475,9 +470,7 @@ var ThreadWatcher = {
         ({page, index, modified, replies} = threads[threadID]);
         if (Conf['Show Page']) {
           var lastPage = g.sites[siteID].isPrunedByAge?.({siteID, boardID}) ?
-            threadID === oldest
-          :
-            index >= (nThreads - pageLength);
+            threadID === oldest : index >= (nThreads - pageLength);
           ThreadWatcher.update(siteID, boardID, threadID, {page, lastPage});
         }
         if (ThreadWatcher.unreadEnabled && Conf['Show Unread Count']) {
@@ -498,7 +491,7 @@ var ThreadWatcher = {
     if (!url) { return; }
     if (data.isDead && !force) { return; }
     if (data.last === -1) { return; } // 404 or no JSON API
-    return ThreadWatcher.fetch(url, {siteID, force}, [thread], ThreadWatcher.parseStatus);
+    ThreadWatcher.fetch(url, {siteID, force}, [thread], ThreadWatcher.parseStatus);
   },
 
   parseStatus(thread, isArchiveURL) {
@@ -556,16 +549,16 @@ var ThreadWatcher = {
 
       if (!newData) { newData = {}; }
       $.extend(newData, {last, replies, isDead, isArchived, unread, quotingYou});
-      return ThreadWatcher.update(siteID, boardID, threadID, newData);
+      ThreadWatcher.update(siteID, boardID, threadID, newData);
 
     } else if (this.status === 404) {
       const archiveURL = g.sites[siteID]?.urls.archivedThreadJSON?.({siteID, boardID, threadID});
       if (!isArchiveURL && archiveURL) {
-        return ThreadWatcher.fetch(archiveURL, {siteID, force}, [thread, true], ThreadWatcher.parseStatus);
+        ThreadWatcher.fetch(archiveURL, {siteID, force}, [thread, true], ThreadWatcher.parseStatus);
       } else if (site.mayLackJSON && (data.last == null)) {
-        return ThreadWatcher.update(siteID, boardID, threadID, {last: -1});
+        ThreadWatcher.update(siteID, boardID, threadID, {last: -1});
       } else {
-        return ThreadWatcher.update(siteID, boardID, threadID, {isDead: true});
+        ThreadWatcher.update(siteID, boardID, threadID, {isDead: true});
       }
     }
   },
@@ -790,7 +783,7 @@ var ThreadWatcher = {
       data.isDead = true;
     }
     if (thread.OP) { data.excerpt = Get.threadExcerpt(thread); }
-    return ThreadWatcher.addRaw(boardID, threadID, data, cb, manual);
+    ThreadWatcher.addRaw(boardID, threadID, data, cb, manual);
   },
 
   addRaw(boardID, threadID, data, cb, manual) {
@@ -925,7 +918,6 @@ var ThreadWatcher = {
         var conf = Config.threadWatcher[name];
         this.addCheckbox(name, conf[1]);
       }
-
     },
 
     addCheckbox(name, desc) {

@@ -108,8 +108,7 @@ export default class Fetcher {
       Fetcher.flagCSS = $.el('link', {
         rel: 'stylesheet',
         href: `//s.4cdn.org/css/flags.${cssVersion}.css`
-      }
-      );
+      });
       $.add(d.head, Fetcher.flagCSS);
     }
 
@@ -134,12 +133,9 @@ export default class Fetcher {
 
       $.addClass(this.root, 'warning');
       this.root.textContent =
-        status === 404 ?
-          `Thread No.${this.threadID} 404'd.`
-        : !status ?
-          'Connection Error'
-        :
-          `Error ${req.statusText} (${req.status}).`;
+        status === 404 ? `Thread No.${this.threadID} 404'd.`
+          : !status ? 'Connection Error'
+            : `Error ${req.statusText} (${req.status}).`;
       return;
     }
 

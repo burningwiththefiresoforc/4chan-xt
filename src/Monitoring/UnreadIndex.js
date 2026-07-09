@@ -113,11 +113,9 @@ var UnreadIndex = {
       $.rm(hr);
     }
 
-    const hasUnread = repliesShown ?
-      firstUnread || !repliesRead
-    : indexEnabled ?
-      thread.lastPost > lastReadPost
-    : thread.OP.ID > lastReadPost;
+    const hasUnread = repliesShown ? firstUnread || !repliesRead
+      : indexEnabled ? thread.lastPost > lastReadPost
+      : thread.OP.ID > lastReadPost;
     thread.nodes.root.classList.toggle('unread-thread', hasUnread);
 
     let link = UnreadIndex.markReadLink[thread.fullID];
@@ -126,8 +124,7 @@ var UnreadIndex = {
         className: 'unread-mark-read brackets-wrap',
         href: 'javascript:;',
         textContent: 'Mark Read'
-      }
-      ));
+      }));
       $.on(link, 'click', UnreadIndex.markRead);
     }
     if (divider = $(g.SITE.selectors.threadDivider, thread.nodes.root)) { // divider inside thread as in Tinyboard
@@ -151,8 +148,7 @@ var UnreadIndex = {
       last: thread.lastPost,
       unread: 0,
       quotingYou: 0
-    }
-    );
+    });
   }
 };
 export default UnreadIndex;

@@ -20,8 +20,7 @@ var ReplyPruning = {
     this.summary = $.el('span', {
       hidden:    true,
       className: 'summary'
-    }
-    );
+    });
     this.summary.style.cursor = 'pointer';
     $.on(this.summary, 'click', () => {
       this.inputs.enabled.checked = !this.inputs.enabled.checked;
@@ -30,8 +29,7 @@ var ReplyPruning = {
 
     const label = UI.checkbox('Prune Replies', 'Show Last', Conf['Prune All Threads']);
     const el = $.el('span',
-      {title: 'Maximum number of replies to show.'}
-    ,
+      {title: 'Maximum number of replies to show.'},
       {innerHTML: " <input type=\"number\" name=\"Max Replies\" min=\"0\" step=\"1\" value=\"" + E(Conf["Max Replies"]) + "\" class=\"field\">"});
     $.prepend(el, label);
 

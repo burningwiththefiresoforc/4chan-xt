@@ -138,7 +138,7 @@ const Linkify = {
 )`, 'i'),
 
   makeRange(startNode, endNode, startOffset, endOffset) {
-    const range = document.createRange();
+    const range = d.createRange();
     range.setStart(startNode, startOffset);
     range.setEnd(endNode,   endOffset);
     return range;

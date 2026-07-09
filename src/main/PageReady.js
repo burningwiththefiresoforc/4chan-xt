@@ -1,5 +1,5 @@
 import $ from '../platform/$';
-import { g } from '../globals/globals';
+import { g, d } from '../globals/globals';
 
 const PageReady = {
   isThisPageLegit() {
@@ -7,7 +7,7 @@ const PageReady = {
       PageReady.thisPageIsLegit = g.SITE.isThisPageLegit ?
         g.SITE.isThisPageLegit()
       :
-        !/^[45]\d\d\b/.test(document.title) && !/\.(?:json|rss)$/.test(location.pathname);
+        !/^[45]\d\d\b/.test(d.title) && !/\.(?:json|rss)$/.test(location.pathname);
     }
     return PageReady.thisPageIsLegit;
   },

@@ -22,12 +22,12 @@ const RemoveSpoilers = {
     });
 
     if (g.VIEW === 'archive') {
-      return $.ready(() => RemoveSpoilers.unspoiler($.id('arc-list')));
+      $.ready(() => RemoveSpoilers.unspoiler($.id('arc-list')));
     }
   },
 
   node() {
-    return RemoveSpoilers.unspoiler(this.nodes.comment);
+    RemoveSpoilers.unspoiler(this.nodes.comment);
   },
 
   unspoiler(el) {

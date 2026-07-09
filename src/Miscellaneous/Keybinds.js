@@ -326,30 +326,18 @@ var Keybinds = {
   keyCode(e) {
     let key = (() => { let kc;
     switch ((kc = e.keyCode)) {
-      case 8: // return
-        return '';
-      case 13:
-        return 'Enter';
-      case 27:
-        return 'Esc';
-      case 32:
-        return 'Space';
-      case 37:
-        return 'Left';
-      case 38:
-        return 'Up';
-      case 39:
-        return 'Right';
-      case 40:
-        return 'Down';
-      case 188:
-        return 'Comma';
-      case 190:
-        return 'Period';
-      case 191:
-        return 'Slash';
-      case 59: case 186:
-        return 'Semicolon';
+      case 8: return ''; // return
+      case 13: return 'Enter';
+      case 27: return 'Esc';
+      case 32: return 'Space';
+      case 37: return 'Left';
+      case 38: return 'Up';
+      case 39: return 'Right';
+      case 40: return 'Down';
+      case 188: return 'Comma';
+      case 190: return 'Period';
+      case 191: return 'Slash';
+      case 59: case 186: return 'Semicolon';
       default:
         if ((48 <= kc && kc <= 57) || (65 <= kc && kc <= 90)) { // 0-9, A-Z
           return String.fromCharCode(kc).toLowerCase();
@@ -358,7 +346,7 @@ var Keybinds = {
         } else {
           return null;
         }
-    } })();
+    }})();
     if (key) {
       if (e.altKey) {   key = 'Alt+'   + key; }
       if (e.ctrlKey) {  key = 'Ctrl+'  + key; }
@@ -415,9 +403,7 @@ var Keybinds = {
 
   sage() {
     const isSage  = /sage/i.test(QR.nodes.email.value);
-    return QR.nodes.email.value = isSage ?
-      ""
-    : "sage";
+    return QR.nodes.email.value = isSage ? "" : "sage";
   },
 
   open(thread, tab) {
@@ -446,10 +432,7 @@ var Keybinds = {
       if ((Header.getTopOf(postEl) >= -height) && (Header.getBottomOf(postEl) >= -height)) { // We're at least partially visible
         let next;
         const {root} = Get.postFromNode(postEl).nodes;
-        const axis = delta === +1 ?
-          'following'
-        :
-          'preceding';
+        const axis = delta === +1 ? 'following' : 'preceding';
         if (!(next = $.x(`${axis}-sibling::${g.SITE.xpath.replyContainer}[not(@hidden) and not(child::div[@class='stub'])][1]`, root))) { return; }
         if (!next.matches(replySelector)) { next = $(replySelector, next); }
         Header.scrollToIfNeeded(next, delta === +1);

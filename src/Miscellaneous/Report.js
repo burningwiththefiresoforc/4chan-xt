@@ -55,8 +55,7 @@ const Report = {
     const fieldset = $.el('fieldset', {
       id: 'archive-report',
       hidden: true
-    }
-    ,
+    },
       { innerHTML: ReportPage });
     const enabled = $('#archive-report-enabled', fieldset);
     const reason  = $('#archive-report-reason',  fieldset);

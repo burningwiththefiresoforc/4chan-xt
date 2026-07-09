@@ -253,7 +253,7 @@ $\
       nextSibling.splitText(m[2].length);
       nodes.uniqueID = (uniqueID = $.el('span', {className: 'poster_id'}));
       $.replace(nextSibling, uniqueID);
-      return $.add(uniqueID, nextSibling);
+      $.add(uniqueID, nextSibling);
     }
   },
 

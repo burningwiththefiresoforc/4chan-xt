@@ -34,6 +34,7 @@ var IDHighlight = {
     const uniqueID = post.info.uniqueID || post.info.capcode;
     IDHighlight.uniqueID = IDHighlight.uniqueID === uniqueID ? null : uniqueID;
     g.posts.forEach(IDHighlight.set);
-  }; }
+    };
+  }
 };
 export default IDHighlight;

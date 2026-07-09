@@ -30,7 +30,7 @@ var IDColor = {
     const {style} = span;
     style.color = rgb[3];
     style.backgroundColor = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
-    return $.addClass(span, 'painted');
+    $.addClass(span, 'painted');
   },
 
   compute(uid) {
@@ -46,11 +46,7 @@ var IDColor = {
     ];
 
     // Weight color luminance values, assign a font color that should be readable.
-    rgb.push($.luma(rgb) > 125 ?
-      '#000'
-    :
-      '#fff'
-    );
+    rgb.push($.luma(rgb) > 125 ? '#000' : '#fff');
 
     // Cache.
     return this.ids[uid] = rgb;

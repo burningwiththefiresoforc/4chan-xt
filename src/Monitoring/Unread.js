@@ -35,8 +35,7 @@ var Unread = {
     this.hr = $.el('hr', {
       id: 'unread-line',
       className: 'unread-line'
-    }
-    );
+    });
     this.posts = new Set();
     this.postsQuotingYou = new Set();
     this.order = new RandomAccessList();
@@ -69,8 +68,7 @@ var Unread = {
       href: 'javascript:;',
       className: 'unread-reset',
       textContent: 'Mark all unread'
-    }
-    );
+    });
     $.on(resetLink, 'click', Unread.reset);
     Header.menu.addEntry({
       el: resetLink,
@@ -184,8 +182,7 @@ var Unread = {
     const notif = new Notification(`${post.info.nameBlock}${predicate}`, {
       body: post.commentDisplay(),
       icon: Favicon.logo
-    }
-    );
+    });
     notif.onclick = function() {
       Header.scrollToIfNeeded(post.nodes.bottom, true);
       window.focus();
@@ -194,7 +191,7 @@ var Unread = {
   },
 
   onUpdate() {
-    return $.queueTask(function() { // ThreadUpdater may scroll immediately after inserting posts
+    $.queueTask(function() { // ThreadUpdater may scroll immediately after inserting posts
       Unread.setLine();
       Unread.read();
       Unread.update();

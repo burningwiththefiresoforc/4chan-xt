@@ -57,7 +57,7 @@ var PSAHiding = {
     PSAHiding.sync(Conf.hiddenPSAList);
     $.rmClass(doc, 'hide-announcement');
 
-    return $.sync('hiddenPSAList', PSAHiding.sync);
+    $.sync('hiddenPSAList', PSAHiding.sync);
   },
 
   toggle() {

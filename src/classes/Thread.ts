@@ -88,7 +88,7 @@ export default class Thread {
     if (!this.OP) { return; }
     this.setIcon('Sticky',   this.isSticky);
     this.setIcon('Closed',   this.isClosed && !this.isArchived);
-    return this.setIcon('Archived', this.isArchived);
+    this.setIcon('Archived', this.isArchived);
   }
 
   setIcon(type, status) {
@@ -107,16 +107,14 @@ export default class Thread {
       alt:   type,
       title: type,
       className: `${typeLC}Icon retina`
-    }
-    );
+    });
     if (g.BOARD.ID === 'f') {
       icon.style.cssText = 'height: 18px; width: 18px;';
     }
 
     const root = (type !== 'Sticky') && this.isSticky ?
       $('.stickyIcon', this.OP.nodes.info)
-    :
-      $('.page-num', this.OP.nodes.info) || this.OP.nodes.quote;
+    : $('.page-num', this.OP.nodes.info) || this.OP.nodes.quote;
     $.after(root, [$.tn(' '), icon]);
 
     if (!this.catalogView) { return; }

@@ -22,10 +22,7 @@ export default class RandomAccessList {
       ID
     });
     item.prev = last;
-    this.last = last ?
-      (last.next = item)
-    :
-      (this.first = item);
+    this.last = last ? (last.next = item) : (this.first = item);
     return this.length++;
   }
 

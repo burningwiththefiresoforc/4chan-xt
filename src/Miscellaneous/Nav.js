@@ -28,14 +28,12 @@ var Nav = {
       textContent: '▲',
       className: 'navlinks-navlink navlink-prev',
       href: 'javascript:;'
-    }
-    );
+    });
     const next = $.el('a', {
       textContent: '▼',
       className: 'navlinks-navlink navlink-next',
       href: 'javascript:;'
-    }
-    );
+    });
 
     Icon.set(prev, 'arrowUpLong');
     Icon.set(next, 'arrowDownLong');

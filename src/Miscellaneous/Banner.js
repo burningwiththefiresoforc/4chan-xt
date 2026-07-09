@@ -49,8 +49,7 @@ const Banner = {
       const img = $.el('img', {
         alt: '4chan',
         src: '//s.4cdn.org/image/title/' + bannerCnt.dataset.src
-      }
-      );
+      });
       $.add(bannerCnt, img);
     }
   },

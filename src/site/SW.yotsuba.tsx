@@ -234,8 +234,7 @@ const SWYotsuba = {
             return file.text.dataset.md5 = (file.MD5 = this.response.posts[0].md5);
           }
         }
-      }
-      );
+      });
     }
   },
 
@@ -275,15 +274,13 @@ const SWYotsuba = {
       dimensions: info[0].match(/\d+x\d+/)?.[0],
       tag:        info[0].match(/,[^,]*, ([a-z]+)\)/i)?.[1],
       MD5:        text.dataset.md5
-    }
-    );
+    });
     if (thumb) {
       $.extend(file, {
         thumbURL:  thumb.src,
         MD5:       thumb.dataset.md5,
         isSpoiler: $.hasClass(thumb.parentNode, 'imgspoiler')
-      }
-      );
+      });
       if (file.isSpoiler) {
         let m;
         file.thumbURL = (m = link.href.match(/\d+(?=\.\w+$)/)) ? `${location.protocol}//${ImageHost.thumbHost()}/${post.board}/${m[0]}s.jpg` : undefined;
@@ -473,8 +470,7 @@ const SWYotsuba = {
       const site = g.sites[siteID];
       const filename = (site.software === 'yotsuba') && (boardID === 'f') ?
         `${encodeURIComponent(data.filename)}${data.ext}`
-        :
-        `${data.tim}${data.ext}`;
+      : `${data.tim}${data.ext}`;
       const o = {
         name: ($.unescape(data.filename)) + data.ext,
         url: site.urls.file({ siteID, boardID }, filename),
@@ -547,9 +543,7 @@ const SWYotsuba = {
       const url = this.threadURL(boardID, threadID);
       const postLink = `${url}#p${ID}`;
       const quoteLink = this.sameThread(boardID, threadID) ?
-        `javascript:quote('${+ID}');`
-        :
-        `${url}#q${ID}`;
+        `javascript:quote('${+ID}');` : `${url}#q${ID}`;
 
       const postInfo = generatePostInfoHtml(
         ID, o, subject, capcode, email, name, tripcode, pass, capcodeLC, capcodePlural, staticPath, gifIcon,
@@ -626,8 +620,7 @@ const SWYotsuba = {
         className: 'summary',
         textContent: this.summaryText('', posts, files),
         href: `/${boardID}/thread/${threadID}`
-      }
-      );
+      });
     },
 
     thread(thread, data, withReplies) {
@@ -638,8 +631,7 @@ const SWYotsuba = {
         thread.nodes.root = (root = $.el('div', {
           className: 'thread',
           id: `t${data.no}`
-        }
-        ));
+        }));
       }
       if (this.hat) { $.add(root, this.hat.cloneNode(false)); }
       $.add(root, thread.OP.nodes.root);
@@ -647,8 +639,7 @@ const SWYotsuba = {
         const [posts, files] = withReplies ?
           // XXX data.omitted_images is not accurate.
           [data.omitted_posts, data.images - data.last_replies.filter(data => !!data.ext).length]
-          :
-          [data.replies, data.images];
+        : [data.replies, data.images];
         const summary = this.summary(thread.board.ID, data.no, posts, files);
         $.add(root, summary);
       }
@@ -700,8 +691,7 @@ const SWYotsuba = {
       const root = $.el('div', {
         className: 'thread catalog-thread',
         id: `t${thread}`
-      }
-      );
+      });
       if (thread.OP.highlights) { $.addClass(root, ...thread.OP.highlights); }
       if (!thread.OP.file) { $.addClass(root, 'noFile'); }
       root.style.cssText = cssText || '';

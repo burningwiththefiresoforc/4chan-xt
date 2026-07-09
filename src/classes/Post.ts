@@ -3,7 +3,7 @@ import Get from "../General/Get";
 // #region tests_enabled
 import Test from "../General/Test";
 // #endregion
-import { g, Conf } from "../globals/globals";
+import { g, Conf, d } from "../globals/globals";
 import ImageExpand from "../Images/ImageExpand";
 import $ from "../platform/$";
 import $$ from "../platform/$$";
@@ -85,7 +85,7 @@ export default class Post {
 
   // because of a circular dependency $ might not be initialized, so we can't use $.el
   static deadMark = (() => {
-    const el = document.createElement('span');
+    const el = d.createElement('span');
     // \u00A0 is nbsp
     el.textContent = '\u00A0(Dead)';
     el.className = 'qmark-dead';

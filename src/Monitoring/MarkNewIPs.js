@@ -46,13 +46,12 @@ var MarkNewIPs = {
   },
 
   markNew(post, ipCount) {
-    const suffix = ((Math.floor(ipCount / 10)) % 10) === 1 ?
-      'th' : ['st', 'nd', 'rd'][(ipCount % 10) - 1] || 'th'; // fuck switches
+    const suffix = ((Math.floor(ipCount / 10)) % 10) === 1 ? 'th'
+      : ['st', 'nd', 'rd'][(ipCount % 10) - 1] || 'th'; // fuck switches
     const counter = $.el('span', {
       className: 'ip-counter',
       textContent: `(${ipCount})`
-    }
-    );
+    });
     post.nodes.nameBlock.title = `This is the ${ipCount}${suffix} IP in the thread.`;
     $.add(post.nodes.nameBlock, [$.tn(' '), counter]);
     $.addClass(post.nodes.root, 'new-ip');

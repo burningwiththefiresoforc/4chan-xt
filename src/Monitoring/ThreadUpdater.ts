@@ -96,8 +96,7 @@ var ThreadUpdater = {
         {textContent: 'Updater'}),
       order: 110,
       subEntries
-    }
-    );
+    });
 
     Callbacks.Thread.push({
       name: 'Thread Updater',
@@ -217,8 +216,7 @@ var ThreadUpdater = {
     $.event('ThreadUpdate', {
       404: true,
       threadID: ThreadUpdater.thread.fullID
-    }
-    );
+    });
   },
 
   error(req) {
@@ -227,9 +225,9 @@ var ThreadUpdater = {
     }
     ThreadUpdater.setInterval();
     if (!req.status) {
-      return ThreadUpdater.set('status', 'Connection Error', 'warning');
+      ThreadUpdater.set('status', 'Connection Error', 'warning');
     } else if (req.status !== 304) {
-      return ThreadUpdater.set('status', `${req.statusText} (${req.status})`, 'warning');
+      ThreadUpdater.set('status', `${req.statusText} (${req.status})`, 'warning');
     }
   },
 
@@ -320,9 +318,10 @@ var ThreadUpdater = {
     if (!(hasChanged = ThreadUpdater.thread[`is${type}`] !== status)) { return; }
     ThreadUpdater.thread.setStatus(type, status);
     if ((type === 'Closed') && ThreadUpdater.thread.isArchived) { return; }
-    const change = type === 'Sticky' ?
-      status ? 'now a sticky' : 'not a sticky anymore'
-    : status ? 'now closed' : 'not closed anymore';
+    const change = type === 'Sticky' ? status ? 'now a sticky'
+      : 'not a sticky anymore'
+      : status ? 'now closed'
+        : 'not closed anymore';
     return new Notice('info', `The thread is ${change}.`, 30);
   },
 
@@ -450,8 +449,7 @@ var ThreadUpdater = {
       postCount: OP.replies + 1,
       fileCount: OP.images + !!OP.fsize,
       ipCount: OP.unique_ips
-    }
-    );
+    });
   }
 };
 export default ThreadUpdater;
