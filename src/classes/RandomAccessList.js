@@ -69,7 +69,7 @@ export default class RandomAccessList {
       this.last = item;
     }
     this.first = item;
-    return delete item.prev;
+    delete item.prev;
   }
 
   shift() {
@@ -90,7 +90,7 @@ export default class RandomAccessList {
     this.length--;
     this.rmi(item);
     delete item.next;
-    return delete item.prev;
+    delete item.prev;
   }
 
   rmi(item) {
@@ -101,9 +101,9 @@ export default class RandomAccessList {
       this.first = next;
     }
     if (next) {
-      return next.prev = prev;
+      next.prev = prev;
     } else {
-      return this.last = prev;
+      this.last = prev;
     }
   }
 }

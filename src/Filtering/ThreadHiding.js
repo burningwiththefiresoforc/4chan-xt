@@ -108,14 +108,12 @@ var ThreadHiding = {
       let div = $.el('div', {
         className: 'hide-thread-link',
         textContent: 'Hide'
-      }
-      );
+      });
 
       const apply = $.el('a', {
         textContent: 'Apply',
         href: 'javascript:;'
-      }
-      );
+      });
       $.on(apply, 'click', ThreadHiding.menu.hide);
 
       const makeStub = UI.checkbox('Stubs', 'Make stub');
@@ -136,8 +134,7 @@ var ThreadHiding = {
         className: 'show-thread-link',
         textContent: 'Show',
         href: 'javascript:;'
-      }
-      );
+      });
       $.on(div, 'click', ThreadHiding.menu.show);
 
       Menu.menu.addEntry({
@@ -155,8 +152,7 @@ var ThreadHiding = {
       const hideStubLink = $.el('a', {
         textContent: 'Hide stub',
         href: 'javascript:;'
-      }
-      );
+      });
       $.on(hideStubLink, 'click', ThreadHiding.menu.hideStub);
 
       return Menu.menu.addEntry({

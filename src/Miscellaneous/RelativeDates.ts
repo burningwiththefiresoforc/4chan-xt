@@ -157,14 +157,10 @@ const RelativeDates = {
   },
 
   setOwnTimeout(diff, data) {
-    const delay = diff < MINUTE ?
-      SECOND - ((diff + (SECOND / 2)) % SECOND)
-    : diff < HOUR ?
-      MINUTE - ((diff + (MINUTE / 2)) % MINUTE)
-    : diff < DAY ?
-      HOUR - ((diff + (HOUR / 2)) % HOUR)
-    :
-      DAY - ((diff + (DAY / 2)) % DAY);
+    const delay = diff < MINUTE ? SECOND - ((diff + (SECOND / 2)) % SECOND)
+    : diff < HOUR ? MINUTE - ((diff + (MINUTE / 2)) % MINUTE)
+    : diff < DAY ? HOUR - ((diff + (HOUR / 2)) % HOUR)
+    : DAY - ((diff + (DAY / 2)) % DAY);
     setTimeout(RelativeDates.markStale, delay, data);
   },
 

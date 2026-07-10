@@ -270,15 +270,13 @@ var Index = {
         el: $.el('a', {
           href:      'javascript:;',
           className: 'has-shortcut-text'
-        }
-        , {innerHTML: "<span></span><span class=\"shortcut-text\">Shift+click</span>"}),
+        },
+          {innerHTML: "<span></span><span class=\"shortcut-text\">Shift+click</span>"}),
         order: 20,
         open({thread}) {
           if (Conf['Index Mode'] !== 'catalog') { return false; }
           this.el.firstElementChild.textContent = thread.isHidden ?
-            'Unhide'
-          :
-            'Hide';
+            'Unhide' : 'Hide';
           if (this.cb) { $.off(this.el, 'click', this.cb); }
           this.cb = function() {
             $.event('CloseMenu');
@@ -574,8 +572,7 @@ var Index = {
       sort:     Index.currentSort,
       searched: Index.search,
       oldpage:  pageBeforeSearch
-    }
-    , '', `${location.protocol}//${location.host}${pathname}${hash}`);
+    }, '', `${location.protocol}//${location.host}${pathname}${hash}`);
   },
 
   setState({search, mode, sort, page, hash}) {
@@ -677,8 +674,7 @@ var Index = {
         var a = $.el('a', {
           textContent: i,
           href: i === 1 ? './' : i
-        }
-        );
+        });
         nodes.push($.tn('['), a, $.tn('] '));
       }
       $.rmAll(pagesRoot);
@@ -752,8 +748,7 @@ var Index = {
         , 3 * SECOND); }
     } else {
       // Also display notice if Index Refresh is taking too long
-      if (!Index.nTimeout) { Index.nTimeout = setTimeout(() => Index.notice || (Index.notice = new Notice('info', 'Refreshing index... (disable JSON Index if this takes too long)'))
-      , 3 * SECOND); }
+      if (!Index.nTimeout) { Index.nTimeout = setTimeout(() => Index.notice || (Index.notice = new Notice('info', 'Refreshing index... (disable JSON Index if this takes too long)')), 3 * SECOND); }
     }
 
     // Hard refresh in case of incomplete page load.

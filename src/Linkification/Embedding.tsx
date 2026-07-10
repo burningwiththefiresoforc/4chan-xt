@@ -107,7 +107,7 @@ const Embedding = {
       className:   'embedder',
       href:        'javascript:;'
     },
-    {innerHTML: '(<span>un</span>embed)'});
+      {innerHTML: '(<span>un</span>embed)'});
 
     const object = {key, uid, options, href};
     for (const name in object) { const value = object[name]; embed.dataset[name] = value; }

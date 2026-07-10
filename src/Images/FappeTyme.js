@@ -38,8 +38,7 @@ const FappeTyme = {
           className: 'indicator',
           textContent: type[0],
           title: `${type} Tyme active`
-        }
-        );
+        });
         $.on(indicator, 'click', function() {
           const check = $.getOwn(FappeTyme.nodes, this.parentNode.id.replace('shortcut-', ''));
           check.checked = !check.checked;

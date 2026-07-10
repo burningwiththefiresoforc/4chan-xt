@@ -59,8 +59,7 @@ var ThreadUpdater = {
     $.on(this.timer,  'click', this.update);
     $.on(this.status, 'click', this.update);
 
-    const updateLink = $.el('span',
-      {className: 'brackets-wrap updatelink'});
+    const updateLink = $.el('span', {className: 'brackets-wrap updatelink'});
     $.extend(updateLink, {innerHTML: '<a href="javascript:;">Update</a>'});
     PageReady.ready(function() {
       let navLinksBot;
@@ -121,8 +120,8 @@ var ThreadUpdater = {
 
     ThreadUpdater.cb.interval.call($.el('input', {value: Conf.Interval}));
 
-    $.on(d,      'QRPostSuccessful', ThreadUpdater.cb.checkpost);
-    $.on(d,      'visibilitychange', ThreadUpdater.cb.visibility);
+    $.on(d, 'QRPostSuccessful', ThreadUpdater.cb.checkpost);
+    $.on(d, 'visibilitychange', ThreadUpdater.cb.visibility);
 
     ThreadUpdater.setInterval();
   },
@@ -319,9 +318,7 @@ var ThreadUpdater = {
     ThreadUpdater.thread.setStatus(type, status);
     if ((type === 'Closed') && ThreadUpdater.thread.isArchived) { return; }
     const change = type === 'Sticky' ? status ? 'now a sticky'
-      : 'not a sticky anymore'
-      : status ? 'now closed'
-        : 'not closed anymore';
+      : 'not a sticky anymore' : status ? 'now closed' : 'not closed anymore';
     return new Notice('info', `The thread is ${change}.`, 30);
   },
 

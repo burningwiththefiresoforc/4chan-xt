@@ -139,10 +139,8 @@ const SWYotsuba = {
       // /^https?:\/\/sys\.4chan(?:nel)?\.org\/+captcha(?:$|[?#])/,
     quotelinkHTML:
       /<a [^>]*\bhref="(?:(?:\/\/boards\.4chan\.org)?\/([^\/]+)\/thread\/)?(\d+)?(?:#p(\d+))?"/g,
-    pass:
-      /^https?:\/\/www\.4chan\.org\/+pass(?:$|[?#])/,
-    captcha:
-      /^https?:\/\/sys\.4chan\.org\/+captcha(?:$|[?#])/,
+    pass: /^https?:\/\/www\.4chan\.org\/+pass(?:$|[?#])/,
+    captcha: /^https?:\/\/sys\.4chan\.org\/+captcha(?:$|[?#])/,
   },
 
   bgColoredEl() {
@@ -240,17 +238,12 @@ const SWYotsuba = {
 
   parseNodes(post, nodes) {
     // Add CSS classes to sticky/closed icons on /f/ to match other boards.
-    if (post.boardID === 'f') {
-      return (() => {
-        const result = [];
-        for (var type of ['Sticky', 'Closed']) {
-          var icon;
-          if (icon = $(`img[alt=${type}]`, nodes.info)) {
-            result.push($.addClass(icon, `${type.toLowerCase()}Icon`, 'retina'));
-          }
-        }
-        return result;
-      })();
+    if (post.boardID !== 'f') return;
+    for (const type of ['Sticky', 'Closed']) {
+      const icon = $(`img[alt=${type}]`, nodes.info);
+      if (icon) {
+        $.addClass(icon, `${type.toLowerCase()}Icon`, 'retina');
+      }
     }
   },
 

@@ -336,8 +336,6 @@ export default class Post {
   }
 
   parseFile(fileRoot: HTMLElement) {
-
-
     const file: Partial<File> = { isDead: false };
     for (var key in g.SITE.selectors.file) {
       var selector = g.SITE.selectors.file[key];
@@ -352,8 +350,7 @@ export default class Post {
       url:     file.link.href,
       isImage: $.isImage(file.link.href),
       isVideo: $.isVideo(file.link.href)
-    }
-    );
+    });
     let size  = +file.size.match(/[\d.]+/)[0];
     let unit  = ['B', 'KB', 'MB', 'GB'].indexOf(file.size.match(/\w+$/)[0]);
     while (unit-- > 0) { size *= 1024; }

@@ -59,8 +59,7 @@ var Metadata = {
         $.addClass(this.parentNode, 'error');
         return $.one(this, 'click', Metadata.load);
       }
-    }
-    ,
+    },
       {Range: 'bytes=0-9999'});
   },
 

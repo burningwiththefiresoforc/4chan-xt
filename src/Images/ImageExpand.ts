@@ -210,7 +210,7 @@ var ImageExpand = {
       if (file.isExpanding || file.isExpanded) { return; }
       $.rmClass(el, 'full-image');
       if (el.id) { return; }
-      return $.rm(el);
+      $.rm(el);
     });
 
     if (file.audio) {
@@ -455,8 +455,7 @@ var ImageExpand = {
       const el = $.el('span', {
         textContent: 'Image Expansion',
         className:   'image-expansion-link'
-      }
-      );
+      });
 
       const {createSubEntry} = ImageExpand.menu;
       const subEntries = [];
@@ -465,7 +464,7 @@ var ImageExpand = {
         subEntries.push(createSubEntry(name, conf[1]));
       }
 
-      return Header.menu.addEntry({
+      Header.menu.addEntry({
         el,
         order: 105,
         subEntries

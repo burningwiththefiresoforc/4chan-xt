@@ -379,18 +379,18 @@ var Keybinds = {
   tags(tag, ta) {
     BoardConfig.ready(function() {
       const {config} = g.BOARD;
-      const supported = (() => { switch (tag) {
-        case 'spoiler':     return !!config.spoilers;
-        case 'code':        return !!config.code_tags;
-        case 'math': case 'eqn': return !!config.math_tags;
-        case 'sjis':        return !!config.sjis_tags;
-      } })();
+      const TAG_SUPPORT = {
+        spoiler: 'spoilers',
+        code: 'code_tags',
+        math: 'math_tags',
+        eqn: 'math_tags',
+        sjis: 'sjis_tags',
+      };
+      const supported = !!config[TAG_SUPPORT[tag]];
       if (!supported) { return new Notice('warning', `[${tag}] tags are not supported on /${g.BOARD}/.`, 20); }
     });
 
-    const {
-      value
-    } = ta;
+    const {value} = ta;
     const selStart = ta.selectionStart;
     const selEnd   = ta.selectionEnd;
 

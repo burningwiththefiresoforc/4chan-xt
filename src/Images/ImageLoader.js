@@ -61,8 +61,7 @@ const ImageLoader = {
       poster:      thumb.src || thumb.dataset.src,
       textContent: thumb.alt,
       className:   thumb.className
-    }
-    );
+    });
     video.setAttribute('muted', 'muted');
     video.dataset.md5 = thumb.dataset.md5;
     for (const attr of ['height', 'width', 'maxHeight', 'maxWidth']) { video.style[attr] = thumb.style[attr]; }

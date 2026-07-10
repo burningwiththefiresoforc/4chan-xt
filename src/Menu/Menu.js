@@ -16,8 +16,7 @@ var Menu = {
     this.button = $.el('a', {
       className: 'menu-button',
       href:      'javascript:;'
-    }
-    );
+    });
 
     Icon.set(this.button, 'caretDown');
 

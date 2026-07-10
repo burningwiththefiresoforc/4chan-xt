@@ -17,18 +17,12 @@ const Sound = {
 
     $.on(audio, 'seeked waiting', syncTime);
 
-    $.on(audio, 'pause', () => {
-      video.pause();
-    });
-
     $.on(audio, 'ratechange', () => {
       video.currentTime = audio.currentTime;
       video.playbackRate = audio.playbackRate;
     });
 
-    $.on(audio, 'waiting', () => {
-      video.pause();
-    });
+    $.on(audio, 'waiting pause', () => { video.pause(); });
 
     $.one(audio, 'canplay', () => {
       if (audio.currentTime < .1) video.currentTime = 0;

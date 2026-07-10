@@ -13,8 +13,7 @@ const ArchiveLink = {
   init() {
     if ((g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf['Archive Link']) { return; }
 
-    const div = $.el('div',
-      {textContent: 'Archive'});
+    const div = $.el('div', {textContent: 'Archive'});
 
     const entry = {
       el: div,
@@ -68,8 +67,7 @@ const ArchiveLink = {
           type:     typeParam,
           value,
           isSearch: true
-        }
-        );
+        });
         return true;
       };
 

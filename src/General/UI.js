@@ -16,8 +16,7 @@ const dialog = function(id, properties) {
   const el = $.el('div', {
     className: 'dialog',
     id
-  }
-  );
+  });
   $.extend(el, properties);
   el.style.cssText = Conf[`${id}.position`];
 
@@ -61,8 +60,7 @@ var Menu = (function() {
         className: 'dialog',
         id:        'menu',
         tabIndex:  0
-      }
-      );
+      });
       menu.dataset.type = this.type;
       $.on(menu, 'click', e => e.stopPropagation());
       $.on(menu, 'keydown', this.keybinds);
@@ -174,8 +172,7 @@ var Menu = (function() {
     }
 
     keybinds(e) {
-      let subEntry;
-      let next, submenu;
+      let subEntry, next, submenu;
       let entry = $('.focused', this.menu);
       while ((subEntry = $('.focused', entry))) {
         entry = subEntry;
@@ -261,9 +258,7 @@ var Menu = (function() {
       for (var subEntry of subEntries) {
         this.parseEntry(subEntry);
       }
-      const span = $.el('span',
-        {className: 'menu-indicator'}
-      );
+      const span = $.el('span', {className: 'menu-indicator'});
       Icon.set(span, 'caretRight');
       $.add(el, span);
     }

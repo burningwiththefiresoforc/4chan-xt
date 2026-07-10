@@ -50,8 +50,7 @@ var QuoteBacklink = {
       href: g.SITE.Build.postURL(this.board.ID, this.thread.ID, this.ID),
       className: this.isHidden ? 'filtered backlink' : 'backlink',
       textContent: Conf.backlink.replace(/%(?:id|%)/g, x => ({'%id': this.ID, '%%': '%'})[x])
-    }
-    );
+    });
     if (markYours) { $.add(a, QuoteYou.mark.cloneNode(true)); }
     for (var quote of this.quotes) {
       var post;

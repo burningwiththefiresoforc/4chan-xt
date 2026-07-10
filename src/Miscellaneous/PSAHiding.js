@@ -31,8 +31,7 @@ var PSAHiding = {
         textContent: 'Show announcement',
         className: 'show-announcement',
         href: 'javascript:;'
-      }
-      ),
+      }),
       order: 50,
       open() { return psa.hidden; }
     };

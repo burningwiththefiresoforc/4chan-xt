@@ -21,17 +21,14 @@ const ImageHost = {
   host() {
     return Conf.fourchanImageHost.trim() || 'i.4cdn.org';
   },
-  flashHost() {
-    return 'i.4cdn.org';
-  },
-  thumbHost() {
-    return 'i.4cdn.org';
-  },
+  flashHost() { return 'i.4cdn.org'; },
+  thumbHost() { return 'i.4cdn.org'; },
   test(hostname) {
     return (hostname === 'i.4cdn.org') || ImageHost.regex.test(hostname);
   },
 
-  regex: /^is\d*\.4chan(?:nel)?\.org$/,
+  // regex: /^is\d*\.4chan(?:nel)?\.org$/,
+  regex: /^is\d*\.4chan\.org$/,
 
   node() {
     if (this.isClone) { return; }

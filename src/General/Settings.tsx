@@ -80,8 +80,7 @@ var Settings = {
         className: `tab-${section.hyphenatedTitle}`,
         textContent: section.title,
         href: 'javascript:;'
-      }
-      );
+      });
       $.on(link, 'click', Settings.openSection.bind(section));
       links.push(link, $.tn(' | '));
       if (section.title === openSection) { sectionToOpen = link; }
@@ -356,8 +355,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     const a = $.el('a', {
       download: `${meta.name} v${g.VERSION}-${data.date}.json`,
       href: url
-    }
-    );
+    });
     const p = $('.imp-exp-result', Settings.dialog);
     $.rmAll(p);
     $.add(p, a);
@@ -432,8 +430,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         ).replace(
           /\/\/imgops\.com\/%URL/g,
           '//imgops.com/start?url=%URL'
-        )
-        );
+        ));
       }
     }
     if (compareString < '00001.00014.00017.00002') {
@@ -629,9 +626,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
   addArchiveTable(section) {
     let boardID, o;
     $('#lastarchivecheck', section).textContent = Conf.lastarchivecheck === 0 ?
-      'never'
-    :
-      new Date(Conf.lastarchivecheck).toLocaleString();
+      'never' : new Date(Conf.lastarchivecheck).toLocaleString();
 
     const boardSelect = $('#archive-board-select', section);
     const table       = $('#archive-table', section);
@@ -710,8 +705,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
 
   addArchiveCell(boardID, data, type) {
     const {length} = data[type];
-    const td = $.el('td',
-      {className: 'archive-cell'});
+    const td = $.el('td', {className: 'archive-cell'});
 
     if (!length) {
       td.textContent = '--';

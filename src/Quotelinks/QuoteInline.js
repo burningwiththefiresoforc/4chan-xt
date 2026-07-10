@@ -47,8 +47,7 @@ var QuoteInline = {
       className: name,
       textContent: '#',
       href: link.href
-    }
-    );
+    });
   },
 
   toggle(e) {

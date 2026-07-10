@@ -49,8 +49,7 @@ var QuoteYou = {
     this.mark = $.el('span', {
       textContent: '\u00A0(You)',
       className:   'qmark-you'
-    }
-    );
+    });
     Callbacks.Post.push({
       name: 'Mark Quotes of You',
       cb:   this.node

@@ -119,7 +119,7 @@ var ImageHover = {
               delete file.audioSlider;
             }
           }
-          return el.removeAttribute('style');
+          el.removeAttribute('style');
         }
       });
     };

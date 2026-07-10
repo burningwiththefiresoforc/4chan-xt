@@ -15,8 +15,7 @@ var ReportLink = {
       className: 'report-link',
       href: 'javascript:;',
       textContent: 'Report'
-    }
-    );
+    });
     $.on(a, 'click', ReportLink.report);
 
     Menu.menu.addEntry({

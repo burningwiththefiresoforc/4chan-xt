@@ -15,8 +15,7 @@ var CopyTextLink = {
       className: 'copy-text-link',
       href: 'javascript:;',
       textContent: 'Copy Text'
-    }
-    );
+    });
     $.on(a, 'click', CopyTextLink.copy);
 
     Menu.menu.addEntry({
@@ -33,8 +32,7 @@ var CopyTextLink = {
     const el = $.el('textarea', {
       className: 'copy-text-element',
       value: CopyTextLink.text
-    }
-    );
+    });
     $.add(d.body, el);
     el.select();
     try {

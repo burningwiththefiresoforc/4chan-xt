@@ -19,18 +19,15 @@ var DeleteLink = {
     const div = $.el('div', {
       className: 'delete-link',
       textContent: 'Delete'
-    }
-    );
+    });
     const postEl = $.el('a', {
       className: 'delete-post',
       href: 'javascript:;'
-    }
-    );
+    });
     const fileEl = $.el('a', {
       className: 'delete-file',
       href: 'javascript:;'
-    }
-    );
+    });
     this.nodes = {
       menu:  div.firstChild,
       links: [postEl, fileEl]
@@ -118,8 +115,7 @@ var DeleteLink = {
       withCredentials: true,
       onloadend() { return DeleteLink.load(link, post, fileOnly, this.response); },
       form: $.formData(form)
-    }
-    );
+    });
   },
 
   load(link, post, fileOnly, resDoc) {

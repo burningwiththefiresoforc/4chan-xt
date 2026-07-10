@@ -44,8 +44,7 @@ const Volume = {
     const unmuteEntry = UI.checkbox('Allow Sound', 'Allow Sound');
     unmuteEntry.title = Config.main['Images and Videos']['Allow Sound'][1];
 
-    const volumeEntry = $.el('label',
-      {title: 'Default volume for videos.'});
+    const volumeEntry = $.el('label', {title: 'Default volume for videos.'});
     $.extend(volumeEntry,
       {innerHTML: "<input name=\"Default Volume\" type=\"range\" min=\"0\" max=\"1\" step=\"0.01\" value=\"" + E(Conf["Default Volume"]) + "\"> Volume"});
 

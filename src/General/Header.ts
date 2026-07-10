@@ -25,14 +25,12 @@ var Header = {
       $.add(this.bar, [noticesRoot, this.toggle]);
       $.prepend(d.body, this.bar);
       $.add(d.body, Header.hover);
-      return this.setBarPosition(Conf['Bottom Header']);
+      this.setBarPosition(Conf['Bottom Header']);
   });
 
     this.menu = new UI.Menu('header');
 
-    const menuButton = $.el('span',
-      {className: 'menu-button'}
-    );
+    const menuButton = $.el('span', {className: 'menu-button'});
     Icon.set(menuButton, 'caretDown', 'Menu');
 
     const box = UI.checkbox;
@@ -48,8 +46,7 @@ var Header = {
     const editCustomNav = $.el('a', {
       textContent: 'Edit custom board navigation',
       href: 'javascript:;'
-    }
-    );
+    });
 
     this.barFixedToggler     = barFixedToggler.firstElementChild;
     this.scrollHeaderToggler = scrollHeaderToggler.firstElementChild;
@@ -236,8 +233,7 @@ var Header = {
         className: 'show-board-list-button',
         textContent: text || '+',
         href: 'javascript:;'
-      }
-      );
+      });
       $.on(a, 'click', Header.toggleBoardList);
       return a;
     }
@@ -247,8 +243,7 @@ var Header = {
         href: url || 'javascript:;',
         textContent: text || '+',
         className: 'external'
-      }
-      );
+      });
       if (/-nt/.test(t)) {
         a.target = '_blank';
         a.rel = 'noopener';
@@ -266,8 +261,7 @@ var Header = {
           href: `/${g.BOARD.ID}/`,
           textContent: text || decodeURIComponent(g.BOARD.ID),
           className: 'current'
-        }
-        );
+        });
         if (/-nt/.test(t)) {
           a.target = '_blank';
           a.rel = 'noopener';

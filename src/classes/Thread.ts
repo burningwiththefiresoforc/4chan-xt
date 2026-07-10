@@ -55,8 +55,7 @@ export default class Thread {
     this.OP = null;
     this.catalogView = null;
 
-    this.nodes =
-      {root: null};
+    this.nodes = {root: null};
 
     this.board.threads.push(this.ID, this);
     g.threads.push(this.fullID, this);

@@ -630,15 +630,9 @@ if (platform === 'crx') {
           for (key in data) { var val = data[key]; if (!exceedsQuota(key, val)) { items.sync[key] = val; } }
           setSync();
         } else {
-          chrome.storage.local.remove(((() => {
-            const result = [];
-            for (key in data) {
-              if (!(key in items.local)) {
-                result.push(key);
-              }
-            }
-            return result;
-          })()));
+          chrome.storage.local.remove(
+            Object.keys(data).filter(key => !(key in items.local))
+          );
         }
         return cb?.();
       });
@@ -679,17 +673,14 @@ if (platform === 'crx') {
 
     $.syncChannel = new BroadcastChannel(g.NAMESPACE + 'sync');
 
-    $.on($.syncChannel, 'message', e => (() => {
-      const result = [];
-      for (var key in e.data) {
-        var cb;
-        var val = e.data[key];
-        if (cb = $.syncing[key]) {
-          result.push(cb(dict.json(JSON.stringify(val)), key));
+    $.on($.syncChannel, 'message', e => {
+      for (const key in e.data) {
+        const cb = $.syncing[key];
+        if (cb) {
+          cb(dict.json(JSON.stringify(e.data[key])), key);
         }
       }
-      return result;
-    })());
+    });
 
     $.sync = (key, cb) => $.syncing[key] = cb;
 
@@ -723,14 +714,9 @@ if (platform === 'crx') {
 
     $.set = $.oneItemSugar(function(items, cb) {
       $.securityCheck(items);
-      return Promise.all((() => {
-        const result = [];
-        for (var key in items) {
-          var val = items[key];
-          result.push(GM.setValue(g.NAMESPACE + key, JSON.stringify(val)));
-        }
-        return result;
-      })()).then(function() {
+      return Promise.all(
+        Object.entries(items).map(([key, val]) => GM.setValue(g.NAMESPACE + key, JSON.stringify(val)))
+      ).then(function() {
         $.syncChannel.postMessage(items);
         return cb?.();
       });
@@ -743,15 +729,7 @@ if (platform === 'crx') {
       $.listValues = () => GM_listValues(); // error when called if missing
     } else if ($.hasStorage) {
       $.getValue = key => localStorage.getItem(key);
-      $.listValues = () => (() => {
-        const result = [];
-        for (var key in localStorage) {
-          if (key.slice(0, g.NAMESPACE.length) === g.NAMESPACE) {
-            result.push(key);
-          }
-        }
-        return result;
-      })();
+      $.listValues = () => Object.keys(localStorage).filter(key => key.startsWith(g.NAMESPACE));
     } else {
       $.getValue   = function() {};
       $.listValues = () => [];

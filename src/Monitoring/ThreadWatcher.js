@@ -99,9 +99,7 @@ var ThreadWatcher = {
         open({thread}) {
           if (Conf['Index Mode'] !== 'catalog') { return false; }
           this.el.firstElementChild.textContent = ThreadWatcher.isWatched(thread) ?
-            'Unwatch'
-          :
-            'Watch';
+            'Unwatch' : 'Watch';
           if (this.cb) { $.off(this.el, 'click', this.cb); }
           this.cb = function() {
             $.event('CloseMenu');
@@ -161,7 +159,7 @@ var ThreadWatcher = {
     if (data && (data.excerpt == null)) {
       return $.queueTask(() => {
         return ThreadWatcher.update(siteID, boardID, threadID, {excerpt: Get.threadExcerpt(this.thread)});
-    });
+      });
     }
   },
 
@@ -834,7 +832,7 @@ var ThreadWatcher = {
           return true;
         }
       });
-      return $.on(entryEl, 'click', () => ThreadWatcher.toggle(g.threads.get(`${g.BOARD}.${g.THREADID}`), true));
+      $.on(entryEl, 'click', () => ThreadWatcher.toggle(g.threads.get(`${g.BOARD}.${g.THREADID}`), true));
     },
 
     addMenuEntries() {

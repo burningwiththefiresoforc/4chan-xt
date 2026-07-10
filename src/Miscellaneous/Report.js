@@ -32,8 +32,7 @@ const Report = {
       childList:  true,
       attributes: true,
       subtree:    true
-    }
-    );
+    });
     Report.fit('body');
   },
 
@@ -41,7 +40,7 @@ const Report = {
     let el;
     if (!((el = $(selector, doc)) && (getComputedStyle(el).visibility !== 'hidden'))) { return; }
     const dy = (el.getBoundingClientRect().bottom - doc.clientHeight) + 8;
-    if (dy > 0) { return window.resizeBy(0, dy); }
+    if (dy > 0) { window.resizeBy(0, dy); }
   },
 
   archive() {

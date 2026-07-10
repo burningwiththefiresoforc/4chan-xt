@@ -15,8 +15,7 @@ const DownloadLink = {
     const a = $.el('a', {
       className: 'download-link',
       textContent: 'Download file'
-    }
-    );
+    });
 
     // Specifying the filename with the download attribute only works for same-origin links.
     $.on(a, 'click', ImageCommon.download);

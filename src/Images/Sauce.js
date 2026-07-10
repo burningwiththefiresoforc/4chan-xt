@@ -32,8 +32,7 @@ const Sauce = {
     this.link  = $.el('a', {
       target:    '_blank',
       className: 'sauce'
-    }
-    );
+    });
     Callbacks.Post.push({
       name: 'Sauce',
       cb:   this.node

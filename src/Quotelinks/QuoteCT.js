@@ -21,8 +21,7 @@ var QuoteCT = {
     this.mark = $.el('span', {
       textContent: '\u00A0(Cross-thread)',
       className:   'qmark-ct'
-    }
-    );
+    });
     Callbacks.Post.push({
       name: 'Mark Cross-thread Quotes',
       cb:   this.node

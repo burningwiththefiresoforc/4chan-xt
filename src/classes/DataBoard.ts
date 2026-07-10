@@ -123,8 +123,7 @@ export default class DataBoard {
       } else {
         delete this.data[siteID].boards[boardID];
       }
-    }
-    , cb);
+    }, cb);
   }
 
   deleteIfEmpty({ siteID, boardID, threadID }: { siteID: string, boardID: string, threadID?: string | number }) {
@@ -185,7 +184,7 @@ export default class DataBoard {
 
   get({ siteID, boardID, threadID, postID, defaultValue }: PostInfo & { defaultValue?: any }) {
     let board, val;
-    if (!siteID) { siteID = g.SITE.ID; }
+    siteID ??= g.SITE.ID;
     if (board = this.data[siteID]?.boards[boardID]) {
       let thread;
       if (threadID == null) {

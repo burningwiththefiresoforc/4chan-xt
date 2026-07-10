@@ -21,8 +21,7 @@ var QuoteOP = {
     this.mark = $.el('span', {
       textContent: '\u00A0(OP)',
       className:   'qmark-op'
-    }
-    );
+    });
     Callbacks.Post.push({
       name: 'Mark OP Quotes',
       cb:   this.node

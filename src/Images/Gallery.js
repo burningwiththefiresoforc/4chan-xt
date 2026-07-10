@@ -76,8 +76,7 @@ const Gallery = {
     Gallery.fileIDs = dict();
     Gallery.slideshow = false;
 
-    nodes.el = (dialog = $.el('div',
-      {id: 'a-gallery'}));
+    nodes.el = (dialog = $.el('div', {id: 'a-gallery'}));
     $.extend(dialog, {innerHTML: galleryPage });
 
     const object = {
@@ -318,7 +317,7 @@ const Gallery = {
     if ((isVideo ? current.readyState >= 4 : current.complete) || (current.nodeName === 'IFRAME')) {
       return Gallery.startTimer();
     } else {
-      return $.on(current, (isVideo ? 'canplaythrough' : 'load'), Gallery.startTimer);
+      $.on(current, (isVideo ? 'canplaythrough' : 'load'), Gallery.startTimer);
     }
   },
 

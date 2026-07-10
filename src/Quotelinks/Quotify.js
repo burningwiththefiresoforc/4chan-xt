@@ -83,16 +83,14 @@ var Quotify = {
           href:        g.SITE.Build.postURL(boardID, post.thread.ID, postID),
           className:   'quotelink',
           textContent: quote
-        }
-        );
+        });
       } else {
         // Replace the .deadlink span if we can redirect.
         a = $.el('a', {
           href:        g.SITE.Build.postURL(boardID, post.thread.ID, postID),
           className:   'quotelink deadlink',
           textContent: quote
-        }
-        );
+        });
         $.add(a, Post.deadMark.cloneNode(true));
         $.extend(a.dataset, {boardID, threadID: post.thread.ID, postID});
       }
@@ -106,8 +104,7 @@ var Quotify = {
           href:        redirect || 'javascript:;',
           className:   'deadlink',
           textContent: quote
-        }
-        );
+        });
         $.add(a, Post.deadMark.cloneNode(true));
         if (fetchable) {
           // Make it function as a normal quote if we can fetch the post.

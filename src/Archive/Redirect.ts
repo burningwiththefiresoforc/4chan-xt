@@ -143,9 +143,7 @@ const Redirect = {
   },
 
   protocol(archive) {
-    let {
-      protocol
-    } = location;
+    let {protocol} = location;
     if (!$.getOwn(archive, protocol.slice(0, -1))) {
       protocol = protocol === 'https:' ? 'http:' : 'https:';
     }
@@ -154,13 +152,8 @@ const Redirect = {
 
   thread(archive, {boardID, threadID, postID}) {
     // Keep the post number only if the location.hash was sent f.e.
-    let path = threadID ?
-      `${boardID}/thread/${threadID}`
-    :
-      `${boardID}/post/${postID}`;
-    if (archive.software === 'foolfuuka') {
-      path += '/';
-    }
+    let path = threadID ? `${boardID}/thread/${threadID}` : `${boardID}/post/${postID}`;
+    if (archive.software === 'foolfuuka') { path += '/'; }
     if (threadID && postID) {
       path += archive.software === 'foolfuuka' ? `#${postID}` : `#p${postID}`;
     }
@@ -214,8 +207,7 @@ const Redirect = {
       value = value.replace(/[+/=]/g, c => ({'+': '-', '/': '_', '=': ''})[c]);
     }
     value = encodeURIComponent(value);
-    const path  = archive.software === 'foolfuuka' ?
-      `${boardID}/search/${type}/${value}/`
+    const path  = archive.software === 'foolfuuka' ? `${boardID}/search/${type}/${value}/`
       : type === 'image' ? `${boardID}/image/${value}`
       : `${boardID}/?task=search2&search_${type}=${value}`;
     return `${Redirect.protocol(archive)}${archive.domain}/${path}`;

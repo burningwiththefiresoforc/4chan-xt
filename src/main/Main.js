@@ -112,8 +112,7 @@ var Main = {
     // XXX dwb userscripts extension reloads scripts run at document-start when replaceState/pushState is called.
     // XXX Firefox reinjects WebExtension content scripts when extension is updated / reloaded.
     try {
-      let w = window;
-      if (platform === 'crx') { w = (w.wrappedJSObject || w); }
+      let w = platform === 'crx' ? (window.wrappedJSObject || window) : window;
       if (`${meta.name} antidup` in w) { return; }
       w[`${meta.name} antidup`] = true;
     } catch (error) {}
@@ -443,7 +442,7 @@ var Main = {
         css += '.watch-thread-link { --xt-watcher: #c8c8c8 }';
       }
       Main.bgColorStyle.textContent = css;
-      return $.after($.id('fourchanx-css'), Main.bgColorStyle);
+      $.after($.id('fourchanx-css'), Main.bgColorStyle);
     };
 
     $.onExists(d.head, g.SITE.selectors.styleSheet, function(el) {
@@ -715,7 +714,7 @@ var Main = {
   },
 
   callbackNodesDB(klass, nodes, cb) {
-    let i   = 0;
+    let i = 0;
     const cbs = Callbacks[klass];
     const fn  = function() {
       let node;

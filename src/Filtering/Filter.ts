@@ -129,9 +129,9 @@ var Filter = {
 
           // Overrule the `Show Stubs` setting.
           // Defaults to stub showing.
-          const STUB_VALUES = { yes: true, no: false };
           const stubOption = options.match(/(?:^|;)\s*stub:(yes|no)/)?.[1];
-          const stub = stubOption in STUB_VALUES ? STUB_VALUES[stubOption] : Conf.Stubs;
+          if (stubOption === 'yes') stub = true;
+          else if (stubOption === 'no') stub = false;
 
           // Desktop notification
           noti = /(?:^|;)\s*notify/.test(options);
@@ -191,7 +191,7 @@ var Filter = {
     if (g.VIEW === 'catalog') {
       return Filter.catalog();
     } else {
-      return Callbacks.Post.push({
+      Callbacks.Post.push({
         name: 'Filter',
         cb:   this.node
       });
@@ -465,11 +465,7 @@ var Filter = {
     return $.get(type, Conf[type], function(item) {
       let save = item[type];
       // Add a new line before the regexp unless the text is empty.
-      save =
-        save ?
-          `${save}\n${re}`
-        :
-          re;
+      save = save ? `${save}\n${re}` : re;
       return $.set(type, save, cb);
     });
   },
@@ -565,8 +561,7 @@ var Filter = {
     init() {
       if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf.Filter) { return; }
 
-      const div = $.el('div',
-        {textContent: 'Filter'});
+      const div = $.el('div', {textContent: 'Filter'});
 
       const entry = {
         el: div,
@@ -604,16 +599,11 @@ var Filter = {
       const el = $.el('a', {
         href: 'javascript:;',
         textContent: text
-      }
-      );
+      });
       el.dataset.type = type;
       $.on(el, 'click', Filter.menu.makeFilter);
 
-      return {
-        el,
-        open(post) {
-          return Filter.values(type, post).length;
-        }
+      return { el, open(post) { return Filter.values(type, post).length; }
       };
     },
 

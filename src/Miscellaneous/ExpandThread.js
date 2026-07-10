@@ -64,7 +64,7 @@ var ExpandThread = {
     $.rm(this); // remove before fixing bottom of thread position
     const {bottom} = thread.nodes.root.getBoundingClientRect();
     ExpandThread.toggle(thread);
-    return window.scrollBy(0, (thread.nodes.root.getBoundingClientRect().bottom - bottom));
+    window.scrollBy(0, (thread.nodes.root.getBoundingClientRect().bottom - bottom));
   },
 
   toggle(thread) {

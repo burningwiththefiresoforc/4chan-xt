@@ -101,7 +101,7 @@ const Banner = {
       } else {
         $.rmAll(this);
         $.add(this, [...Banner.original[this.className].cloneNode(true).childNodes]);
-        return Banner.db.delete({
+        Banner.db.delete({
           boardID:  g.BOARD.ID,
           threadID: this.className
         });
@@ -126,7 +126,7 @@ const Banner = {
         Banner.original[className] = child.cloneNode(true);
         return child.textContent = data.title;
       } else {
-        return Banner.db.delete({boardID: g.BOARD.ID, threadID: className});
+        Banner.db.delete({boardID: g.BOARD.ID, threadID: className});
       }
     }
   }

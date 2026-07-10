@@ -264,7 +264,7 @@ var QR = {
         return;
       }
     }
-    return $.rmClass(QR.shortcut, 'disabled');
+    $.rmClass(QR.shortcut, 'disabled');
   },
 
   close() {
@@ -283,7 +283,7 @@ var QR = {
     }
     QR.cooldown.auto = false;
     QR.status();
-    return QR.captcha.destroy();
+    QR.captcha.destroy();
   },
 
   focus() {
@@ -338,7 +338,7 @@ var QR = {
   },
 
   texPreviewHide() {
-    return $.rmClass(QR.nodes.el, 'tex-preview');
+    $.rmClass(QR.nodes.el, 'tex-preview');
   },
 
   addPost() {
@@ -380,8 +380,7 @@ var QR = {
       const notif = new Notification(el.textContent, {
         body: el.textContent,
         icon: Favicon.logo
-      }
-      );
+      });
       notif.onclick = () => window.focus();
       if ($.engine !== 'gecko') {
         // Firefox automatically closes notifications
@@ -390,8 +389,7 @@ var QR = {
         return notif.onshow  = () => setTimeout(function() {
           notif.onclose = null;
           return notif.close();
-        }
-        , 7 * SECOND);
+        }, 7 * SECOND);
       }
     }
   },
@@ -425,18 +423,12 @@ var QR = {
       QR.cooldown.auto = false;
     }
 
-    value = QR.req ?
-      QR.req.progress
-    :
-      QR.cooldown.seconds || value;
+    value = QR.req ? QR.req.progress : QR.cooldown.seconds || value;
 
     const {status} = QR.nodes;
-    status.value = !value ?
-      'Submit'
-    : QR.cooldown.auto ?
-      `Auto ${value}`
-    :
-      value;
+    status.value = !value ? 'Submit'
+    : QR.cooldown.auto ? `Auto ${value}`
+    : value;
     status.disabled = disabled || false;
     return status.disabled;
   },
@@ -522,7 +514,7 @@ var QR = {
     if (wasOnlyQuotes) { QR.selected.quotedText = com.value; }
 
     QR.selected.save(com);
-    return QR.selected.save(thread);
+    QR.selected.save(thread);
   },
 
   characterCount() {
@@ -613,7 +605,7 @@ var QR = {
     // Let it drag anything from the page.
     const toggle = e.type === 'dragstart' ? $.off : $.on;
     toggle(d, 'dragover', QR.dragOver);
-    return toggle(d, 'drop',     QR.dropFile);
+    return toggle(d, 'drop', QR.dropFile);
   },
 
   dragOver(e) {
@@ -715,9 +707,7 @@ var QR = {
       options.push($.el('option', {
         value: thread,
         textContent: `Thread ${thread}`
-      }
-      )
-      );
+      }));
     }
     const val = list.value;
     $.rmAll(list);
@@ -725,16 +715,12 @@ var QR = {
     list.value = val;
     if (list.value === val) { return; }
     // Fix the value if the option disappeared.
-    list.value = g.VIEW === 'thread' ?
-      g.THREADID
-    :
-      'new';
+    list.value = g.VIEW === 'thread' ? g.THREADID : 'new';
     return (g.VIEW === 'thread' ? $.addClass : $.rmClass)(QR.nodes.el, 'reply-to-thread');
   },
 
   dialog() {
-    let dialog, event, nodes: typeof QR.nodes;
-    let name;
+    let dialog, event, names, nodes: typeof QR.nodes;
     QR.nodes = (nodes = {
       el: (dialog = UI.dialog('qr',
         { innerHTML: QuickReplyPage }))
@@ -1225,8 +1211,7 @@ var QR = {
         },
         responseType: 'text',
         type: 'HEAD'
-      }
-      );
+      });
     };
     check();
   },
@@ -1498,8 +1483,8 @@ var QR = {
             // Clean up expired cooldowns
             var maxDelay = cooldown.threadID !== cooldown.postID ?
               QR.cooldown.maxDelay
-              :
-              QR.cooldown.delays[scope === 'global' ? 'thread_global' : 'thread'];
+              : QR.cooldown.delays[scope === 'global' ? 'thread_global'
+                : 'thread'];
             if (QR.cooldown.customCooldown) {
               maxDelay = Math.max(maxDelay, parseInt(Conf.customCooldown, 10));
             }
@@ -1513,10 +1498,7 @@ var QR = {
               // Only cooldowns relevant to this post can set the seconds variable:
               //   reply cooldown with a reply, thread cooldown with a thread.
               // Inter-board thread cooldowns only apply on boards other than the one they were posted on.
-              var suffix = scope === 'global' ?
-                '_global'
-                :
-                '';
+              var suffix = scope === 'global' ? '_global' : '';
               seconds = Math.max(seconds, QR.cooldown.delays[type + suffix] - elapsed);
 
               // If additional cooldown is enabled, add the configured seconds to the count.
@@ -1562,8 +1544,7 @@ var QR = {
           className: 'edit-link',
           href: 'javascript:;',
           textContent: 'Edit image'
-        }
-        );
+        });
         $.on(a, 'click', this.editFile);
 
         Menu.menu.addEntry({
@@ -1624,8 +1605,7 @@ var QR = {
         const style = $.el('link', {
           rel: 'stylesheet',
           href: `//s.4cdn.org/css/tegaki.${Date.now()}.css`
-        }
-        );
+        });
         const script = $.el('script',
           { src: `//s.4cdn.org/js/tegaki.min.${Date.now()}.js` });
         let n = 0;
@@ -1711,9 +1691,7 @@ var QR = {
         var list = $(`#list-${type}`, QR.nodes.el);
         for (var val of arr) {
           if (val) {
-            $.add(list, $.el('option',
-              { textContent: val })
-            );
+            $.add(list, $.el('option', { textContent: val }));
           }
         }
       }
@@ -1809,10 +1787,7 @@ class post {
       $.on(el, event.toLowerCase(), this[event]);
     }
 
-    this.thread = g.VIEW === 'thread' ?
-      g.THREADID
-      :
-      'new';
+    this.thread = g.VIEW === 'thread' ? g.THREADID : 'new';
 
     const prev = QR.posts[QR.posts.length - 1];
     QR.posts.push(this);
