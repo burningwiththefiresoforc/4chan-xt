@@ -33,6 +33,22 @@ import Nav from "./Nav";
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 
+const KEY_NAMES = {
+  8: '', // return
+  13: 'Enter',
+  27: 'Esc',
+  32: 'Space',
+  37: 'Left',
+  38: 'Up',
+  39: 'Right',
+  40: 'Down',
+  59: 'Semicolon',
+  186: 'Semicolon',
+  188: 'Comma',
+  190: 'Period',
+  191: 'Slash',
+};
+
 var Keybinds = {
   init() {
     if (!Conf.Keybinds) { return; }
@@ -324,29 +340,19 @@ var Keybinds = {
   },
 
   keyCode(e) {
-    let key = (() => { let kc;
-    switch ((kc = e.keyCode)) {
-      case 8: return ''; // return
-      case 13: return 'Enter';
-      case 27: return 'Esc';
-      case 32: return 'Space';
-      case 37: return 'Left';
-      case 38: return 'Up';
-      case 39: return 'Right';
-      case 40: return 'Down';
-      case 188: return 'Comma';
-      case 190: return 'Period';
-      case 191: return 'Slash';
-      case 59: case 186: return 'Semicolon';
-      default:
-        if ((48 <= kc && kc <= 57) || (65 <= kc && kc <= 90)) { // 0-9, A-Z
-          return String.fromCharCode(kc).toLowerCase();
-        } else if (96 <= kc && kc <= 105) { // numpad 0-9
-          return String.fromCharCode(kc - 48);
-        } else {
-          return null;
-        }
-    }})();
+
+    function keyName(kc) {
+      if (kc in KEY_NAMES) return KEY_NAMES[kc];
+      if ((48 <= kc && kc <= 57) || (65 <= kc && kc <= 90)) { // 0-9, A-Z
+        return String.fromCharCode(kc).toLowerCase();
+      }
+      if (96 <= kc && kc <= 105) { // numpad 0-9
+        return String.fromCharCode(kc - 48);
+      }
+      return null;
+    }
+
+    let key = keyName(e.keyCode);
     if (key) {
       if (e.altKey) {   key = 'Alt+'   + key; }
       if (e.ctrlKey) {  key = 'Ctrl+'  + key; }

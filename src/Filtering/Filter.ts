@@ -129,14 +129,9 @@ var Filter = {
 
           // Overrule the `Show Stubs` setting.
           // Defaults to stub showing.
-          stub = (() => { switch (options.match(/(?:^|;)\s*stub:(yes|no)/)?.[1]) {
-            case 'yes':
-              return true;
-            case 'no':
-              return false;
-            default:
-              return Conf.Stubs;
-          } })();
+          const STUB_VALUES = { yes: true, no: false };
+          const stubOption = options.match(/(?:^|;)\s*stub:(yes|no)/)?.[1];
+          const stub = stubOption in STUB_VALUES ? STUB_VALUES[stubOption] : Conf.Stubs;
 
           // Desktop notification
           noti = /(?:^|;)\s*notify/.test(options);

@@ -22,8 +22,7 @@ var QuoteThreading = {
     this.threadNewLink = $.el('span', {
       className: 'brackets-wrap threadnewlink',
       hidden: true
-    }
-    );
+    });
     $.extend(this.threadNewLink, {innerHTML: "<a href=\"javascript:;\">Thread New Posts</a>"});
 
     this.input = $('input', this.controls);
@@ -37,8 +36,7 @@ var QuoteThreading = {
     Header.menu.addEntry(this.entry = {
       el:    this.controls,
       order: 99
-    }
-    );
+    });
 
     Callbacks.Thread.push({
       name: 'Quote Threading',
@@ -133,7 +131,7 @@ var QuoteThreading = {
 
     const descendants = QuoteThreading.descendants(post);
     if (!Unread.posts.has(parent.ID)) {
-      if ((function() { for (var x of descendants) { if (Unread.posts.has(x.ID)) { return true; } } })()) {
+        if (descendants.some(x => Unread.posts.has(x.ID))) {
         QuoteThreading.threadNewLink.hidden = false;
         return false;
       }

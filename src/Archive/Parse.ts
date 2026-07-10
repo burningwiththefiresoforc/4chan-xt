@@ -99,6 +99,16 @@ export const parseArchivePost = (data: RawArchivePost) => {
   });
   comment = { innerHTML: E.cat(comment), [isEscaped]: true };
 
+  // https://github.com/pleebe/FoolFuuka/blob/bf4224eed04637a4d0bd4411c2bf5f9945dfec0b/assets/themes/foolz/foolfuuka-theme-fuuka/src/Partial/Board.php#L77
+  const CAPCODES = {
+    M: 'Mod',
+    A: 'Admin',
+    D: 'Developer',
+    V: 'Verified',
+    F: 'Founder',
+    G: 'Manager',
+  };
+
   const o = {
     ID: data.num,
     threadID: data.thread_num,
@@ -110,17 +120,7 @@ export const parseArchivePost = (data: RawArchivePost) => {
       email: data.email,
       name: data.name || '',
       tripcode: data.trip,
-      capcode: (() => {
-        switch (data.capcode) {
-          // https://github.com/pleebe/FoolFuuka/blob/bf4224eed04637a4d0bd4411c2bf5f9945dfec0b/assets/themes/foolz/foolfuuka-theme-fuuka/src/Partial/Board.php#L77
-          case 'M': return 'Mod';
-          case 'A': return 'Admin';
-          case 'D': return 'Developer';
-          case 'V': return 'Verified';
-          case 'F': return 'Founder';
-          case 'G': return 'Manager';
-        }
-      })(),
+      capcode: CAPCODES[data.capcode],
       uniqueID: data.poster_hash,
       flagCode: data.poster_country,
       flagCodeTroll: data.troll_country_code,
