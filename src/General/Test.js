@@ -66,9 +66,7 @@ const Test = {
       $.rm(el);
     }
     for (el of $$('a[href]', root2)) {
-      var {
-        href
-      } = el;
+      var {href} = el;
       href = href.replace(/(^\w+:\/\/boards\.4chan(?:nel)?\.org\/[^\/]+\/thread\/\d+)\/.*/, '$1');
       el.setAttribute('href', href);
     }

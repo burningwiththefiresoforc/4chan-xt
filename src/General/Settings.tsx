@@ -206,8 +206,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
 
     for (var keyFS in Config.main) {
       var obj = Config.main[keyFS];
-      var fs = $.el('fieldset',
-        { innerHTML: `<legend>${keyFS}</legend>` });
+      var fs = $.el('fieldset', { innerHTML: `<legend>${keyFS}</legend>` });
       addCheckboxes(fs, obj);
       if (keyFS === 'Posting and Captchas') {
         $.add(fs, $.el('p',
@@ -417,12 +416,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         }
       }
     }
-    if (compareString < '00001.00014.00016.00001') {
-      if (data.archiveLists != null) {
-        set('archiveLists', data.archiveLists.replace('https://mayhemydg.github.io/archives.json/archives.json', 'https://nstepien.github.io/archives.json/archives.json'));
-      }
-    }
-    if (compareString < '00001.00014.00016.00007') {
+    if (compareString < '00001.00014.00022.00003') {
       if (data.sauces != null) {
         set('sauces', data.sauces.replace(
           /https:\/\/www\.deviantart\.com\/gallery\/#\/d%\$1%\$2;regexp:\/\^\\w\+_by_\\w\+\[_-\]d\(\[\\da-z\]\{6\}\)\\b\|\^d\(\[\\da-z\]\{6\}\)-\[\\da-z\]\{8\}-\//g,
@@ -430,6 +424,12 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         ).replace(
           /\/\/imgops\.com\/%URL/g,
           '//imgops.com/start?url=%URL'
+        ).replace(
+          /^#?\s*https:\/\/www\.google\.com\/searchbyimage\?image_url=%(IMG|T?URL)&safe=off(?=$|;)/mg,
+          'https://www.google.com/searchbyimage?sbisrc=4chanx&image_url=%$1&safe=off'
+        ).replace(
+          /^#?\s*https:\/\/lens\.google\.com\/uploadbyurl\?url=%(IMG|T?URL)(?=$|;)/m,
+          'https://www.google.com/searchbyimage?sbisrc=4chanx&image_url=%$1&safe=off'
         ));
       }
     }
@@ -440,15 +440,9 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     }
     if (compareString < '00001.00014.00020.00004') {
       if (data.archiveLists != null) {
-        set('archiveLists', data.archiveLists.replace('https://nstepien.github.io/archives.json/archives.json', 'https://4chenz.github.io/archives.json/archives.json'));
-      }
-    }
-    if (compareString < '00001.00014.00022.00003') {
-      if (data.sauces) {
-        set('sauces', data.sauces.replace(/^#?\s*https:\/\/www\.google\.com\/searchbyimage\?image_url=%(IMG|T?URL)&safe=off(?=$|;)/mg, 'https://www.google.com/searchbyimage?sbisrc=4chanx&image_url=%$1&safe=off'));
-        if (compareString === '00001.00014.00022.00002' && !/\bsbisrc=/.test(data.sauces)) {
-          set('sauces', data.sauces.replace(/^#?\s*https:\/\/lens\.google\.com\/uploadbyurl\?url=%(IMG|T?URL)(?=$|;)/m, 'https://www.google.com/searchbyimage?sbisrc=4chanx&image_url=%$1&safe=off'));
-        }
+        set('archiveLists', data.archiveLists
+          .replace('https://mayhemydg.github.io/archives.json/archives.json', 'https://4chenz.github.io/archives.json/archives.json')
+          .replace('https://nstepien.github.io/archives.json/archives.json', 'https://4chenz.github.io/archives.json/archives.json'));
       }
     }
     if (compareString < '00002.00003.00001.00000') {

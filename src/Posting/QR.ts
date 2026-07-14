@@ -566,9 +566,7 @@ var QR = {
     QR.nodes.el.classList.add('dump');
   },
 
-  getFile() {
-    $.event('QRFile', QR.selected?.file);
-  },
+  getFile() { $.event('QRFile', QR.selected?.file); },
 
   drawFile(e) {
     const file = QR.selected?.file;
@@ -605,7 +603,7 @@ var QR = {
     // Let it drag anything from the page.
     const toggle = e.type === 'dragstart' ? $.off : $.on;
     toggle(d, 'dragover', QR.dragOver);
-    return toggle(d, 'drop', QR.dropFile);
+    toggle(d, 'drop', QR.dropFile);
   },
 
   dragOver(e) {

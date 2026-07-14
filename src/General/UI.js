@@ -301,7 +301,7 @@ export var dragstart = function (e) {
     o.move = touchmove.bind(o);
     o.up   = touchend.bind(o);
     $.on(d, 'touchmove', o.move);
-    return $.on(d, 'touchend touchcancel', o.up);
+    $.on(d, 'touchend touchcancel', o.up);
   } else { // mousedown
     o.move = drag.bind(o);
     o.up   = dragend.bind(o);
@@ -419,8 +419,7 @@ export var hover = function (e) {
 
   const top = this.isImage ?
     Math.max(0, (clientY * (this.clientHeight - height)) / this.clientHeight)
-  :
-    Math.max(0, Math.min(this.clientHeight - height, clientY - 120));
+  : Math.max(0, Math.min(this.clientHeight - height, clientY - 120));
 
   let threshold = this.clientWidth / 2;
   if (!this.isImage) { threshold = Math.max(threshold, this.clientWidth - 400); }

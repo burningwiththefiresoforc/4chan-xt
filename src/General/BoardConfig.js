@@ -18,11 +18,11 @@ var BoardConfig = {
     if (g.SITE.software !== 'yotsuba') { return; }
     const now = Date.now();
     if (now - (2 * HOUR) >= ((middle = Conf.boardConfig.lastChecked || 0)) || middle > now) {
-      return $.ajax(`${location.protocol}//a.4cdn.org/boards.json`,
+      $.ajax(`${location.protocol}//a.4cdn.org/boards.json`,
         {onloadend: this.load});
     } else {
       const {boards} = Conf.boardConfig;
-      return this.set(boards);
+      this.set(boards);
     }
   },
 

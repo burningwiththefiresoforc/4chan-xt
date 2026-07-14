@@ -351,6 +351,33 @@ var Header = {
     return a;
   },
 
+  applyToggle(condition, ...targets) {
+    for (const [el, ...classes] of targets) {
+      condition ? $.addClass(el, ...classes) : $.rmClass(el, ...classes);
+    }
+  },
+
+  setShortcutIcons(show) {
+    Header.shortcutToggler.checked = show;
+    Header.applyToggle(show, [doc, 'shortcut-icons']);
+  },
+
+  setBarFixed(fixed) {
+    Header.barFixedToggler.checked = fixed;
+    Header.applyToggle(fixed, [doc, 'fixed'], [Header.bar, 'dialog']);
+  },
+
+  setLinkJustify(centered) {
+    Header.linkJustifyToggler.checked = centered;
+    Header.applyToggle(centered, [doc, 'centered-links']);
+  },
+
+  hideBarOnScroll() {
+    const offsetY = window.scrollY;
+    Header.applyToggle(offsetY > (Header.previousOffset || 0), [Header.bar, 'autohide', 'scroll']);
+    return Header.previousOffset = offsetY;
+  },
+
   toggleBoardList() {
     const {bar}  = Header;
     const custom = $('#custom-board-list', bar);
@@ -358,15 +385,6 @@ var Header = {
     const showBoardList = !full.hidden;
     custom.hidden = !showBoardList;
     full.hidden   =  showBoardList;
-  },
-
-  setLinkJustify(centered) {
-    Header.linkJustifyToggler.checked = centered;
-    if (centered) {
-      $.addClass(doc, 'centered-links');
-    } else {
-      $.rmClass(doc, 'centered-links');
-    }
   },
 
   toggleLinkJustify() {
@@ -377,17 +395,6 @@ var Header = {
     $.set('Centered links', centered);
   },
 
-  setBarFixed(fixed) {
-    Header.barFixedToggler.checked = fixed;
-    if (fixed) {
-      $.addClass(doc, 'fixed');
-      $.addClass(Header.bar, 'dialog');
-    } else {
-      $.rmClass(doc, 'fixed');
-      $.rmClass(Header.bar, 'dialog');
-    }
-  },
-
   toggleBarFixed() {
     $.event('CloseMenu');
 
@@ -395,15 +402,6 @@ var Header = {
 
     Conf['Fixed Header'] = this.checked;
     $.set('Fixed Header',  this.checked);
-  },
-
-  setShortcutIcons(show) {
-    Header.shortcutToggler.checked = show;
-    if (show) {
-      $.addClass(doc, 'shortcut-icons');
-    } else {
-      $.rmClass(doc, 'shortcut-icons');
-    }
   },
 
   toggleShortcutIcons() {
@@ -449,16 +447,6 @@ var Header = {
     const hide = this.checked;
     $.cb.checked.call(this);
     Header.setHideBarOnScroll(hide);
-  },
-
-  hideBarOnScroll() {
-    const offsetY = window.pageYOffset;
-    if (offsetY > (Header.previousOffset || 0)) {
-      $.addClass(Header.bar, 'autohide', 'scroll');
-    } else {
-      $.rmClass(Header.bar,  'autohide', 'scroll');
-    }
-    return Header.previousOffset = offsetY;
   },
 
   setBarPosition(bottom) {
@@ -527,22 +515,18 @@ var Header = {
       x = Header.getBottomOf(root);
       if (Conf['Fixed Header'] && Conf['Header auto-hide on scroll'] && Conf['Bottom header']) {
         ({height} = Header.bar.getBoundingClientRect());
-        if (x <= 0) {
-          if (!Header.isHidden()) { x += height; }
-        } else {
-          if  (Header.isHidden()) { x -= height; }
-        }
+        const isHidden = Header.isHidden();
+        if (x <= 0 && !isHidden) x += height;
+        else if (x > 0 && isHidden) x -= height;
       }
       if (!needed || (x < 0)) { return window.scrollBy(0, -x); }
     } else {
       x = Header.getTopOf(root);
       if (Conf['Fixed Header'] && Conf['Header auto-hide on scroll'] && !Conf['Bottom header']) {
         ({height} = Header.bar.getBoundingClientRect());
-        if (x >= 0) {
-          if (!Header.isHidden()) { x += height; }
-        } else {
-          if  (Header.isHidden()) { x -= height; }
-        }
+        const isHidden = Header.isHidden();
+        if (x >= 0 && !isHidden) x += height;
+        else if (x < 0 && isHidden) x -= height;
       }
       if (!needed || (x < 0)) { return window.scrollBy(0,  x); }
     }
