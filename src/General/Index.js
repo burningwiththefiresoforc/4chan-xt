@@ -232,8 +232,8 @@ var Index = {
     });
 
     PageReady.ready(function() {
-      let pagelist;
-      if (pagelist = $('.pagelist')) {
+      let pagelist = $('.pagelist');
+      if (pagelist) {
         $.replace(pagelist, Index.pagelist);
       }
       $.rmClass(doc, 'index-loading');
@@ -266,7 +266,7 @@ var Index = {
     init() {
       if ((g.VIEW !== 'index') || !Conf.Menu || !Conf['Thread Hiding Link'] || !Index.enabledOn(g.BOARD)) { return; }
 
-      return Menu.menu.addEntry({
+      Menu.menu.addEntry({
         el: $.el('a', {
           href:      'javascript:;',
           className: 'has-shortcut-text'
@@ -475,10 +475,10 @@ var Index = {
 
     hoverAdjust() {
       // Prevent hovered catalog threads from going offscreen.
-      let x;
       if (!$.hasClass(doc, 'catalog-hover-expand')) { return; }
       const rect = this.post.getBoundingClientRect();
-      if (x = $.minmax(0, -rect.left, doc.clientWidth - rect.right)) {
+      let x = $.minmax(0, -rect.left, doc.clientWidth - rect.right);
+      if (x) {
         const {style} = this.post;
         style.left = `${x}px`;
         style.right = `${-x}px`;
@@ -499,9 +499,9 @@ var Index = {
   userPageNav(page) {
     Index.pushState({page});
     if (Conf['Refreshed Navigation']) {
-      return Index.update();
+      Index.update();
     } else {
-      return Index.pageLoad();
+      Index.pageLoad();
     }
   },
 
@@ -532,7 +532,7 @@ var Index = {
     const commands = hash.slice(1).split('/');
     const leftover = [];
     for (var command of commands) {
-      var mode, sort;
+      let mode, sort;
       if (mode = $.getOwn(Index.hashCommands.mode, command)) {
         state.mode = mode;
       } else if (command === 'index') {
@@ -819,7 +819,7 @@ var Index = {
 
     const timeEl = $('#index-last-refresh time', Index.navLinks);
     timeEl.dataset.utc = Date.parse(this.getResponseHeader('Last-Modified'));
-    return RelativeDates.update(timeEl);
+    RelativeDates.update(timeEl);
   },
 
   parse(pages) {
@@ -1006,9 +1006,9 @@ var Index = {
   },
 
   buildCatalogReplies(thread) {
-    let lastReplies;
     const {nodes} = thread.catalogView;
-    if (!(lastReplies = Index.liveThreadDict[thread.ID].last_replies)) { return; }
+    let lastReplies = Index.liveThreadDict[thread.ID].last_replies;
+    if (!lastReplies) return;
 
     const replies = [];
     for (var data of lastReplies) {

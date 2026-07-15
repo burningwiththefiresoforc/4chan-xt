@@ -1848,8 +1848,9 @@ class post {
   lock(lock = true) {
     this.isLocked = lock;
     if (this !== QR.selected) { return; }
-    for (const name of ['thread', 'name', 'email', 'sub', 'com', 'fileButton', 'filename', 'spoiler', 'flag']) {
-      QR.nodes[name]?.setAttribute('disabled', lock);
+      for (const name of ['thread', 'name', 'email', 'sub', 'com', 'fileButton', 'filename', 'spoiler', 'flag']) {
+      let node = QR.nodes[name];
+      if (node) node.disabled = lock;
     }
     this.nodes.rm.style.visibility = lock ? 'hidden' : '';
     this.nodes.spoiler.disabled = lock;

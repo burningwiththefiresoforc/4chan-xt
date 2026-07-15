@@ -107,10 +107,10 @@ var Header = {
     $.onExists(doc, `${g.SITE.selectors.boardList} + *`, Header.generateFullBoardList);
 
     PageReady.ready(function() {
-      let footer;
-      if ((g.SITE.software === 'yotsuba') && !(footer = $.id('boardNavDesktopFoot'))) {
-        let absbot;
-        if (!(absbot = $.id('absbot'))) { return; }
+      let footer = $.id('boardNavDesktopFoot');
+      if ((g.SITE.software === 'yotsuba') && !footer) {
+        let absbot = $.id('absbot');
+        if (!absbot) return;
         footer = $.id('boardNavDesktop').cloneNode(true);
         footer.id = 'boardNavDesktopFoot';
         $('#navtopright',        footer).id = 'navbotright';
@@ -149,9 +149,8 @@ var Header = {
   toggle: $.el('div', {id: 'scroll-marker'}),
 
   setBoardList() {
-    let boardList;
-    Header.boardList = (boardList = $.el('span',
-      {id: 'board-list'}));
+    let boardList = $.el('span', {id: 'board-list'});
+    Header.boardList = boardList;
     $.extend(boardList, {innerHTML: "<span id=\"custom-board-list\"></span><span id=\"full-board-list\" hidden><span class=\"hide-board-list-container brackets-wrap\"><a href=\"javascript:;\" class=\"hide-board-list-button\">&nbsp;-&nbsp;</a></span> <span class=\"boardList\"></span></span>"});
 
     const btn = $('.hide-board-list-button', boardList);
