@@ -44,9 +44,9 @@ const SWTinyboard = {
   ],
 
   detect() {
-    for (var script of $$('script:not([src])', d.head)) {
-      var m;
-      if (m = script.textContent.match(/\bvar configRoot=(".*?")/)) {
+    for (const script of $$('script:not([src])', d.head)) {
+      let m = script.textContent.match(/\bvar configRoot=(".*?")/);
+      if (m) {
         var properties = dict();
         try {
           var root = JSON.parse(m[1]);
@@ -63,8 +63,8 @@ const SWTinyboard = {
   },
 
   awaitBoard(cb) {
-    let reactUI;
-    if (reactUI = $.id('react-ui')) {
+    let reactUI = $.id('react-ui');
+    if (reactUI) {
       const s = (this.selectors = Object.create(this.selectors));
       s.boardFor = {index: '.page-container'};
       s.thread = 'div[id^="thread_"]';
@@ -229,8 +229,8 @@ $\
 
   preParsingFixes(board) {
     // fixes effects of unclosed link in announcement
-    let broken;
-    if (broken = $('a > input[name="board"]', board)) {
+    let broken = $('a > input[name="board"]', board);
+    if (broken) {
       return $.before(broken.parentNode, broken);
     }
   },
@@ -281,8 +281,7 @@ $\
       $.extend(file, {
         thumbURL:  /\/static\//.test(thumb.src) && $.isImage(link.href) ? link.href : thumb.src,
         isSpoiler: /^Spoiler/i.test(info[1] || '') || (link.textContent === 'Spoiler Image')
-      }
-      );
+      });
     }
     return true;
   },

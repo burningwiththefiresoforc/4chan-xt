@@ -1395,14 +1395,12 @@ var QR = {
     },
 
     categorize(post) {
-      if (post.thread === 'new') {
-        return { type: 'thread' };
-      } else {
-        return {
-          type: !!post.file ? 'image' : 'reply',
-          threadID: +post.thread
-        };
-      }
+      if (post.thread === 'new') return { type: 'thread' };
+
+      return {
+        type: !!post.file ? 'image' : 'reply',
+        threadID: +post.thread
+      };
     },
 
     mergeChange(data, scope, id, value) {
@@ -1850,11 +1848,8 @@ class post {
   lock(lock = true) {
     this.isLocked = lock;
     if (this !== QR.selected) { return; }
-    for (var name of ['thread', 'name', 'email', 'sub', 'com', 'fileButton', 'filename', 'spoiler', 'flag']) {
-      var node;
-      if ((node = QR.nodes[name])) {
-        node.disabled = lock;
-      }
+    for (const name of ['thread', 'name', 'email', 'sub', 'com', 'fileButton', 'filename', 'spoiler', 'flag']) {
+      QR.nodes[name]?.setAttribute('disabled', lock);
     }
     this.nodes.rm.style.visibility = lock ? 'hidden' : '';
     this.nodes.spoiler.disabled = lock;
@@ -1882,10 +1877,9 @@ class post {
 
   load() {
     // Load this post's values.
-
-    for (var name of ['thread', 'name', 'email', 'sub', 'com', 'filename', 'flag']) {
-      var node;
-      if (!(node = QR.nodes[name])) { continue; }
+    for (const name of ['thread', 'name', 'email', 'sub', 'com', 'filename', 'flag']) {
+      let node = QR.nodes[name];
+      if (!node) continue;
       node.value = this[name] || node.dataset.default || '';
     }
 
@@ -1928,12 +1922,12 @@ class post {
   }
 
   forceSave() {
-    if (this !== QR.selected) { return; }
+    if (this !== QR.selected) return;
     // Do this in case people use extensions
     // that do not trigger the `input` event.
-    for (var name of ['thread', 'name', 'email', 'sub', 'com', 'filename', 'spoiler', 'flag']) {
-      var node;
-      if (!(node = QR.nodes[name])) { continue; }
+    for (const name of ['thread', 'name', 'email', 'sub', 'com', 'filename', 'spoiler', 'flag']) {
+      let node = QR.nodes[name];
+      if (!node) continue;
       this.save(node, true);
     }
   }
@@ -1970,15 +1964,9 @@ class post {
   static rmErrored(e) {
     e.stopPropagation();
     for (let i = QR.posts.length - 1; i >= 0; i--) {
-      var errors;
-      var post = QR.posts[i];
-      if ((errors = post.errors)) {
-        for (var error of errors) {
-          if (doc.contains(error)) {
-            post.rm();
-            break;
-          }
-        }
+      const post = QR.posts[i];
+      if (post.errors?.some(error => doc.contains(error))) {
+        post.rm();
       }
     }
   }

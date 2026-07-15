@@ -133,8 +133,7 @@ var QuoteYou = {
 
   cb: {
     seek(type) {
-      let highlighted, post;
-      let result;
+      let highlighted, post, result;
       const {highlight} = g.SITE.classes;
       if (highlighted = $(`.${highlight}`)) { $.rmClass(highlighted, highlight); }
 

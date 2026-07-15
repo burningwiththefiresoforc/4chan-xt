@@ -227,8 +227,7 @@ var Main = {
       $.asap(docSet, function() {
 
         // Don't hide the local storage warning behind a settings panel.
-        if ($.cantSet) {
-          // pass
+        if ($.cantSet) { // pass
 
         // Fresh install
         } else if ((items.previousversion == null)) {
@@ -309,14 +308,14 @@ var Main = {
 
     if (g.VIEW === 'file') {
       $.asap((() => d.readyState !== 'loading'), function() {
-        let video;
+        let video = $('video');
         if ((g.SITE.software === 'yotsuba') && Conf['404 Redirect'] && g.SITE.is404?.()) {
           const pathname = location.pathname.split(/\/+/);
           return Redirect.navigate('file', {
             boardID:  g.BOARD.ID,
             filename: pathname[pathname.length - 1]
           });
-        } else if (video = $('video')) {
+        } else if (video) {
           if (Conf['Volume in New Tab']) {
             Volume.setup(video);
           }
@@ -506,9 +505,9 @@ var Main = {
   },
 
   initThread() {
-    let board;
     const s = g.SITE.selectors;
-    if (board = $((s.boardFor?.[g.VIEW] || s.board))) {
+    let board = $((s.boardFor?.[g.VIEW] || s.board));
+    if (board) {
       const threads = [];
       const posts   = [];
       const errors  = [];
@@ -649,9 +648,9 @@ var Main = {
   },
 
   initCatalog() {
-    let board;
     const s = g.SITE.selectors.catalog;
-    if (s && (board = $(s.board))) {
+    let board = $(s.board);
+    if (s && board) {
       const threads = [];
       const errors  = [];
 
@@ -705,8 +704,7 @@ var Main = {
   },
 
   callbackNodes(klass, nodes) {
-    let node;
-    let i = 0;
+    let node, i = 0;
     const cb = Callbacks[klass];
     while ((node = nodes[i++])) {
       cb.execute(node);
@@ -778,8 +776,7 @@ var Main = {
       return [this.textContent, logs.hidden] = this.textContent === 'show' ? ['hide', false] : ['show', true];
     });
 
-    var logs = $.el('div',
-      {hidden: true});
+    var logs = $.el('div', {hidden: true});
     for (error of errors) {
       $.add(logs, Main.parseError(error));
     }

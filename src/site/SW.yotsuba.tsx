@@ -697,9 +697,7 @@ const SWYotsuba = {
       if (data.com) {
         excerpt = this.parseCommentDisplay(data.com).replace(/>>\d+/g, '').trim().replace(/\n+/g, ' // ');
       }
-      if (data.ext) {
-        if (!excerpt) { excerpt = `${$.unescape(data.filename)}${data.ext}`; }
-      }
+      if (data.ext) { excerpt ||= `${$.unescape(data.filename)}${data.ext}`; }
       if (data.com) {
         if (!excerpt) { excerpt = $.unescape(data.com.replace(/<br\b[^<]*>/gi, ' // ')); }
       }

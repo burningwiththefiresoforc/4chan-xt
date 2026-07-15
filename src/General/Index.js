@@ -421,7 +421,7 @@ var Index = {
         $.event('change', null, input);
         if (thread = Get.threadFromNode(e.target)) {
           Index.cb.catalogReplies.call(thread);
-          return Index.cb.hoverAdjust.call(thread.OP.nodes);
+          Index.cb.hoverAdjust.call(thread.OP.nodes);
         }
       }
     },

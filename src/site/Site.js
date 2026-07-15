@@ -24,9 +24,9 @@ var Site = {
       cb();
     }
     $.onExists(doc, 'body', () => {
-      for (var software in SW) {
-        var changes;
-        if (changes = SW[software].detect?.()) {
+      for (let software in SW) {
+        let changes = SW[software].detect?.();
+        if (changes) {
           changes.software = software;
           hostname = location.hostname.replace(/^www\./, '');
           var properties = (Conf.siteProperties[hostname] || (Conf.siteProperties[hostname] = dict()));
@@ -56,8 +56,8 @@ var Site = {
       hostname = hostname.replace(/^[^.]*\.?/, '');
     }
     if (hostname) {
-      let canonical;
-      if (canonical = Conf.siteProperties[hostname].canonical) { hostname = canonical; }
+      let canonical = Conf.siteProperties[hostname].canonical;
+      if (canonical) { hostname = canonical; }
     }
     return hostname;
   },
@@ -72,9 +72,7 @@ var Site = {
       var site;
       var properties = Conf.siteProperties[ID];
       if (properties.canonical) { continue; }
-      var {
-        software
-      } = properties;
+      var {software} = properties;
       if (!software || !$.hasOwn(SW, software)) { continue; }
       g.sites[ID] = (site = Object.create(SW[software]));
       $.extend(site, {ID, siteID: ID, properties, software});

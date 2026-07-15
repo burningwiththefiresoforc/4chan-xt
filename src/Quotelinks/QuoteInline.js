@@ -90,10 +90,8 @@ var QuoteInline = {
     $.addClass(qroot, 'hasInline');
     new Fetcher(boardID, threadID, postID, inline, quoter);
 
-    if (!(
-      (post = g.posts.get(`${boardID}.${postID}`)) &&
-      (context.thread === post.thread)
-    )) { return; }
+    post = g.posts.get(`${boardID}.${postID}`);
+    if (!post || context.thread !== post.thread) return;
 
     // Hide forward post if it's a backlink of a post in this thread.
     // Will only unhide if there's no inlined backlinks of it anymore.
@@ -109,8 +107,7 @@ var QuoteInline = {
   },
 
   rm(quotelink, boardID, threadID, postID, context) {
-    let el;
-    let inlined;
+    let el, inlined;
     const isBacklink = $.hasClass(quotelink, 'backlink');
     // Select the corresponding inlined quote, and remove it.
     let root = QuoteInline.findRoot(quotelink, isBacklink);
@@ -123,7 +120,7 @@ var QuoteInline = {
     if (!$('.inline', qroot)) { $.rmClass(qroot, 'hasInline'); }
 
     // Stop if it only contains text.
-    if (!(el = root.firstElementChild)) { return; }
+    if (!(el = root.firstElementChild)) return;
 
     // Dereference clone.
     const post = g.posts.get(`${boardID}.${postID}`);

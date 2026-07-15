@@ -65,8 +65,8 @@ const Embedding = {
       i = 0;
       items = $$('.linkify', post.nodes.comment);
       while ((el = items[i++])) {
-        let data;
-        if (data = Embedding.services(el)) {
+        let data = Embedding.services(el);
+        if (data) {
           Embedding.preview(data);
         }
       }
@@ -75,10 +75,10 @@ const Embedding = {
   },
 
   process(link, post) {
-    let data;
+    let data = Embedding.services(link);
     if (!Conf.Embedding && !Conf['Link Title'] && !Conf['Cover Preview']) { return; }
     if ($.x('ancestor::pre', link)) { return; }
-    if (data = Embedding.services(link)) {
+    if (data) {
       data.post = post;
       if (Conf.Embedding && (g.VIEW !== 'archive')) { Embedding.embed(data); }
       if (Embedding.shouldFetchTitles()) Embedding.title(data);
@@ -89,8 +89,8 @@ const Embedding = {
   services(link) {
     const {href} = link;
     for (const type of Embedding.ordered_types) {
-      let match;
-      if (match = type.regExp.exec(href)) {
+      let match = type.regExp.exec(href);
+      if (match) {
         return {key: type.key, uid: match[1], options: match[2], link};
       }
     }
@@ -161,9 +161,9 @@ const Embedding = {
   },
 
   title(data) {
-    let service;
     const {key, uid, options, link, post} = data;
-    if (!(service = Embedding.types[key].title)) { return; }
+    let service = Embedding.types[key].title;
+    if (!service) return;
     $.addClass(link, key.toLowerCase());
     if (service.batchSize) {
       (service.queue || (service.queue = [])).push(data);
@@ -187,9 +187,9 @@ const Embedding = {
   },
 
   preview(data) {
-    let service;
     const {key, uid, link} = data;
-    if (!(service = Embedding.types[key].preview)) { return; }
+    let service = Embedding.types[key].preview;
+    if (!service) return;
     $.on(link, 'mouseover', function(e) {
       const src = service.url(uid);
       const {height} = service;
@@ -210,13 +210,13 @@ const Embedding = {
     click(e) {
       e.preventDefault();
       if (!$.hasClass(this, 'embedded') && (Conf['Floating Embeds'] || $.hasClass(doc, 'catalog-mode'))) {
-        let div;
-        if (!(div = Embedding.media.firstChild)) { return; }
+        let div = Embedding.media.firstChild;
+        if (!div) return;
         $.replace(div, Embedding.cb.embed(this));
         Embedding.lastEmbed = Get.postFromNode(this).nodes.root;
-        return $.rmClass(Embedding.dialog, 'empty');
+        $.rmClass(Embedding.dialog, 'empty');
       } else {
-        return Embedding.cb.toggle.call(this);
+        Embedding.cb.toggle.call(this);
       }
     },
 
@@ -336,8 +336,8 @@ const Embedding = {
       key: 'PeerTube',
       regExp: /^(\w+:\/\/[^\/]+\/videos\/watch\/\w{8}-\w{4}-\w{4}-\w{4}-\w{12})(.*)/,
       el(a) {
-        let start;
-        const options = (start = a.dataset.options.match(/[?&](start=\w+)/)) ? `?${start[1]}` : '';
+        let start = a.dataset.options.match(/[?&](start=\w+)/);
+        const options = start ? `?${start[1]}` : '';
         const el = $.el('iframe',
           {src: a.dataset.uid.replace('/videos/watch/', '/videos/embed/') + options});
         el.setAttribute("allowfullscreen", "true");
@@ -371,8 +371,8 @@ const Embedding = {
       key: 'Dailymotion',
       regExp:  /^\w+:\/\/(?:(?:www\.)?dailymotion\.com\/(?:embed\/)?video|dai\.ly)\/([A-Za-z0-9]+)[^?]*(.*)/,
       el(a) {
-        let start;
-        const options = (start = a.dataset.options.match(/[?&](start=\d+)/)) ? `?${start[1]}` : '';
+        let start = a.dataset.options.match(/[?&](start=\d+)/);
+        const options = start ? `?${start[1]}` : '';
         const el = $.el('iframe',
           {src: `//www.dailymotion.com/embed/video/${a.dataset.uid}${options}`});
         el.setAttribute("allowfullscreen", "true");
@@ -499,9 +499,9 @@ const Embedding = {
       key: 'Pastebin',
       regExp: /^\w+:\/\/(?:\w+\.)?pastebin\.com\/(?!u\/)(?:[\w.]+(?:\/|\?i\=))?(\w+)/,
       el(a) {
-        let div;
-        return div = $.el('iframe',
+        let div = $.el('iframe',
           {src: `//pastebin.com/embed_iframe/${a.dataset.uid}`});
+        return div
       }
     }
     , {
@@ -549,10 +549,10 @@ const Embedding = {
         if (m[1] || m[2]) {
           url = `//clips.twitch.tv/embed?clip=${m[3]}&parent=${location.hostname}`;
         } else {
-          let time;
           m = a.dataset.uid.match(/(\w+)(?:\/(?:v\/)?(\d+))?/);
           url = `//player.twitch.tv/?${m[2] ? `video=v${m[2]}` : `channel=${m[1]}`}&autoplay=false&parent=${location.hostname}`;
-          if (time = a.dataset.href.match(/\bt=(\w+)/)) {
+          let time = a.dataset.href.match(/\bt=(\w+)/);
+          if (time) {
             url += `&time=${time[1]}`;
           }
         }
@@ -636,8 +636,7 @@ const Embedding = {
       key: 'YouTube',
       regExp: /^\w+:\/\/(?:youtu\.be\/|[\w.]*youtube[\w.]*\/.*(?:v=|\bembed\/|\bv\/|shorts\/|live\/|watch\/))([\w\-]{11})(.*)/,
       el(a) {
-        let start = a.dataset.options.match(/\b(?:star)?t\=(\w+)/);
-        if (start) { start = start[1]; }
+        let start = a.dataset.options.match(/\b(?:star)?t\=(\w+)/)?.[1];
         if (start && !/^\d+$/.test(start)) {
           start += ' 0h0m0s';
           start = (3600 * start.match(/(\d+)h/)[1]) + (60 * start.match(/(\d+)m/)[1]) + (1 * start.match(/(\d+)s/)[1]);

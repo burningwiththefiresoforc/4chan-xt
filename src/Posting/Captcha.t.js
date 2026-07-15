@@ -14,8 +14,7 @@ const CaptchaT = {
     $.after(QR.nodes.com.parentNode, root);
   },
 
-  moreNeeded() {
-  },
+  moreNeeded() {},
 
   getThread() {
     return {

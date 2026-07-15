@@ -94,7 +94,6 @@ var Quotify = {
         $.add(a, Post.deadMark.cloneNode(true));
         $.extend(a.dataset, {boardID, threadID: post.thread.ID, postID});
       }
-
     } else {
       const redirect = Redirect.to('thread', {boardID, threadID: 0, postID});
       const fetchable = Redirect.to('post', {boardID, postID});

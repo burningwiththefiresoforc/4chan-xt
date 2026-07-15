@@ -540,7 +540,7 @@ var Header = {
     let {top} = root.getBoundingClientRect();
     if (Conf['Fixed Header'] && !Conf['Bottom Header']) {
       const headRect = Header.toggle.getBoundingClientRect();
-      top     -= headRect.top + headRect.height;
+      top -= headRect.top + headRect.height;
     }
     return top;
   },
@@ -625,7 +625,7 @@ var Header = {
     $.on(authorize, 'click', () => Notification.requestPermission(function(status) {
       Header.areNotificationsEnabled = status === 'granted';
       if (status === 'default') { return; }
-      return notice.close();
+      notice.close();
     }));
     $.on(disable, 'click', function() {
       $.set('Desktop Notifications', false);

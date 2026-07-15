@@ -71,15 +71,11 @@ const Linkify = {
           test.lastIndex = 0;
 
           while (saved = snapshot.snapshotItem(i++)) {
-            let end;
             if ((saved.nodeName === 'BR') || ((saved.parentElement.nodeName === 'P') && !saved.previousSibling)) {
-              let part1, part2;
-              if (
+              let part1 = word.match(/(https?:\/\/)?([a-z\d-]+\.)*[a-z\d-]+$/i);
+              let part2 = snapshot.snapshotItem(i)?.data?.match(/^(\.[a-z\d-]+)*\//i);
+              if ( part1 && part2 && ((part1[0] + part2[0]).search(Linkify.regString) === 0)) {
                 // link deliberately split
-                (part1 = word.match(/(https?:\/\/)?([a-z\d-]+\.)*[a-z\d-]+$/i)) &&
-                (part2 = snapshot.snapshotItem(i)?.data?.match(/^(\.[a-z\d-]+)*\//i)) &&
-                ((part1[0] + part2[0]).search(Linkify.regString) === 0)
-              ) {
                 continue;
               } else {
                 break;
@@ -91,7 +87,8 @@ const Linkify = {
             endNode  = saved;
             ({data}   = saved);
 
-            if (end = space.exec(data)) {
+            let end = space.exec(data);
+            if (end) {
               // Set our snapshot and regex to start on this node at this position when the loop resumes
               word += data.slice(0, end.index);
               test.lastIndex = (length = end.index);
