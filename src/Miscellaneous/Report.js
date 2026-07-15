@@ -13,8 +13,8 @@ import { Conf, d, doc, g } from "../globals/globals";
 
 const Report = {
   init() {
-    let match;
-    if (!(match = location.search.match(/\bno=(\d+)/))) { return; }
+    let match = location.search.match(/\bno=(\d+)/);
+    if (!match) return;
     Captcha.replace.init();
     this.postID = +match[1];
     $.ready(this.ready);
@@ -37,8 +37,8 @@ const Report = {
   },
 
   fit(selector) {
-    let el;
-    if (!((el = $(selector, doc)) && (getComputedStyle(el).visibility !== 'hidden'))) { return; }
+    let el = $(selector, doc);
+    if (!(el && (getComputedStyle(el).visibility !== 'hidden'))) return;
     const dy = (el.getBoundingClientRect().bottom - doc.clientHeight) + 8;
     if (dy > 0) { window.resizeBy(0, dy); }
   },
@@ -122,8 +122,7 @@ const Report = {
   archiveResults(results) {
     const fieldset = $.id('archive-report');
     for (const [name, response] of results) {
-      const line = $.el('h3',
-        {className: 'archive-report-response'});
+      const line = $.el('h3', {className: 'archive-report-response'});
       if ('success' in response) {
         $.addClass(line, 'archive-report-success');
         line.textContent = `${name}: ${response.success}`;

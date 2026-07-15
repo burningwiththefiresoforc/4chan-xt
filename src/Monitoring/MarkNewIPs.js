@@ -24,10 +24,10 @@ var MarkNewIPs = {
   },
 
   onUpdate(e) {
-    let fullID;
     const {ipCount, postCount, newPosts, deletedPosts} = e.detail;
     if (ipCount == null) { return; }
 
+    let fullID;
     switch (ipCount - MarkNewIPs.ipCount) {
       case (postCount - MarkNewIPs.postCount) + deletedPosts.length:
         var i = MarkNewIPs.ipCount;

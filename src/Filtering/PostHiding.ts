@@ -272,9 +272,7 @@ var PostHiding = {
   },
 
   makeButton(post, type) {
-    const span = $.el('span', {
-      className: 'stub-icon',
-    });
+    const span = $.el('span', {className: 'stub-icon',});
     const a = $.el('a', {
       className: `${type}-post-button ${type}-reply-button`,
       href:      'javascript:;'

@@ -9,8 +9,7 @@ const RelativeDates = {
   INTERVAL: 30000,
 
   init() {
-    if (
-      (
+    if ((
         ['index', 'thread', 'archive'].includes(g.VIEW) &&
         ['Show', 'Both', 'BothRelativeFirst'].includes(Conf.RelativeTime)
       ) ||

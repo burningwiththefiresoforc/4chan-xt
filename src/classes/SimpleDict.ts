@@ -54,9 +54,9 @@ export default class SimpleDict<T> {
   }
 
   rm(key) {
-    let i;
     key = `${key}`;
-    if ((i = this.keys.indexOf(key)) !== -1) {
+    let i = this.keys.indexOf(key);
+    if (i !== -1) {
       this.keys.splice(i, 1);
       delete this[key];
     }

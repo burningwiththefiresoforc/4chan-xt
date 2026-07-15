@@ -124,8 +124,8 @@ var Settings = {
   },
 
   openSection() {
-    let selected;
-    if (selected = $('.tab-selected', Settings.dialog)) {
+    let selected = $('.tab-selected', Settings.dialog);
+    if (selected) {
       $.rmClass(selected, 'tab-selected');
     }
     $.addClass($(`.tab-${this.hyphenatedTitle}`, Settings.dialog), 'tab-selected');
@@ -366,8 +366,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
   },
 
   onImport() {
-    let file;
-    if (!(file = this.files[0])) { return; }
+    let file = this.files[0];
+    if (!file) return;
     this.value = null;
     const output = $('.imp-exp-result');
     if (!confirm('Your current settings will be entirely overwritten, are you sure?')) {
@@ -494,8 +494,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
   },
 
   selectFilter(this: HTMLSelectElement) {
-    let name: string;
     const div = this.nextElementSibling as HTMLElement;
+    let name: string;
     if ((name = this.value) !== 'guide') {
       if (!$.hasOwn(Config.filter, name)) { return; }
       $.rmAll(div);

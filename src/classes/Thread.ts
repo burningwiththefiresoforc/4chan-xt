@@ -62,9 +62,9 @@ export default class Thread {
   }
 
   setPage(pageNum) {
-    let icon;
     const {info, reply} = this.OP.nodes;
-    if (!(icon = $('.page-num', info))) {
+    let icon = $('.page-num', info);
+    if (!icon) {
       icon = $.el('span', {className: 'page-num'});
       $.replace(reply.parentNode.previousSibling, [$.tn(' '), icon, $.tn(' ')]);
     }

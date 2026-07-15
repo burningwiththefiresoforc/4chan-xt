@@ -84,9 +84,7 @@ var Filter = {
         if (line[0] === '#') continue;
 
         const regexpMatch = line.match(/\/(.*)\/(\w*)/);
-        if (!regexpMatch) {
-          continue;
-        }
+        if (!regexpMatch) continue;
 
         if (key === 'uniqueID' || key === 'MD5') {
           // MD5 filter will use strings instead of regular expressions.
@@ -201,9 +199,9 @@ var Filter = {
   // Parse comma-separated list of boards.
   // Sites can be specified by a beginning part of the site domain followed by a colon.
   parseBoards(boardsRaw: string) {
-    let boards;
     if (!boardsRaw) { return false; }
-    if (boards = Filter.parseBoardsMemo[boardsRaw]) { return boards; }
+    let boards = Filter.parseBoardsMemo[boardsRaw];
+    if (boards) { return boards; }
     boards = dict();
     let siteFilter = '';
     for (var boardID of boardsRaw.split(',')) {
@@ -374,12 +372,11 @@ var Filter = {
   },
 
   catalog() {
-    let url;
-    if (!(url = g.SITE.urls.catalogJSON?.(g.BOARD))) { return; }
+    let url = g.SITE.urls.catalogJSON?.(g.BOARD);
+    if (!url) return;
     Filter.catalogData = dict();
-    $.ajax(url,
-      {onloadend: Filter.catalogParse});
-    return Callbacks.CatalogThreadNative.push({
+    $.ajax(url, {onloadend: Filter.catalogParse});
+    Callbacks.CatalogThreadNative.push({
       name: 'Filter',
       cb:   this.catalogNode
     });

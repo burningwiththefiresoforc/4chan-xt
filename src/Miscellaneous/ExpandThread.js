@@ -34,9 +34,9 @@ var ExpandThread = {
   disconnect(refresh) {
     if ((g.VIEW === 'thread') || !Conf['Thread Expansion']) { return; }
     for (var threadID in ExpandThread.statuses) {
-      var oldReq;
-      var status = ExpandThread.statuses[threadID];
-      if (oldReq = status.req) {
+      let status = ExpandThread.statuses[threadID];
+      let oldReq = status.req;
+      if (oldReq) {
         delete status.req;
         oldReq.abort();
       }
@@ -79,8 +79,8 @@ var ExpandThread = {
   },
 
   expand(thread, a) {
-    let status;
-    ExpandThread.statuses[thread] = (status = {});
+    let status = {};
+    ExpandThread.statuses[thread] = status;
     a.textContent = g.SITE.Build.summaryText('...', ...a.textContent.match(/\d+/g));
     status.req = $.cache(g.SITE.urls.threadJSON({boardID: thread.board.ID, threadID: thread.ID}), function() {
       if (this !== status.req) { return; } // aborted
@@ -91,10 +91,10 @@ var ExpandThread = {
   },
 
   contract(thread, a, threadRoot) {
-    let oldReq;
     const status = ExpandThread.statuses[thread];
     delete ExpandThread.statuses[thread];
-    if (oldReq = status.req) {
+    let oldReq = status.req;
+    if (oldReq) {
       delete status.req;
       oldReq.abort();
       if (a) { a.textContent = g.SITE.Build.summaryText('+', ...a.textContent.match(/\d+/g)); }
@@ -133,9 +133,9 @@ var ExpandThread = {
     const postsRoot  = [];
     let filesCount = 0;
     for (var postData of req.response.posts) {
-      var post;
       if (postData.no === thread.ID) { continue; }
-      if ((post = thread.posts.get(postData.no)) && !post.isFetchedQuote) {
+      let post = thread.posts.get(postData.no);
+      if (post && !post.isFetchedQuote) {
         if ('file' in post) { filesCount++; }
         ({root} = post.nodes);
         postsRoot.push(root);

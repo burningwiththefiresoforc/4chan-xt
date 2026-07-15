@@ -20,8 +20,8 @@ const ExpandComment = {
   },
 
   node() {
-    let a;
-    if (a = $('.abbr > a:not([onclick])', this.nodes.comment)) {
+    let a = $('.abbr > a:not([onclick])', this.nodes.comment);
+    if (a) {
       $.on(a, 'click', ExpandComment.cb);
     }
   },
@@ -34,13 +34,13 @@ const ExpandComment = {
   },
 
   expand(post) {
-    let a;
     if (post.nodes.longComment && !post.nodes.longComment.parentNode) {
       $.replace(post.nodes.shortComment, post.nodes.longComment);
       post.nodes.comment = post.nodes.longComment;
       return;
     }
-    if (!(a = $('.abbr > a', post.nodes.comment))) { return; }
+    let a = $('.abbr > a', post.nodes.comment);
+    if (!a) return;
     a.textContent = `Post No.${post} Loading...`;
     return $.cache(g.SITE.urls.threadJSON({boardID: post.boardID, threadID: post.threadID}), function() { return ExpandComment.parse(this, a, post); });
   },
@@ -54,7 +54,6 @@ const ExpandComment = {
   },
 
   parse(req, a, post) {
-    let spoilerRange;
     const {status} = req;
     if (![200, 304].includes(status)) {
       a.textContent = status ? `Error ${req.statusText} (${status})` : 'Connection Error';
@@ -62,7 +61,8 @@ const ExpandComment = {
     }
 
     const { posts } = req.response;
-    if (spoilerRange = posts[0].custom_spoiler) {
+    let spoilerRange = posts[0].custom_spoiler;
+    if (spoilerRange) {
       g.SITE.Build.spoilerRange[g.BOARD] = spoilerRange;
     }
 

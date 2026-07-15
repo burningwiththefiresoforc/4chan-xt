@@ -42,8 +42,8 @@ var Quotify = {
   },
 
   parseArchivelink(link) {
-    let m;
-    if (!(m = link.pathname.match(/^\/([^/]+)\/thread\/S?(\d+)\/?$/))) { return; }
+    let m = link.pathname.match(/^\/([^/]+)\/thread\/S?(\d+)\/?$/);
+    if (!m) return;
     // if (['boards.4chan.org', 'boards.4channel.org'].includes(link.hostname)) { return; }
     if (link.hostname === 'boards.4chan.org') { return; }
     const boardID  = m[1];
@@ -127,10 +127,9 @@ var Quotify = {
   },
 
   fixDeadlink(deadlink) {
-    let el;
-    if (!(el = deadlink.previousSibling) || (el.nodeName === 'BR')) {
-      const green = $.el('span',
-        {className: 'quote'});
+    let el = deadlink.previousSibling;
+    if (!el || (el.nodeName === 'BR')) {
+      const green = $.el('span', {className: 'quote'});
       $.before(deadlink, green);
       $.add(green, deadlink);
     }

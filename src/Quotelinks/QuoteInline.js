@@ -78,7 +78,6 @@ var QuoteInline = {
   },
 
   add(quotelink, boardID, threadID, postID, context, quoter) {
-    let post;
     const isBacklink = $.hasClass(quotelink, 'backlink');
     const inline = $.el('div', {className: 'inline'});
     inline.dataset.fullID = `${boardID}.${postID}`;
@@ -90,7 +89,7 @@ var QuoteInline = {
     $.addClass(qroot, 'hasInline');
     new Fetcher(boardID, threadID, postID, inline, quoter);
 
-    post = g.posts.get(`${boardID}.${postID}`);
+    let post = g.posts.get(`${boardID}.${postID}`);
     if (!post || context.thread !== post.thread) return;
 
     // Hide forward post if it's a backlink of a post in this thread.

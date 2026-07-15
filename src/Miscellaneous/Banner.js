@@ -112,7 +112,6 @@ const Banner = {
   original: dict(),
 
   custom(child) {
-    let data;
     const {className} = child;
     child.title = `Ctrl/\u2318+click to edit board ${className.slice(5).toLowerCase()}`;
     child.spellcheck = false;
@@ -121,7 +120,8 @@ const Banner = {
       $.on(child, event, Banner.cb[event]);
     }
 
-    if (data = Banner.db.get({boardID: g.BOARD.ID, threadID: className})) {
+    let data = Banner.db.get({boardID: g.BOARD.ID, threadID: className});
+    if (data) {
       if (Conf['Persistent Custom Board Titles'] || (data.orig === child.textContent)) {
         Banner.original[className] = child.cloneNode(true);
         return child.textContent = data.title;

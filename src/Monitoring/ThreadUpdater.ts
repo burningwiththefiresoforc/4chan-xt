@@ -62,8 +62,8 @@ var ThreadUpdater = {
     const updateLink = $.el('span', {className: 'brackets-wrap updatelink'});
     $.extend(updateLink, {innerHTML: '<a href="javascript:;">Update</a>'});
     PageReady.ready(function() {
-      let navLinksBot;
-      if (navLinksBot = $('.navLinksBot')) { return $.add(navLinksBot, [$.tn(' '), updateLink]); }
+      let navLinksBot = $('.navLinksBot');
+      if (navLinksBot) { return $.add(navLinksBot, [$.tn(' '), updateLink]); }
     });
     $.on(updateLink.firstElementChild, 'click', this.update);
 
@@ -91,8 +91,7 @@ var ThreadUpdater = {
     subEntries.push({el: this.settings});
 
     Header.menu.addEntry(this.entry = {
-      el: $.el('span',
-        {textContent: 'Updater'}),
+      el: $.el('span', {textContent: 'Updater'}),
       order: 110,
       subEntries
     });
@@ -147,7 +146,7 @@ var ThreadUpdater = {
       ThreadUpdater.postID = e.detail.postID;
       ThreadUpdater.checkPostCount = 0;
       ThreadUpdater.outdateCount = 0;
-      return ThreadUpdater.setInterval();
+      ThreadUpdater.setInterval();
     },
 
     visibility() {
@@ -274,9 +273,9 @@ var ThreadUpdater = {
   },
 
   set(name, text, klass) {
-    let node;
     const el = ThreadUpdater[name];
-    if ((node = el.firstChild)) {
+    let node = el.firstChild;
+    if (node) {
       // Prevent the creation of a new DOM Node by setting the text node's data.
       node.data = text;
     } else {
@@ -297,10 +296,10 @@ var ThreadUpdater = {
   },
 
   update() {
-    let oldReq;
     clearTimeout(ThreadUpdater.timeoutID);
     ThreadUpdater.set('timer', '...', 'loading');
-    if (oldReq = ThreadUpdater.req) {
+    let oldReq = ThreadUpdater.req;
+    if (oldReq) {
       delete ThreadUpdater.req;
       oldReq.abort();
     }
@@ -313,17 +312,17 @@ var ThreadUpdater = {
   },
 
   updateThreadStatus(type, status) {
-    let hasChanged;
-    if (!(hasChanged = ThreadUpdater.thread[`is${type}`] !== status)) { return; }
+    let hasChanged = ThreadUpdater.thread[`is${type}`] !== status;
+    if (!hasChanged) return;
     ThreadUpdater.thread.setStatus(type, status);
     if ((type === 'Closed') && ThreadUpdater.thread.isArchived) { return; }
     const change = type === 'Sticky' ? status ? 'now a sticky'
       : 'not a sticky anymore' : status ? 'now closed' : 'not closed anymore';
-    return new Notice('info', `The thread is ${change}.`, 30);
+    new Notice('info', `The thread is ${change}.`, 30);
   },
 
   parse(req: XMLHttpRequest) {
-    let ID, ipCountEl, post;
+    let ipCountEl, post, ID;
     const postObjects = req.response.posts;
     const OP = postObjects[0];
     const thread: Thread = ThreadUpdater.thread;
@@ -415,7 +414,7 @@ var ThreadUpdater = {
       let firstPost = null;
       for (post of posts) {
         if (!QuoteThreading.insert(post)) {
-          if (!firstPost) { firstPost = post.nodes.root; }
+          firstPost ??= post.nodes.root;
           $.add(ThreadUpdater.root, post.nodes.root);
         }
       }

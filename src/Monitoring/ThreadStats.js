@@ -11,7 +11,6 @@ var ThreadStats = {
   postIndex: 0,
 
   init() {
-    let sc;
     if ((g.VIEW !== 'thread') || !Conf['Thread Stats']) { return; }
 
     if (Conf['Page Count in Stats']) {
@@ -30,15 +29,14 @@ var ThreadStats = {
       }
     }
 
+    let sc;
     if (Conf['Updater and Stats in Header']) {
       this.dialog = (sc = $.el('span', {
         id:    'thread-stats',
         title: statsTitle
-      }
-      ));
+      }));
       $.extend(sc, statsHTML);
       Header.addShortcut('stats', sc, 200);
-
     } else {
       this.dialog = (sc = UI.dialog('thread-stats',
         {innerHTML: "<div class=\"move\" title=\"" + E(statsTitle) + "\">" + (statsHTML).innerHTML + "</div>"}));
@@ -156,8 +154,8 @@ var ThreadStats = {
         ThreadStats.pageCountEl.textContent = purgePos;
         ThreadStats.pageCountEl.classList.toggle('warning', (purgePos === 1));
       } else {
-        let nThreads;
-        let i = (nThreads = 0);
+        let nThreads = 0;
+        let i = nThreads;
         for (page of this.response) {
           nThreads += page.threads.length;
         }

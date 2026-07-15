@@ -48,9 +48,9 @@ var ImageCommon = {
   },
 
   decodeError(file, fileObj) {
-    let message;
     if (file.error?.code !== MediaError.MEDIA_ERR_DECODE) { return false; }
-    if (!(message = $('.warning', fileObj.thumb.parentNode))) {
+    let message = $('.warning', fileObj.thumb.parentNode);
+    if (!message) {
       message = $.el('div', {className:   'warning'});
       $.after(fileObj.thumb, message);
     }
@@ -130,8 +130,7 @@ var ImageCommon = {
           href: URL.createObjectURL(blob),
           download,
           hidden: true
-        }
-        );
+        });
         $.add(d.body, a);
         a.click();
         return $.rm(a);

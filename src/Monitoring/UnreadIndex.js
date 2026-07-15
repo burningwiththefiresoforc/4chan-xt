@@ -84,7 +84,6 @@ var UnreadIndex = {
   },
 
   update(thread) {
-    let divider;
     const lastReadPost = UnreadIndex.lastReadPost[thread.fullID];
     let repliesShown = 0;
     let repliesRead = 0;
@@ -125,7 +124,8 @@ var UnreadIndex = {
       }));
       $.on(link, 'click', UnreadIndex.markRead);
     }
-    if (divider = $(g.SITE.selectors.threadDivider, thread.nodes.root)) { // divider inside thread as in Tinyboard
+    let divider = $(g.SITE.selectors.threadDivider, thread.nodes.root);
+    if (divider) { // divider inside thread as in Tinyboard
       $.before(divider, link);
     } else {
       $.add(thread.nodes.root, link);

@@ -43,8 +43,7 @@ var PSAHiding = {
       className:   'hide-announcement-button',
       href:        'javascript:;',
       textContent: '➖︎',
-    }
-    ));
+    }));
     Icon.set(btn, 'squareMinus');
     $.on(btn, 'click', PSAHiding.toggle);
     if (psa.firstChild?.tagName === 'HR') {

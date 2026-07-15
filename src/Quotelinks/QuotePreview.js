@@ -43,7 +43,6 @@ var QuotePreview = {
   },
 
   mouseover(e) {
-    let origin;
     if (($.hasClass(this, 'inlined') && !$.hasClass(doc, 'catalog-mode')) || !d.contains(this)) { return; }
 
     const {boardID, threadID, postID} = Get.postDataFromLink(this);
@@ -61,7 +60,8 @@ var QuotePreview = {
       cb: QuotePreview.mouseout
     });
 
-    if (Conf['Quote Highlighting'] && (origin = g.posts.get(`${boardID}.${postID}`))) {
+    let origin = g.posts.get(`${boardID}.${postID}`);
+    if (Conf['Quote Highlighting'] && origin) {
       const posts = [origin].concat(origin.clones);
       // Remove the clone that's in the qp from the array.
       posts.pop();
@@ -73,8 +73,8 @@ var QuotePreview = {
 
   mouseout() {
     // Stop if it only contains text.
-    let root;
-    if (!(root = this.el.firstElementChild)) { return; }
+    let root = this.el.firstElementChild;
+    if (!root) return;
 
     $.event('PostsRemoved', null, Header.hover);
 

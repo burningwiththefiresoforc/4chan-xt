@@ -69,7 +69,6 @@ var ReplyPruning = {
   },
 
   node() {
-    let middle;
     ReplyPruning.thread = this;
 
     if (this.isSticky) {
@@ -88,10 +87,11 @@ var ReplyPruning = {
     });
 
     // If we're linked to a post that we would hide, don't hide the posts in the first place.
+    let middle = this.posts.keys.indexOf(location.hash.slice(2));
     if (
       ReplyPruning.active &&
       /^#p\d+$/.test(location.hash) &&
-      (1 <= (middle = this.posts.keys.indexOf(location.hash.slice(2))) && middle < 1 + Math.max(ReplyPruning.total - +Conf["Max Replies"], 0))
+      (1 <= middle && middle < 1 + Math.max(ReplyPruning.total - +Conf["Max Replies"], 0))
     ) {
       ReplyPruning.active = (ReplyPruning.inputs.enabled.checked = false);
     }

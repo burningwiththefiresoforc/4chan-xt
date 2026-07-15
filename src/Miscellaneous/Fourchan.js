@@ -36,7 +36,7 @@ var Fourchan = {
       });
       g.posts.forEach(function(post) {
         if (post.callbacksExecuted) {
-          return Callbacks.Post.execute(post, ['Parse [code] tags'], true);
+          Callbacks.Post.execute(post, ['Parse [code] tags'], true);
         }
       });
       ExpandComment.callbacks.push(Fourchan.code);
@@ -76,10 +76,10 @@ var Fourchan = {
   },
 
   math() {
-    let wbrs;
     if (!/\[(math|eqn)\]/.test(this.nodes.comment.textContent)) { return; }
     // XXX <wbr> tags frequently break MathJax; remove them.
-    if ((wbrs = $$('wbr', this.nodes.comment)).length) {
+    let wbrs = $$('wbr', this.nodes.comment);
+    if (wbrs.length) {
       for (var wbr of wbrs) { $.rm(wbr); }
       this.nodes.comment.normalize();
     }

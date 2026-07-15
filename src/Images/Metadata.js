@@ -48,8 +48,7 @@ var Metadata = {
       $.rmClass(this.parentNode, 'loading');
       if (data) {
         const title = Metadata.parse(data);
-        const output = $.el('span',
-          {textContent: title || ''});
+        const output = $.el('span', {textContent: title || ''});
         if (!title) { $.addClass(this.parentNode, 'not-found'); }
         $.before(this, output);
         this.parentNode.tabIndex = 0;

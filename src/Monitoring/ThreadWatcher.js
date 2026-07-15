@@ -32,14 +32,14 @@ import Icon from '../Icons/icon';
 
 var ThreadWatcher = {
   init() {
-    let sc;
     if (!(this.enabled = Conf['Thread Watcher'])) { return; }
 
-    this.shortcut = (sc = $.el('a', {
+    let sc = $.el('a', {
       id:    'watcher-link',
       title: 'Thread Watcher',
       href:  'javascript:;',
-    }));
+    });
+    this.shortcut = sc;
     Icon.set(this.shortcut, 'eye', 'Watcher');
 
     this.db     = new DataBoard('watchedThreads', this.refresh, true);
@@ -357,13 +357,13 @@ var ThreadWatcher = {
   },
 
   fetchAuto() {
-    let middle;
     clearTimeout(ThreadWatcher.timeout);
     if (!Conf['Auto Update Thread Watcher']) { return; }
     const {db} = ThreadWatcher;
     const interval = Conf['Show Page'] || (ThreadWatcher.unreadEnabled && Conf['Show Unread Count']) ? 5 * MINUTE : 2 * HOUR;
     const now = Date.now();
-    if ((now - interval >= ((middle = db.data.lastChecked || 0)) || middle > now) && !d.hidden && !!d.hasFocus()) {
+    let middle = db.data.lastChecked || 0;
+    if ((now - interval >= middle || middle > now) && !d.hidden && !!d.hasFocus()) {
       ThreadWatcher.fetchAllStatus(interval);
     }
     return ThreadWatcher.timeout = setTimeout(ThreadWatcher.fetchAuto, interval);
@@ -386,16 +386,16 @@ var ThreadWatcher = {
     return dbs.map((dbi) =>
       dbi.forceSync(function() {
         if ((++n) === dbs.length) {
-          let middle;
           if (!ThreadWatcher.syncing) { return; } // aborted
           delete ThreadWatcher.syncing;
-          if (0 > (middle = Date.now() - (ThreadWatcher.db.data.lastChecked || 0)) || middle >= interval) { // not checked in another tab
+          let middle = Date.now() - (ThreadWatcher.db.data.lastChecked || 0);
+          if (0 > middle || middle >= interval) { // not checked in another tab
             // XXX On vichan boards, last_modified field of threads.json does not account for sage posts.
             // Occasionally check replies field of catalog.json to find these posts.
-            let middle1;
             const {db} = ThreadWatcher;
             const now = Date.now();
-            const deep = !(now - (2 * HOUR) < ((middle1 = db.data.lastChecked2 || 0)) && middle1 <= now);
+            let middle1 = db.data.lastChecked2 || 0;
+            const deep = !(now - (2 * HOUR) < middle1 && middle1 <= now);
             const boards = ThreadWatcher.getAll(true);
             for (var board of boards) {
               ThreadWatcher.fetchBoard(board, deep);
@@ -586,7 +586,6 @@ var ThreadWatcher = {
   },
 
   makeLine(siteID, boardID, threadID, data) {
-    let page;
     const x = $.el('a', {
       textContent: '✕',
       href: 'javascript:;'
@@ -605,7 +604,7 @@ var ThreadWatcher = {
     });
 
     if (Conf['Show Page'] && (data.page != null)) {
-      page = $.el('span', {
+      let page = $.el('span', {
         textContent: `[${data.page}]`,
         className: 'watcher-page'
       });
@@ -696,8 +695,8 @@ var ThreadWatcher = {
       const isWatched = ThreadWatcher.isWatched(thread);
       if (thread.OP) {
         for (var post of [thread.OP, ...thread.OP.clones]) {
-          var toggler;
-          if (toggler = $('.watch-thread-link', post.nodes.info)) {
+          let toggler = $('.watch-thread-link', post.nodes.info);
+          if (toggler) {
             ThreadWatcher.setToggler(toggler, isWatched);
           }
         }
@@ -747,8 +746,8 @@ var ThreadWatcher = {
   },
 
   set404(boardID, threadID, cb) {
-    let data;
-    if (!(data = ThreadWatcher.db?.get({boardID, threadID}))) { return cb(); }
+    let data = ThreadWatcher.db?.get({boardID, threadID});
+    if (!data) return cb();
     if (Conf['Auto Prune']) {
       ThreadWatcher.db.delete({boardID, threadID});
       return cb();
@@ -816,16 +815,14 @@ var ThreadWatcher = {
 
     addHeaderMenuEntry() {
       if (g.VIEW !== 'thread') { return; }
-      const entryEl = $.el('a',
-        {href: 'javascript:;'});
+      const entryEl = $.el('a', {href: 'javascript:;'});
       Header.menu.addEntry({
         el: entryEl,
         order: 60,
         open() {
           const [addClass, rmClass, text] = !!ThreadWatcher.db.get({boardID: g.BOARD.ID, threadID: g.THREADID}) ?
             ['unwatch-thread', 'watch-thread', 'Unwatch thread']
-          :
-            ['watch-thread', 'unwatch-thread', 'Watch thread'];
+          : ['watch-thread', 'unwatch-thread', 'Watch thread'];
           $.addClass(entryEl, addClass);
           $.rmClass(entryEl, rmClass);
           entryEl.textContent = text;

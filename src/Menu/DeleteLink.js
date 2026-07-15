@@ -65,8 +65,8 @@ var DeleteLink = {
   },
 
   menuText() {
-    let seconds;
-    if ((seconds = DeleteLink.cooldown.seconds[DeleteLink.post.fullID])) {
+    let seconds = DeleteLink.cooldown.seconds[DeleteLink.post.fullID];
+    if (seconds) {
       return `Delete (${seconds})`;
     } else {
       return 'Delete';
@@ -119,13 +119,13 @@ var DeleteLink = {
   },
 
   load(link, post, fileOnly, resDoc) {
-    let msg;
     if (!resDoc) {
       new Notice('warning', 'Connection error, please retry.', 20);
       if (post.fullID === DeleteLink.post.fullID) { $.on(link, 'click', DeleteLink.toggle); }
       return;
     }
 
+    let msg;
     link.textContent = DeleteLink.linkText(fileOnly);
     if (resDoc.title === '4chan - Banned') { // Ban/warn check
       const el = $.el('span', {innerHTML: "You can&#039;t delete posts because you are <a href=\"//www.4chan.org/banned\" target=\"_blank\">banned</a>."});
@@ -136,7 +136,7 @@ var DeleteLink = {
       if (QR.cooldown.data && Conf.Cooldown && /\bwait\b/i.test(msg.textContent)) {
         DeleteLink.cooldown.start(post, 5);
         DeleteLink.auto[+fileOnly][post.fullID] = true;
-        return DeleteLink.nodes.links[+fileOnly].textContent = DeleteLink.linkText(fileOnly);
+        DeleteLink.nodes.links[+fileOnly].textContent = DeleteLink.linkText(fileOnly);
       }
     } else {
       if (!fileOnly) { QR.cooldown.delete(post); }

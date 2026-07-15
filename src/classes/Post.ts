@@ -122,8 +122,8 @@ export default class Post {
     if (!this.isReply) {
       this.thread.OP = this;
       for (var key of ['isSticky', 'isClosed', 'isArchived']) {
-        var selector;
-        if (selector = g.SITE.selectors.icons[key]) {
+        let selector = g.SITE.selectors.icons[key];
+        if (selector) {
           this.thread[key] = !!$(selector, this.nodes.info);
         }
       }
@@ -231,7 +231,6 @@ export default class Post {
 
   parseComment() {
     // Merge text nodes and remove empty ones.
-    let bq;
     this.nodes.comment.normalize();
 
     // Get the comment's text.
@@ -239,7 +238,8 @@ export default class Post {
     // Remove:
     //   'Comment too long'...
     //   EXIF data. (/p/)
-    this.nodes.commentClean = (bq = this.nodes.comment.cloneNode(true));
+    let bq = this.nodes.comment.cloneNode(true);
+    this.nodes.commentClean = bq;
     g.SITE.cleanComment?.(bq);
     return this.info.comment = this.nodesToText(bq);
   }
@@ -310,13 +310,13 @@ export default class Post {
   }
 
   parseFiles() {
-    let file;
     this.files = [];
     const fileRoots = this.fileRoots();
     let index = 0;
     for (let docIndex = 0; docIndex < fileRoots.length; docIndex++) {
       var fileRoot = fileRoots[docIndex];
-      if (file = this.parseFile(fileRoot)) {
+      let file = this.parseFile(fileRoot);
+      if (file) {
         file.index = (index++);
         file.docIndex = docIndex;
         this.files.push(file);
@@ -360,7 +360,6 @@ export default class Post {
   }
 
   kill(file = false, index = 0) {
-    let strong;
     if (file) {
       if (this.isDead || this.files[index].isDead) { return; }
       this.files[index].isDead = true;
@@ -372,9 +371,9 @@ export default class Post {
       $.addClass(this.nodes.root, 'deleted-post');
     }
 
-    if (!(strong = $('strong.warning', this.nodes.info))) {
-      strong = $.el('strong',
-        {className: 'warning'});
+    let strong = $('strong.warning', this.nodes.info);
+    if (!strong) {
+      strong = $.el('strong', {className: 'warning'});
       $.after($('input', this.nodes.info), strong);
     }
     strong.textContent = file ? '[File deleted]' : '[Deleted]';

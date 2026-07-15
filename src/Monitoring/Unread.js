@@ -91,8 +91,8 @@ var Unread = {
 
   scroll() {
     // Let the header's onload callback handle it.
-    let hash;
-    if ((hash = location.hash.match(/\d+/)) && hash[0] in Unread.thread.posts) { return; }
+    let hash = location.hash.match(/\d+/);
+    if (hash && hash[0] in Unread.thread.posts) return;
 
     let position = Unread.positionPrev();
     while (position) {
@@ -241,12 +241,11 @@ var Unread = {
   },
 
   saveLastReadPost: debounce(2 * SECOND, function() {
-    let ID;
     $.forceSync('Remember Last Read Post');
     if (!Conf['Remember Last Read Post'] || !Unread.db) { return; }
     const postIDs = Unread.thread.posts.keys;
     for (let i = Unread.readCount, end = postIDs.length; i < end; i++) {
-      ID = +postIDs[i];
+    let ID = +postIDs[i];
       if (!Unread.thread.posts.get(ID).isFetchedQuote) {
         if (Unread.posts.has(ID)) { break; }
         Unread.lastReadPost = ID;

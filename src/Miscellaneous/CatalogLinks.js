@@ -31,7 +31,6 @@ const CatalogLinks = {
 
       $.ready(function() {
         for (const link of $$(selector)) {
-          let catalogURL;
           switch (link.pathname.replace(/\/+/g, '/')) {
             case `/${g.BOARD}/`:
               if (Conf['JSON Index']) { link.textContent = 'Index'; }
@@ -41,7 +40,8 @@ const CatalogLinks = {
               link.href = CatalogLinks.catalog();
               break;
           }
-          if ((g.VIEW === 'catalog') && ((catalogURL = CatalogLinks.catalog()) !== g.SITE.urls.catalog?.(g.BOARD))) {
+          let catalogURL = CatalogLinks.catalog();
+          if ((g.VIEW === 'catalog') && (catalogURL !== g.SITE.urls.catalog?.(g.BOARD))) {
             const catalogLink = link.parentNode.cloneNode(true);
             const link2 = catalogLink.firstElementChild;
             link2.href = catalogURL;
@@ -60,24 +60,21 @@ const CatalogLinks = {
     }
 
     if (this.enabled = Conf['Catalog Links']) {
-      let el;
-      CatalogLinks.el = (el = UI.checkbox('Header catalog links', 'Catalog Links'));
+      let el = UI.checkbox('Header catalog links', 'Catalog Links');
+      CatalogLinks.el = el;
       el.id = 'toggleCatalog';
       const input = $('input', el);
       $.on(input, 'change', this.toggle);
       $.sync('Header catalog links', CatalogLinks.set);
-      Header.menu.addEntry({
-        el,
-        order: 95
-      });
+      Header.menu.addEntry({ el, order: 95 });
     }
   },
 
   node() {
     for (const a of $$('a', this.nodes.comment)) {
-      let m;
-      // if (m = a.href.match(/^https?:\/\/(boards\.4chan(?:nel)?\.org\/[^\/]+)\/catalog(#s=.*)?/)) {
-      if (m = a.href.match(/^https?:\/\/(boards\.4chan\.org\/[^\/]+)\/catalog(#s=.*)?/)) {
+      // let m = a.href.match(/^https?:\/\/(boards\.4chan(?:nel)?\.org\/[^\/]+)\/catalog(#s=.*)?/);
+      let m = a.href.match(/^https?:\/\/(boards\.4chan\.org\/[^\/]+)\/catalog(#s=.*)?/);
+      if (m) {
         a.href = `//${m[1]}/${m[2] || '#catalog'}`;
       }
     }

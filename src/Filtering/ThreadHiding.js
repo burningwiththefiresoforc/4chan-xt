@@ -80,14 +80,14 @@ var ThreadHiding = {
   },
 
   node() {
-    let data;
     if (this.isReply || this.isClone || this.isFetchedQuote) { return; }
 
     if (Conf['Thread Hiding Buttons']) {
       $.prepend(this.nodes.root, ThreadHiding.makeButton(this.thread, 'hide'));
     }
 
-    if (data = ThreadHiding.db.get({boardID: this.board.ID, threadID: this.ID})) {
+    let data = ThreadHiding.db.get({boardID: this.board.ID, threadID: this.ID});
+    if (data) {
       ThreadHiding.hide(this.thread, data.makeStub, 'Hidden manually');
     }
   },
@@ -155,7 +155,7 @@ var ThreadHiding = {
       });
       $.on(hideStubLink, 'click', ThreadHiding.menu.hideStub);
 
-      return Menu.menu.addEntry({
+      Menu.menu.addEntry({
         el: hideStubLink,
         order: 15,
         open({thread, isReply}) {
@@ -192,9 +192,7 @@ var ThreadHiding = {
   },
 
   makeButton(thread, type) {
-    const span = $.el('span', {
-      className: 'stub-icon',
-    });
+    const span = $.el('span', {className: 'stub-icon',});
     const a = $.el('a', {
       className: `${type}-post-button ${type}-thread-button`,
       href:      'javascript:;'

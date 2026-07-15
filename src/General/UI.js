@@ -127,7 +127,6 @@ var Menu = (function() {
     }
 
     insertEntry(entry, parent, data) {
-      let submenu;
       if (typeof entry.open === 'function') {
         try {
           if (!entry.open(data)) { return; }
@@ -141,13 +140,13 @@ var Menu = (function() {
       }
       $.add(parent, entry.el);
 
-      if (!entry.subEntries) { return; }
-      if (submenu = $('.submenu', entry.el)) {
+      if (!entry.subEntries) return;
+      let submenu = $('.submenu', entry.el);
+      if (submenu) {
         // Reset sub menu, remove irrelevant entries.
         $.rm(submenu);
       }
-      submenu = $.el('div',
-        {className: 'dialog submenu'});
+      submenu = $.el('div', {className: 'dialog submenu'});
       for (var subEntry of entry.subEntries) {
         this.insertEntry(subEntry, submenu, data);
       }
@@ -268,11 +267,11 @@ var Menu = (function() {
 })();
 
 export var dragstart = function (e) {
-  let isTouching;
   if ((e.type === 'mousedown') && (e.button !== 0)) { return; } // not LMB
   // prevent text selection
   e.preventDefault();
-  if (isTouching = e.type === 'touchstart') {
+  let isTouching = e.type === 'touchstart';
+  if (isTouching) {
     e = e.changedTouches[e.changedTouches.length - 1];
   }
   // distance from pointer to el edge is constant; calculate it here.

@@ -78,19 +78,19 @@ var QuoteThreading = {
   setThread() {
     QuoteThreading.thread = this;
     $.asap((() => !Conf['Thread Updater'] || $('.navLinksBot > .updatelink')), function() {
-      let navLinksBot;
-      if (navLinksBot = $('.navLinksBot')) { $.add(navLinksBot, [$.tn(' '), QuoteThreading.threadNewLink]); }
+      let navLinksBot = $('.navLinksBot');
+      if (navLinksBot) { $.add(navLinksBot, [$.tn(' '), QuoteThreading.threadNewLink]); }
     });
   },
 
   node(this: Post) {
-    let parent;
     if (this.isFetchedQuote || this.isClone || !this.isReply) { return; }
 
     const parents = new Set();
     let lastParent = null;
     for (var quote of this.quotes) {
-      if ((parent = g.posts.get(quote))) {
+    let parent = g.posts.get(quote);
+      if (parent) {
         if (!parent.isFetchedQuote && parent.isReply && (parent.ID < this.ID)) {
           parents.add(parent.ID);
           if (!lastParent || (parent.ID > lastParent.ID)) { lastParent = parent; }
@@ -111,9 +111,9 @@ var QuoteThreading = {
   },
 
   descendants(post) {
-    let children;
     let posts = [post];
-    if (children = QuoteThreading.children[post.fullID]) {
+    let children = QuoteThreading.children[post.fullID];
+    if (children) {
       for (var child of children) {
         posts = posts.concat(QuoteThreading.descendants(child));
       }
