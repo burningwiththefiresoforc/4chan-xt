@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         4chan XT
-// @version      2.29.0
+// @version      2.29.1
 // @minGMVer     4.00
 // @minFFVer     115
 // @namespace    4chan-XT
@@ -158,7 +158,7 @@
   'use strict';
 
   var version = {
-    "version": "2.29.0",
+    "version": "2.29.1",
     "date": "2026-07-08T09:09:09Z"
   }
   ;
@@ -978,17 +978,14 @@
     // https://tampermonkey.net/documentation.php
     if ((GM?.deleteValue != null) && window.BroadcastChannel && (typeof GM_addValueChangeListener === 'undefined' || GM_addValueChangeListener === null)) {
       $.syncChannel = new BroadcastChannel(g.NAMESPACE + 'sync');
-      $.on($.syncChannel, 'message', e => (() => {
-        const result = [];
-        for (var key in e.data) {
-          var cb;
-          var val = e.data[key];
-          if (cb = $.syncing[key]) {
-            result.push(cb(dict.json(JSON.stringify(val)), key));
+      $.on($.syncChannel, 'message', e => {
+        for (const key in e.data) {
+          const cb = $.syncing[key];
+          if (cb) {
+            cb(dict.json(JSON.stringify(e.data[key])), key);
           }
         }
-        return result;
-      })());
+      });
       $.sync = (key, cb) => $.syncing[key] = cb;
       $.forceSync = function () { };
       $.delete = function (keys, cb) {
@@ -1018,14 +1015,7 @@
       });
       $.set = $.oneItemSugar(function (items, cb) {
         $.securityCheck(items);
-        return Promise.all((() => {
-          const result = [];
-          for (var key in items) {
-            var val = items[key];
-            result.push(GM.setValue(g.NAMESPACE + key, JSON.stringify(val)));
-          }
-          return result;
-        })()).then(function () {
+        return Promise.all(Object.entries(items).map(([key, val]) => GM.setValue(g.NAMESPACE + key, JSON.stringify(val)))).then(function () {
           $.syncChannel.postMessage(items);
           return cb?.();
         });
@@ -1037,15 +1027,7 @@
         $.listValues = () => GM_listValues(); // error when called if missing
       } else if ($.hasStorage) {
         $.getValue = key => localStorage.getItem(key);
-        $.listValues = () => (() => {
-          const result = [];
-          for (var key in localStorage) {
-            if (key.slice(0, g.NAMESPACE.length) === g.NAMESPACE) {
-              result.push(key);
-            }
-          }
-          return result;
-        })();
+        $.listValues = () => Object.keys(localStorage).filter(key => key.startsWith(g.NAMESPACE));
       } else {
         $.getValue = function () { };
         $.listValues = () => [];
@@ -1951,10 +1933,7 @@
     },
     thread(archive, { boardID, threadID, postID }) {
       // Keep the post number only if the location.hash was sent f.e.
-      let path = threadID ?
-        `${boardID}/thread/${threadID}`
-        :
-          `${boardID}/post/${postID}`;
+      let path = threadID ? `${boardID}/thread/${threadID}` : `${boardID}/post/${postID}`;
       if (archive.software === 'foolfuuka') {
         path += '/';
       }
@@ -2011,8 +1990,7 @@
         value = value.replace(/[+/=]/g, c => ({ '+': '-', '/': '_', '=': '' })[c]);
       }
       value = encodeURIComponent(value);
-      const path = archive.software === 'foolfuuka' ?
-        `${boardID}/search/${type}/${value}/`
+      const path = archive.software === 'foolfuuka' ? `${boardID}/search/${type}/${value}/`
         : type === 'image' ? `${boardID}/image/${value}`
           : `${boardID}/?task=search2&search_${type}=${value}`;
       return `${Redirect.protocol(archive)}${archive.domain}/${path}`;
@@ -2055,31 +2033,35 @@
           }
           const now = Date.now();
           if (now - (2 * HOUR) >= ((middle = Conf.boardConfig.lastChecked || 0)) || middle > now) {
-              return $.ajax(`${location.protocol}//a.4cdn.org/boards.json`, { onloadend: this.load });
+              $.ajax(`${location.protocol}//a.4cdn.org/boards.json`, { onloadend: this.load });
           }
           else {
               const { boards } = Conf.boardConfig;
-              return this.set(boards);
+              this.set(boards);
           }
       },
       load() {
           let boards;
           if ((this.status === 200) && this.response && this.response.boards) {
               boards = dict();
-              for (var board of this.response.boards) {
+              for (const board of this.response.boards) {
                   boards[board.board] = board;
               }
               $.set('boardConfig', { boards, lastChecked: Date.now() });
           }
           else {
               ({ boards } = Conf.boardConfig);
-              const err = (() => {
-                  switch (this.status) {
-                      case 0: return 'Connection Error';
-                      case 200: return 'Invalid Data';
-                      default: return `Error ${this.statusText} (${this.status})`;
-                  }
-              })();
+              let err;
+              switch (this.status) {
+                  case 0:
+                      err = 'Connection Error';
+                      break;
+                  case 200:
+                      err = 'Invalid Data';
+                      break;
+                  default:
+                      err = `Error ${this.statusText} (${this.status})`;
+              }
               new Notice('warning', `Failed to load board configuration. ${err}`, 20);
           }
           return BoardConfig.set(boards);
@@ -2103,25 +2085,22 @@
           }
       },
       sfwBoards(sfw) {
-          return (() => {
-              const result = [];
-              const object = this.boards || Conf.boardConfig.boards;
-              for (var board in object) {
-                  var data = object[board];
-                  if (!!data.ws_board === sfw) {
-                      result.push(board);
-                  }
+          const result = [];
+          const object = this.boards || Conf.boardConfig.boards;
+          for (const board in object) {
+              const data = object[board];
+              if (!!data.ws_board === sfw) {
+                  result.push(board);
               }
-              return result;
-          })();
+          }
+          return result;
       },
       // isSFW(board) {
       //   return !!(this.boards || Conf.boardConfig.boards)[board]?.ws_board;
       // },
       //
       // domain(board) {
-      //   // return `boards.${BoardConfig.isSFW(board) ? '4channel' : '4chan'}.org`;
-      //   return 'boards.4chan.org';
+      //   return `boards.${BoardConfig.isSFW(board) ? '4channel' : '4chan'}.org`;
       // },
       isArchived(board) {
           // assume archive exists if no data available to prevent cleaning of archived threads
@@ -2176,9 +2155,9 @@
       this.keys.splice(index, 0, key);
     }
     rm(key) {
-      let i;
       key = `${key}`;
-      if ((i = this.keys.indexOf(key)) !== -1) {
+      let i = this.keys.indexOf(key);
+      if (i !== -1) {
         this.keys.splice(i, 1);
         delete this[key];
       }
@@ -2299,15 +2278,14 @@
       this.json = null;
       this.OP = null;
       this.catalogView = null;
-      this.nodes =
-        { root: null };
+      this.nodes = { root: null };
       this.board.threads.push(this.ID, this);
       g.threads.push(this.fullID, this);
     }
     setPage(pageNum) {
-      let icon;
       const { info, reply } = this.OP.nodes;
-      if (!(icon = $('.page-num', info))) {
+      let icon = $('.page-num', info);
+      if (!icon) {
         icon = $.el('span', { className: 'page-num' });
         $.replace(reply.parentNode.previousSibling, [$.tn(' '), icon, $.tn(' ')]);
       }
@@ -2336,7 +2314,7 @@
       }
       this.setIcon('Sticky', this.isSticky);
       this.setIcon('Closed', this.isClosed && !this.isArchived);
-      return this.setIcon('Archived', this.isArchived);
+      this.setIcon('Archived', this.isArchived);
     }
     setIcon(type, status) {
       const typeLC = type.toLowerCase();
@@ -2363,8 +2341,7 @@
       }
       const root = (type !== 'Sticky') && this.isSticky ?
         $('.stickyIcon', this.OP.nodes.info)
-        :
-          $('.page-num', this.OP.nodes.info) || this.OP.nodes.quote;
+        : $('.page-num', this.OP.nodes.info) || this.OP.nodes.quote;
       $.after(root, [$.tn(' '), icon]);
       if (!this.catalogView) {
         return;
@@ -2557,9 +2534,7 @@
     }
     get({ siteID, boardID, threadID, postID, defaultValue }) {
       let board, val;
-      if (!siteID) {
-        siteID = g.SITE.ID;
-      }
+      siteID ?? (siteID = g.SITE.ID);
       if (board = this.data[siteID]?.boards[boardID]) {
         let thread;
         if (threadID == null) {
@@ -3963,7 +3938,7 @@ current-archive-text:"Archive"]
               PageReady.thisPageIsLegit = g.SITE.isThisPageLegit ?
                   g.SITE.isThisPageLegit()
                   :
-                      !/^[45]\d\d\b/.test(document.title) && !/\.(?:json|rss)$/.test(location.pathname);
+                      !/^[45]\d\d\b/.test(d.title) && !/\.(?:json|rss)$/.test(location.pathname);
           }
           return PageReady.thisPageIsLegit;
       },
@@ -4381,16 +4356,13 @@ current-archive-text:"Archive"]
       host() {
           return Conf.fourchanImageHost.trim() || 'i.4cdn.org';
       },
-      flashHost() {
-          return 'i.4cdn.org';
-      },
-      thumbHost() {
-          return 'i.4cdn.org';
-      },
+      flashHost() { return 'i.4cdn.org'; },
+      thumbHost() { return 'i.4cdn.org'; },
       test(hostname) {
           return (hostname === 'i.4cdn.org') || ImageHost.regex.test(hostname);
       },
-      regex: /^is\d*\.4chan(?:nel)?\.org$/,
+      // regex: /^is\d*\.4chan(?:nel)?\.org$/,
+      regex: /^is\d*\.4chan\.org$/,
       node() {
           if (this.isClone) {
               return;
@@ -7675,7 +7647,6 @@ svg.icon {
               this.menu.classList.toggle('left', right);
           }
           insertEntry(entry, parent, data) {
-              let submenu;
               if (typeof entry.open === 'function') {
                   try {
                       if (!entry.open(data)) {
@@ -7691,10 +7662,10 @@ svg.icon {
                   }
               }
               $.add(parent, entry.el);
-              if (!entry.subEntries) {
+              if (!entry.subEntries)
                   return;
-              }
-              if (submenu = $('.submenu', entry.el)) {
+              let submenu = $('.submenu', entry.el);
+              if (submenu) {
                   // Reset sub menu, remove irrelevant entries.
                   $.rm(submenu);
               }
@@ -7720,8 +7691,7 @@ svg.icon {
               return entries[entries.indexOf(entry) + direction];
           }
           keybinds(e) {
-              let subEntry;
-              let next, submenu;
+              let subEntry, next, submenu;
               let entry = $('.focused', this.menu);
               while ((subEntry = $('.focused', entry))) {
                   entry = subEntry;
@@ -7820,13 +7790,13 @@ svg.icon {
       return Menu$1;
   })();
   var dragstart = function (e) {
-      let isTouching;
       if ((e.type === 'mousedown') && (e.button !== 0)) {
           return;
       } // not LMB
       // prevent text selection
       e.preventDefault();
-      if (isTouching = e.type === 'touchstart') {
+      let isTouching = e.type === 'touchstart';
+      if (isTouching) {
           e = e.changedTouches[e.changedTouches.length - 1];
       }
       // distance from pointer to el edge is constant; calculate it here.
@@ -7853,7 +7823,7 @@ svg.icon {
           o.move = touchmove.bind(o);
           o.up = touchend.bind(o);
           $.on(d, 'touchmove', o.move);
-          return $.on(d, 'touchend touchcancel', o.up);
+          $.on(d, 'touchend touchcancel', o.up);
       }
       else { // mousedown
           o.move = drag.bind(o);
@@ -7966,8 +7936,7 @@ svg.icon {
       const { clientX, clientY } = Conf['Follow Cursor'] ? e : this;
       const top = this.isImage ?
           Math.max(0, (clientY * (this.clientHeight - height)) / this.clientHeight)
-          :
-              Math.max(0, Math.min(this.clientHeight - height, clientY - 120));
+          : Math.max(0, Math.min(this.clientHeight - height, clientY - 120));
       let threshold = this.clientWidth / 2;
       if (!this.isImage) {
           threshold = Math.max(threshold, this.clientWidth - 400);
@@ -8162,11 +8131,11 @@ svg.icon {
           }
       },
       decodeError(file, fileObj) {
-          let message;
           if (file.error?.code !== MediaError.MEDIA_ERR_DECODE) {
               return false;
           }
-          if (!(message = $('.warning', fileObj.thumb.parentNode))) {
+          let message = $('.warning', fileObj.thumb.parentNode);
+          if (!message) {
               message = $.el('div', { className: 'warning' });
               $.after(fileObj.thumb, message);
           }
@@ -8749,7 +8718,7 @@ svg.icon {
           return;
         }
       }
-      return $.rmClass(QR.shortcut, 'disabled');
+      $.rmClass(QR.shortcut, 'disabled');
     },
     close() {
       if (QR.req) {
@@ -8767,7 +8736,7 @@ svg.icon {
       }
       QR.cooldown.auto = false;
       QR.status();
-      return QR.captcha.destroy();
+      QR.captcha.destroy();
     },
     focus() {
       return $.queueTask(function () {
@@ -8817,7 +8786,7 @@ svg.icon {
       $.event('mathjax', null, QR.nodes.texPreview);
     },
     texPreviewHide() {
-      return $.rmClass(QR.nodes.el, 'tex-preview');
+      $.rmClass(QR.nodes.el, 'tex-preview');
     },
     addPost() {
       const wasOpen = (QR.nodes && !QR.nodes.el.hidden);
@@ -8894,17 +8863,11 @@ svg.icon {
         disabled = true;
         QR.cooldown.auto = false;
       }
-      value = QR.req ?
-        QR.req.progress
-        :
-          QR.cooldown.seconds || value;
+      value = QR.req ? QR.req.progress : QR.cooldown.seconds || value;
       const { status } = QR.nodes;
-      status.value = !value ?
-        'Submit'
-        : QR.cooldown.auto ?
-          `Auto ${value}`
-          :
-            value;
+      status.value = !value ? 'Submit'
+        : QR.cooldown.auto ? `Auto ${value}`
+          : value;
       status.disabled = disabled || false;
       return status.disabled;
     },
@@ -8993,7 +8956,7 @@ svg.icon {
         QR.selected.quotedText = com.value;
       }
       QR.selected.save(com);
-      return QR.selected.save(thread);
+      QR.selected.save(thread);
     },
     characterCount() {
       const counter = QR.nodes.charCount;
@@ -9039,9 +9002,7 @@ svg.icon {
       }
       QR.nodes.el.classList.add('dump');
     },
-    getFile() {
-      $.event('QRFile', QR.selected?.file);
-    },
+    getFile() { $.event('QRFile', QR.selected?.file); },
     drawFile(e) {
       const file = QR.selected?.file;
       if (!file || !/^(image|video)\//.test(file.type)) {
@@ -9079,7 +9040,7 @@ svg.icon {
       // Let it drag anything from the page.
       const toggle = e.type === 'dragstart' ? $.off : $.on;
       toggle(d, 'dragover', QR.dragOver);
-      return toggle(d, 'drop', QR.dropFile);
+      toggle(d, 'drop', QR.dropFile);
     },
     dragOver(e) {
       e.preventDefault();
@@ -9194,15 +9155,11 @@ svg.icon {
         return;
       }
       // Fix the value if the option disappeared.
-      list.value = g.VIEW === 'thread' ?
-        g.THREADID
-        :
-          'new';
+      list.value = g.VIEW === 'thread' ? g.THREADID : 'new';
       return (g.VIEW === 'thread' ? $.addClass : $.rmClass)(QR.nodes.el, 'reply-to-thread');
     },
     dialog() {
       let dialog, event, nodes;
-      let name;
       QR.nodes = (nodes = {
         el: (dialog = UI.dialog('qr', { innerHTML: QuickReplyPage }))
       });
@@ -9833,14 +9790,12 @@ svg.icon {
         return 0;
       },
       categorize(post) {
-        if (post.thread === 'new') {
+        if (post.thread === 'new')
           return { type: 'thread' };
-        } else {
-          return {
-            type: !!post.file ? 'image' : 'reply',
-            threadID: +post.thread
-          };
-        }
+        return {
+          type: !!post.file ? 'image' : 'reply',
+          threadID: +post.thread
+        };
       },
       mergeChange(data, scope, id, value) {
         if (value) {
@@ -9914,8 +9869,8 @@ svg.icon {
               // Clean up expired cooldowns
               var maxDelay = cooldown.threadID !== cooldown.postID ?
                 QR.cooldown.maxDelay
-                :
-                  QR.cooldown.delays[scope === 'global' ? 'thread_global' : 'thread'];
+                : QR.cooldown.delays[scope === 'global' ? 'thread_global'
+                  : 'thread'];
               if (QR.cooldown.customCooldown) {
                 maxDelay = Math.max(maxDelay, parseInt(Conf.customCooldown, 10));
               }
@@ -9928,10 +9883,7 @@ svg.icon {
                 // Only cooldowns relevant to this post can set the seconds variable:
                 //   reply cooldown with a reply, thread cooldown with a thread.
                 // Inter-board thread cooldowns only apply on boards other than the one they were posted on.
-                var suffix = scope === 'global' ?
-                  '_global'
-                  :
-                    '';
+                var suffix = scope === 'global' ? '_global' : '';
                 seconds = Math.max(seconds, QR.cooldown.delays[type + suffix] - elapsed);
                 // If additional cooldown is enabled, add the configured seconds to the count.
                 if (QR.cooldown.customCooldown) {
@@ -10180,10 +10132,7 @@ svg.icon {
       for (var event of ['dragStart', 'dragEnter', 'dragLeave', 'dragOver', 'dragEnd', 'drop']) {
         $.on(el, event.toLowerCase(), this[event]);
       }
-      this.thread = g.VIEW === 'thread' ?
-        g.THREADID
-        :
-          'new';
+      this.thread = g.VIEW === 'thread' ? g.THREADID : 'new';
       const prev = QR.posts[QR.posts.length - 1];
       QR.posts.push(this);
       this.nodes.spoiler.checked = (this.spoiler = prev && Conf['Remember Spoiler'] ?
@@ -10246,11 +10195,10 @@ svg.icon {
       if (this !== QR.selected) {
         return;
       }
-      for (var name of ['thread', 'name', 'email', 'sub', 'com', 'fileButton', 'filename', 'spoiler', 'flag']) {
-        var node;
-        if ((node = QR.nodes[name])) {
+      for (const name of ['thread', 'name', 'email', 'sub', 'com', 'fileButton', 'filename', 'spoiler', 'flag']) {
+        let node = QR.nodes[name];
+        if (node)
           node.disabled = lock;
-        }
       }
       this.nodes.rm.style.visibility = lock ? 'hidden' : '';
       this.nodes.spoiler.disabled = lock;
@@ -10275,11 +10223,10 @@ svg.icon {
     }
     load() {
       // Load this post's values.
-      for (var name of ['thread', 'name', 'email', 'sub', 'com', 'filename', 'flag']) {
-        var node;
-        if (!(node = QR.nodes[name])) {
+      for (const name of ['thread', 'name', 'email', 'sub', 'com', 'filename', 'flag']) {
+        let node = QR.nodes[name];
+        if (!node)
           continue;
-        }
         node.value = this[name] || node.dataset.default || '';
       }
       (this.thread !== 'new' ? $.addClass : $.rmClass)(QR.nodes.el, 'reply-to-thread');
@@ -10324,16 +10271,14 @@ svg.icon {
         this.preventAutoPost();
     }
     forceSave() {
-      if (this !== QR.selected) {
+      if (this !== QR.selected)
         return;
-      }
       // Do this in case people use extensions
       // that do not trigger the `input` event.
-      for (var name of ['thread', 'name', 'email', 'sub', 'com', 'filename', 'spoiler', 'flag']) {
-        var node;
-        if (!(node = QR.nodes[name])) {
+      for (const name of ['thread', 'name', 'email', 'sub', 'com', 'filename', 'spoiler', 'flag']) {
+        let node = QR.nodes[name];
+        if (!node)
           continue;
-        }
         this.save(node, true);
       }
     }
@@ -10366,15 +10311,9 @@ svg.icon {
     static rmErrored(e) {
       e.stopPropagation();
       for (let i = QR.posts.length - 1; i >= 0; i--) {
-        var errors;
-        var post = QR.posts[i];
-        if ((errors = post.errors)) {
-          for (var error of errors) {
-            if (doc.contains(error)) {
-              post.rm();
-              break;
-            }
-          }
+        const post = QR.posts[i];
+        if (post.errors?.some(error => doc.contains(error))) {
+          post.rm();
         }
       }
     }
@@ -10736,8 +10675,7 @@ svg.icon {
           $.addClass(QR.nodes.el, 'has-captcha', 'captcha-t');
           $.after(QR.nodes.com.parentNode, root);
       },
-      moreNeeded() {
-      },
+      moreNeeded() { },
       getThread() {
           return {
               boardID: g.BOARD.ID,
@@ -11104,9 +11042,7 @@ svg.icon {
       }
     },
     makeButton(post, type) {
-      const span = $.el('span', {
-        className: 'stub-icon',
-      });
+      const span = $.el('span', { className: 'stub-icon', });
       const a = $.el('a', {
         className: `${type}-post-button ${type}-reply-button`,
         href: 'javascript:;'
@@ -11340,14 +11276,10 @@ svg.icon {
       RelativeDates.setOwnTimeout(diff, data);
     },
     setOwnTimeout(diff, data) {
-      const delay = diff < MINUTE ?
-        SECOND - ((diff + (SECOND / 2)) % SECOND)
-        : diff < HOUR ?
-          MINUTE - ((diff + (MINUTE / 2)) % MINUTE)
-          : diff < DAY ?
-            HOUR - ((diff + (HOUR / 2)) % HOUR)
-            :
-              DAY - ((diff + (DAY / 2)) % DAY);
+      const delay = diff < MINUTE ? SECOND - ((diff + (SECOND / 2)) % SECOND)
+        : diff < HOUR ? MINUTE - ((diff + (MINUTE / 2)) % MINUTE)
+          : diff < DAY ? HOUR - ((diff + (HOUR / 2)) % HOUR)
+            : DAY - ((diff + (DAY / 2)) % DAY);
       setTimeout(RelativeDates.markStale, delay, data);
     },
     markStale(data) {
@@ -11417,8 +11349,8 @@ svg.icon {
           });
       },
       node() {
-          let a;
-          if (a = $('.abbr > a:not([onclick])', this.nodes.comment)) {
+          let a = $('.abbr > a:not([onclick])', this.nodes.comment);
+          if (a) {
               $.on(a, 'click', ExpandComment.cb);
           }
       },
@@ -11428,15 +11360,14 @@ svg.icon {
           ExpandComment.expand(Get.postFromNode(this));
       },
       expand(post) {
-          let a;
           if (post.nodes.longComment && !post.nodes.longComment.parentNode) {
               $.replace(post.nodes.shortComment, post.nodes.longComment);
               post.nodes.comment = post.nodes.longComment;
               return;
           }
-          if (!(a = $('.abbr > a', post.nodes.comment))) {
+          let a = $('.abbr > a', post.nodes.comment);
+          if (!a)
               return;
-          }
           a.textContent = `Post No.${post} Loading...`;
           return $.cache(g.SITE.urls.threadJSON({ boardID: post.boardID, threadID: post.threadID }), function () { return ExpandComment.parse(this, a, post); });
       },
@@ -11450,14 +11381,14 @@ svg.icon {
           return post.nodes.comment = post.nodes.shortComment;
       },
       parse(req, a, post) {
-          let spoilerRange;
           const { status } = req;
           if (![200, 304].includes(status)) {
               a.textContent = status ? `Error ${req.statusText} (${status})` : 'Connection Error';
               return;
           }
           const { posts } = req.response;
-          if (spoilerRange = posts[0].custom_spoiler) {
+          let spoilerRange = posts[0].custom_spoiler;
+          if (spoilerRange) {
               g.SITE.Build.spoilerRange[g.BOARD] = spoilerRange;
           }
           const postObj = posts.find(p => p.no === post.ID);
@@ -11674,8 +11605,7 @@ svg.icon {
       },
       cb: {
           seek(type) {
-              let highlighted, post;
-              let result;
+              let highlighted, post, result;
               const { highlight } = g.SITE.classes;
               if (highlighted = $(`.${highlight}`)) {
                   $.rmClass(highlighted, highlight);
@@ -11734,7 +11664,6 @@ svg.icon {
           }
       }
       push(data) {
-          let item;
           let { ID } = data;
           if (!ID) {
               ID = data.id;
@@ -11743,17 +11672,15 @@ svg.icon {
               return;
           }
           const { last } = this;
-          this[ID] = (item = {
+          let item = {
               prev: last,
               next: null,
               data,
               ID
-          });
+          };
+          this[ID] = item;
           item.prev = last;
-          this.last = last ?
-              (last.next = item)
-              :
-                  (this.first = item);
+          this.last = last ? (last.next = item) : (this.first = item);
           return this.length++;
       }
       before(root, item) {
@@ -11802,14 +11729,14 @@ svg.icon {
               this.last = item;
           }
           this.first = item;
-          return delete item.prev;
+          delete item.prev;
       }
       shift() {
           return this.rm(this.first.ID);
       }
       order() {
-          let item;
-          const order = [(item = this.first)];
+          let item = this.first;
+          const order = [item];
           while ((item = item.next)) {
               order.push(item);
           }
@@ -11824,7 +11751,7 @@ svg.icon {
           this.length--;
           this.rmi(item);
           delete item.next;
-          return delete item.prev;
+          delete item.prev;
       }
       rmi(item) {
           const { prev, next } = item;
@@ -11835,10 +11762,10 @@ svg.icon {
               this.first = next;
           }
           if (next) {
-              return next.prev = prev;
+              next.prev = prev;
           }
           else {
-              return this.last = prev;
+              this.last = prev;
           }
       }
   }
@@ -11925,10 +11852,9 @@ svg.icon {
       },
       scroll() {
           // Let the header's onload callback handle it.
-          let hash;
-          if ((hash = location.hash.match(/\d+/)) && hash[0] in Unread.thread.posts) {
+          let hash = location.hash.match(/\d+/);
+          if (hash && hash[0] in Unread.thread.posts)
               return;
-          }
           let position = Unread.positionPrev();
           while (position) {
               var { bottom } = position.data.nodes;
@@ -12028,7 +11954,7 @@ svg.icon {
           notif.onshow = () => setTimeout(() => notif.close(), 7 * SECOND);
       },
       onUpdate() {
-          return $.queueTask(function () {
+          $.queueTask(function () {
               Unread.setLine();
               Unread.read();
               Unread.update();
@@ -12081,14 +12007,13 @@ svg.icon {
           }
       },
       saveLastReadPost: debounce(2 * SECOND, function () {
-          let ID;
           $.forceSync('Remember Last Read Post');
           if (!Conf['Remember Last Read Post'] || !Unread.db) {
               return;
           }
           const postIDs = Unread.thread.posts.keys;
           for (let i = Unread.readCount, end = postIDs.length; i < end; i++) {
-              ID = +postIDs[i];
+              let ID = +postIDs[i];
               if (!Unread.thread.posts.get(ID).isFetchedQuote) {
                   if (Unread.posts.has(ID)) {
                       break;
@@ -12210,9 +12135,9 @@ svg.icon {
               return;
           }
           for (var threadID in ExpandThread.statuses) {
-              var oldReq;
-              var status = ExpandThread.statuses[threadID];
-              if (oldReq = status.req) {
+              let status = ExpandThread.statuses[threadID];
+              let oldReq = status.req;
+              if (oldReq) {
                   delete status.req;
                   oldReq.abort();
               }
@@ -12241,7 +12166,7 @@ svg.icon {
           $.rm(this); // remove before fixing bottom of thread position
           const { bottom } = thread.nodes.root.getBoundingClientRect();
           ExpandThread.toggle(thread);
-          return window.scrollBy(0, (thread.nodes.root.getBoundingClientRect().bottom - bottom));
+          window.scrollBy(0, (thread.nodes.root.getBoundingClientRect().bottom - bottom));
       },
       toggle(thread) {
           if (!thread.nodes.root)
@@ -12257,8 +12182,8 @@ svg.icon {
           }
       },
       expand(thread, a) {
-          let status;
-          ExpandThread.statuses[thread] = (status = {});
+          let status = {};
+          ExpandThread.statuses[thread] = status;
           a.textContent = g.SITE.Build.summaryText('...', ...a.textContent.match(/\d+/g));
           status.req = $.cache(g.SITE.urls.threadJSON({ boardID: thread.board.ID, threadID: thread.ID }), function () {
               if (this !== status.req) {
@@ -12270,10 +12195,10 @@ svg.icon {
           status.numReplies = $$(g.SITE.selectors.replyOriginal, thread.nodes.root).length;
       },
       contract(thread, a, threadRoot) {
-          let oldReq;
           const status = ExpandThread.statuses[thread];
           delete ExpandThread.statuses[thread];
-          if (oldReq = status.req) {
+          let oldReq = status.req;
+          if (oldReq) {
               delete status.req;
               oldReq.abort();
               if (a) {
@@ -12318,11 +12243,11 @@ svg.icon {
           const postsRoot = [];
           let filesCount = 0;
           for (var postData of req.response.posts) {
-              var post;
               if (postData.no === thread.ID) {
                   continue;
               }
-              if ((post = thread.posts.get(postData.no)) && !post.isFetchedQuote) {
+              let post = thread.posts.get(postData.no);
+              if (post && !post.isFetchedQuote) {
                   if ('file' in post) {
                       filesCount++;
                   }
@@ -12382,14 +12307,12 @@ svg.icon {
           if (e.detail.isCatalog) {
               return;
           }
-          return (() => {
-              const result = [];
-              for (var threadID of e.detail.threadIDs) {
-                  var thread = g.threads.get(threadID);
-                  result.push(UnreadIndex.update(thread));
-              }
-              return result;
-          })();
+          const result = [];
+          for (const threadID of e.detail.threadIDs) {
+              const thread = g.threads.get(threadID);
+              result.push(UnreadIndex.update(thread));
+          }
+          return result;
       },
       onPostsInserted(e) {
           if (e.target === Index.root) {
@@ -12420,7 +12343,6 @@ svg.icon {
           });
       },
       update(thread) {
-          let divider;
           const lastReadPost = UnreadIndex.lastReadPost[thread.fullID];
           let repliesShown = 0;
           let repliesRead = 0;
@@ -12446,10 +12368,8 @@ svg.icon {
           else {
               $.rm(hr);
           }
-          const hasUnread = repliesShown ?
-              firstUnread || !repliesRead
-              : indexEnabled ?
-                  thread.lastPost > lastReadPost
+          const hasUnread = repliesShown ? firstUnread || !repliesRead
+              : indexEnabled ? thread.lastPost > lastReadPost
                   : thread.OP.ID > lastReadPost;
           thread.nodes.root.classList.toggle('unread-thread', hasUnread);
           let link = UnreadIndex.markReadLink[thread.fullID];
@@ -12461,7 +12381,8 @@ svg.icon {
               }));
               $.on(link, 'click', UnreadIndex.markRead);
           }
-          if (divider = $(g.SITE.selectors.threadDivider, thread.nodes.root)) { // divider inside thread as in Tinyboard
+          let divider = $(g.SITE.selectors.threadDivider, thread.nodes.root);
+          if (divider) { // divider inside thread as in Tinyboard
               $.before(divider, link);
           }
           else {
@@ -12488,15 +12409,15 @@ svg.icon {
 
   var ThreadWatcher = {
       init() {
-          let sc;
           if (!(this.enabled = Conf['Thread Watcher'])) {
               return;
           }
-          this.shortcut = (sc = $.el('a', {
+          let sc = $.el('a', {
               id: 'watcher-link',
               title: 'Thread Watcher',
               href: 'javascript:;',
-          }));
+          });
+          this.shortcut = sc;
           Icon.set(this.shortcut, 'eye', 'Watcher');
           this.db = new DataBoard('watchedThreads', this.refresh, true);
           this.dbLM = new DataBoard('watcherLastModified', null, true);
@@ -12548,9 +12469,7 @@ svg.icon {
                           return false;
                       }
                       this.el.firstElementChild.textContent = ThreadWatcher.isWatched(thread) ?
-                          'Unwatch'
-                          :
-                              'Watch';
+                          'Unwatch' : 'Watch';
                       if (this.cb) {
                           $.off(this.el, 'click', this.cb);
                       }
@@ -12821,7 +12740,6 @@ svg.icon {
           }
       },
       fetchAuto() {
-          let middle;
           clearTimeout(ThreadWatcher.timeout);
           if (!Conf['Auto Update Thread Watcher']) {
               return;
@@ -12829,17 +12747,18 @@ svg.icon {
           const { db } = ThreadWatcher;
           const interval = Conf['Show Page'] || (ThreadWatcher.unreadEnabled && Conf['Show Unread Count']) ? 5 * MINUTE : 2 * HOUR;
           const now = Date.now();
-          if ((now - interval >= ((middle = db.data.lastChecked || 0)) || middle > now) && !d.hidden && !!d.hasFocus()) {
+          let middle = db.data.lastChecked || 0;
+          if ((now - interval >= middle || middle > now) && !d.hidden && !!d.hasFocus()) {
               ThreadWatcher.fetchAllStatus(interval);
           }
           return ThreadWatcher.timeout = setTimeout(ThreadWatcher.fetchAuto, interval);
       },
       buttonFetchAll() {
           if (ThreadWatcher.syncing || ThreadWatcher.requests.length) {
-              return ThreadWatcher.abort();
+              ThreadWatcher.abort();
           }
           else {
-              return ThreadWatcher.fetchAllStatus();
+              ThreadWatcher.fetchAllStatus();
           }
       },
       fetchAllStatus(interval = 0) {
@@ -12850,18 +12769,18 @@ svg.icon {
           let n = 0;
           return dbs.map((dbi) => dbi.forceSync(function () {
               if ((++n) === dbs.length) {
-                  let middle;
                   if (!ThreadWatcher.syncing) {
                       return;
                   } // aborted
                   delete ThreadWatcher.syncing;
-                  if (0 > (middle = Date.now() - (ThreadWatcher.db.data.lastChecked || 0)) || middle >= interval) { // not checked in another tab
+                  let middle = Date.now() - (ThreadWatcher.db.data.lastChecked || 0);
+                  if (0 > middle || middle >= interval) { // not checked in another tab
                       // XXX On vichan boards, last_modified field of threads.json does not account for sage posts.
                       // Occasionally check replies field of catalog.json to find these posts.
-                      let middle1;
                       const { db } = ThreadWatcher;
                       const now = Date.now();
-                      const deep = !(now - (2 * HOUR) < ((middle1 = db.data.lastChecked2 || 0)) && middle1 <= now);
+                      let middle1 = db.data.lastChecked2 || 0;
+                      const deep = !(now - (2 * HOUR) < middle1 && middle1 <= now);
                       const boards = ThreadWatcher.getAll(true);
                       for (var board of boards) {
                           ThreadWatcher.fetchBoard(board, deep);
@@ -12947,9 +12866,7 @@ svg.icon {
                   ({ page, index, modified, replies } = threads[threadID]);
                   if (Conf['Show Page']) {
                       var lastPage = g.sites[siteID].isPrunedByAge?.({ siteID, boardID }) ?
-                          threadID === oldest
-                          :
-                              index >= (nThreads - pageLength);
+                          threadID === oldest : index >= (nThreads - pageLength);
                       ThreadWatcher.update(siteID, boardID, threadID, { page, lastPage });
                   }
                   if (ThreadWatcher.unreadEnabled && Conf['Show Unread Count']) {
@@ -12976,7 +12893,7 @@ svg.icon {
           if (data.last === -1) {
               return;
           } // 404 or no JSON API
-          return ThreadWatcher.fetch(url, { siteID, force }, [thread], ThreadWatcher.parseStatus);
+          ThreadWatcher.fetch(url, { siteID, force }, [thread], ThreadWatcher.parseStatus);
       },
       parseStatus(thread, isArchiveURL) {
           let isDead, last;
@@ -13039,18 +12956,18 @@ svg.icon {
                   newData = {};
               }
               $.extend(newData, { last, replies, isDead, isArchived, unread, quotingYou });
-              return ThreadWatcher.update(siteID, boardID, threadID, newData);
+              ThreadWatcher.update(siteID, boardID, threadID, newData);
           }
           else if (this.status === 404) {
               const archiveURL = g.sites[siteID]?.urls.archivedThreadJSON?.({ siteID, boardID, threadID });
               if (!isArchiveURL && archiveURL) {
-                  return ThreadWatcher.fetch(archiveURL, { siteID, force }, [thread, true], ThreadWatcher.parseStatus);
+                  ThreadWatcher.fetch(archiveURL, { siteID, force }, [thread, true], ThreadWatcher.parseStatus);
               }
               else if (site.mayLackJSON && (data.last == null)) {
-                  return ThreadWatcher.update(siteID, boardID, threadID, { last: -1 });
+                  ThreadWatcher.update(siteID, boardID, threadID, { last: -1 });
               }
               else {
-                  return ThreadWatcher.update(siteID, boardID, threadID, { isDead: true });
+                  ThreadWatcher.update(siteID, boardID, threadID, { isDead: true });
               }
           }
       },
@@ -13078,7 +12995,6 @@ svg.icon {
           return all;
       },
       makeLine(siteID, boardID, threadID, data) {
-          let page;
           const x = $.el('a', {
               textContent: '✕',
               href: 'javascript:;'
@@ -13098,7 +13014,7 @@ svg.icon {
               className: 'watcher-link'
           });
           if (Conf['Show Page'] && (data.page != null)) {
-              page = $.el('span', {
+              let page = $.el('span', {
                   textContent: `[${data.page}]`,
                   className: 'watcher-page'
               });
@@ -13198,8 +13114,8 @@ svg.icon {
               const isWatched = ThreadWatcher.isWatched(thread);
               if (thread.OP) {
                   for (var post of [thread.OP, ...thread.OP.clones]) {
-                      var toggler;
-                      if (toggler = $('.watch-thread-link', post.nodes.info)) {
+                      let toggler = $('.watch-thread-link', post.nodes.info);
+                      if (toggler) {
                           ThreadWatcher.setToggler(toggler, isWatched);
                       }
                   }
@@ -13257,10 +13173,9 @@ svg.icon {
           }
       },
       set404(boardID, threadID, cb) {
-          let data;
-          if (!(data = ThreadWatcher.db?.get({ boardID, threadID }))) {
+          let data = ThreadWatcher.db?.get({ boardID, threadID });
+          if (!data)
               return cb();
-          }
           if (Conf['Auto Prune']) {
               ThreadWatcher.db.delete({ boardID, threadID });
               return cb();
@@ -13296,7 +13211,7 @@ svg.icon {
           if (thread.OP) {
               data.excerpt = Get.threadExcerpt(thread);
           }
-          return ThreadWatcher.addRaw(boardID, threadID, data, cb, manual);
+          ThreadWatcher.addRaw(boardID, threadID, data, cb, manual);
       },
       addRaw(boardID, threadID, data, cb, manual) {
           const oldData = ThreadWatcher.db.get({ boardID, threadID, defaultValue: dict() });
@@ -13339,15 +13254,14 @@ svg.icon {
                   open() {
                       const [addClass, rmClass, text] = !!ThreadWatcher.db.get({ boardID: g.BOARD.ID, threadID: g.THREADID }) ?
                           ['unwatch-thread', 'watch-thread', 'Unwatch thread']
-                          :
-                              ['watch-thread', 'unwatch-thread', 'Watch thread'];
+                          : ['watch-thread', 'unwatch-thread', 'Watch thread'];
                       $.addClass(entryEl, addClass);
                       $.rmClass(entryEl, rmClass);
                       entryEl.textContent = text;
                       return true;
                   }
               });
-              return $.on(entryEl, 'click', () => ThreadWatcher.toggle(g.threads.get(`${g.BOARD}.${g.THREADID}`), true));
+              $.on(entryEl, 'click', () => ThreadWatcher.toggle(g.threads.get(`${g.BOARD}.${g.THREADID}`), true));
           },
           addMenuEntries() {
               const toggleDisabledDead = function () {
@@ -13472,6 +13386,15 @@ svg.icon {
       }
     });
     comment = { innerHTML: E.cat(comment), [isEscaped]: true };
+    // https://github.com/pleebe/FoolFuuka/blob/bf4224eed04637a4d0bd4411c2bf5f9945dfec0b/assets/themes/foolz/foolfuuka-theme-fuuka/src/Partial/Board.php#L77
+    const CAPCODES = {
+      M: 'Mod',
+      A: 'Admin',
+      D: 'Developer',
+      V: 'Verified',
+      F: 'Founder',
+      G: 'Manager',
+    };
     const o = {
       ID: data.num,
       threadID: data.thread_num,
@@ -13483,17 +13406,7 @@ svg.icon {
         email: data.email,
         name: data.name || '',
         tripcode: data.trip,
-        capcode: (() => {
-          switch (data.capcode) {
-            // https://github.com/pleebe/FoolFuuka/blob/bf4224eed04637a4d0bd4411c2bf5f9945dfec0b/assets/themes/foolz/foolfuuka-theme-fuuka/src/Partial/Board.php#L77
-            case 'M': return 'Mod';
-            case 'A': return 'Admin';
-            case 'D': return 'Developer';
-            case 'V': return 'Verified';
-            case 'F': return 'Founder';
-            case 'G': return 'Manager';
-          }
-        })(),
+        capcode: CAPCODES[data.capcode],
         uniqueID: data.poster_hash,
         flagCode: data.poster_country,
         flagCodeTroll: data.troll_country_code,
@@ -13609,7 +13522,6 @@ svg.icon {
           return ReplyPruning.active = this.checked;
       },
       node() {
-          let middle;
           ReplyPruning.thread = this;
           if (this.isSticky) {
               ReplyPruning.active = (ReplyPruning.inputs.enabled.checked = true);
@@ -13627,9 +13539,10 @@ svg.icon {
               }
           });
           // If we're linked to a post that we would hide, don't hide the posts in the first place.
+          let middle = this.posts.keys.indexOf(location.hash.slice(2));
           if (ReplyPruning.active &&
               /^#p\d+$/.test(location.hash) &&
-              (1 <= (middle = this.posts.keys.indexOf(location.hash.slice(2))) && middle < 1 + Math.max(ReplyPruning.total - +Conf["Max Replies"], 0))) {
+              (1 <= middle && middle < 1 + Math.max(ReplyPruning.total - +Conf["Max Replies"], 0))) {
               ReplyPruning.active = (ReplyPruning.inputs.enabled.checked = false);
           }
           $.after(this.OP.nodes.root, ReplyPruning.summary);
@@ -13761,21 +13674,21 @@ svg.icon {
     setThread() {
       QuoteThreading.thread = this;
       $.asap((() => !Conf['Thread Updater'] || $('.navLinksBot > .updatelink')), function () {
-        let navLinksBot;
-        if (navLinksBot = $('.navLinksBot')) {
+        let navLinksBot = $('.navLinksBot');
+        if (navLinksBot) {
           $.add(navLinksBot, [$.tn(' '), QuoteThreading.threadNewLink]);
         }
       });
     },
     node() {
-      let parent;
       if (this.isFetchedQuote || this.isClone || !this.isReply) {
         return;
       }
       const parents = new Set();
       let lastParent = null;
       for (var quote of this.quotes) {
-        if ((parent = g.posts.get(quote))) {
+        let parent = g.posts.get(quote);
+        if (parent) {
           if (!parent.isFetchedQuote && parent.isReply && (parent.ID < this.ID)) {
             parents.add(parent.ID);
             if (!lastParent || (parent.ID > lastParent.ID)) {
@@ -13795,9 +13708,9 @@ svg.icon {
       }
     },
     descendants(post) {
-      let children;
       let posts = [post];
-      if (children = QuoteThreading.children[post.fullID]) {
+      let children = QuoteThreading.children[post.fullID];
+      if (children) {
         for (var child of children) {
           posts = posts.concat(QuoteThreading.descendants(child));
         }
@@ -13813,11 +13726,7 @@ svg.icon {
       }
       const descendants = QuoteThreading.descendants(post);
       if (!Unread.posts.has(parent.ID)) {
-        if ((function () { for (var x of descendants) {
-          if (Unread.posts.has(x.ID)) {
-            return true;
-          }
-        } })()) {
+        if (descendants.some(x => Unread.posts.has(x.ID))) {
           QuoteThreading.threadNewLink.hidden = false;
           return false;
         }
@@ -14071,12 +13980,9 @@ svg.icon {
         }
         $.addClass(this.root, 'warning');
         this.root.textContent =
-          status === 404 ?
-            `Thread No.${this.threadID} 404'd.`
-            : !status ?
-              'Connection Error'
-              :
-                `Error ${req.statusText} (${req.status}).`;
+          status === 404 ? `Thread No.${this.threadID} 404'd.`
+            : !status ? 'Connection Error'
+              : `Error ${req.statusText} (${req.status}).`;
         return;
       }
       const { posts } = req.response;
@@ -14218,7 +14124,6 @@ svg.icon {
           }
       },
       mouseover(e) {
-          let origin;
           if (($.hasClass(this, 'inlined') && !$.hasClass(doc, 'catalog-mode')) || !d.contains(this)) {
               return;
           }
@@ -14233,7 +14138,8 @@ svg.icon {
               endEvents: 'mouseout click',
               cb: QuotePreview.mouseout
           });
-          if (Conf['Quote Highlighting'] && (origin = g.posts.get(`${boardID}.${postID}`))) {
+          let origin = g.posts.get(`${boardID}.${postID}`);
+          if (Conf['Quote Highlighting'] && origin) {
               const posts = [origin].concat(origin.clones);
               // Remove the clone that's in the qp from the array.
               posts.pop();
@@ -14244,10 +14150,9 @@ svg.icon {
       },
       mouseout() {
           // Stop if it only contains text.
-          let root;
-          if (!(root = this.el.firstElementChild)) {
+          let root = this.el.firstElementChild;
+          if (!root)
               return;
-          }
           $.event('PostsRemoved', null, Header.hover);
           const clone = Get.postFromRoot(root);
           let post = clone.origin;
@@ -14493,8 +14398,8 @@ svg.icon {
               }
           });
           PageReady.ready(function () {
-              let pagelist;
-              if (pagelist = $('.pagelist')) {
+              let pagelist = $('.pagelist');
+              if (pagelist) {
                   $.replace(pagelist, Index.pagelist);
               }
               $.rmClass(doc, 'index-loading');
@@ -14529,7 +14434,7 @@ svg.icon {
               if ((g.VIEW !== 'index') || !Conf.Menu || !Conf['Thread Hiding Link'] || !Index.enabledOn(g.BOARD)) {
                   return;
               }
-              return Menu.menu.addEntry({
+              Menu.menu.addEntry({
                   el: $.el('a', {
                       href: 'javascript:;',
                       className: 'has-shortcut-text'
@@ -14540,9 +14445,7 @@ svg.icon {
                           return false;
                       }
                       this.el.firstElementChild.textContent = thread.isHidden ?
-                          'Unhide'
-                          :
-                              'Hide';
+                          'Unhide' : 'Hide';
                       if (this.cb) {
                           $.off(this.el, 'click', this.cb);
                       }
@@ -14692,7 +14595,7 @@ svg.icon {
                   $.event('change', null, input);
                   if (thread = Get.threadFromNode(e.target)) {
                       Index.cb.catalogReplies.call(thread);
-                      return Index.cb.hoverAdjust.call(thread.OP.nodes);
+                      Index.cb.hoverAdjust.call(thread.OP.nodes);
                   }
               }
           },
@@ -14747,12 +14650,12 @@ svg.icon {
           },
           hoverAdjust() {
               // Prevent hovered catalog threads from going offscreen.
-              let x;
               if (!$.hasClass(doc, 'catalog-hover-expand')) {
                   return;
               }
               const rect = this.post.getBoundingClientRect();
-              if (x = $.minmax(0, -rect.left, doc.clientWidth - rect.right)) {
+              let x = $.minmax(0, -rect.left, doc.clientWidth - rect.right);
+              if (x) {
                   const { style } = this.post;
                   style.left = `${x}px`;
                   style.right = `${-x}px`;
@@ -14770,10 +14673,10 @@ svg.icon {
       userPageNav(page) {
           Index.pushState({ page });
           if (Conf['Refreshed Navigation']) {
-              return Index.update();
+              Index.update();
           }
           else {
-              return Index.pageLoad();
+              Index.pageLoad();
           }
       },
       hashCommands: {
@@ -14802,7 +14705,7 @@ svg.icon {
           const commands = hash.slice(1).split('/');
           const leftover = [];
           for (var command of commands) {
-              var mode, sort;
+              let mode, sort;
               if (mode = $.getOwn(Index.hashCommands.mode, command)) {
                   state.mode = mode;
               }
@@ -15118,7 +15021,7 @@ svg.icon {
           }
           const timeEl = $('#index-last-refresh time', Index.navLinks);
           timeEl.dataset.utc = Date.parse(this.getResponseHeader('Last-Modified'));
-          return RelativeDates.update(timeEl);
+          RelativeDates.update(timeEl);
       },
       parse(pages) {
           $.cleanCache(url => /^https?:\/\/a\.4cdn\.org\//.test(url));
@@ -15309,11 +15212,10 @@ svg.icon {
           }
       },
       buildCatalogReplies(thread) {
-          let lastReplies;
           const { nodes } = thread.catalogView;
-          if (!(lastReplies = Index.liveThreadDict[thread.ID].last_replies)) {
+          let lastReplies = Index.liveThreadDict[thread.ID].last_replies;
+          if (!lastReplies)
               return;
-          }
           const replies = [];
           for (var data of lastReplies) {
               if (Index.isHiddenReply(thread.ID, data)) {
@@ -15622,14 +15524,14 @@ svg.icon {
           return !!(ThreadHiding.db && ThreadHiding.db.get({ boardID, threadID }));
       },
       node() {
-          let data;
           if (this.isReply || this.isClone || this.isFetchedQuote) {
               return;
           }
           if (Conf['Thread Hiding Buttons']) {
               $.prepend(this.nodes.root, ThreadHiding.makeButton(this.thread, 'hide'));
           }
-          if (data = ThreadHiding.db.get({ boardID: this.board.ID, threadID: this.ID })) {
+          let data = ThreadHiding.db.get({ boardID: this.board.ID, threadID: this.ID });
+          if (data) {
               ThreadHiding.hide(this.thread, data.makeStub, 'Hidden manually');
           }
       },
@@ -15690,7 +15592,7 @@ svg.icon {
                   href: 'javascript:;'
               });
               $.on(hideStubLink, 'click', ThreadHiding.menu.hideStub);
-              return Menu.menu.addEntry({
+              Menu.menu.addEntry({
                   el: hideStubLink,
                   order: 15,
                   open({ thread, isReply }) {
@@ -15723,9 +15625,7 @@ svg.icon {
           }
       },
       makeButton(thread, type) {
-          const span = $.el('span', {
-              className: 'stub-icon',
-          });
+          const span = $.el('span', { className: 'stub-icon', });
           const a = $.el('a', {
               className: `${type}-post-button ${type}-thread-button`,
               href: 'javascript:;'
@@ -16163,24 +16063,22 @@ svg.icon {
           });
       },
       node() {
-          return (() => {
-              const result = [];
-              for (const file of this.files) {
-                  if (file.thumb) {
-                      if (Gallery.nodes) {
-                          Gallery.generateThumb(this, file);
-                          Gallery.nodes.total.textContent = Gallery.images.length;
-                      }
-                      if (!Conf['Image Expansion'] && ((g.SITE.software !== 'tinyboard') || !Main.jsEnabled)) {
-                          result.push($.on(file.thumbLink, 'click', Gallery.cb.image));
-                      }
-                      else {
-                          result.push(undefined);
-                      }
+          const result = [];
+          for (const file of this.files) {
+              if (file.thumb) {
+                  if (Gallery.nodes) {
+                      Gallery.generateThumb(this, file);
+                      Gallery.nodes.total.textContent = Gallery.images.length;
+                  }
+                  if (!Conf['Image Expansion'] && ((g.SITE.software !== 'tinyboard') || !Main.jsEnabled)) {
+                      result.push($.on(file.thumbLink, 'click', Gallery.cb.image));
+                  }
+                  else {
+                      result.push(undefined);
                   }
               }
-              return result;
-          })();
+          }
+          return result;
       },
       build(image) {
           let dialog, thumb;
@@ -16433,7 +16331,7 @@ svg.icon {
               return Gallery.startTimer();
           }
           else {
-              return $.on(current, (isVideo ? 'canplaythrough' : 'load'), Gallery.startTimer);
+              $.on(current, (isVideo ? 'canplaythrough' : 'load'), Gallery.startTimer);
           }
       },
       checkTimer() {
@@ -16448,36 +16346,24 @@ svg.icon {
       },
       cb: {
           keybinds(e) {
-              let key;
-              if (!(key = Keybinds.keyCode(e))) {
+              const key = Keybinds.keyCode(e);
+              if (!key)
                   return;
-              }
-              const cb = (() => {
-                  switch (key) {
-                      case Conf.Close:
-                      case Conf['Open Gallery']:
-                          return Gallery.cb.close;
-                      case Conf['Next Gallery Image']:
-                          return Gallery.cb.next;
-                      case Conf['Advance Gallery']:
-                          return Gallery.cb.advance;
-                      case Conf['Previous Gallery Image']:
-                          return Gallery.cb.prev;
-                      case Conf.Pause:
-                          return Gallery.cb.pause;
-                      case Conf.Slideshow:
-                          return Gallery.cb.toggleSlideshow;
-                      case Conf['Rotate image anticlockwise']:
-                          return Gallery.cb.rotateLeft;
-                      case Conf['Rotate image clockwise']:
-                          return Gallery.cb.rotateRight;
-                      case Conf['Download Gallery Image']:
-                          return Gallery.cb.download;
-                  }
-              })();
-              if (!cb) {
+              const KEY_HANDLERS = new Map([
+                  [Conf.Close, Gallery.cb.close],
+                  [Conf['Open Gallery'], Gallery.cb.close],
+                  [Conf['Next Gallery Image'], Gallery.cb.next],
+                  [Conf['Advance Gallery'], Gallery.cb.advance],
+                  [Conf['Previous Gallery Image'], Gallery.cb.prev],
+                  [Conf.Pause, Gallery.cb.pause],
+                  [Conf.Slideshow, Gallery.cb.toggleSlideshow],
+                  [Conf['Rotate image anticlockwise'], Gallery.cb.rotateLeft],
+                  [Conf['Rotate image clockwise'], Gallery.cb.rotateRight],
+                  [Conf['Download Gallery Image'], Gallery.cb.download],
+              ]);
+              const cb = KEY_HANDLERS.get(key);
+              if (!cb)
                   return;
-              }
               e.stopPropagation();
               e.preventDefault();
               return cb();
@@ -16723,14 +16609,11 @@ svg.icon {
                       let saved;
                       test.lastIndex = 0;
                       while (saved = snapshot.snapshotItem(i++)) {
-                          let end;
                           if ((saved.nodeName === 'BR') || ((saved.parentElement.nodeName === 'P') && !saved.previousSibling)) {
-                              let part1, part2;
-                              if (
-                              // link deliberately split
-                              (part1 = word.match(/(https?:\/\/)?([a-z\d-]+\.)*[a-z\d-]+$/i)) &&
-                                  (part2 = snapshot.snapshotItem(i)?.data?.match(/^(\.[a-z\d-]+)*\//i)) &&
-                                  ((part1[0] + part2[0]).search(Linkify.regString) === 0)) {
+                              let part1 = word.match(/(https?:\/\/)?([a-z\d-]+\.)*[a-z\d-]+$/i);
+                              let part2 = snapshot.snapshotItem(i)?.data?.match(/^(\.[a-z\d-]+)*\//i);
+                              if (part1 && part2 && ((part1[0] + part2[0]).search(Linkify.regString) === 0)) {
+                                  // link deliberately split
                                   continue;
                               }
                               else {
@@ -16742,7 +16625,8 @@ svg.icon {
                           }
                           endNode = saved;
                           ({ data } = saved);
-                          if (end = space.exec(data)) {
+                          let end = space.exec(data);
+                          if (end) {
                               // Set our snapshot and regex to start on this node at this position when the loop resumes
                               word += data.slice(0, end.index);
                               test.lastIndex = (length = end.index);
@@ -16782,7 +16666,7 @@ svg.icon {
 [-\\w.@]+@[a-z\\d.-]+\\.[a-z\\d]\
 )`, 'i'),
       makeRange(startNode, endNode, startOffset, endOffset) {
-          const range = document.createRange();
+          const range = d.createRange();
           range.setStart(startNode, startOffset);
           range.setEnd(endNode, endOffset);
           return range;
@@ -17177,8 +17061,8 @@ svg.icon {
         i = 0;
         items = $$('.linkify', post.nodes.comment);
         while ((el = items[i++])) {
-          let data;
-          if (data = Embedding.services(el)) {
+          let data = Embedding.services(el);
+          if (data) {
             Embedding.preview(data);
           }
         }
@@ -17186,14 +17070,14 @@ svg.icon {
       }
     },
     process(link, post) {
-      let data;
+      let data = Embedding.services(link);
       if (!Conf.Embedding && !Conf['Link Title'] && !Conf['Cover Preview']) {
         return;
       }
       if ($.x('ancestor::pre', link)) {
         return;
       }
-      if (data = Embedding.services(link)) {
+      if (data) {
         data.post = post;
         if (Conf.Embedding && (g.VIEW !== 'archive')) {
           Embedding.embed(data);
@@ -17208,8 +17092,8 @@ svg.icon {
     services(link) {
       const { href } = link;
       for (const type of Embedding.ordered_types) {
-        let match;
-        if (match = type.regExp.exec(href)) {
+        let match = type.regExp.exec(href);
+        if (match) {
           return { key: type.key, uid: match[1], options: match[2], link };
         }
       }
@@ -17275,11 +17159,10 @@ svg.icon {
       return style.pointerEvents = 'none';
     },
     title(data) {
-      let service;
       const { key, uid, options, link, post } = data;
-      if (!(service = Embedding.types[key].title)) {
+      let service = Embedding.types[key].title;
+      if (!service)
         return;
-      }
       $.addClass(link, key.toLowerCase());
       if (service.batchSize) {
         (service.queue || (service.queue = [])).push(data);
@@ -17305,11 +17188,10 @@ svg.icon {
       return CrossOrigin.cache(service.api(queue.map(data => data.uid)), cb);
     },
     preview(data) {
-      let service;
       const { key, uid, link } = data;
-      if (!(service = Embedding.types[key].preview)) {
+      let service = Embedding.types[key].preview;
+      if (!service)
         return;
-      }
       $.on(link, 'mouseover', function (e) {
         const src = service.url(uid);
         const { height } = service;
@@ -17329,15 +17211,14 @@ svg.icon {
       click(e) {
         e.preventDefault();
         if (!$.hasClass(this, 'embedded') && (Conf['Floating Embeds'] || $.hasClass(doc, 'catalog-mode'))) {
-          let div;
-          if (!(div = Embedding.media.firstChild)) {
+          let div = Embedding.media.firstChild;
+          if (!div)
             return;
-          }
           $.replace(div, Embedding.cb.embed(this));
           Embedding.lastEmbed = Get.postFromNode(this).nodes.root;
-          return $.rmClass(Embedding.dialog, 'empty');
+          $.rmClass(Embedding.dialog, 'empty');
         } else {
-          return Embedding.cb.toggle.call(this);
+          Embedding.cb.toggle.call(this);
         }
       },
       toggle() {
@@ -17366,7 +17247,6 @@ svg.icon {
       },
       title(req, data) {
         var _a;
-        let text;
         const { key, uid, options, link, post } = data;
         const service = Embedding.types[key].title;
         let { status } = req;
@@ -17376,25 +17256,20 @@ svg.icon {
         if (!status) {
           return;
         }
-        text = `[${key}] ${(() => {
-        switch (status) {
-          case 200:
-          case 304:
-            text = service.text(req.response, uid);
-            if (typeof text === 'string') {
-              return text;
-            } else {
-              return text = link.textContent;
+        const statusText = () => {
+          switch (status) {
+            case 200:
+            case 304: {
+              const text = service.text(req.response, uid);
+              return typeof text === 'string' ? text : link.textContent;
             }
-          case 404:
-            return "Not Found";
-          case 403:
-          case 401:
-            return "Forbidden or Private";
-          default:
-            return `${status}'d`;
-        }
-      })()}`;
+            case 404: return 'Not Found';
+            case 403:
+            case 401: return 'Forbidden or Private';
+            default: return `${status}'d`;
+          }
+        };
+        const text = `[${key}] ${statusText()}`;
         link.dataset.original = link.textContent;
         link.textContent = text;
         Icon.setLinkify(link);
@@ -17456,8 +17331,8 @@ svg.icon {
         key: 'PeerTube',
         regExp: /^(\w+:\/\/[^\/]+\/videos\/watch\/\w{8}-\w{4}-\w{4}-\w{4}-\w{12})(.*)/,
         el(a) {
-          let start;
-          const options = (start = a.dataset.options.match(/[?&](start=\w+)/)) ? `?${start[1]}` : '';
+          let start = a.dataset.options.match(/[?&](start=\w+)/);
+          const options = start ? `?${start[1]}` : '';
           const el = $.el('iframe', { src: a.dataset.uid.replace('/videos/watch/', '/videos/embed/') + options });
           el.setAttribute("allowfullscreen", "true");
           return el;
@@ -17488,8 +17363,8 @@ svg.icon {
         key: 'Dailymotion',
         regExp: /^\w+:\/\/(?:(?:www\.)?dailymotion\.com\/(?:embed\/)?video|dai\.ly)\/([A-Za-z0-9]+)[^?]*(.*)/,
         el(a) {
-          let start;
-          const options = (start = a.dataset.options.match(/[?&](start=\d+)/)) ? `?${start[1]}` : '';
+          let start = a.dataset.options.match(/[?&](start=\d+)/);
+          const options = start ? `?${start[1]}` : '';
           const el = $.el('iframe', { src: `//www.dailymotion.com/embed/video/${a.dataset.uid}${options}` });
           el.setAttribute("allowfullscreen", "true");
           return el;
@@ -17558,42 +17433,41 @@ svg.icon {
             return el;
           }
           const [_, host, names] = a.dataset.uid.match(/(\w+)\/(.*)/);
-          const types = (() => {
-            switch (host) {
-              case 'gd':
-              case 'wu':
-              case 'fc': return [''];
-              case 'gc': return ['giant', 'fat', 'zippy'];
-              default: return ['.webm', '.mp4'];
-            }
-          })();
+          const TYPES = {
+            gd: [''],
+            wu: [''],
+            fc: [''],
+            gc: ['giant', 'fat', 'zippy'],
+          };
+          const types = TYPES[host] ?? ['.webm', '.mp4'];
           for (const name of names.split(',')) {
             for (const type of types) {
               const base = `${name}${type}`;
-              const urls = (() => {
-                switch (host) {
-                  // list from src/common.py at http://loopvid.appspot.com/source.html
-                  case 'pf': return [`https://kastden.org/_loopvid_media/pf/${base}`, `https://web.archive.org/web/2/http://a.pomf.se/${base}`];
-                  case 'kd': return [`https://kastden.org/loopvid/${base}`];
-                  case 'lv': return [`https://lv.kastden.org/${base}`];
-                  case 'gd': return [`https://docs.google.com/uc?export=download&id=${base}`];
-                  case 'gh': return [`https://googledrive.com/host/${base}`];
-                  case 'db': return [`https://dl.dropboxusercontent.com/u/${base}`];
-                  case 'dx': return [`https://dl.dropboxusercontent.com/${base}`];
-                  case 'nn': return [`https://kastden.org/_loopvid_media/nn/${base}`];
-                  case 'ig': return [`https://i.imgur.com/${base}`];
-                  case 'ky': return [`https://kastden.org/_loopvid_media/ky/${base}`];
-                  case 'mf': return [`https://kastden.org/_loopvid_media/mf/${base}`, `https://web.archive.org/web/2/https://d.maxfile.ro/${base}`];
-                  case 'm2': return [`https://kastden.org/_loopvid_media/m2/${base}`];
-                  case 'pc': return [`https://kastden.org/_loopvid_media/pc/${base}`, `https://web.archive.org/web/2/http://a.pomf.cat/${base}`];
-                  case 'pi': return [`https://kastden.org/_loopvid_media/pi/${base}`, `https://web.archive.org/web/2/https://u.pomf.is/${base}`];
-                  case 'ni': return [`https://kastden.org/_loopvid_media/ni/${base}`, `https://web.archive.org/web/2/https://u.nya.is/${base}`];
-                  case 'ko': return [`https://kordy.kastden.org/loopvid/${base}`];
-                  case 'mm': return [`https://kastden.org/_loopvid_media/mm/${base}`, `https://web.archive.org/web/2/https://my.mixtape.moe/${base}`];
-                  case 'ic': return [`https://media.8ch.net/file_store/${base}`];
-                  case 'fc': return [`//${ImageHost.host()}/${base}.webm`];
-                }
-              })();
+              const KD = (path) => `https://kastden.org/_loopvid_media/${path}`;
+              const WB = (url) => `https://web.archive.org/web/2/${url}`;
+              // list from src/common.py at http://loopvid.appspot.com/source.html
+              const URL_BUILDERS = {
+                kd: base => [`https://kastden.org/loopvid/${base}`],
+                lv: base => [`https://lv.kastden.org/${base}`],
+                gd: base => [`https://docs.google.com/uc?export=download&id=${base}`],
+                gh: base => [`https://googledrive.com/host/${base}`],
+                db: base => [`https://dl.dropboxusercontent.com/u/${base}`],
+                dx: base => [`https://dl.dropboxusercontent.com/${base}`],
+                ig: base => [`https://i.imgur.com/${base}`],
+                ko: base => [`https://kordy.kastden.org/loopvid/${base}`],
+                ic: base => [`https://media.8ch.net/file_store/${base}`],
+                nn: base => [KD(`nn/${base}`)],
+                ky: base => [KD(`ky/${base}`)],
+                m2: base => [KD(`m2/${base}`)],
+                pf: base => [KD(`pf/${base}`), WB(`http://a.pomf.se/${base}`)],
+                mf: base => [KD(`mf/${base}`), WB(`https://d.maxfile.ro/${base}`)],
+                pc: base => [KD(`pc/${base}`), WB(`http://a.pomf.cat/${base}`)],
+                pi: base => [KD(`pi/${base}`), WB(`https://u.pomf.is/${base}`)],
+                ni: base => [KD(`ni/${base}`), WB(`https://u.nya.is/${base}`)],
+                mm: base => [KD(`mm/${base}`), WB(`https://my.mixtape.moe/${base}`)],
+                fc: base => [`//${ImageHost.host()}/${base}.webm`],
+              };
+              const urls = URL_BUILDERS[host]?.(base);
               for (const url of urls) {
                 $.add(el, $.el('source', { src: url }));
               }
@@ -17616,7 +17490,8 @@ svg.icon {
         key: 'Pastebin',
         regExp: /^\w+:\/\/(?:\w+\.)?pastebin\.com\/(?!u\/)(?:[\w.]+(?:\/|\?i\=))?(\w+)/,
         el(a) {
-          return $.el('iframe', { src: `//pastebin.com/embed_iframe/${a.dataset.uid}` });
+          let div = $.el('iframe', { src: `//pastebin.com/embed_iframe/${a.dataset.uid}` });
+          return div;
         }
       },
       {
@@ -17661,10 +17536,10 @@ svg.icon {
           if (m[1] || m[2]) {
             url = `//clips.twitch.tv/embed?clip=${m[3]}&parent=${location.hostname}`;
           } else {
-            let time;
             m = a.dataset.uid.match(/(\w+)(?:\/(?:v\/)?(\d+))?/);
             url = `//player.twitch.tv/?${m[2] ? `video=v${m[2]}` : `channel=${m[1]}`}&autoplay=false&parent=${location.hostname}`;
-            if (time = a.dataset.href.match(/\bt=(\w+)/)) {
+            let time = a.dataset.href.match(/\bt=(\w+)/);
+            if (time) {
               url += `&time=${time[1]}`;
             }
           }
@@ -17744,10 +17619,7 @@ svg.icon {
         key: 'YouTube',
         regExp: /^\w+:\/\/(?:youtu\.be\/|[\w.]*youtube[\w.]*\/.*(?:v=|\bembed\/|\bv\/|shorts\/|live\/|watch\/))([\w\-]{11})(.*)/,
         el(a) {
-          let start = a.dataset.options.match(/\b(?:star)?t\=(\w+)/);
-          if (start) {
-            start = start[1];
-          }
+          let start = a.dataset.options.match(/\b(?:star)?t\=(\w+)/)?.[1];
           if (start && !/^\d+$/.test(start)) {
             start += ' 0h0m0s';
             start = (3600 * start.match(/(\d+)h/)[1]) + (60 * start.match(/(\d+)m/)[1]) + (1 * start.match(/(\d+)s/)[1]);
@@ -17819,8 +17691,8 @@ svg.icon {
       const updateLink = $.el('span', { className: 'brackets-wrap updatelink' });
       $.extend(updateLink, { innerHTML: '<a href="javascript:;">Update</a>' });
       PageReady.ready(function () {
-        let navLinksBot;
-        if (navLinksBot = $('.navLinksBot')) {
+        let navLinksBot = $('.navLinksBot');
+        if (navLinksBot) {
           return $.add(navLinksBot, [$.tn(' '), updateLink]);
         }
       });
@@ -17895,7 +17767,7 @@ svg.icon {
         ThreadUpdater.postID = e.detail.postID;
         ThreadUpdater.checkPostCount = 0;
         ThreadUpdater.outdateCount = 0;
-        return ThreadUpdater.setInterval();
+        ThreadUpdater.setInterval();
       },
       visibility() {
         if (d.hidden) {
@@ -17974,9 +17846,9 @@ svg.icon {
       }
       ThreadUpdater.setInterval();
       if (!req.status) {
-        return ThreadUpdater.set('status', 'Connection Error', 'warning');
+        ThreadUpdater.set('status', 'Connection Error', 'warning');
       } else if (req.status !== 304) {
-        return ThreadUpdater.set('status', `${req.statusText} (${req.status})`, 'warning');
+        ThreadUpdater.set('status', `${req.statusText} (${req.status})`, 'warning');
       }
     },
     setInterval() {
@@ -18015,9 +17887,9 @@ svg.icon {
       $('input[name=Interval]', settings).focus();
     },
     set(name, text, klass) {
-      let node;
       const el = ThreadUpdater[name];
-      if ((node = el.firstChild)) {
+      let node = el.firstChild;
+      if (node) {
         // Prevent the creation of a new DOM Node by setting the text node's data.
         node.data = text;
       } else {
@@ -18036,30 +17908,29 @@ svg.icon {
       return ThreadUpdater.seconds--;
     },
     update() {
-      let oldReq;
       clearTimeout(ThreadUpdater.timeoutID);
       ThreadUpdater.set('timer', '...', 'loading');
-      if (oldReq = ThreadUpdater.req) {
+      let oldReq = ThreadUpdater.req;
+      if (oldReq) {
         delete ThreadUpdater.req;
         oldReq.abort();
       }
       return ThreadUpdater.req = $.whenModified(g.SITE.urls.threadJSON({ boardID: ThreadUpdater.thread.board.ID, threadID: ThreadUpdater.thread.ID }), 'ThreadUpdater', ThreadUpdater.cb.load, { timeout: MINUTE });
     },
     updateThreadStatus(type, status) {
-      if (!(ThreadUpdater.thread[`is${type}`] !== status)) {
+      let hasChanged = ThreadUpdater.thread[`is${type}`] !== status;
+      if (!hasChanged)
         return;
-      }
       ThreadUpdater.thread.setStatus(type, status);
       if ((type === 'Closed') && ThreadUpdater.thread.isArchived) {
         return;
       }
-      const change = type === 'Sticky' ?
-        status ? 'now a sticky' : 'not a sticky anymore'
-        : status ? 'now closed' : 'not closed anymore';
-      return new Notice('info', `The thread is ${change}.`, 30);
+      const change = type === 'Sticky' ? status ? 'now a sticky'
+        : 'not a sticky anymore' : status ? 'now closed' : 'not closed anymore';
+      new Notice('info', `The thread is ${change}.`, 30);
     },
     parse(req) {
-      let ID, ipCountEl, post;
+      let ipCountEl, post, ID;
       const postObjects = req.response.posts;
       const OP = postObjects[0];
       const thread = ThreadUpdater.thread;
@@ -18147,9 +18018,7 @@ svg.icon {
         let firstPost = null;
         for (post of posts) {
           if (!QuoteThreading.insert(post)) {
-            if (!firstPost) {
-              firstPost = post.nodes.root;
-            }
+            firstPost ?? (firstPost = post.nodes.root);
             $.add(ThreadUpdater.root, post.nodes.root);
           }
         }
@@ -18294,6 +18163,21 @@ svg.icon {
       }
   };
 
+  const KEY_NAMES = {
+      8: '', // return
+      13: 'Enter',
+      27: 'Esc',
+      32: 'Space',
+      37: 'Left',
+      38: 'Up',
+      39: 'Right',
+      40: 'Down',
+      59: 'Semicolon',
+      186: 'Semicolon',
+      188: 'Comma',
+      190: 'Period',
+      191: 'Slash',
+  };
   var Keybinds = {
       init() {
           if (!Conf.Keybinds) {
@@ -18607,46 +18491,18 @@ svg.icon {
           }
       },
       keyCode(e) {
-          let key = (() => {
-              let kc;
-              switch ((kc = e.keyCode)) {
-                  case 8: // return
-                      return '';
-                  case 13:
-                      return 'Enter';
-                  case 27:
-                      return 'Esc';
-                  case 32:
-                      return 'Space';
-                  case 37:
-                      return 'Left';
-                  case 38:
-                      return 'Up';
-                  case 39:
-                      return 'Right';
-                  case 40:
-                      return 'Down';
-                  case 188:
-                      return 'Comma';
-                  case 190:
-                      return 'Period';
-                  case 191:
-                      return 'Slash';
-                  case 59:
-                  case 186:
-                      return 'Semicolon';
-                  default:
-                      if ((48 <= kc && kc <= 57) || (65 <= kc && kc <= 90)) { // 0-9, A-Z
-                          return String.fromCharCode(kc).toLowerCase();
-                      }
-                      else if (96 <= kc && kc <= 105) { // numpad 0-9
-                          return String.fromCharCode(kc - 48);
-                      }
-                      else {
-                          return null;
-                      }
+          function keyName(kc) {
+              if (kc in KEY_NAMES)
+                  return KEY_NAMES[kc];
+              if ((48 <= kc && kc <= 57) || (65 <= kc && kc <= 90)) { // 0-9, A-Z
+                  return String.fromCharCode(kc).toLowerCase();
               }
-          })();
+              if (96 <= kc && kc <= 105) { // numpad 0-9
+                  return String.fromCharCode(kc - 48);
+              }
+              return null;
+          }
+          let key = keyName(e.keyCode);
           if (key) {
               if (e.altKey) {
                   key = 'Alt+' + key;
@@ -18678,15 +18534,14 @@ svg.icon {
       tags(tag, ta) {
           BoardConfig.ready(function () {
               const { config } = g.BOARD;
-              const supported = (() => {
-                  switch (tag) {
-                      case 'spoiler': return !!config.spoilers;
-                      case 'code': return !!config.code_tags;
-                      case 'math':
-                      case 'eqn': return !!config.math_tags;
-                      case 'sjis': return !!config.sjis_tags;
-                  }
-              })();
+              const TAG_SUPPORT = {
+                  spoiler: 'spoilers',
+                  code: 'code_tags',
+                  math: 'math_tags',
+                  eqn: 'math_tags',
+                  sjis: 'sjis_tags',
+              };
+              const supported = !!config[TAG_SUPPORT[tag]];
               if (!supported) {
                   return new Notice('warning', `[${tag}] tags are not supported on /${g.BOARD}/.`, 20);
               }
@@ -18706,9 +18561,7 @@ svg.icon {
       },
       sage() {
           const isSage = /sage/i.test(QR.nodes.email.value);
-          return QR.nodes.email.value = isSage ?
-              ""
-              : "sage";
+          return QR.nodes.email.value = isSage ? "" : "sage";
       },
       open(thread, tab) {
           if (g.VIEW !== 'index') {
@@ -18737,10 +18590,7 @@ svg.icon {
               if ((Header.getTopOf(postEl) >= -height) && (Header.getBottomOf(postEl) >= -height)) { // We're at least partially visible
                   let next;
                   const { root } = Get.postFromNode(postEl).nodes;
-                  const axis = delta === 1 ?
-                      'following'
-                      :
-                          'preceding';
+                  const axis = delta === 1 ? 'following' : 'preceding';
                   if (!(next = $.x(`${axis}-sibling::${g.SITE.xpath.replyContainer}[not(@hidden) and not(child::div[@class='stub'])][1]`, root))) {
                       return;
                   }
@@ -19113,10 +18963,9 @@ svg.icon {
 
   const Report = {
       init() {
-          let match;
-          if (!(match = location.search.match(/\bno=(\d+)/))) {
+          let match = location.search.match(/\bno=(\d+)/);
+          if (!match)
               return;
-          }
           Captcha.replace.init();
           this.postID = +match[1];
           $.ready(this.ready);
@@ -19137,13 +18986,12 @@ svg.icon {
           Report.fit('body');
       },
       fit(selector) {
-          let el;
-          if (!((el = $(selector, doc)) && (getComputedStyle(el).visibility !== 'hidden'))) {
+          let el = $(selector, doc);
+          if (!(el && (getComputedStyle(el).visibility !== 'hidden')))
               return;
-          }
           const dy = (el.getBoundingClientRect().bottom - doc.clientHeight) + 8;
           if (dy > 0) {
-              return window.resizeBy(0, dy);
+              window.resizeBy(0, dy);
           }
       },
       archive() {
@@ -19579,17 +19427,13 @@ svg.icon {
     },
     parseNodes(post, nodes) {
       // Add CSS classes to sticky/closed icons on /f/ to match other boards.
-      if (post.boardID === 'f') {
-        return (() => {
-          const result = [];
-          for (var type of ['Sticky', 'Closed']) {
-            var icon;
-            if (icon = $(`img[alt=${type}]`, nodes.info)) {
-              result.push($.addClass(icon, `${type.toLowerCase()}Icon`, 'retina'));
-            }
-          }
-          return result;
-        })();
+      if (post.boardID !== 'f')
+        return;
+      for (const type of ['Sticky', 'Closed']) {
+        const icon = $(`img[alt=${type}]`, nodes.info);
+        if (icon) {
+          $.addClass(icon, `${type.toLowerCase()}Icon`, 'retina');
+        }
       }
     },
     parseInfo(post) {
@@ -19801,8 +19645,7 @@ svg.icon {
         const site = g.sites[siteID];
         const filename = (site.software === 'yotsuba') && (boardID === 'f') ?
           `${encodeURIComponent(data.filename)}${data.ext}`
-          :
-            `${data.tim}${data.ext}`;
+          : `${data.tim}${data.ext}`;
         const o = {
           name: ($.unescape(data.filename)) + data.ext,
           url: site.urls.file({ siteID, boardID }, filename),
@@ -19870,9 +19713,7 @@ svg.icon {
         const url = this.threadURL(boardID, threadID);
         const postLink = `${url}#p${ID}`;
         const quoteLink = this.sameThread(boardID, threadID) ?
-          `javascript:quote('${+ID}');`
-          :
-            `${url}#q${ID}`;
+          `javascript:quote('${+ID}');` : `${url}#q${ID}`;
         const postInfo = generatePostInfoHtml(ID, o, subject, capcode, email, name, tripcode, pass, capcodeLC, capcodePlural, staticPath, gifIcon, capcodeDescription, uniqueID, flag, flagCode, flagCodeTroll, dateUTC, dateText, postLink, quoteLink, boardID, threadID);
         /* File Info */
         let protocol, fileURL, shortFilename, fileThumb;
@@ -19950,8 +19791,7 @@ svg.icon {
           const [posts, files] = withReplies ?
             // XXX data.omitted_images is not accurate.
             [data.omitted_posts, data.images - data.last_replies.filter(data => !!data.ext).length]
-            :
-              [data.replies, data.images];
+            : [data.replies, data.images];
           const summary = this.summary(thread.board.ID, data.no, posts, files);
           $.add(root, summary);
         }
@@ -20010,9 +19850,7 @@ svg.icon {
           excerpt = this.parseCommentDisplay(data.com).replace(/>>\d+/g, '').trim().replace(/\n+/g, ' // ');
         }
         if (data.ext) {
-          if (!excerpt) {
-            excerpt = `${$.unescape(data.filename)}${data.ext}`;
-          }
+          excerpt || (excerpt = `${$.unescape(data.filename)}${data.ext}`);
         }
         if (data.com) {
           if (!excerpt) {
@@ -20066,9 +19904,9 @@ svg.icon {
           'Reply Pruning'
       ],
       detect() {
-          for (var script of $$('script:not([src])', d.head)) {
-              var m;
-              if (m = script.textContent.match(/\bvar configRoot=(".*?")/)) {
+          for (const script of $$('script:not([src])', d.head)) {
+              let m = script.textContent.match(/\bvar configRoot=(".*?")/);
+              if (m) {
                   var properties = dict();
                   try {
                       var root = JSON.parse(m[1]);
@@ -20086,7 +19924,8 @@ svg.icon {
           return false;
       },
       awaitBoard(cb) {
-          if ($.id('react-ui')) {
+          let reactUI = $.id('react-ui');
+          if (reactUI) {
               const s = (this.selectors = Object.create(this.selectors));
               s.boardFor = { index: '.page-container' };
               s.thread = 'div[id^="thread_"]';
@@ -20240,8 +20079,8 @@ $\
       },
       preParsingFixes(board) {
           // fixes effects of unclosed link in announcement
-          let broken;
-          if (broken = $('a > input[name="board"]', board)) {
+          let broken = $('a > input[name="board"]', board);
+          if (broken) {
               return $.before(broken.parentNode, broken);
           }
       },
@@ -20265,7 +20104,7 @@ $\
               nextSibling.splitText(m[2].length);
               nodes.uniqueID = (uniqueID = $.el('span', { className: 'poster_id' }));
               $.replace(nextSibling, uniqueID);
-              return $.add(uniqueID, nextSibling);
+              $.add(uniqueID, nextSibling);
           }
       },
       parseDate(node) {
@@ -20506,8 +20345,8 @@ $\
       Settings.sections.push({ title, hyphenatedTitle, open });
     },
     openSection() {
-      let selected;
-      if (selected = $('.tab-selected', Settings.dialog)) {
+      let selected = $('.tab-selected', Settings.dialog);
+      if (selected) {
         $.rmClass(selected, 'tab-selected');
       }
       $.addClass($(`.tab-${this.hyphenatedTitle}`, Settings.dialog), 'tab-selected');
@@ -20726,10 +20565,9 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       $('input[type=file]', this.parentNode).click();
     },
     onImport() {
-      let file;
-      if (!(file = this.files[0])) {
+      let file = this.files[0];
+      if (!file)
         return;
-      }
       this.value = null;
       const output = $('.imp-exp-result');
       if (!confirm('Your current settings will be entirely overwritten, are you sure?')) {
@@ -20776,14 +20614,9 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           }
         }
       }
-      if (compareString < '00001.00014.00016.00001') {
-        if (data.archiveLists != null) {
-          set('archiveLists', data.archiveLists.replace('https://mayhemydg.github.io/archives.json/archives.json', 'https://nstepien.github.io/archives.json/archives.json'));
-        }
-      }
-      if (compareString < '00001.00014.00016.00007') {
+      if (compareString < '00001.00014.00022.00003') {
         if (data.sauces != null) {
-          set('sauces', data.sauces.replace(/https:\/\/www\.deviantart\.com\/gallery\/#\/d%\$1%\$2;regexp:\/\^\\w\+_by_\\w\+\[_-\]d\(\[\\da-z\]\{6\}\)\\b\|\^d\(\[\\da-z\]\{6\}\)-\[\\da-z\]\{8\}-\//g, 'javascript:void(open("https://www.deviantart.com/"+%$1.replace(/_/g,"-")+"/art/"+parseInt(%$2,36)));regexp:/^\\w+_by_(\\w+)[_-]d([\\da-z]{6})\\b/').replace(/\/\/imgops\.com\/%URL/g, '//imgops.com/start?url=%URL'));
+          set('sauces', data.sauces.replace(/https:\/\/www\.deviantart\.com\/gallery\/#\/d%\$1%\$2;regexp:\/\^\\w\+_by_\\w\+\[_-\]d\(\[\\da-z\]\{6\}\)\\b\|\^d\(\[\\da-z\]\{6\}\)-\[\\da-z\]\{8\}-\//g, 'javascript:void(open("https://www.deviantart.com/"+%$1.replace(/_/g,"-")+"/art/"+parseInt(%$2,36)));regexp:/^\\w+_by_(\\w+)[_-]d([\\da-z]{6})\\b/').replace(/\/\/imgops\.com\/%URL/g, '//imgops.com/start?url=%URL').replace(/^#?\s*https:\/\/www\.google\.com\/searchbyimage\?image_url=%(IMG|T?URL)&safe=off(?=$|;)/mg, 'https://www.google.com/searchbyimage?sbisrc=4chanx&image_url=%$1&safe=off').replace(/^#?\s*https:\/\/lens\.google\.com\/uploadbyurl\?url=%(IMG|T?URL)(?=$|;)/m, 'https://www.google.com/searchbyimage?sbisrc=4chanx&image_url=%$1&safe=off'));
         }
       }
       if (compareString < '00001.00014.00017.00002') {
@@ -20793,15 +20626,9 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       }
       if (compareString < '00001.00014.00020.00004') {
         if (data.archiveLists != null) {
-          set('archiveLists', data.archiveLists.replace('https://nstepien.github.io/archives.json/archives.json', 'https://4chenz.github.io/archives.json/archives.json'));
-        }
-      }
-      if (compareString < '00001.00014.00022.00003') {
-        if (data.sauces) {
-          set('sauces', data.sauces.replace(/^#?\s*https:\/\/www\.google\.com\/searchbyimage\?image_url=%(IMG|T?URL)&safe=off(?=$|;)/mg, 'https://www.google.com/searchbyimage?sbisrc=4chanx&image_url=%$1&safe=off'));
-          if (compareString === '00001.00014.00022.00002' && !/\bsbisrc=/.test(data.sauces)) {
-            set('sauces', data.sauces.replace(/^#?\s*https:\/\/lens\.google\.com\/uploadbyurl\?url=%(IMG|T?URL)(?=$|;)/m, 'https://www.google.com/searchbyimage?sbisrc=4chanx&image_url=%$1&safe=off'));
-          }
+          set('archiveLists', data.archiveLists
+            .replace('https://mayhemydg.github.io/archives.json/archives.json', 'https://4chenz.github.io/archives.json/archives.json')
+            .replace('https://nstepien.github.io/archives.json/archives.json', 'https://4chenz.github.io/archives.json/archives.json'));
         }
       }
       if (compareString < '00002.00003.00001.00000') {
@@ -20848,8 +20675,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       Settings.selectFilter.call(select);
     },
     selectFilter() {
-      let name;
       const div = this.nextElementSibling;
+      let name;
       if ((name = this.value) !== 'guide') {
         if (!$.hasOwn(Config.filter, name)) {
           return;
@@ -20964,9 +20791,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     addArchiveTable(section) {
       let boardID, o;
       $('#lastarchivecheck', section).textContent = Conf.lastarchivecheck === 0 ?
-        'never'
-        :
-          new Date(Conf.lastarchivecheck).toLocaleString();
+        'never' : new Date(Conf.lastarchivecheck).toLocaleString();
       const boardSelect = $('#archive-board-select', section);
       const table = $('#archive-table', section);
       const tbody = $('tbody', section);
@@ -21221,9 +21046,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           if (line[0] === '#')
             continue;
           const regexpMatch = line.match(/\/(.*)\/(\w*)/);
-          if (!regexpMatch) {
+          if (!regexpMatch)
             continue;
-          }
           if (key === 'uniqueID' || key === 'MD5') {
             // MD5 filter will use strings instead of regular expressions.
             regexp = regexpMatch[1];
@@ -21258,16 +21082,11 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
             mask = mask | ($.getOwn({ 'no': 4, 'only': 8 }, file) || 0);
             // Overrule the `Show Stubs` setting.
             // Defaults to stub showing.
-            stub = (() => {
-              switch (options.match(/(?:^|;)\s*stub:(yes|no)/)?.[1]) {
-                case 'yes':
-                  return true;
-                case 'no':
-                  return false;
-                default:
-                  return Conf.Stubs;
-              }
-            })();
+            const stubOption = options.match(/(?:^|;)\s*stub:(yes|no)/)?.[1];
+            if (stubOption === 'yes')
+              stub = true;
+            else if (stubOption === 'no')
+              stub = false;
             // Desktop notification
             noti = /(?:^|;)\s*notify/.test(options);
             // Highlight the post.
@@ -21315,7 +21134,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       if (g.VIEW === 'catalog') {
         return Filter.catalog();
       } else {
-        return Callbacks.Post.push({
+        Callbacks.Post.push({
           name: 'Filter',
           cb: this.node
         });
@@ -21324,11 +21143,11 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     // Parse comma-separated list of boards.
     // Sites can be specified by a beginning part of the site domain followed by a colon.
     parseBoards(boardsRaw) {
-      let boards;
       if (!boardsRaw) {
         return false;
       }
-      if (boards = Filter.parseBoardsMemo[boardsRaw]) {
+      let boards = Filter.parseBoardsMemo[boardsRaw];
+      if (boards) {
         return boards;
       }
       boards = dict();
@@ -21494,13 +21313,12 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       }
     },
     catalog() {
-      let url;
-      if (!(url = g.SITE.urls.catalogJSON?.(g.BOARD))) {
+      let url = g.SITE.urls.catalogJSON?.(g.BOARD);
+      if (!url)
         return;
-      }
       Filter.catalogData = dict();
       $.ajax(url, { onloadend: Filter.catalogParse });
-      return Callbacks.CatalogThreadNative.push({
+      Callbacks.CatalogThreadNative.push({
         name: 'Filter',
         cb: this.catalogNode
       });
@@ -21586,11 +21404,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       return $.get(type, Conf[type], function (item) {
         let save = item[type];
         // Add a new line before the regexp unless the text is empty.
-        save =
-          save ?
-            `${save}\n${re}`
-            :
-              re;
+        save = save ? `${save}\n${re}` : re;
         return $.set(type, save, cb);
       });
     },
@@ -21715,11 +21529,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         });
         el.dataset.type = type;
         $.on(el, 'click', Filter.menu.makeFilter);
-        return {
-          el,
-          open(post) {
-            return Filter.values(type, post).length;
-          }
+        return { el, open(post) { return Filter.values(type, post).length; }
         };
       },
       makeFilter() {
@@ -21752,9 +21562,9 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               cb();
           }
           $.onExists(doc, 'body', () => {
-              for (var software in SW) {
-                  var changes;
-                  if (changes = SW[software].detect?.()) {
+              for (let software in SW) {
+                  let changes = SW[software].detect?.();
+                  if (changes) {
                       changes.software = software;
                       hostname = location.hostname.replace(/^www\./, '');
                       var properties = (Conf.siteProperties[hostname] || (Conf.siteProperties[hostname] = dict()));
@@ -21783,8 +21593,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               hostname = hostname.replace(/^[^.]*\.?/, '');
           }
           if (hostname) {
-              let canonical;
-              if (canonical = Conf.siteProperties[hostname].canonical) {
+              let canonical = Conf.siteProperties[hostname].canonical;
+              if (canonical) {
                   hostname = canonical;
               }
           }
@@ -21824,7 +21634,6 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               const selector = selectors[g.VIEW];
               $.ready(function () {
                   for (const link of $$(selector)) {
-                      let catalogURL;
                       switch (link.pathname.replace(/\/+/g, '/')) {
                           case `/${g.BOARD}/`:
                               if (Conf['JSON Index']) {
@@ -21836,7 +21645,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
                               link.href = CatalogLinks.catalog();
                               break;
                       }
-                      if ((g.VIEW === 'catalog') && ((catalogURL = CatalogLinks.catalog()) !== g.SITE.urls.catalog?.(g.BOARD))) {
+                      let catalogURL = CatalogLinks.catalog();
+                      if ((g.VIEW === 'catalog') && (catalogURL !== g.SITE.urls.catalog?.(g.BOARD))) {
                           const catalogLink = link.parentNode.cloneNode(true);
                           const link2 = catalogLink.firstElementChild;
                           link2.href = catalogURL;
@@ -21853,23 +21663,20 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               });
           }
           if (this.enabled = Conf['Catalog Links']) {
-              let el;
-              CatalogLinks.el = (el = UI.checkbox('Header catalog links', 'Catalog Links'));
+              let el = UI.checkbox('Header catalog links', 'Catalog Links');
+              CatalogLinks.el = el;
               el.id = 'toggleCatalog';
               const input = $('input', el);
               $.on(input, 'change', this.toggle);
               $.sync('Header catalog links', CatalogLinks.set);
-              Header.menu.addEntry({
-                  el,
-                  order: 95
-              });
+              Header.menu.addEntry({ el, order: 95 });
           }
       },
       node() {
           for (const a of $$('a', this.nodes.comment)) {
-              let m;
-              // if (m = a.href.match(/^https?:\/\/(boards\.4chan(?:nel)?\.org\/[^\/]+)\/catalog(#s=.*)?/)) {
-              if (m = a.href.match(/^https?:\/\/(boards\.4chan\.org\/[^\/]+)\/catalog(#s=.*)?/)) {
+              // let m = a.href.match(/^https?:\/\/(boards\.4chan(?:nel)?\.org\/[^\/]+)\/catalog(#s=.*)?/);
+              let m = a.href.match(/^https?:\/\/(boards\.4chan\.org\/[^\/]+)\/catalog(#s=.*)?/);
+              if (m) {
                   a.href = `//${m[1]}/${m[2] || '#catalog'}`;
               }
           }
@@ -21985,7 +21792,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         $.add(this.bar, [noticesRoot, this.toggle]);
         $.prepend(d.body, this.bar);
         $.add(d.body, Header.hover);
-        return this.setBarPosition(Conf['Bottom Header']);
+        this.setBarPosition(Conf['Bottom Header']);
       });
       this.menu = new UI.Menu('header');
       const menuButton = $.el('span', { className: 'menu-button' });
@@ -22054,12 +21861,11 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       this.setBoardList();
       $.onExists(doc, `${g.SITE.selectors.boardList} + *`, Header.generateFullBoardList);
       PageReady.ready(function () {
-        let footer;
-        if ((g.SITE.software === 'yotsuba') && !(footer = $.id('boardNavDesktopFoot'))) {
-          let absbot;
-          if (!(absbot = $.id('absbot'))) {
+        let footer = $.id('boardNavDesktopFoot');
+        if ((g.SITE.software === 'yotsuba') && !footer) {
+          let absbot = $.id('absbot');
+          if (!absbot)
             return;
-          }
           footer = $.id('boardNavDesktop').cloneNode(true);
           footer.id = 'boardNavDesktopFoot';
           $('#navtopright', footer).id = 'navbotright';
@@ -22096,8 +21902,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     hover: $.el('div', { id: 'hoverUI' }),
     toggle: $.el('div', { id: 'scroll-marker' }),
     setBoardList() {
-      let boardList;
-      Header.boardList = (boardList = $.el('span', { id: 'board-list' }));
+      let boardList = $.el('span', { id: 'board-list' });
+      Header.boardList = boardList;
       $.extend(boardList, { innerHTML: "<span id=\"custom-board-list\"></span><span id=\"full-board-list\" hidden><span class=\"hide-board-list-container brackets-wrap\"><a href=\"javascript:;\" class=\"hide-board-list-button\">&nbsp;-&nbsp;</a></span> <span class=\"boardList\"></span></span>" });
       const btn = $('.hide-board-list-button', boardList);
       $.on(btn, 'click', Header.toggleBoardList);
@@ -22283,6 +22089,28 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       }
       return a;
     },
+    applyToggle(condition, ...targets) {
+      for (const [el, ...classes] of targets) {
+        condition ? $.addClass(el, ...classes) : $.rmClass(el, ...classes);
+      }
+    },
+    setShortcutIcons(show) {
+      Header.shortcutToggler.checked = show;
+      Header.applyToggle(show, [doc, 'shortcut-icons']);
+    },
+    setBarFixed(fixed) {
+      Header.barFixedToggler.checked = fixed;
+      Header.applyToggle(fixed, [doc, 'fixed'], [Header.bar, 'dialog']);
+    },
+    setLinkJustify(centered) {
+      Header.linkJustifyToggler.checked = centered;
+      Header.applyToggle(centered, [doc, 'centered-links']);
+    },
+    hideBarOnScroll() {
+      const offsetY = window.scrollY;
+      Header.applyToggle(offsetY > (Header.previousOffset || 0), [Header.bar, 'autohide', 'scroll']);
+      return Header.previousOffset = offsetY;
+    },
     toggleBoardList() {
       const { bar } = Header;
       const custom = $('#custom-board-list', bar);
@@ -22291,14 +22119,6 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       custom.hidden = !showBoardList;
       full.hidden = showBoardList;
     },
-    setLinkJustify(centered) {
-      Header.linkJustifyToggler.checked = centered;
-      if (centered) {
-        $.addClass(doc, 'centered-links');
-      } else {
-        $.rmClass(doc, 'centered-links');
-      }
-    },
     toggleLinkJustify() {
       $.event('CloseMenu');
       const centered = this.nodeName === 'INPUT' ?
@@ -22306,29 +22126,11 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       Header.setLinkJustify(centered);
       $.set('Centered links', centered);
     },
-    setBarFixed(fixed) {
-      Header.barFixedToggler.checked = fixed;
-      if (fixed) {
-        $.addClass(doc, 'fixed');
-        $.addClass(Header.bar, 'dialog');
-      } else {
-        $.rmClass(doc, 'fixed');
-        $.rmClass(Header.bar, 'dialog');
-      }
-    },
     toggleBarFixed() {
       $.event('CloseMenu');
       Header.setBarFixed(this.checked);
       Conf['Fixed Header'] = this.checked;
       $.set('Fixed Header', this.checked);
-    },
-    setShortcutIcons(show) {
-      Header.shortcutToggler.checked = show;
-      if (show) {
-        $.addClass(doc, 'shortcut-icons');
-      } else {
-        $.rmClass(doc, 'shortcut-icons');
-      }
     },
     toggleShortcutIcons() {
       $.event('CloseMenu');
@@ -22366,15 +22168,6 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       const hide = this.checked;
       $.cb.checked.call(this);
       Header.setHideBarOnScroll(hide);
-    },
-    hideBarOnScroll() {
-      const offsetY = window.pageYOffset;
-      if (offsetY > (Header.previousOffset || 0)) {
-        $.addClass(Header.bar, 'autohide', 'scroll');
-      } else {
-        $.rmClass(Header.bar, 'autohide', 'scroll');
-      }
-      return Header.previousOffset = offsetY;
     },
     setBarPosition(bottom) {
       if (Header.barPositionToggler)
@@ -22437,15 +22230,11 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         x = Header.getBottomOf(root);
         if (Conf['Fixed Header'] && Conf['Header auto-hide on scroll'] && Conf['Bottom header']) {
           ({ height } = Header.bar.getBoundingClientRect());
-          if (x <= 0) {
-            if (!Header.isHidden()) {
-              x += height;
-            }
-          } else {
-            if (Header.isHidden()) {
-              x -= height;
-            }
-          }
+          const isHidden = Header.isHidden();
+          if (x <= 0 && !isHidden)
+            x += height;
+          else if (x > 0 && isHidden)
+            x -= height;
         }
         if (!needed || (x < 0)) {
           return window.scrollBy(0, -x);
@@ -22454,15 +22243,11 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         x = Header.getTopOf(root);
         if (Conf['Fixed Header'] && Conf['Header auto-hide on scroll'] && !Conf['Bottom header']) {
           ({ height } = Header.bar.getBoundingClientRect());
-          if (x >= 0) {
-            if (!Header.isHidden()) {
-              x += height;
-            }
-          } else {
-            if (Header.isHidden()) {
-              x -= height;
-            }
-          }
+          const isHidden = Header.isHidden();
+          if (x >= 0 && !isHidden)
+            x += height;
+          else if (x < 0 && isHidden)
+            x -= height;
         }
         if (!needed || (x < 0)) {
           return window.scrollBy(0, x);
@@ -22553,7 +22338,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         if (status === 'default') {
           return;
         }
-        return notice.close();
+        notice.close();
       }));
       $.on(disable, 'click', function () {
         $.set('Desktop Notifications', false);
@@ -22580,16 +22365,11 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         video.play();
       });
       $.on(audio, 'seeked waiting', syncTime);
-      $.on(audio, 'pause', () => {
-        video.pause();
-      });
       $.on(audio, 'ratechange', () => {
         video.currentTime = audio.currentTime;
         video.playbackRate = audio.playbackRate;
       });
-      $.on(audio, 'waiting', () => {
-        video.pause();
-      });
+      $.on(audio, 'waiting pause', () => { video.pause(); });
       $.one(audio, 'canplay', () => {
         if (audio.currentTime < .1)
           video.currentTime = 0;
@@ -22812,7 +22592,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         if (el.id) {
           return;
         }
-        return $.rm(el);
+        $.rm(el);
       });
       if (file.audio) {
         file.audio.remove();
@@ -23050,7 +22830,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           var conf = Config.imageExpansion[name];
           subEntries.push(createSubEntry(name, conf[1]));
         }
-        return Header.menu.addEntry({
+        Header.menu.addEntry({
           el,
           order: 105,
           subEntries
@@ -23094,8 +22874,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       if (!this.isReply) {
         this.thread.OP = this;
         for (var key of ['isSticky', 'isClosed', 'isArchived']) {
-          var selector;
-          if (selector = g.SITE.selectors.icons[key]) {
+          let selector = g.SITE.selectors.icons[key];
+          if (selector) {
             this.thread[key] = !!$(selector, this.nodes.info);
           }
         }
@@ -23184,14 +22964,14 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     }
     parseComment() {
       // Merge text nodes and remove empty ones.
-      let bq;
       this.nodes.comment.normalize();
       // Get the comment's text.
       // <br> -> \n
       // Remove:
       //   'Comment too long'...
       //   EXIF data. (/p/)
-      this.nodes.commentClean = (bq = this.nodes.comment.cloneNode(true));
+      let bq = this.nodes.comment.cloneNode(true);
+      this.nodes.commentClean = bq;
       g.SITE.cleanComment?.(bq);
       return this.info.comment = this.nodesToText(bq);
     }
@@ -23259,13 +23039,13 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         this.quotes.push(fullID);
     }
     parseFiles() {
-      let file;
       this.files = [];
       const fileRoots = this.fileRoots();
       let index = 0;
       for (let docIndex = 0; docIndex < fileRoots.length; docIndex++) {
         var fileRoot = fileRoots[docIndex];
-        if (file = this.parseFile(fileRoot)) {
+        let file = this.parseFile(fileRoot);
+        if (file) {
           file.index = (index++);
           file.docIndex = docIndex;
           this.files.push(file);
@@ -23311,7 +23091,6 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       return file;
     }
     kill(file = false, index = 0) {
-      let strong;
       if (file) {
         if (this.isDead || this.files[index].isDead) {
           return;
@@ -23326,7 +23105,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         $.rmClass(this.nodes.root, 'deleted-file');
         $.addClass(this.nodes.root, 'deleted-post');
       }
-      if (!(strong = $('strong.warning', this.nodes.info))) {
+      let strong = $('strong.warning', this.nodes.info);
+      if (!strong) {
         strong = $.el('strong', { className: 'warning' });
         $.after($('input', this.nodes.info), strong);
       }
@@ -23419,7 +23199,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
   }
   // because of a circular dependency $ might not be initialized, so we can't use $.el
   Post.deadMark = (() => {
-    const el = document.createElement('span');
+    const el = d.createElement('span');
     // \u00A0 is nbsp
     el.textContent = '\u00A0(Dead)';
     el.className = 'qmark-dead';
@@ -23617,7 +23397,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
                 delete file.audioSlider;
               }
             }
-            return el.removeAttribute('style');
+            el.removeAttribute('style');
           }
         });
       };
@@ -23975,8 +23755,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           });
       },
       menuText() {
-          let seconds;
-          if ((seconds = DeleteLink.cooldown.seconds[DeleteLink.post.fullID])) {
+          let seconds = DeleteLink.cooldown.seconds[DeleteLink.post.fullID];
+          if (seconds) {
               return `Delete (${seconds})`;
           }
           else {
@@ -24025,7 +23805,6 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           });
       },
       load(link, post, fileOnly, resDoc) {
-          let msg;
           if (!resDoc) {
               new Notice('warning', 'Connection error, please retry.', 20);
               if (post.fullID === DeleteLink.post.fullID) {
@@ -24033,6 +23812,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               }
               return;
           }
+          let msg;
           link.textContent = DeleteLink.linkText(fileOnly);
           if (resDoc.title === '4chan - Banned') { // Ban/warn check
               const el = $.el('span', { innerHTML: "You can&#039;t delete posts because you are <a href=\"//www.4chan.org/banned\" target=\"_blank\">banned</a>." });
@@ -24046,7 +23826,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               if (QR.cooldown.data && Conf.Cooldown && /\bwait\b/i.test(msg.textContent)) {
                   DeleteLink.cooldown.start(post, 5);
                   DeleteLink.auto[+fileOnly][post.fullID] = true;
-                  return DeleteLink.nodes.links[+fileOnly].textContent = DeleteLink.linkText(fileOnly);
+                  DeleteLink.nodes.links[+fileOnly].textContent = DeleteLink.linkText(fileOnly);
               }
           }
           else {
@@ -24294,7 +24074,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               else {
                   $.rmAll(this);
                   $.add(this, [...Banner.original[this.className].cloneNode(true).childNodes]);
-                  return Banner.db.delete({
+                  Banner.db.delete({
                       boardID: g.BOARD.ID,
                       threadID: this.className
                   });
@@ -24303,20 +24083,20 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       },
       original: dict(),
       custom(child) {
-          let data;
           const { className } = child;
           child.title = `Ctrl/\u2318+click to edit board ${className.slice(5).toLowerCase()}`;
           child.spellcheck = false;
           for (const event of ['click', 'keydown', 'blur']) {
               $.on(child, event, Banner.cb[event]);
           }
-          if (data = Banner.db.get({ boardID: g.BOARD.ID, threadID: className })) {
+          let data = Banner.db.get({ boardID: g.BOARD.ID, threadID: className });
+          if (data) {
               if (Conf['Persistent Custom Board Titles'] || (data.orig === child.textContent)) {
                   Banner.original[className] = child.cloneNode(true);
                   return child.textContent = data.title;
               }
               else {
-                  return Banner.db.delete({ boardID: g.BOARD.ID, threadID: className });
+                  Banner.db.delete({ boardID: g.BOARD.ID, threadID: className });
               }
           }
       }
@@ -24371,7 +24151,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               });
               g.posts.forEach(function (post) {
                   if (post.callbacksExecuted) {
-                      return Callbacks.Post.execute(post, ['Parse [code] tags'], true);
+                      Callbacks.Post.execute(post, ['Parse [code] tags'], true);
                   }
               });
               ExpandComment.callbacks.push(Fourchan.code);
@@ -24409,12 +24189,12 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           });
       },
       math() {
-          let wbrs;
           if (!/\[(math|eqn)\]/.test(this.nodes.comment.textContent)) {
               return;
           }
           // XXX <wbr> tags frequently break MathJax; remove them.
-          if ((wbrs = $$('wbr', this.nodes.comment)).length) {
+          let wbrs = $$('wbr', this.nodes.comment);
+          if (wbrs.length) {
               for (var wbr of wbrs) {
                   $.rm(wbr);
               }
@@ -24454,7 +24234,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           const { style } = span;
           style.color = rgb[3];
           style.backgroundColor = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
-          return $.addClass(span, 'painted');
+          $.addClass(span, 'painted');
       },
       compute(uid) {
           // Convert chars to integers, bitshift and math to create a larger integer
@@ -24467,10 +24247,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               hash & 0xFF
           ];
           // Weight color luminance values, assign a font color that should be readable.
-          rgb.push($.luma(rgb) > 125 ?
-              '#000'
-              :
-                  '#fff');
+          rgb.push($.luma(rgb) > 125 ? '#000' : '#fff');
           // Cache.
           return this.ids[uid] = rgb;
       }
@@ -24553,14 +24330,14 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           });
       },
       node() {
-          let moved;
           if (this.isClone || !$.hasOwn(ModContact.specific, this.info.capcode)) {
               return;
           }
           const links = $.el('span', { className: 'contact-links brackets-wrap' });
           $.extend(links, ModContact.template(this.info.capcode));
           $.after(this.nodes.capcode, links);
-          if ((moved = this.info.comment.match(/This thread was moved to >>>\/(\w+)\//)) && $.hasOwn(ModContact.moveNote, moved[1])) {
+          let moved = this.info.comment.match(/This thread was moved to >>>\/(\w+)\//);
+          if (moved && $.hasOwn(ModContact.moveNote, moved[1])) {
               const moveNote = $.el('div', { className: 'move-note' });
               $.extend(moveNote, ModContact.moveNote[moved[1]]);
               $.add(this.nodes.post, moveNote);
@@ -24742,7 +24519,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           }
           PSAHiding.sync(Conf.hiddenPSAList);
           $.rmClass(doc, 'hide-announcement');
-          return $.sync('hiddenPSAList', PSAHiding.sync);
+          $.sync('hiddenPSAList', PSAHiding.sync);
       },
       toggle() {
           const hide = $.hasClass(this, 'hide-announcement-button');
@@ -24789,11 +24566,11 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               cb: this.node
           });
           if (g.VIEW === 'archive') {
-              return $.ready(() => RemoveSpoilers.unspoiler($.id('arc-list')));
+              $.ready(() => RemoveSpoilers.unspoiler($.id('arc-list')));
           }
       },
       node() {
-          return RemoveSpoilers.unspoiler(this.nodes.comment);
+          RemoveSpoilers.unspoiler(this.nodes.comment);
       },
       unspoiler(el) {
           const spoilers = $$(g.SITE.selectors.spoiler, el);
@@ -24860,11 +24637,11 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           $.on(d, 'ThreadUpdate', MarkNewIPs.onUpdate);
       },
       onUpdate(e) {
-          let fullID;
           const { ipCount, postCount, newPosts, deletedPosts } = e.detail;
           if (ipCount == null) {
               return;
           }
+          let fullID;
           switch (ipCount - MarkNewIPs.ipCount) {
               case (postCount - MarkNewIPs.postCount) + deletedPosts.length:
                   var i = MarkNewIPs.ipCount;
@@ -24882,8 +24659,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           MarkNewIPs.postCount = postCount;
       },
       markNew(post, ipCount) {
-          const suffix = ((Math.floor(ipCount / 10)) % 10) === 1 ?
-              'th' : ['st', 'nd', 'rd'][(ipCount % 10) - 1] || 'th'; // fuck switches
+          const suffix = ((Math.floor(ipCount / 10)) % 10) === 1 ? 'th'
+              : ['st', 'nd', 'rd'][(ipCount % 10) - 1] || 'th'; // fuck switches
           const counter = $.el('span', {
               className: 'ip-counter',
               textContent: `(${ipCount})`
@@ -24903,7 +24680,6 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       fileCount: 0,
       postIndex: 0,
       init() {
-          let sc;
           if ((g.VIEW !== 'thread') || !Conf['Thread Stats']) {
               return;
           }
@@ -24925,6 +24701,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
                       statsTitle += ' (Purge Position)';
               }
           }
+          let sc;
           if (Conf['Updater and Stats in Header']) {
               this.dialog = (sc = $.el('span', {
                   id: 'thread-stats',
@@ -25043,8 +24820,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
                   ThreadStats.pageCountEl.classList.toggle('warning', (purgePos === 1));
               }
               else {
-                  let nThreads;
-                  let i = (nThreads = 0);
+                  let nThreads = 0;
+                  let i = nThreads;
                   for (page of this.response) {
                       nThreads += page.threads.length;
                   }
@@ -25158,7 +24935,6 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           }
       },
       add(quotelink, boardID, threadID, postID, context, quoter) {
-          let post;
           const isBacklink = $.hasClass(quotelink, 'backlink');
           const inline = $.el('div', { className: 'inline' });
           inline.dataset.fullID = `${boardID}.${postID}`;
@@ -25167,10 +24943,9 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           const qroot = $.x('ancestor::*[contains(@class,"postContainer")][1]', root);
           $.addClass(qroot, 'hasInline');
           new Fetcher(boardID, threadID, postID, inline, quoter);
-          if (!((post = g.posts.get(`${boardID}.${postID}`)) &&
-              (context.thread === post.thread))) {
+          let post = g.posts.get(`${boardID}.${postID}`);
+          if (!post || context.thread !== post.thread)
               return;
-          }
           // Hide forward post if it's a backlink of a post in this thread.
           // Will only unhide if there's no inlined backlinks of it anymore.
           if (isBacklink && Conf['Forward Hiding']) {
@@ -25185,8 +24960,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           Unread.readSinglePost(post);
       },
       rm(quotelink, boardID, threadID, postID, context) {
-          let el;
-          let inlined;
+          let el, inlined;
           const isBacklink = $.hasClass(quotelink, 'backlink');
           // Select the corresponding inlined quote, and remove it.
           let root = QuoteInline.findRoot(quotelink, isBacklink);
@@ -25199,9 +24973,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               $.rmClass(qroot, 'hasInline');
           }
           // Stop if it only contains text.
-          if (!(el = root.firstElementChild)) {
+          if (!(el = root.firstElementChild))
               return;
-          }
           // Dereference clone.
           const post = g.posts.get(`${boardID}.${postID}`);
           post.rmClone(el.dataset.clone);
@@ -25460,10 +25233,9 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           }
       },
       parseArchivelink(link) {
-          let m;
-          if (!(m = link.pathname.match(/^\/([^/]+)\/thread\/S?(\d+)\/?$/))) {
+          let m = link.pathname.match(/^\/([^/]+)\/thread\/S?(\d+)\/?$/);
+          if (!m)
               return;
-          }
           // if (['boards.4chan.org', 'boards.4channel.org'].includes(link.hostname)) { return; }
           if (link.hostname === 'boards.4chan.org') {
               return;
@@ -25548,8 +25320,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           }
       },
       fixDeadlink(deadlink) {
-          let el;
-          if (!(el = deadlink.previousSibling) || (el.nodeName === 'BR')) {
+          let el = deadlink.previousSibling;
+          if (!el || (el.nodeName === 'BR')) {
               const green = $.el('span', { className: 'quote' });
               $.before(deadlink, green);
               $.add(green, deadlink);
@@ -25570,8 +25342,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           // XXX dwb userscripts extension reloads scripts run at document-start when replaceState/pushState is called.
           // XXX Firefox reinjects WebExtension content scripts when extension is updated / reloaded.
           try {
-              let w = window;
-
+              let w = platform === 'crx' ? (window.wrappedJSObject || window) : window;
               if (`${meta.name} antidup` in w) {
                   return;
               }
@@ -25614,24 +25385,24 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               }
           });
           // Detect "mounted" event from Kissu
-          var mountedCB = function () {
+          const mountedCB = function () {
               d.removeEventListener('mounted', mountedCB, true);
               Main.isMounted = true;
-              return Main.mountedCBs.map((cb) => (() => {
+              return Main.mountedCBs.map((cb) => {
                   try {
                       return cb();
                   }
                   catch (error2) { }
-              })());
+              });
           };
           d.addEventListener('mounted', mountedCB, true);
           // Flatten default values from Config into Conf
-          var flatten = function (parent, obj) {
+          const flatten = function (parent, obj) {
               if (obj instanceof Array) {
                   Conf[parent] = dict.clone(obj[0]);
               }
               else if (typeof obj === 'object') {
-                  for (var key in obj) {
+                  for (const key in obj) {
                       flatten(key, obj[key]);
                   }
               }
@@ -25767,7 +25538,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           }
           if (g.VIEW === 'file') {
               $.asap((() => d.readyState !== 'loading'), function () {
-                  let video;
+                  let video = $('video');
                   if ((g.SITE.software === 'yotsuba') && Conf['404 Redirect'] && g.SITE.is404?.()) {
                       const pathname = location.pathname.split(/\/+/);
                       return Redirect.navigate('file', {
@@ -25775,7 +25546,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
                           filename: pathname[pathname.length - 1]
                       });
                   }
-                  else if (video = $('video')) {
+                  else if (video) {
                       if (Conf['Volume in New Tab']) {
                           Volume.setup(video);
                       }
@@ -25900,7 +25671,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
                   css += '.watch-thread-link { --xt-watcher: #c8c8c8 }';
               }
               Main.bgColorStyle.textContent = css;
-              return $.after($.id('fourchanx-css'), Main.bgColorStyle);
+              $.after($.id('fourchanx-css'), Main.bgColorStyle);
           };
           $.onExists(d.head, g.SITE.selectors.styleSheet, function (el) {
               mainStyleSheet = el;
@@ -25960,9 +25731,9 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           }
       },
       initThread() {
-          let board;
           const s = g.SITE.selectors;
-          if (board = $((s.boardFor?.[g.VIEW] || s.board))) {
+          let board = $((s.boardFor?.[g.VIEW] || s.board));
+          if (board) {
               const threads = [];
               const posts = [];
               const errors = [];
@@ -26001,16 +25772,15 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       },
       parseThreads(threadRoots, threads, posts, errors) {
           for (var threadRoot of threadRoots) {
-              var boardObj = (() => {
-                  let boardID;
-                  if (boardID = threadRoot.dataset.board) {
-                      boardID = encodeURIComponent(boardID);
-                      return g.boards[boardID] || new Board(boardID);
-                  }
-                  else {
-                      return g.BOARD;
-                  }
-              })();
+              let boardObj;
+              const boardID = threadRoot.dataset.board;
+              if (boardID) {
+                  const encoded = encodeURIComponent(boardID);
+                  boardObj = g.boards[encoded] || new Board(encoded);
+              }
+              else {
+                  boardObj = g.BOARD;
+              }
               var threadID = +threadRoot.id.match(/\d*$/)[0];
               if (!threadID || boardObj.threads.get(threadID)?.nodes.root) {
                   return;
@@ -26110,9 +25880,9 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           });
       },
       initCatalog() {
-          let board;
           const s = g.SITE.selectors.catalog;
-          if (s && (board = $(s.board))) {
+          let board = $(s.board);
+          if (s && board) {
               const threads = [];
               const errors = [];
               Main.addCatalogThreadsObserver = new MutationObserver(Main.addCatalogThreads);
@@ -26166,8 +25936,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           return Main.callbackNodes('CatalogThreadNative', threads);
       },
       callbackNodes(klass, nodes) {
-          let node;
-          let i = 0;
+          let node, i = 0;
           const cb = Callbacks[klass];
           while ((node = nodes[i++])) {
               cb.execute(node);
@@ -26249,7 +26018,6 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           return [message, error, context];
       },
       reportLink(errors) {
-          let info;
           const data = errors[0];
           let title = data.message;
           if (errors.length > 1) {
@@ -26268,18 +26036,13 @@ Script: ${meta.name} ${meta.fork} v${g.VERSION} ${platform}
 URL: ${location.href}
 User agent: ${navigator.userAgent}\
 `);
-          if ((platform === 'userscript') && (info = (() => {
-              if (typeof GM !== 'undefined' && GM !== null) {
-                  return GM.info;
+
+              const info = (typeof GM !== 'undefined' && GM?.info)
+                  || (typeof GM_info !== 'undefined' && GM_info) || null;
+              if (info) {
+                  addDetails(`Userscript manager: ${info.scriptHandler} ${info.version}`);
               }
-              else {
-                  if (typeof GM_info !== 'undefined' && GM_info !== null) {
-                      return GM_info;
-                  }
-              }
-          })())) {
-              addDetails(`Userscript manager: ${info.scriptHandler} ${info.version}`);
-          }
+
           addDetails('\n' + data.error);
           if (data.error.stack) {
               addDetails(data.error.stack.replace(data.error.toString(), '').trim());

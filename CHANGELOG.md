@@ -2,6 +2,10 @@
 
 4chan XT uses a different user script namespace than 4chan X, so to migrate you need to export settings from 4chan X, and import them in XT.
 
+### 2.29.1 (2026-07-15)
+
+- More cleanup and refactoring.
+
 ### 2.29.0 (2026-07-08)
 
 - Big cleanup and refactoring update, mostly just cosmetic but some optimizations too. Testing all the changes will take some time.
