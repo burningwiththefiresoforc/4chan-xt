@@ -2,6 +2,10 @@
 
 4chan XT uses a different user script namespace than 4chan X, so to migrate you need to export settings from 4chan X, and import them in XT.
 
+### 2.29.2 (2026-07-15)
+
+- Fixed a bug with archive embedding where 403 links would just throw errors and load forever and never fall through to the error handler. Also just made it a little more robust.
+
 ### 2.29.1 (2026-07-15)
 
 - More cleanup and refactoring.

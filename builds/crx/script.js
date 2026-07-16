@@ -85,8 +85,8 @@
   'use strict';
 
   var version = {
-    "version": "2.29.1",
-    "date": "2026-07-08T09:09:09Z"
+    "version": "2.29.2",
+    "date": "2026-07-15T09:09:09Z"
   }
   ;
 
@@ -13255,8 +13255,7 @@ svg.icon {
       }
     }
     o.extra = dict();
-    const board = g.boards[o.boardID] ||
-      new Board(o.boardID);
+    const board = g.boards[o.boardID] || new Board(o.boardID);
     const thread = g.threads.get(`${o.boardID}.${o.threadID}`) ||
       new Thread(o.threadID, board);
     const post = new Post(g.SITE.Build.post(o), thread, board);
@@ -13616,7 +13615,7 @@ svg.icon {
       const encryptionOK = url.startsWith('https://');
       if (encryptionOK || Conf['Exempt Archives from Encryption']) {
         CrossOrigin.ajax(url, { onloadend() {
-            if (this.status < 200 || this.status >= 400) {
+            if (this.status < 200 || this.status >= 400 || !this.response) {
               const domain = E(new URL(url).origin);
               new Notice('error', $.el('div', {
                 innerHTML: 'There was an error while fetching from the archive. See the console for details.<br />' +
@@ -13822,7 +13821,7 @@ svg.icon {
       if (!(url = Redirect.to('post', { boardID: this.boardID, postID: this.postID }))) {
         return false;
       }
-      const archive = Redirect.data.post[this.boardID];
+      const archive = Redirect.data.post.get(this.boardID);
       const encryptionOK = /^https:\/\//.test(url) || (location.protocol === 'http:');
       if (encryptionOK || Conf['Exempt Archives from Encryption']) {
         const that = this;
@@ -13855,7 +13854,9 @@ svg.icon {
       }
       if (data == null) {
         $.addClass(this.root, 'warning');
-        this.root.textContent = `Error fetching Post No.${this.postID} from ${archive.name}.`;
+        this.root.textContent = archive?.name
+          ? `Error fetching Post No.${this.postID} from ${archive.name}.`
+          : `Error fetching Post No.${this.postID} from the archive.`;
         return;
       }
       if (data.error) {
@@ -21947,7 +21948,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       Header.setBarVisibility(hide);
       const message = `The header bar will ${hide ?
       'automatically hide itself.' : 'remain visible.'}`;
-      return new Notice('info', message, 2);
+      new Notice('info', message, 2);
     },
     setHideBarOnScroll(hide) {
       Header.scrollHeaderToggler.checked = hide;
