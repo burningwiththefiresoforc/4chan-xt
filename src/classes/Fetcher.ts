@@ -178,7 +178,7 @@ export default class Fetcher {
     let url: string;
     if (!Conf['Resurrect Quotes']) { return false; }
     if (!(url = Redirect.to('post', {boardID: this.boardID, postID: this.postID}))) { return false; }
-    const archive = Redirect.data.post[this.boardID];
+    const archive = Redirect.data.post.get(this.boardID);
     const encryptionOK = /^https:\/\//.test(url) || (location.protocol === 'http:');
     if (encryptionOK || Conf['Exempt Archives from Encryption']) {
       const that = this;
@@ -211,7 +211,9 @@ export default class Fetcher {
 
     if (data == null) {
       $.addClass(this.root, 'warning');
-      this.root.textContent = `Error fetching Post No.${this.postID} from ${archive.name}.`;
+      this.root.textContent = archive?.name
+        ? `Error fetching Post No.${this.postID} from ${archive.name}.`
+        : `Error fetching Post No.${this.postID} from the archive.`;
       return;
     }
 

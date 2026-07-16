@@ -19,7 +19,7 @@ const RestoreDeletedFromArchive = {
     const encryptionOK = url.startsWith('https://');
     if (encryptionOK || Conf['Exempt Archives from Encryption']) {
       CrossOrigin.ajax(url, { onloadend(this: XMLHttpRequest) {
-        if (this.status < 200 || this.status >= 400) {
+        if (this.status < 200 || this.status >= 400 || !this.response) {
           const domain = E(new URL(url).origin);
           new Notice('error', $.el('div', {
               innerHTML: 'There was an error while fetching from the archive. See the console for details.<br />' +

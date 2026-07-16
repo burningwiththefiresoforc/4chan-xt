@@ -428,7 +428,7 @@ var Header = {
     Header.setBarVisibility(hide);
     const message = `The header bar will ${hide ?
       'automatically hide itself.' : 'remain visible.'}`;
-    return new Notice('info', message, 2);
+    new Notice('info', message, 2);
   },
 
   setHideBarOnScroll(hide) {

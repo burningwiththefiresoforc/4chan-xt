@@ -172,12 +172,15 @@ var CrossOrigin = {
         onload(xhr) {
           try {
             let response = xhr.responseText;
+            let parseFailed = false;
             if (responseType === 'json') {
               try {
                 response = JSON.parse(xhr.responseText);
               } catch (error) {
                 console.error(error);
                 console.error(xhr);
+                response = null; // don't leak the raw text through as if it were valid JSON
+                parseFailed = true;
               }
             }
             $.extend(req, {
@@ -186,7 +189,8 @@ var CrossOrigin = {
               response,
               status: xhr.status,
               statusText: xhr.statusText,
-              responseHeaderString: xhr.responseHeaders
+              responseHeaderString: xhr.responseHeaders,
+              parseFailed
             });
           } catch (error) {}
           return req.onloadend();
