@@ -557,7 +557,7 @@ var Header = {
   isNodeVisible(node) {
     if (d.hidden || !doc.contains(node)) { return false; }
     const {height} = node.getBoundingClientRect();
-    ((Header.getTopOf(node) + height) >= 0) && ((Header.getBottomOf(node) + height) >= 0);
+    return ((Header.getTopOf(node) + height) >= 0) && ((Header.getBottomOf(node) + height) >= 0);
   },
 
   isHidden() {
