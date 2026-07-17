@@ -2,6 +2,10 @@
 
 4chan XT uses a different user script namespace than 4chan X, so to migrate you need to export settings from 4chan X, and import them in XT.
 
+### 2.29.3 (2026-07-16)
+
+- Fixed an issue which was causing webms not to autoplay on open.
+
 ### 2.29.2 (2026-07-15)
 
 - Fixed a bug with archive embedding where 403 links would just throw errors and load forever and never fall through to the error handler. Also just made it a little more robust.

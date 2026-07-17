@@ -85,8 +85,8 @@
   'use strict';
 
   var version = {
-    "version": "2.29.2",
-    "date": "2026-07-15T09:09:09Z"
+    "version": "2.29.3",
+    "date": "2026-07-16T09:09:09Z"
   }
   ;
 
@@ -22075,7 +22075,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         return false;
       }
       const { height } = node.getBoundingClientRect();
-      ((Header.getTopOf(node) + height) >= 0) && ((Header.getBottomOf(node) + height) >= 0);
+      return ((Header.getTopOf(node) + height) >= 0) && ((Header.getBottomOf(node) + height) >= 0);
     },
     isHidden() {
       const { top } = Header.bar.getBoundingClientRect();
