@@ -103,9 +103,9 @@ const Volume = {
   },
 
   wheel(e) {
-    let el;
-    if (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) { return; }
-    if (!(el = $('video:not([data-md5])', this))) { return; }
+    if (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) return;
+    let el = $('video:not([data-md5])', this);
+    if (!el) return;
     if (el.muted || !$.hasAudio(el)) { return; }
     let volume = el.volume + 0.1;
     if (e.deltaY < 0) { volume *= 1.1; }

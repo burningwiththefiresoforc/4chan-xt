@@ -13,10 +13,7 @@ import Icon from "../Icons/icon";
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const dialog = function(id, properties) {
-  const el = $.el('div', {
-    className: 'dialog',
-    id
-  });
+  const el = $.el('div', { className: 'dialog', id });
   $.extend(el, properties);
   el.style.cssText = Conf[`${id}.position`];
 
@@ -84,14 +81,13 @@ var Menu = (function() {
     }
 
     open(button, data) {
-      let entry;
       const menu = (this.menu = this.makeMenu());
       currentMenu       = this;
       lastToggledButton = button;
 
       this.entries.sort((first, second) => first.order - second.order);
 
-      for (entry of this.entries) {
+      for (const entry of this.entries) {
         this.insertEntry(entry, menu, data);
       }
 
@@ -104,11 +100,11 @@ var Menu = (function() {
 
       this.setPosition();
 
-      entry = $('.entry', menu);
+      firstEntry = $('.entry', menu);
       // We've removed flexbox, so we don't use order anymore.
       // while prevEntry = @findNextEntry entry, -1
       //   entry = prevEntry
-      this.focus(entry);
+      this.focus(firstEntry);
 
       menu.focus();
     }

@@ -254,7 +254,7 @@ var ThreadUpdater = {
     if (Conf['Optional Increase']) {
       // Lower the max refresh rate limit on visible tabs.
       const limit = d.hidden ? 10 : 5;
-      const j     = Math.min(ThreadUpdater.outdateCount, limit);
+      const j = Math.min(ThreadUpdater.outdateCount, limit);
 
       // 1 second to 100, 30 to 300.
       const cur = (Math.floor(interval * 0.1) || 1) * j * j;

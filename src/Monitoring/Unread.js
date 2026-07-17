@@ -286,8 +286,7 @@ var Unread = {
       const titleCount = count || !Conf['Hide Unread Count at (0)'] ? `(${count}) ` : '';
       const titleDead = Unread.thread.isDead ?
         Unread.title.replace('-', (Unread.thread.isArchived ? '- Archived -' : '- 404 -'))
-      :
-        Unread.title;
+      : Unread.title;
       d.title = `${titleQuotingYou}${titleCount}${titleDead}`;
     }
 

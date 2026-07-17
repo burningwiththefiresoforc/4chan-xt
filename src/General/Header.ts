@@ -208,7 +208,7 @@ var Header = {
   },
 
   mapCustomNavigation(t) {
-    let a, href, m, url;
+    let a, href, m, url, urlV;
     if (/^[^\w@]/.test(t)) {
       return $.tn(t);
     }
@@ -277,29 +277,29 @@ var Header = {
       }
     }
 
-    a = (function() {
-      let urlV;
-      if (boardID === '@') {
-        return $.el('a', {
-          href: 'https://x.com/4chan',
-          title: '4chan Twitter',
-          className: 'navSmall',
-          textContent: '@'
-        });
-      }
-
+    if (boardID === '@') {
+      a = $.el('a', {
+        href: 'https://x.com/4chan',
+        title: '4chan Twitter',
+        className: 'navSmall',
+        textContent: '@'
+      });
+    } else {
       a = $.el('a', {
         // href: `//${BoardConfig.domain(boardID)}/${boardID}/`,
         href: `//boards.4chan.org/${boardID}/`,
         textContent: boardID,
         title: BoardConfig.title(boardID)
       });
+
       if (['catalog', 'archive'].includes(g.VIEW) && (urlV = Get.url(g.VIEW, {siteID: '4chan.org', boardID}))) {
         a.href = urlV;
       }
-      if ((a.hostname === location.hostname) && (boardID === g.BOARD.ID)) { a.className = 'current'; }
-      return a;
-    })();
+
+      if ((a.hostname === location.hostname) && (boardID === g.BOARD.ID)) {
+        a.className = 'current';
+      }
+    }
 
     a.textContent = /-title/.test(t) || (/-replace/.test(t) && (a.hostname === location.hostname) && (boardID === g.BOARD.ID)) ?
       a.title || a.textContent

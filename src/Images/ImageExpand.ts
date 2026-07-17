@@ -84,12 +84,12 @@ var ImageExpand = {
       let func;
       $.event('CloseMenu');
       const threadRoot = Nav.getThread();
-      const toggle = function(post) {
+      const toggle = (post) => {
         const {file} = post;
         if (!file || (!file.isImage && !file.isVideo) || !doc.contains(post.nodes.root)) { return; }
         if (ImageExpand.on &&
-          ((!Conf['Expand spoilers']  && file.isSpoiler) ||
-          (!Conf['Expand videos']     && file.isVideo) ||
+          ((!Conf['Expand spoilers']   && file.isSpoiler) ||
+          (!Conf['Expand videos']      && file.isVideo) ||
           (Conf['Expand from here']   && (Header.getTopOf(file.thumb) < 0)) ||
           (Conf['Expand thread only'] && (g.VIEW === 'index') && !threadRoot?.contains(file.thumb)))) {
             return;

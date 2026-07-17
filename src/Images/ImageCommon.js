@@ -44,7 +44,7 @@ var ImageCommon = {
   },
 
   cacheError() {
-    if (ImageCommon.cache === this) { return delete ImageCommon.cache; }
+    if (ImageCommon.cache === this) { delete ImageCommon.cache; }
   },
 
   decodeError(file, fileObj) {
@@ -63,7 +63,6 @@ var ImageCommon = {
   },
 
   error(file, post, fileObj, delay, cb) {
-    let timeoutID;
     const src = fileObj.url.split('/');
     let url = null;
     if ((g.SITE.software === 'yotsuba') && Conf['404 Redirect']) {
@@ -76,9 +75,10 @@ var ImageCommon = {
 
     if ((post.isDead || fileObj.isDead) && !ImageCommon.isFromArchive(file)) { return cb(url); }
 
+    let timeoutID;
     if (delay) { timeoutID = setTimeout((() => cb(url)), delay); }
     if (post.isDead || fileObj.isDead) { return; }
-    const redirect = function() {
+    const redirect = () => {
       if (!ImageCommon.isFromArchive(file)) {
         if (delay) { clearTimeout(timeoutID); }
         return cb(url);
@@ -133,9 +133,9 @@ var ImageCommon = {
         });
         $.add(d.body, a);
         a.click();
-        return $.rm(a);
+        $.rm(a);
       } else {
-        return new Notice('warning', `Could not download ${href}`, 20);
+        new Notice('warning', `Could not download ${href}`, 20);
       }
     });
   }

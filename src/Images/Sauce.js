@@ -15,14 +15,13 @@ import { dict } from "../platform/helpers";
  */
 const Sauce = {
   init() {
-    let link;
     if (!['index', 'thread'].includes(g.VIEW) || !Conf.Sauce) { return; }
     $.addClass(doc, 'show-sauce');
 
     const links = [];
-    for (link of Conf.sauces.split('\n')) {
-      let linkData;
-      if ((link[0] !== '#') && (linkData = this.parseLink(link))) {
+    for (let link of Conf.sauces.split('\n')) {
+      let linkData = this.parseLink(link);
+      if ((link[0] !== '#') && linkData) {
         links.push(linkData);
       }
     }
@@ -58,8 +57,8 @@ const Sauce = {
     }
     if ('regexp' in parts) {
       try {
-        let regexp;
-        if (regexp = parts.regexp.match(/^\/(.*)\/(\w*)$/)) {
+        let regexp = parts.regexp.match(/^\/(.*)\/(\w*)$/);
+        if (regexp) {
           parts.regexp = RegExp(regexp[1], regexp[2]);
         } else {
           parts.regexp = RegExp(parts.regexp);

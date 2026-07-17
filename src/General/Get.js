@@ -77,8 +77,10 @@ var Get = {
 
     // Second: If we have quote backlinks: in all posts this post quoted and their clones, get all of their backlinks.
     if (Conf['Quote Backlinks']) {
-      for (var quote of post.quotes) { var qPost;
-      if ((qPost = posts.get(quote))) { handleQuotes(qPost, 'backlinks'); } }
+      for (var quote of post.quotes) {
+        let qPost = posts.get(quote);
+        if (qPost) { handleQuotes(qPost, 'backlinks'); }
+      }
     }
 
     // Third: Filter out irrelevant quotelinks.

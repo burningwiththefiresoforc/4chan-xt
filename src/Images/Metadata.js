@@ -23,16 +23,14 @@ var Metadata = {
   node() {
     for (let i = 0; i < this.files.length; i++) {
       var file = this.files[i];
-      if (/webm$/i.test(file.url)) {var el;
-
+      if (/webm$/i.test(file.url)) {
+        var el;
         if (this.isClone) {
           el = $('.webm-title', file.text);
         } else {
-          el = $.el('span',
-            {className: 'webm-title'});
+          el = $.el('span', {className: 'webm-title'});
           el.dataset.index = i;
-          $.extend(el,
-            {innerHTML: "<a href=\"javascript:;\"></a>"});
+          $.extend(el, {innerHTML: "<a href=\"javascript:;\"></a>"});
           $.add(file.text, [$.tn(' '), el]);
         }
         if (el.children.length === 1) { $.one(el.lastElementChild, 'mouseover focus', Metadata.load); }

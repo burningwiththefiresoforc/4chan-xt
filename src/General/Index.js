@@ -124,8 +124,7 @@ var Index = {
     entries.splice(3, 0, {el: sortEntry});
 
     Header.menu.addEntry({
-      el: $.el('span',
-        {textContent: 'Index Navigation'}),
+      el: $.el('span', {textContent: 'Index Navigation'}),
       order: 100,
       subEntries: entries
     });
@@ -566,7 +565,7 @@ var Index = {
     }
     Index.setState(state);
     const pathname = Index.currentPage === 1 ? `/${g.BOARD}/` : `/${g.BOARD}/${Index.currentPage}`;
-    if (!hash) { hash = ''; }
+    hash ||= '';
     return history[replace ? 'replaceState' : 'pushState']({
       mode:     Conf['Index Mode'],
       sort:     Index.currentSort,
@@ -731,8 +730,8 @@ var Index = {
   },
 
   update(firstTime) {
-    let oldReq;
-    if (oldReq = Index.req) {
+    let oldReq = Index.req;
+    if (oldReq) {
       delete Index.req;
       oldReq.abort();
     }
@@ -744,8 +743,7 @@ var Index = {
           if (Index.notice) {
             Index.notice.el.lastElementChild.textContent += ' (disable JSON Index if this takes too long)';
           }
-        }
-        , 3 * SECOND); }
+        }, 3 * SECOND); }
     } else {
       // Also display notice if Index Refresh is taking too long
       if (!Index.nTimeout) { Index.nTimeout = setTimeout(() => Index.notice || (Index.notice = new Notice('info', 'Refreshing index... (disable JSON Index if this takes too long)')), 3 * SECOND); }
@@ -766,8 +764,7 @@ var Index = {
   },
 
   load() {
-    let err;
-    if (this !== Index.req) { return; } // aborted
+    if (this !== Index.req) return; // aborted
 
     $.rmClass(Index.button, 'spin');
     const {notice, nTimeout} = Index;
@@ -777,7 +774,7 @@ var Index = {
     delete Index.notice;
 
     if (![200, 304].includes(this.status)) {
-      err = `Index refresh failed. ${this.status ? `Error ${this.statusText} (${this.status})` : 'Connection Error'}`;
+      let err = `Index refresh failed. ${this.status ? `Error ${this.statusText} (${this.status})` : 'Connection Error'}`;
       if (notice) {
         notice.setType('warning');
         notice.el.lastElementChild.textContent = err;
@@ -795,8 +792,7 @@ var Index = {
         Index.pageLoad();
       }
     } catch (error) {
-      err = error;
-      c.error(`Index failure: ${err.message}`, err.stack);
+      c.error(`Index failure: ${error.message}`, error.stack);
       if (notice) {
         notice.setType('error');
         notice.el.lastElementChild.textContent = 'Index refresh failed.';
@@ -864,8 +860,8 @@ var Index = {
   },
 
   isHidden(threadID) {
-    let thread;
-    if ((thread = g.BOARD.threads.get(threadID)) && thread.OP && !thread.OP.isFetchedQuote) {
+    let thread = g.BOARD.threads.get(threadID);
+    if (thread && thread.OP && !thread.OP.isFetchedQuote) {
       return thread.isHidden;
     } else {
       return Index.parsedThreads[threadID].isHidden;
@@ -1025,7 +1021,6 @@ var Index = {
   },
 
   sort() {
-    let threadIDs;
     const {liveThreadIDs, liveThreadData} = Index;
     if (!liveThreadData) { return; }
     const tmp_time = new Date().getTime()/1000;
@@ -1066,7 +1061,8 @@ var Index = {
     if (/-rev$/.test(Index.currentSort)) {
       Index.sortedThreadIDs.reverse();
     }
-    if (Index.search && (threadIDs = Index.querySearch(Index.search))) {
+    let threadIDs = Index.querySearch(Index.search);
+    if (Index.search && threadIDs) {
       Index.sortedThreadIDs = threadIDs;
     }
     // Sticky threads

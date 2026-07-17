@@ -151,7 +151,6 @@ var CrossOrigin = {
   //   `abort` - function for aborting the request (silently fails on some platforms)
   //   `getResponseHeader` - function for reading response headers
   ajax(url: string, options: CrossOriginAjaxOptions ={}) {
-    let gmReq;
     let {onloadend, timeout, responseType, headers} = options;
     responseType ??= 'json';
 
@@ -199,6 +198,7 @@ var CrossOrigin = {
         onabort() { return req.onloadend(); },
         ontimeout() { return req.onloadend(); }
       };
+      let gmReq;
       try {
         gmReq = (GM?.xmlHttpRequest || GM_xmlhttpRequest)(gmOptions);
       } catch (error) {

@@ -19,19 +19,18 @@ const $ = (selector, root = document.body) => root.querySelector(selector);
 
 $.id = id => d.getElementById(id);
 
-$.ready = function(fc) {
+$.ready = (fc) => {
   if (d.readyState !== 'loading') {
     $.queueTask(fc);
     return;
   }
-  var cb = function() {
+  var cb = () => {
     $.off(d, 'DOMContentLoaded', cb);
     fc();
   };
   $.on(d, 'DOMContentLoaded', cb);
 };
-
-$.formData = function(form) {
+$.formData = (form) => {
   if (form instanceof HTMLFormElement) {
     return new FormData(form);
   }
@@ -49,7 +48,7 @@ $.formData = function(form) {
   return fd;
 };
 
-$.extend = function(object, properties) {
+$.extend = (object, properties) => {
   for (var key in properties) {
     var val = properties[key];
     object[key] = val;
@@ -58,7 +57,7 @@ $.extend = function(object, properties) {
 
 $.hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 
-$.getOwn = function(obj, key) {
+$.getOwn = (obj, key) => {
   if (Object.prototype.hasOwnProperty.call(obj, key)) { return obj[key]; } else { return undefined; }
 };
 
@@ -106,10 +105,10 @@ $.ajax = (function() {
 // This saves a lot of bandwidth and CPU time for both the users and the servers.
 $.lastModified = dict();
 $.whenModified = function(url, bucket, cb, options={}) {
-  let t;
+  let t = $.lastModified[bucket]?.[url];
   const {timeout, ajax} = options;
   const headers = dict();
-  if ((t = $.lastModified[bucket]?.[url]) != null) {
+  if (t != null) {
     headers['If-Modified-Since'] = t;
   }
   const r = (ajax || $.ajax)(url, {
@@ -173,7 +172,7 @@ $.cb = {
   }
 };
 
-$.asap = function(test, cb) {
+$.asap = (test, cb) => {
   if (test()) {
     return cb();
   } else {
@@ -181,13 +180,13 @@ $.asap = function(test, cb) {
   }
 };
 
-$.onExists = function(root, selector, cb) {
+$.onExists = (root, selector, cb) => {
   let el;
   if (el = $(selector, root)) {
     cb(el);
     return;
   }
-  var observer = new MutationObserver(function() {
+  var observer = new MutationObserver(() => {
     if (el = $(selector, root)) {
       observer.disconnect();
       cb(el);
@@ -196,49 +195,41 @@ $.onExists = function(root, selector, cb) {
   observer.observe(root, {childList: true, subtree: true});
 };
 
-$.addStyle = function(css, id, test='head') {
-  const style = $.el('style',
-    {textContent: css});
+$.addStyle = (css, id, test='head') => {
+  const style = $.el('style', {textContent: css});
   if (id != null) { style.id = id; }
   $.onExists(doc, test, () => $.add(d.head, style));
   return style;
 };
 
-$.addCSP = function(policy) {
+$.addCSP = (policy) => {
   const meta = $.el('meta', {
     httpEquiv: 'Content-Security-Policy',
     content:   policy
-  }
-  );
+  });
   if (d.head) {
     $.add(d.head, meta);
-    return $.rm(meta);
+    $.rm(meta);
   } else {
     const head = $.add((doc || d), $.el('head'));
     $.add(head, meta);
-    return $.rm(head);
+    $.rm(head);
   }
 };
 
-$.x = function(path, root) {
+$.x = (path, root) => {
   if (!root) { root = d.body; }
-  // XPathResult.ANY_UNORDERED_NODE_TYPE === 8
   return d.evaluate(path, root, null, 8, null).singleNodeValue;
 };
 
-$.X = function(path, root) {
+$.X = (path, root) => {
   if (!root) { root = d.body; }
-  // XPathResult.ORDERED_NODE_SNAPSHOT_TYPE === 7
   return d.evaluate(path, root, null, 7, null);
 };
 
-$.addClass = function(el, ...classNames) {
-  el.classList.add(...classNames);
-};
+$.addClass = (el, ...classNames) => el.classList.add(...classNames);
 
-$.rmClass = function(el, ...classNames) {
-  el.classList.remove(...classNames);
-};
+$.rmClass = (el, ...classNames) => el.classList.remove(...classNames);
 
 $.toggleClass = (el, className) => el.classList.toggle(className);
 
@@ -251,17 +242,6 @@ $.rmAll = root => root.textContent = null;
 $.tn = s => d.createTextNode(s);
 
 $.frag = () => d.createDocumentFragment();
-
-$.nodes = function(nodes) {
-  if (!(nodes instanceof Array)) {
-    return nodes;
-  }
-  const frag = $.frag();
-  for (var node of nodes) {
-    frag.appendChild(node);
-  }
-  return frag;
-};
 
 $.add = (parent, el) => parent.appendChild($.nodes(el));
 
@@ -284,19 +264,30 @@ $.el = function <K extends keyof HTMLElementTagNameMap>(
   return el;
 };
 
-$.on = function (el: EventTarget, events: string, handler: (event: Event) => void) {
+$.nodes = (nodes) => {
+  if (!(nodes instanceof Array)) {
+    return nodes;
+  }
+  const frag = $.frag();
+  for (var node of nodes) {
+    frag.appendChild(node);
+  }
+  return frag;
+};
+
+$.on = (el: EventTarget, events: string, handler: (event: Event) => void) => {
   for (var event of events.split(' ')) {
     el.addEventListener(event, handler, false);
   }
 };
 
-$.off = function(el, events, handler) {
+$.off = (el, events, handler) => {
   for (var event of events.split(' ')) {
     el.removeEventListener(event, handler, false);
   }
 };
 
-$.one = function(el, events, handler) {
+$.one = (el, events, handler) => {
   var cb = function(e) {
     $.off(el, events, cb);
     return handler.call(this, e);
@@ -304,7 +295,7 @@ $.one = function(el, events, handler) {
   $.on(el, events, cb);
 };
 
-$.event = function(event, detail, root: EventTarget = d) {
+$.event = (event, detail, root: EventTarget = d) => {
   if (!globalThis.chrome?.extension) {
     if ((detail != null) && (typeof cloneInto === 'function')) {
       detail = cloneInto(detail, d.defaultView);
@@ -348,11 +339,9 @@ if (!globalThis.chrome?.extension) {
       GM.openInTab
     : (typeof GM_openInTab !== 'undefined' && GM_openInTab !== null) ?
       GM_openInTab
-    :
-      url => window.open(url, '_blank');
+    : url => window.open(url, '_blank');
 } else {
-  $.open =
-    url => window.open(url, '_blank');
+  $.open = url => window.open(url, '_blank');
 }
 
 $.debounce = function(wait, fn) {
@@ -452,12 +441,7 @@ $.bytesToString = function(size) {
 };
 
 $.minmax = (value, min, max) => value < min ?
-  min
-:
-  value > max ?
-    max
-  :
-    value;
+  min : value > max ? max : value;
 
 $.hasAudio = video =>
   video.mozHasAudio || !!video.webkitAudioDecodedByteCount ||
@@ -606,7 +590,7 @@ if (platform === 'crx') {
         delete items.sync[key];
       }
       chrome.storage.local.remove(keys);
-      return chrome.storage.sync.remove(keys);
+      chrome.storage.sync.remove(keys);
     };
 
     const timeout = {};
@@ -828,8 +812,8 @@ if (platform === 'crx') {
 
     $.getSync = function(items, cb) {
       for (var key in items) {
-        var val2;
-        if (val2 = $.getValue(g.NAMESPACE + key)) {
+        let val2 = $.getValue(g.NAMESPACE + key);
+        if (val2) {
           try {
             items[key] = dict.json(val2);
           } catch (err) {

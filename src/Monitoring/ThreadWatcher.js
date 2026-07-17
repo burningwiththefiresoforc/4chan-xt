@@ -675,8 +675,8 @@ var ThreadWatcher = {
     ThreadWatcher.setPrefixes(threads);
     for (var {siteID, boardID, threadID, data} of threads) {
       // Add missing excerpt for threads added by Auto Watch
-      var thread;
-      if ((data.excerpt == null) && (siteID === g.SITE.ID) && (thread = g.threads.get(`${boardID}.${threadID}`)) && thread.OP) {
+      let thread = g.threads.get(`${boardID}.${threadID}`);
+      if ((data.excerpt == null) && (siteID === g.SITE.ID) && thread && thread.OP) {
         ThreadWatcher.db.extend({boardID, threadID, val: {excerpt: Get.threadExcerpt(thread)}});
       }
       nodes.push(ThreadWatcher.makeLine(siteID, boardID, threadID, data));

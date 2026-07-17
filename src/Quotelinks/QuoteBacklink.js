@@ -53,9 +53,9 @@ var QuoteBacklink = {
     });
     if (markYours) { $.add(a, QuoteYou.mark.cloneNode(true)); }
     for (var quote of this.quotes) {
-      var post;
-      var containers = [QuoteBacklink.getContainer(quote)];
-      if ((post = g.posts.get(quote)) && post.nodes.backlinkContainer) {
+      let post = g.posts.get(quote);
+      let containers = [QuoteBacklink.getContainer(quote)];
+      if (post && post.nodes.backlinkContainer) {
         // Don't add OP clones when OP Backlinks is disabled,
         // as the clones won't have the backlink containers.
         for (var clone of post.clones) {
