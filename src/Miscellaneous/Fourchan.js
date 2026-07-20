@@ -20,7 +20,7 @@ var Fourchan = {
 
   initBoard() {
     if (g.BOARD.config.code_tags) {
-      $.on(window, 'prettyprint:cb', function(e) {
+      $.on(window, 'prettyprint:cb', (e) => {
         let post, pre;
         if (!(post = g.posts.get(e.detail.ID))) { return; }
         if (!(pre  = $$('.prettyprint', post.nodes.comment)[+e.detail.i])) { return; }
@@ -34,7 +34,7 @@ var Fourchan = {
         name: 'Parse [code] tags',
         cb:   Fourchan.code
       });
-      g.posts.forEach(function(post) {
+      g.posts.forEach((post) => {
         if (post.callbacksExecuted) {
           Callbacks.Post.execute(post, ['Parse [code] tags'], true);
         }
@@ -48,7 +48,7 @@ var Fourchan = {
         name: 'Parse [math] tags',
         cb:   Fourchan.math
       });
-      g.posts.forEach(function(post) {
+      g.posts.forEach((post) => {
         if (post.callbacksExecuted) {
           return Callbacks.Post.execute(post, ['Parse [math] tags'], true);
         }

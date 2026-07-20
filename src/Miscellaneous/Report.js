@@ -66,7 +66,7 @@ const Report = {
 
     if (form && types) {
       fieldset.hidden = !$('[value="31"]', types).checked;
-      $.on(types, 'change', function(e) {
+      $.on(types, 'change', (e) => {
         fieldset.hidden = (e.target.value !== '31');
         return Report.fit('body');
       });

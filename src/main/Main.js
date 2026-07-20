@@ -124,7 +124,7 @@ var Main = {
 
     // Detect multiple copies of 4chan X
     if (doc && $.hasClass(doc, 'fourchan-x')) { return; }
-    $.asap(docSet, function() {
+    $.asap(docSet, () => {
       $.addClass(doc, 'fourchan-xt', 'fourchan-x', 'seaweedchan');
       if ($.engine) $.addClass(doc, `ua-${$.engine}`);
       BoardConfig.ready(() => {
@@ -139,9 +139,9 @@ var Main = {
     } catch (e) {
       console.error(e);
     }
-    $.on(d, '4chanXInitFinished', function() {
+    $.on(d, '4chanXInitFinished', () => {
       if (Main.expectInitFinished) {
-        return delete Main.expectInitFinished;
+        delete Main.expectInitFinished;
       } else {
         new Notice('error', `Error: Multiple copies of ${meta.name} or 4chan X are enabled.`);
         return $.addClass(doc, 'tainted');
@@ -149,7 +149,7 @@ var Main = {
     });
 
     // Detect "mounted" event from Kissu
-    const mountedCB = function() {
+    const mountedCB = () => {
       d.removeEventListener('mounted', mountedCB, true);
       Main.isMounted = true;
       return Main.mountedCBs.map((cb) => {
@@ -160,7 +160,7 @@ var Main = {
     d.addEventListener('mounted', mountedCB, true);
 
     // Flatten default values from Config into Conf
-    const flatten = function(parent, obj) {
+    const flatten = (parent, obj) => {
       if (obj instanceof Array) {
         Conf[parent] = dict.clone(obj[0]);
       } else if (typeof obj === 'object') {
@@ -223,8 +223,8 @@ var Main = {
     const items = dict();
     for (const key in Conf) items[key] = undefined;
     items.previousversion = undefined;
-    ($.getSync || $.get)(items, function(items) {
-      $.asap(docSet, function() {
+    ($.getSync || $.get)(items, (items) => {
+      $.asap(docSet, () => {
 
         // Don't hide the local storage warning behind a settings panel.
         if ($.cantSet) { // pass
@@ -232,9 +232,9 @@ var Main = {
         // Fresh install
         } else if ((items.previousversion == null)) {
           Main.isFirstRun = true;
-          PageReady.ready(function() {
+          PageReady.ready(() => {
             $.set('previousversion', g.VERSION);
-            return Settings.open();
+            Settings.open();
           });
 
         // Migrate old settings
@@ -256,11 +256,11 @@ var Main = {
     const {previousversion} = items;
     const changes = Settings.upgrade(items, previousversion);
     items.previousversion = (changes.previousversion = g.VERSION);
-    return $.set(changes, function() {
+    return $.set(changes, () => {
       if (items['Show Updated Notifications'] ?? true) {
         const el = $.el('span',
           { innerHTML: `${meta.name} has been updated to <a href="${meta.changelog}" target="_blank">version ${g.VERSION}</a>.` });
-        return new Notice('info', el, 15);
+        new Notice('info', el, 15);
       }
     });
   },
@@ -307,7 +307,7 @@ var Main = {
     }
 
     if (g.VIEW === 'file') {
-      $.asap((() => d.readyState !== 'loading'), function() {
+      $.asap((() => d.readyState !== 'loading'), () => {
         let video = $('video');
         if ((g.SITE.software === 'yotsuba') && Conf['404 Redirect'] && g.SITE.is404?.()) {
           const pathname = location.pathname.split(/\/+/);
@@ -367,7 +367,7 @@ var Main = {
     $.addClass(doc, g.VIEW === 'thread' ? 'thread-view' : g.VIEW);
     $.onExists(doc, '.ad-cnt, .adg-rects > .desktop', ad => $.onExists(ad, 'img, iframe', () => $.addClass(doc, 'ads-loaded')));
     if (Conf['Autohiding Scrollbar']) { $.addClass(doc, 'autohiding-scrollbar'); }
-    $.ready(function() {
+    $.ready(() => {
       if ((d.body.clientHeight > doc.clientHeight) && ((window.innerWidth === doc.clientWidth) !== Conf['Autohiding Scrollbar'])) {
         Conf['Autohiding Scrollbar'] = !Conf['Autohiding Scrollbar'];
         $.set('Autohiding Scrollbar', Conf['Autohiding Scrollbar']);
@@ -444,7 +444,7 @@ var Main = {
       $.after($.id('fourchanx-css'), Main.bgColorStyle);
     };
 
-    $.onExists(d.head, g.SITE.selectors.styleSheet, function(el) {
+    $.onExists(d.head, g.SITE.selectors.styleSheet, (el) => {
       mainStyleSheet = el;
       if (g.SITE.software === 'yotsuba') {
         styleSheets = $$('link[rel="alternate stylesheet"]', d.head);
@@ -467,7 +467,7 @@ var Main = {
   initReady() {
     if (g.SITE.is404?.()) {
       if (g.VIEW === 'thread') {
-        ThreadWatcher.set404(g.BOARD.ID, g.THREADID, function() {
+        ThreadWatcher.set404(g.BOARD.ID, g.THREADID, () => {
           if (Conf['404 Redirect']) {
             return Redirect.navigate('thread', {
               boardID:  g.BOARD.ID,
@@ -533,7 +533,7 @@ var Main = {
 
       setTimeout(() => {
         Main.callbackNodes('Thread', threads);
-        Main.callbackNodesDB('Post', posts, function() {
+        Main.callbackNodesDB('Post', posts, () => {
           for (var post of posts) QuoteThreading.insert(post);
           Main.expectInitFinished = true;
           $.event('4chanXInitFinished');
@@ -637,7 +637,7 @@ var Main = {
       }
     }
     if (errors.length) { Main.handleErrors(errors); }
-    Main.callbackNodesDB('Post', posts, function() {
+    Main.callbackNodesDB('Post', posts, () => {
       for (thread of threads) {
         $.event('PostsInserted', null, thread.nodes.root);
       }
@@ -714,17 +714,15 @@ var Main = {
   callbackNodesDB(klass, nodes, cb) {
     let i = 0;
     const cbs = Callbacks[klass];
-    const fn  = function() {
-      let node;
-      if (!(node = nodes[i])) { return false; }
+    const fn  = () => {
+      let node = nodes[i];
+      if (!node) { return false; }
       cbs.execute(node);
       return ++i % 250;
     };
 
-    var softTask = function() {
-      while (fn()) {
-        continue;
-      }
+    var softTask = () => {
+      while (fn()) { continue; }
       if (!nodes[i]) {
         if (cb) { cb(); }
         return;
@@ -801,7 +799,7 @@ var Main = {
     let title  = data.message;
     if (errors.length > 1) { title += ` (+${errors.length - 1} other errors)`; }
     let details = '';
-    const addDetails = function(text) {
+    const addDetails = (text) => {
       if (encodeURIComponent(title + details + text + '\n').length <= meta.newIssueMaxLength - meta.newIssue.replace(/%(title|details)/, '').length) {
         return details += text + '\n';
       }

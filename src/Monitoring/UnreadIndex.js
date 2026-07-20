@@ -69,7 +69,7 @@ var UnreadIndex = {
   },
 
   sync() {
-    return g.threads.forEach(function(thread) {
+    return g.threads.forEach((thread) => {
       const lastReadPost = UnreadIndex.db.get({
         boardID: thread.board.ID,
         threadID: thread.ID
@@ -88,7 +88,7 @@ var UnreadIndex = {
     let repliesShown = 0;
     let repliesRead = 0;
     let firstUnread = null;
-    thread.posts.forEach(function(post) {
+    thread.posts.forEach((post) => {
       if (post.isReply && thread.nodes.root.contains(post.nodes.root)) {
         repliesShown++;
         if (post.ID <= lastReadPost) {

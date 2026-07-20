@@ -61,7 +61,7 @@ var ThreadUpdater = {
 
     const updateLink = $.el('span', {className: 'brackets-wrap updatelink'});
     $.extend(updateLink, {innerHTML: '<a href="javascript:;">Update</a>'});
-    PageReady.ready(function() {
+    PageReady.ready(() => {
       let navLinksBot = $('.navLinksBot');
       if (navLinksBot) { return $.add(navLinksBot, [$.tn(' '), updateLink]); }
     });
@@ -112,9 +112,9 @@ var ThreadUpdater = {
     // as posts may be `kill`ed elsewhere.
     ThreadUpdater.postIDs = [];
     ThreadUpdater.fileIDs = [];
-    this.posts.forEach(function(post) {
+    this.posts.forEach((post) => {
       ThreadUpdater.postIDs.push(post.ID);
-      if (post.file) { return ThreadUpdater.fileIDs.push(post.ID); }
+      if (post.file) { ThreadUpdater.fileIDs.push(post.ID); }
     });
 
     ThreadUpdater.cb.interval.call($.el('input', {value: Conf.Interval}));

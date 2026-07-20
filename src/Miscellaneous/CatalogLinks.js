@@ -29,7 +29,7 @@ const CatalogLinks = {
       };
       const selector = selectors[g.VIEW];
 
-      $.ready(function() {
+      $.ready(() => {
         for (const link of $$(selector)) {
           switch (link.pathname.replace(/\/+/g, '/')) {
             case `/${g.BOARD}/`:

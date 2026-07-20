@@ -48,12 +48,12 @@ const ArchiveLink = {
     });
 
     const open = type === 'post' ?
-      function({ID, thread, board}) {
+      ({ID, thread, board}) => {
         el.href = Redirect.to('thread', {postID: ID, threadID: thread.ID, boardID: board.ID});
         return true;
       }
     :
-      function(post) {
+      (post) => {
         const typeParam = (type === 'country') && post.info.flagCodeTroll ?
           'troll_country'
         : type;

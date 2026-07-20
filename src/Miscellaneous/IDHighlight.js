@@ -30,7 +30,7 @@ var IDHighlight = {
     return $[match ? 'addClass' : 'rmClass'](post.nodes.post, 'highlight');
   },
 
-  click(post) { return function() {
+  click(post) { return () => {
     const uniqueID = post.info.uniqueID || post.info.capcode;
     IDHighlight.uniqueID = IDHighlight.uniqueID === uniqueID ? null : uniqueID;
     g.posts.forEach(IDHighlight.set);

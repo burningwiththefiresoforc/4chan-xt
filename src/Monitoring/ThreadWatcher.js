@@ -101,7 +101,7 @@ var ThreadWatcher = {
           this.el.firstElementChild.textContent = ThreadWatcher.isWatched(thread) ?
             'Unwatch' : 'Watch';
           if (this.cb) { $.off(this.el, 'click', this.cb); }
-          this.cb = function() {
+          this.cb = () => {
             $.event('CloseMenu');
             return ThreadWatcher.toggle(thread, true);
           };
@@ -691,7 +691,7 @@ var ThreadWatcher = {
   refresh(manual) {
     ThreadWatcher.build();
 
-    g.threads.forEach(function(thread) {
+    g.threads.forEach((thread) => {
       const isWatched = ThreadWatcher.isWatched(thread);
       if (thread.OP) {
         for (var post of [thread.OP, ...thread.OP.clones]) {

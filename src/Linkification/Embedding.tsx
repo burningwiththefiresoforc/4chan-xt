@@ -31,7 +31,7 @@ const Embedding = {
         { innerHTML: EmbeddingPage });
       this.media = $('#media-embed', this.dialog);
       $.one(d, '4chanXInitFinished', this.ready);
-      $.on(d, 'IndexRefreshInternal', () => g.posts.forEach(function(post) {
+      $.on(d, 'IndexRefreshInternal', () => g.posts.forEach((post) => {
         for (post of [post, ...post.clones]) {
           for (const embed of post.nodes.embedlinks) {
             Embedding.cb.catalogRemove.call(embed);
@@ -40,7 +40,7 @@ const Embedding = {
       }));
     }
     if (Embedding.shouldFetchTitles()) {
-      $.on(d, '4chanXInitFinished PostsInserted', function() {
+      $.on(d, '4chanXInitFinished PostsInserted', () => {
         for (const service of Object.values(Embedding.types)) {
           if (service.title?.batchSize) {
             Embedding.flushTitles(service.title);
@@ -132,7 +132,7 @@ const Embedding = {
     const jump = $('.jump', Embedding.dialog)
     $.on(close, 'click',     Embedding.closeFloat);
     $.on($('.move',  Embedding.dialog), 'mousedown', Embedding.dragEmbed);
-    $.on(jump, 'click', function() {
+    $.on(jump, 'click', () => {
       if (doc.contains(Embedding.lastEmbed)) return Header.scrollTo(Embedding.lastEmbed);
     });
     Icon.set(jump, 'arrowRightLong');
@@ -190,7 +190,7 @@ const Embedding = {
     const {key, uid, link} = data;
     let service = Embedding.types[key].preview;
     if (!service) return;
-    $.on(link, 'mouseover', function(e) {
+    $.on(link, 'mouseover', (e) => {
       const src = service.url(uid);
       const {height} = service;
       const el = $.el('img', { src, id: 'ihover' });
@@ -322,7 +322,7 @@ const Embedding = {
           src:      a.dataset.href,
           loop:     ImageHost.test(a.dataset.href.split('/')[2])
         });
-        $.on(el, 'loadedmetadata', function() {
+        $.on(el, 'loadedmetadata', () => {
           if ((el.videoHeight === 0) && el.parentNode) {
             return $.replace(el, Embedding.types.audio.el(a));
           } else {
@@ -393,7 +393,7 @@ const Embedding = {
       style: '',
       el: (function() {
         let counter = 0;
-        return function(a) {
+        return (a) => {
           const el = $.el('pre', {
             hidden: true,
             id: `gist-embed-${counter++}`
@@ -573,7 +573,7 @@ const Embedding = {
           $.on(el, 'load', function() {
             return this.contentWindow.postMessage({element: 't', query: 'height'}, 'https://tf.rita.moe');
           });
-          const onMessage = function(e) {
+          const onMessage = (e) => {
             if ((e.source === el.contentWindow) && (e.origin === 'https://tf.rita.moe')) {
               $.off(window, 'message', onMessage);
               return (cont || el).style.height = `${+$.minmax(e.data.height, 250, 0.8 * doc.clientHeight)}px`;

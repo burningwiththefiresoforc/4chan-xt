@@ -19,7 +19,7 @@ var Time = {
   },
 
   format(date: Date, formatString: string = Conf.time) {
-    return formatString.replace(/%(.)/g, function(s, c) {
+    return formatString.replace(/%(.)/g, (s, c) => {
       if ($.hasOwn(Time.formatters, c)) {
         return Time.formatters[c].call(date);
       } else {

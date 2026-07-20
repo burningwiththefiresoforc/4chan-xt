@@ -63,7 +63,7 @@ var Unread = {
     for (var ID of this.posts.keys) { if (+ID <= Unread.lastReadPost) { Unread.readCount++; } }
     $.one(d, '4chanXInitFinished', Unread.ready);
     $.on(d, 'PostsInserted',      Unread.onUpdate);
-    $.on(d, 'ThreadUpdate',       function(e) { if (e.detail[404]) { return Unread.update(); } });
+    $.on(d, 'ThreadUpdate',       (e) => { if (e.detail[404]) { return Unread.update(); } });
     const resetLink = $.el('a', {
       href: 'javascript:;',
       className: 'unread-reset',
@@ -183,7 +183,7 @@ var Unread = {
       body: post.commentDisplay(),
       icon: Favicon.logo
     });
-    notif.onclick = function() {
+    notif.onclick = () => {
       Header.scrollToIfNeeded(post.nodes.bottom, true);
       window.focus();
     };
@@ -191,7 +191,7 @@ var Unread = {
   },
 
   onUpdate() {
-    $.queueTask(function() { // ThreadUpdater may scroll immediately after inserting posts
+    $.queueTask(() => { // ThreadUpdater may scroll immediately after inserting posts
       Unread.setLine();
       Unread.read();
       Unread.update();

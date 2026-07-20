@@ -142,7 +142,7 @@ const Linkify = {
   },
 
   makeLink(range) {
-    let t,  encodedDomain;
+    let t, encodedDomain;
     let text = range.toString();
 
     // Clean start of range

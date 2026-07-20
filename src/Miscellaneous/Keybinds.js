@@ -57,7 +57,7 @@ var Keybinds = {
       $.sync(hotkey, Keybinds.sync);
     }
 
-    var init = function() {
+    var init = () => {
       $.off(d, '4chanXInitFinished', init);
       $.on(d, 'keydown', Keybinds.keydown);
       for (var node of $$('[accesskey]')) {
@@ -340,7 +340,6 @@ var Keybinds = {
   },
 
   keyCode(e) {
-
     function keyName(kc) {
       if (kc in KEY_NAMES) return KEY_NAMES[kc];
       if ((48 <= kc && kc <= 57) || (65 <= kc && kc <= 90)) { // 0-9, A-Z
@@ -377,7 +376,7 @@ var Keybinds = {
   },
 
   tags(tag, ta) {
-    BoardConfig.ready(function() {
+    BoardConfig.ready(() => {
       const {config} = g.BOARD;
       const TAG_SUPPORT = {
         spoiler: 'spoilers',

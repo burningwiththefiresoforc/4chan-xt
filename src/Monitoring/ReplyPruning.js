@@ -79,7 +79,7 @@ var ReplyPruning = {
       }
     }
 
-    this.posts.forEach(function(post) {
+    this.posts.forEach((post) => {
       if (post.isReply) {
         ReplyPruning.total++;
         if (post.file) { return ReplyPruning.totalFiles++; }

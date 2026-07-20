@@ -60,16 +60,16 @@ var PSAHiding = {
 
   toggle() {
     const hide = $.hasClass(this, 'hide-announcement-button');
-    const set = function(hiddenPSAList) {
+    const set = (hiddenPSAList) => {
       if (hide) {
         return hiddenPSAList[g.SITE.ID] = PSAHiding.text;
       } else {
-        return delete hiddenPSAList[g.SITE.ID];
+        delete hiddenPSAList[g.SITE.ID];
       }
     };
     set(Conf.hiddenPSAList);
     PSAHiding.sync(Conf.hiddenPSAList);
-    return $.get('hiddenPSAList', Conf.hiddenPSAList, function({hiddenPSAList}) {
+    return $.get('hiddenPSAList', Conf.hiddenPSAList, ({hiddenPSAList}) => {
       set(hiddenPSAList);
       return $.set('hiddenPSAList', hiddenPSAList);
     });
