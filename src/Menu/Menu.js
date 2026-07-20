@@ -48,7 +48,7 @@ var Menu = {
   },
 
   makeButton(post, button) {
-    if (!button) { button = Menu.button.cloneNode(true); }
+    button ||= Menu.button.cloneNode(true);
     $.on(button, 'click', function(e) { Menu.menu.toggle(e, this, post); });
     return button;
   }

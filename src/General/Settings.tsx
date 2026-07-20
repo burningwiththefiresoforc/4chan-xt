@@ -148,7 +148,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       }
     },
     ads(cb) {
-      $.onExists(doc, '.adg-rects > .desktop', ad => $.onExists(ad, 'iframe', function() {
+      $.onExists(doc, '.adg-rects > .desktop', ad => $.onExists(ad, 'iframe', () => {
         const url = Redirect.to('thread', {boardID: 'qa', threadID: 362590});
         cb($.el('li',
           <>
@@ -163,7 +163,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
   main(section) {
     let key;
     const warnings = $.el('fieldset', {hidden: true}, {innerHTML: '<legend>Warnings</legend><ul></ul>'});
-    const addWarning = function(item) {
+    const addWarning = (item) => {
       $.add($('ul', warnings), item);
       warnings.hidden = false;
     };
@@ -175,7 +175,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
 
     const items  = dict();
     const inputs = dict();
-    const addCheckboxes = function(root, obj) {
+    const addCheckboxes = (root, obj) => {
       const containers = [root];
       const result = [];
       for (key in obj) {
@@ -217,7 +217,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     }
     addCheckboxes($('div[data-name="JSON Index"] > .suboption-list', section), Config.Index);
 
-    $.get(items, function(items) {
+    $.get(items, (items) => {
       for (key in items) {
         var val = items[key];
         inputs[key].checked = val;
@@ -228,7 +228,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     const div = $.el('div',
       {innerHTML: '<button></button><span class="description">: Clear manually-hidden threads and posts on all boards. Reload the page to apply.'});
     const button = $('button', div);
-    $.get({hiddenThreads: dict(), hiddenPosts: dict()}, function({hiddenThreads, hiddenPosts}) {
+    $.get({hiddenThreads: dict(), hiddenPosts: dict()}, ({hiddenThreads, hiddenPosts}) => {
       let board, ID, site, thread;
       let hiddenNum = 0;
       for (ID in hiddenThreads) {
@@ -267,7 +267,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     });
     $.on(button, 'click', function() {
       this.textContent = 'Hidden: 0';
-      $.get('hiddenThreads', dict(), function({hiddenThreads}){
+      $.get('hiddenThreads', dict(), ({hiddenThreads}) => {
         if ($.hasStorage && (g.SITE.software === 'yotsuba')) {
           let boardID;
           for (boardID in hiddenThreads['4chan.org']?.boards) {
@@ -341,7 +341,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       delete Conf2.cooldowns;
       delete Conf2['Index Sort'];
     }
-    $.get(Conf2, function(Conf2) {
+    $.get(Conf2, (Conf2) => {
       // Don't export cached JSON data.
       delete Conf2.boardConfig;
       Settings.downloadExport({version: g.VERSION, date: Date.now(), Conf: Conf2});
@@ -376,17 +376,16 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     }
 
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = (e) => {
       try {
-        Settings.loadSettings(dict.json(e.target.result), function (err) {
+        Settings.loadSettings(dict.json(e.target.result), (err) => {
           if (err) {
             output.textContent = 'Import failed due to an error.';
           } else if (confirm('Import successful. Reload now?')) {
             window.location.reload();
           }
         });
-      } catch (error) {
-        const err = error;
+      } catch (err) {
         output.textContent = 'Import failed due to an error.';
         c.error(err.stack);
       }
@@ -468,7 +467,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     if (data.version !== g.VERSION) {
       Settings.upgrade(data.Conf, data.version);
     }
-    $.clear(function(err) {
+    $.clear((err) => {
       if (err) { return cb(err); }
       $.set(data.Conf, cb);
     });
@@ -476,7 +475,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
 
   reset() {
     if (confirm('Your current settings will be entirely wiped, are you sure?')) {
-      $.clear(function(err) {
+      $.clear((err) => {
         if (err) {
           $('.imp-exp-result').textContent = 'Import failed due to an error.';
         } else if (confirm('Reset successful. Reload now?')) {
@@ -493,6 +492,14 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     Settings.selectFilter.call(select);
   },
 
+  loadFilterTextarea(name, ta, afterLoad) {
+    $.get(name, Conf[name], (item) => {
+      ta.value = item[name];
+      afterLoad();
+    });
+    $.on(ta, 'change', $.cb.value);
+  },
+
   selectFilter(this: HTMLSelectElement) {
     const div = this.nextElementSibling as HTMLElement;
     let name: string;
@@ -504,16 +511,12 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         className: 'field',
         spellcheck: false
       }) as HTMLTextAreaElement;
-      $.on(ta, 'change', $.cb.value);
-      $.get(name, Conf[name], function(item) {
-        ta.value = item[name];
-        $.add(div, ta);
-      });
+      Settings.loadFilterTextarea(name, ta, () => $.add(div, ta));
       return;
     }
     const filterTypes = Object.keys(Config.filter)
       .filter(x => x !== 'general')
-      .join(',\u200B'); // \u200B is zero width space, to control where line breaks happen on a narrow screen
+      .join(',\u200B'); // Zero width space to control linebreaks happen on a narrow screen
     $.extend(div, { innerHTML: FilterGuidePage });
     $('#filterTypes', div).textContent = `type:\u200B${filterTypes};`;
     $('.warning', div).hidden = Conf.Filter;
@@ -523,11 +526,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     $.extend(section, { innerHTML: SaucePage });
     $('.warning', section).hidden = Conf.Sauce;
     const ta = $('textarea', section);
-    $.get('sauces', Conf.sauces, function(item) {
-      ta.value = item.sauces;
-      ta.hidden = false;
-    }); // XXX prevent Firefox from adding initialization to undo queue
-    $.on(ta, 'change', $.cb.value);
+    Settings.loadFilterTextarea('sauces', ta, () => ta.hidden = false);
   },
 
   advanced(section) {
@@ -540,7 +539,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       inputs[input.name] = input;
     }
 
-    $.on(inputs.archiveLists, 'change', function() {
+    $.on(inputs.archiveLists, 'change', () => {
       $.set('lastarchivecheck', 0);
       Conf.lastarchivecheck = 0;
       $.id('lastarchivecheck').textContent = 'never';
@@ -561,7 +560,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       }
     }
 
-    $.get(items, function(items) {
+    $.get(items, (items) => {
       for (var key in items) {
         var val = items[key];
         input = inputs[key];
@@ -596,7 +595,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
 
     const itemsArchive = dict();
     for (name of ['archives', 'selectedArchives', 'lastarchivecheck']) { itemsArchive[name] = Conf[name]; }
-    $.get(itemsArchive, function(itemsArchive) {
+    $.get(itemsArchive, (itemsArchive) => {
       $.extend(Conf, itemsArchive);
       Redirect.selectArchives();
       Settings.addArchiveTable(section);
@@ -606,7 +605,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     const table          = $('#archive-table', section);
     const updateArchives = $('#update-archives', section);
 
-    $.on(boardSelect, 'change', function() {
+    $.on(boardSelect, 'change', () => {
       $('tbody > :not([hidden])', table).hidden = true;
       $(`tbody > .${this.value}`, table).hidden = false;
     });
@@ -831,7 +830,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       $.add(tbody, tr);
     }
 
-    $.get(items, function (items) {
+    $.get(items, (items) => {
       for (key in items) {
         var val = items[key];
         inputs[key].value = val;

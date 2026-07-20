@@ -140,8 +140,8 @@ var QR = {
       href: 'javascript:;',
     }));
     Icon.set(this.shortcut, 'comment', 'Quick Reply')
-    $.on(sc, 'click', function() {
-      if (!QR.postingIsEnabled) { return; }
+    $.on(sc, 'click', () => {
+      if (!QR.postingIsEnabled) return;
       if (Conf['Persistent QR'] || !QR.nodes || QR.nodes.el.hidden) {
         QR.open();
         QR.nodes.com.focus();
@@ -192,7 +192,7 @@ var QR = {
       });
 
       QR.link = link.firstElementChild as HTMLElement;
-      $.on(link.firstChild, 'click', function() {
+      $.on(link.firstChild, 'click', () => {
         QR.open();
         QR.nodes.com.focus();
       });
@@ -207,7 +207,7 @@ var QR = {
         {className: "brackets-wrap qr-link-container-bottom"});
       $.extend(linkBot, {innerHTML: '<a href="javascript:;" class="qr-link-bottom">Reply to Thread</a>'});
 
-      $.on(linkBot.firstElementChild, 'click', function() {
+      $.on(linkBot.firstElementChild, 'click', () => {
         QR.open();
         QR.nodes.com.focus();
       });
@@ -287,7 +287,7 @@ var QR = {
   },
 
   focus() {
-    return $.queueTask(function() {
+    return $.queueTask(() => {
       // if (!QR.inBubble()) {
         QR.hasFocus = d.activeElement && QR.nodes.el.contains(d.activeElement);
         return QR.nodes.el.classList.toggle('focus', QR.hasFocus);
@@ -386,7 +386,7 @@ var QR = {
         // Firefox automatically closes notifications
         // so we can't control the onclose properly.
         notif.onclose = () => notice.close();
-        return notif.onshow  = () => setTimeout(function() {
+        return notif.onshow = () => setTimeout(() => {
           notif.onclose = null;
           return notif.close();
         }, 7 * SECOND);
@@ -574,7 +574,7 @@ var QR = {
     const isVideo = /^video\//.test(file);
     const el = $.el((isVideo ? 'video' : 'img'));
     $.on(el, 'error', () => QR.openError());
-    $.on(el, (isVideo ? 'loadeddata' : 'load'), function() {
+    $.on(el, (isVideo ? 'loadeddata' : 'load'), () => {
       e.target.getContext('2d').drawImage(el, 0, 0);
       URL.revokeObjectURL(el.src);
       return $.event('QRImageDrawn', null, e.target);
@@ -646,11 +646,11 @@ var QR = {
     QR.open();
     const { selected } = QR;
     selected.preventAutoPost();
-    CrossOrigin.permission(function() {
+    CrossOrigin.permission(() => {
       const url = prompt('Enter a URL:', urlDefault);
       if (!url) return;
       QR.nodes.fileButton.focus();
-      CrossOrigin.file(url, function(blob) {
+      CrossOrigin.file(url, (blob) => {
         if (blob && !/^text\//.test(blob.type)) {
           selected.setFile(blob);
           $.addClass(QR.nodes.el, 'dump');
@@ -773,7 +773,7 @@ var QR = {
 
     if (parseInt(Conf.customCooldown, 10) > 0) {
       $.addClass(QR.nodes.fileSubmit, 'custom-cooldown');
-      $.get('customCooldownEnabled', Conf.customCooldownEnabled, function({customCooldownEnabled}) {
+      $.get('customCooldownEnabled', Conf.customCooldownEnabled, ({customCooldownEnabled}) => {
         QR.setCustomCooldown(customCooldownEnabled);
         return $.sync('customCooldownEnabled', QR.setCustomCooldown);
       });
@@ -817,8 +817,8 @@ var QR = {
     let i = 0;
     const save = function() { QR.selected.save(this); };
     while ((name = items[i++])) {
-      var node;
-      if (!(node = nodes[name])) { continue; }
+      let node = nodes[name];
+      if (!node) continue;
       event = node.nodeName === 'SELECT' ? 'change' : 'input';
       $.on(nodes[name], event, save);
     }
@@ -1006,7 +1006,7 @@ var QR = {
       };
     }
 
-    let cb = function(response) {
+    let cb = (response) => {
       if (response != null) {
         QR.currentCaptcha = response;
         // if (QR.captcha === Captcha.v2) {
@@ -1038,7 +1038,7 @@ var QR = {
           cb = null;
         }
       };
-      captcha(function(response) {
+      captcha((response) => {
         // if ((QR.captcha === Captcha.v2) && Captcha.cache.haveCookie()) {
         //   cb?.();
         //   if (response) { return Captcha.cache.save(response); }
@@ -1149,7 +1149,7 @@ var QR = {
     const postsCount = QR.posts.length - 1;
     QR.cooldown.auto = postsCount && isReply;
 
-    const lastPostToThread = !((function() { for (var p of QR.posts.slice(1)) { if (p.thread === post.thread) { return true; } } })());
+    const lastPostToThread = !QR.posts.slice(1).some(p => p.thread === post.thread);
 
     if (postsCount) {
       post.rm();
@@ -1420,7 +1420,7 @@ var QR = {
     save() {
       const { changes } = QR.cooldown;
       if (!Object.keys(changes).length) { return; }
-      $.get('cooldowns', dict(), function ({ cooldowns }) {
+      $.get('cooldowns', dict(), ({cooldowns}) => {
         for (var scope in QR.cooldown.changes) {
           for (var id in QR.cooldown.changes[scope]) {
             var value = QR.cooldown.changes[scope][id];
@@ -1559,19 +1559,19 @@ var QR = {
         QR.quote.call(post.nodes.post);
         const { isVideo } = post.file;
         const currentTime = post.file.fullImage?.currentTime || 0;
-        return CrossOrigin.file(post.file.url, function (blob) {
+        return CrossOrigin.file(post.file.url, (blob) => {
           if (!blob) {
             QR.error("Can't load file.");
           } else if (isVideo) {
             const video = $.el('video') as HTMLVideoElement;
-            $.on(video, 'loadedmetadata', function () {
-              $.on(video, 'seeked', function () {
+            $.on(video, 'loadedmetadata', () => {
+              $.on(video, 'seeked', () => {
                 const canvas = $.el('canvas', {
                   width: video.videoWidth,
                   height: video.videoHeight
                 }) as HTMLCanvasElement;
                 canvas.getContext('2d').drawImage(video, 0, 0);
-                canvas.toBlob(function (snapshot) {
+                canvas.toBlob((snapshot) => {
                   snapshot.name = post.file.name.replace(/\.\w+$/, '') + '.png';
                   QR.handleFiles([snapshot]);
                   QR.oekaki.edit();
@@ -1590,9 +1590,7 @@ var QR = {
       }
     },
 
-    setup() {
-      $.global('setupQR');
-    },
+    setup() { $.global('setupQR'); },
 
     load(cb) {
       if ($('script[src^="//s.4cdn.org/js/tegaki"]', d.head)) {
@@ -1605,18 +1603,14 @@ var QR = {
         const script = $.el('script',
           { src: `//s.4cdn.org/js/tegaki.min.${Date.now()}.js` });
         let n = 0;
-        const onload = function () {
-          if (++n === 2) cb();
-        };
+        const onload = () => { if (++n === 2) cb(); };
         $.on(style, 'load', onload);
         $.on(script, 'load', onload);
         $.add(d.head, [style, script]);
       }
     },
 
-    draw() {
-      return $.global('qrTegakiDraw');
-    },
+    draw() { return $.global('qrTegakiDraw'); },
 
     button() {
       if (QR.selected.file) {
@@ -1709,7 +1703,7 @@ var QR = {
     },
 
     set(post) {
-      $.get('QR.persona', {}, function ({ 'QR.persona': persona }) {
+      $.get('QR.persona', {}, ({ 'QR.persona': persona }) => {
         persona = {
           name: post.name,
           flag: post.flag

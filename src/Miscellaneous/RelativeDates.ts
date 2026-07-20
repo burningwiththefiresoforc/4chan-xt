@@ -20,7 +20,7 @@ const RelativeDates = {
     }
 
     if (Conf.RelativeTime !== 'No') {
-      return Callbacks.Post.push({
+      Callbacks.Post.push({
         name: 'Relative Post Dates',
         cb:   this.node
       });

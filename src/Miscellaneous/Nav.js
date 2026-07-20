@@ -42,7 +42,7 @@ var Nav = {
     $.on(next, 'click', this.next);
 
     $.add(span, [prev, $.tn(' '), next]);
-    var append = function() {
+    const append = () => {
       $.off(d, '4chanXInitFinished', append);
       return $.add(d.body, span);
     };

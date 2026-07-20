@@ -12,8 +12,8 @@ var PSAHiding = {
     if (!Conf['Announcement Hiding'] || !g.SITE.selectors.psa) { return; }
     $.addClass(doc, 'hide-announcement');
     $.onExists(doc, g.SITE.selectors.psa, this.setup);
-    $.ready(function() {
-      if (!$(g.SITE.selectors.psa)) { return $.rmClass(doc, 'hide-announcement'); }
+    $.ready(() => {
+      if (!$(g.SITE.selectors.psa)) $.rmClass(doc, 'hide-announcement');
     });
   },
 

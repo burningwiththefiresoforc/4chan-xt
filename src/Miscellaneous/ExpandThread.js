@@ -121,7 +121,6 @@ var ExpandThread = {
   },
 
   parse(req, thread, a) {
-    let root;
     if (![200, 304].includes(req.status)) {
       a.textContent = req.status ? `Error ${req.statusText} (${req.status})` : 'Connection Error';
       return;
@@ -132,6 +131,7 @@ var ExpandThread = {
     const posts      = [];
     const postsRoot  = [];
     let filesCount = 0;
+    let root;
     for (var postData of req.response.posts) {
       if (postData.no === thread.ID) { continue; }
       let post = thread.posts.get(postData.no);

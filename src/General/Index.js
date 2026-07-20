@@ -110,7 +110,7 @@ var Index = {
     $.on(inputs['Pin Watched Threads'], 'change', this.cb.resort);
     $.on(inputs['Anchor Hidden Threads'], 'change', this.cb.resort);
 
-    const watchSettings = function(e) {
+    const watchSettings = (e) => {
       if (input = $.getOwn(inputs, e.target.name)) {
         input.checked = e.target.checked;
         $.event('change', null, input);
@@ -192,11 +192,11 @@ var Index = {
 
     $.onExists(doc, 'title + *', () => d.title = d.title.replace(/\ -\ Page\ \d+/, ''));
 
-    $.onExists(doc, '.board > .thread > .postContainer, .board + *', function() {
+    $.onExists(doc, '.board > .thread > .postContainer, .board + *', () => {
       let el;
       g.SITE.Build.hat = $('.board > .thread > img:first-child');
       if (g.SITE.Build.hat) {
-        g.BOARD.threads.forEach(function(thread) {
+        g.BOARD.threads.forEach((thread) => {
           if (thread.nodes.root) {
             return $.prepend(thread.nodes.root, g.SITE.Build.hat.cloneNode(false));
           }
@@ -204,7 +204,6 @@ var Index = {
         $.addClass(doc, 'hats-enabled');
         $.addStyle(`.catalog-thread::after {background-image: url(${g.SITE.Build.hat.src});}`);
       }
-
       const board = $('.board');
       $.replace(board, Index.root);
       if (Index.loaded) {
@@ -220,7 +219,6 @@ var Index = {
       try {
         d.implementation.createDocument(null, null, null).appendChild(board);
       } catch (error) {}
-
       for (el of $$('.navLinks')) { $.rm(el); }
       $.rm($.id('ctrl-top'));
       const topNavPos = $.id('delform').previousElementSibling;
@@ -230,7 +228,7 @@ var Index = {
       if (timeEl.dataset.utc) { return RelativeDates.update(timeEl); }
     });
 
-    PageReady.ready(function() {
+    PageReady.ready(() => {
       let pagelist = $('.pagelist');
       if (pagelist) {
         $.replace(pagelist, Index.pagelist);
@@ -253,7 +251,7 @@ var Index = {
   endNotice: (function() {
     let notify = false;
     const reset = () => notify = false;
-    return function() {
+    return () => {
       if (notify) { return; }
       notify = true;
       new Notice('info', "Last page reached.", 2);
@@ -277,7 +275,7 @@ var Index = {
           this.el.firstElementChild.textContent = thread.isHidden ?
             'Unhide' : 'Hide';
           if (this.cb) { $.off(this.el, 'click', this.cb); }
-          this.cb = function() {
+          this.cb = () => {
             $.event('CloseMenu');
             return Index.toggleHide(thread);
           };
@@ -337,7 +335,7 @@ var Index = {
     postsInserted() {
       if (!Index.initFinishedFired) { return; }
       let n = 0;
-      g.posts.forEach(function(post) {
+      g.posts.forEach((post) => {
         if (!post.isFetchedQuote && !post.indexRefreshSeen && doc.contains(post.nodes.root)) {
           post.indexRefreshSeen = true;
           return n++;
@@ -852,7 +850,7 @@ var Index = {
     if (Index.liveThreadData[0]) {
       g.SITE.Build.spoilerRange[g.BOARD.ID] = Index.liveThreadData[0].custom_spoiler;
     }
-    g.BOARD.threads.forEach(function(thread) {
+    g.BOARD.threads.forEach((thread) => {
       if (!Index.liveThreadIDs.includes(thread.ID)) { return thread.collect(); }
     });
     $.event('IndexUpdate',
@@ -1028,7 +1026,7 @@ var Index = {
     Index.sortedThreadIDs = (() => { switch (sortType) {
       case 'lastreply': case 'lastlong':
         var repliesAvailable = liveThreadData.some(thread => thread.last_replies?.length);
-        var lastlong = function(thread) {
+        var lastlong = (thread) => {
           if (!repliesAvailable) {
             return thread.last_modified;
           }
@@ -1036,13 +1034,9 @@ var Index = {
           for (let i = iterable.length - 1; i >= 0; i--) {
             var r = iterable[i];
             if (Index.isHiddenReply(thread.no, r)) { continue; }
-            if (sortType === 'lastreply') {
-              return r;
-            }
+            if (sortType === 'lastreply') { return r; }
             var len = r.com ? g.SITE.Build.parseComment(r.com).replace(/[^a-z]/ig, '').length : 0;
-            if (len >= Index.lastLongThresholds[+!!r.ext]) {
-              return r;
-            }
+            if (len >= Index.lastLongThresholds[+!!r.ext]) { return r; }
           }
           if (thread.omitted_posts && thread.last_replies?.length) { return thread.last_replies[0]; } else { return thread; }
         };
@@ -1131,7 +1125,7 @@ var Index = {
     let i = 0;
     const n = threadIDs.length;
     let node0 = null;
-    var fn = function() {
+    var fn = () => {
       if (node0 && !node0.parentNode) { return; } // Index.root cleared
       const j = (i > 0) && Index.root.parentNode ? n : i + 30;
       node0 = Index.buildCatalogPart(threadIDs.slice(i, j))[0];

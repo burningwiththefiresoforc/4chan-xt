@@ -106,7 +106,7 @@ var Header = {
 
     $.onExists(doc, `${g.SITE.selectors.boardList} + *`, Header.generateFullBoardList);
 
-    PageReady.ready(function() {
+    PageReady.ready(() => {
       let footer = $.id('boardNavDesktopFoot');
       if ((g.SITE.software === 'yotsuba') && !footer) {
         let absbot = $.id('absbot');
@@ -214,14 +214,14 @@ var Header = {
     }
 
     let text = (url = null);
-    t = t.replace(/-text:"([^"]+)"(?:,"([^"]+)")?/g, function(m0, m1, m2) {
+    t = t.replace(/-text:"([^"]+)"(?:,"([^"]+)")?/g, (m0, m1, m2) => {
       text = m1;
       url  = m2;
       return '';
     });
 
     let indexOptions = [];
-    t = t.replace(/-(?:mode|sort):"([^"]+)"/g, function(m0, m1) {
+    t = t.replace(/-(?:mode|sort):"([^"]+)"/g, (m0, m1) => {
       indexOptions.push(m1.toLowerCase().replace(/\ /g, '-'));
       return '';
     });
@@ -621,12 +621,12 @@ var Header = {
         `<br><button>Authorize</button> or <button>Disable</button>`
     });
     const [authorize, disable] = $$('button', el);
-    $.on(authorize, 'click', () => Notification.requestPermission(function(status) {
+    $.on(authorize, 'click', () => Notification.requestPermission((status) => {
       Header.areNotificationsEnabled = status === 'granted';
       if (status === 'default') { return; }
       notice.close();
     }));
-    $.on(disable, 'click', function() {
+    $.on(disable, 'click', () => {
       $.set('Desktop Notifications', false);
       notice.close();
     });
