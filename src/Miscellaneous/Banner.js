@@ -22,7 +22,7 @@ const Banner = {
 
     // Let 4chan's JS load the banner if enabled; otherwise, load it ourselves.
     if (g.BOARD.ID !== 'f') {
-      return PageReady.ready(() => $.queueTask(Banner.load));
+      PageReady.ready(() => $.queueTask(Banner.load));
     }
   },
 

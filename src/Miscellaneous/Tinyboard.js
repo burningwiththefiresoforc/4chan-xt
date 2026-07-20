@@ -13,7 +13,7 @@ const Tinyboard = {
   init() {
     if (g.SITE.software !== 'tinyboard') { return; }
     if (g.VIEW === 'thread') {
-      return PageReady.ready(() => $.global("initTinyBoard", { boardID: g.BOARD.ID, threadID: g.THREADID.toString() }));
+      PageReady.ready(() => $.global("initTinyBoard", { boardID: g.BOARD.ID, threadID: g.THREADID.toString() }));
     }
   }
 };

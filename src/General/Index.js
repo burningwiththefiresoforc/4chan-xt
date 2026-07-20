@@ -69,11 +69,9 @@ var Index = {
       Conf['Index Mode'] = history.state?.mode;
     }
     this.currentSort = history.state?.sort;
-    if (!this.currentSort) { this.currentSort = typeof Conf['Index Sort'] === 'object' ? (
-        Conf['Index Sort'][g.BOARD.ID] || 'bump'
-      ) : (
-        Conf['Index Sort']
-      ); }
+    if (!this.currentSort) {
+      this.currentSort = typeof Conf['Index Sort'] === 'object'
+        ? Conf['Index Sort'][g.BOARD.ID] || 'bump' : Conf['Index Sort']; }
     this.currentPage = this.getCurrentPage();
     this.processHash();
 
@@ -406,9 +404,7 @@ var Index = {
       Index.buildIndex();
     },
 
-    hover() {
-      return doc.classList.toggle('catalog-hover-expand', Conf['Catalog Hover Expand']);
-    },
+    hover: () => doc.classList.toggle('catalog-hover-expand', Conf['Catalog Hover Expand']),
 
     hoverToggle(e) {
       if (Conf['Catalog Hover Toggle'] && $.hasClass(doc, 'catalog-mode') && !$.modifiedClick(e) && !$.x('ancestor-or-self::a', e.target)) {
@@ -489,9 +485,7 @@ var Index = {
     return Header.scrollToIfNeeded((Index.navLinks.getBoundingClientRect().height ? Index.navLinks : Index.root));
   },
 
-  getCurrentPage() {
-    return +window.location.pathname.split(/\/+/)[2] || 1;
-  },
+  getCurrentPage: () => +window.location.pathname.split(/\/+/)[2] || 1,
 
   userPageNav(page) {
     Index.pushState({page});
@@ -602,11 +596,9 @@ var Index = {
   },
 
   savePerBoard(key, value) {
-    if (typeof Conf[key] === 'object') {
-      Conf[key][g.BOARD.ID] = value;
-    } else {
-      Conf[key] = value;
-    }
+    typeof Conf[key] === 'object'
+      ? (Conf[key][g.BOARD.ID] = value)
+      : (Conf[key] = value);
     $.set(key, Conf[key]);
   },
 
@@ -650,17 +642,9 @@ var Index = {
     return Index.lastLongOptions.hidden = (Index.selectSort.value !== 'lastlong');
   },
 
-  getPagesNum() {
-    if (Index.search) {
-      return Math.ceil(Index.sortedThreadIDs.length / Index.threadsNumPerPage);
-    } else {
-      return Index.pagesNum;
-    }
-  },
+  getPagesNum: () => Index.search ? Math.ceil(Index.sortedThreadIDs.length / Index.threadsNumPerPage) : Index.pagesNum,
 
-  getMaxPageNum() {
-    return Math.max(1, Index.getPagesNum());
-  },
+  getMaxPageNum: () => Math.max(1, Index.getPagesNum()),
 
   buildPagelist() {
     const pagesRoot = $('.pages', Index.pagelist);
@@ -866,9 +850,7 @@ var Index = {
     }
   },
 
-  isHiddenReply(threadID, replyData) {
-    return PostHiding.isHidden(g.BOARD.ID, threadID, replyData.no) || Filter.isHidden(g.SITE.Build.parseJSON(replyData, g.BOARD));
-  },
+  isHiddenReply: (threadID, replyData) => PostHiding.isHidden(g.BOARD.ID, threadID, replyData.no) || Filter.isHidden(g.SITE.Build.parseJSON(replyData, g.BOARD)),
 
   buildThreads(threadIDs, isCatalog, withReplies) {
     let errors;

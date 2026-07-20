@@ -721,12 +721,9 @@ var Main = {
       return ++i % 250;
     };
 
-    var softTask = () => {
-      while (fn()) { continue; }
-      if (!nodes[i]) {
-        if (cb) { cb(); }
-        return;
-      }
+    const softTask = () => {
+      while (fn());
+      if (!nodes[i]) return cb?.();
       setTimeout(softTask, 0);
     };
 
@@ -827,13 +824,7 @@ User agent: ${navigator.userAgent}\
     return { innerHTML: `<span class="report-error"> [<a href="${url}" target="_blank">report</a>]</span>` };
   },
 
-  mounted(cb) {
-    if (Main.isMounted) {
-      return cb();
-    } else {
-      return Main.mountedCBs.push(cb);
-    }
-  },
+  mounted: (cb) => Main.isMounted ? cb() : Main.mountedCBs.push(cb),
 
   mountedCBs: [],
 

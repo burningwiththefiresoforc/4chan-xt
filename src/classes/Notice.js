@@ -25,9 +25,7 @@ export default class Notice {
     $.ready(this.add);
   }
 
-  setType(type) {
-    this.el.className = `notification ${type}`;
-  }
+  setType(type) { this.el.className = `notification ${type}`; }
 
   add() {
     if (this.closed) return;

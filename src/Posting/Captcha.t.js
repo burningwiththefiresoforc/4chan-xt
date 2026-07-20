@@ -55,14 +55,14 @@ const CaptchaT = {
   },
 
   getOne() {
-    let el;
     let response = {};
     if (this.nodes.container) {
       for (var key of ['t-response', 't-challenge']) {
         response[key] = $(`[name='${key}']`, this.nodes.container).value;
       }
     }
-    if (!response['t-response'] && !((el = $('#t-msg, #t-task')) && /Verification not required/i.test(el.textContent))) {
+    let el = $('#t-msg, #t-task');
+    if (!response['t-response'] && !(el && /Verification not required/i.test(el.textContent))) {
       response = null;
     }
     return response;

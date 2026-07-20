@@ -15,12 +15,12 @@ const Volume = {
     if (!['index', 'thread'].includes(g.VIEW) ||
       (!Conf['Image Expansion'] && !Conf['Image Hover'] && !Conf['Image Hover in Catalog'] && !Conf.Gallery)) { return; }
 
-    $.sync('Allow Sound', function(x) {
+    $.sync('Allow Sound', (x) => {
       Conf['Allow Sound'] = x;
       if (Volume.inputs) Volume.inputs.unmute.checked = x;
     });
 
-    $.sync('Default Volume', function(x) {
+    $.sync('Default Volume', (x) => {
       Conf['Default Volume'] = x;
       if (Volume.inputs) Volume.inputs.volume.value = x;
     });

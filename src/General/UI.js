@@ -412,8 +412,8 @@ export var hover = function (e) {
   const width  = (this.width  || this.el.offsetWidth);
   const {clientX, clientY} = Conf['Follow Cursor'] ? e : this;
 
-  const top = this.isImage ?
-    Math.max(0, (clientY * (this.clientHeight - height)) / this.clientHeight)
+  const top = this.isImage
+  ? Math.max(0, (clientY * (this.clientHeight - height)) / this.clientHeight)
   : Math.max(0, Math.min(this.clientHeight - height, clientY - 120));
 
   let threshold = this.clientWidth / 2;

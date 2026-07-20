@@ -65,7 +65,7 @@ export const g: {
   boards:    Object.create(null)
 };
 
-export const E = (function () {
+export const E = (() => {
   const str = {
     '&': '&amp;',
     "'": '&#039;',
@@ -74,13 +74,9 @@ export const E = (function () {
     '>': '&gt;'
   };
   const regex = /[&"'<>]/g;
-  const fn = function (x: string) {
-    return str[x];
-  };
-  const output = function (text: string) {
-    return text.toString().replace(regex, fn);
-  };
-  output.cat = function (templates) {
+  const fn = (x: string) => str[x];
+  const output = (text: string) => text.toString().replace(regex, fn);
+  output.cat = (templates) => {
     let html = '';
     for (let i = 0; i < templates.length; i++) {
       html += templates[i].innerHTML;
@@ -95,7 +91,5 @@ export const doc = d.documentElement;
 
 export const c = console;
 
-export const docSet = function () {
-  // return (doc = d.documentElement);
-  return doc;
-};
+ // return (doc = d.documentElement);
+export const docSet = () => doc;

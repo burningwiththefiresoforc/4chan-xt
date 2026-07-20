@@ -406,10 +406,7 @@ var Keybinds = {
     $.event('input', null, ta);
   },
 
-  sage() {
-    const isSage  = /sage/i.test(QR.nodes.email.value);
-    return QR.nodes.email.value = isSage ? "" : "sage";
-  },
+  sage: () => QR.nodes.email.value = /sage/i.test(QR.nodes.email.value) ? "" : "sage",
 
   open(thread, tab) {
     if (g.VIEW !== 'index') { return; }

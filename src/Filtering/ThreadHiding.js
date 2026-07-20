@@ -75,9 +75,7 @@ var ThreadHiding = {
     return ThreadHiding.hiddenThreads = hiddenThreads2;
   },
 
-  isHidden(boardID, threadID) {
-    return !!(ThreadHiding.db && ThreadHiding.db.get({boardID, threadID}));
-  },
+  isHidden: (boardID, threadID) => !!(ThreadHiding.db && ThreadHiding.db.get({boardID, threadID})),
 
   node() {
     if (this.isReply || this.isClone || this.isFetchedQuote) { return; }
@@ -93,7 +91,7 @@ var ThreadHiding = {
   },
 
   onIndexRefresh() {
-    return g.BOARD.threads.forEach(function(thread) {
+    return g.BOARD.threads.forEach((thread) => {
       const {root} = thread.nodes;
       if (thread.isHidden && thread.stub && !root.contains(thread.stub)) {
         ThreadHiding.makeStub(thread, root);

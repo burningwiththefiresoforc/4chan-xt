@@ -158,9 +158,7 @@ var ThreadUpdater = {
       }
     },
 
-    scrollBG() {
-      return ThreadUpdater.scrollBG = Conf['Scroll BG'] ? () => true : () => !d.hidden;
-    },
+    scrollBG: () => ThreadUpdater.scrollBG = Conf['Scroll BG'] ? () => true : () => !d.hidden,
 
     interval(e) {
       let val = parseInt(this.value, 10);

@@ -63,13 +63,7 @@ var BoardConfig = {
     }
   },
 
-  ready(cb) {
-    if (this.boards) {
-      return cb();
-    } else {
-      return this.cbs.push(cb);
-    }
-  },
+  ready(cb) { return this.boards ? cb() : this.cbs.push(cb); }
 
   sfwBoards(sfw) {
     const result = [];

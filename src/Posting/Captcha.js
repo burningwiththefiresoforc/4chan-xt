@@ -38,15 +38,13 @@ const Captcha = {
       return this.neededRaw() && $.event('LoadCaptcha');
     },
 
-    haveCookie() {
-      return /\b_ct=/.test(d.cookie) && (QR.posts[0].thread !== 'new');
-    },
+    haveCookie: () => /\b_ct=/.test(d.cookie) && (QR.posts[0].thread !== 'new'),
 
     getOne() {
-      let captcha;
       delete this.prerequested;
       this.clear();
-      if (captcha = this.captchas.shift()) {
+      let captcha = this.captchas.shift();
+      if (captcha) {
         this.count();
         return captcha;
       } else {
@@ -73,8 +71,8 @@ const Captcha = {
     },
 
     saveAPI(captcha) {
-      let cb;
-      if (cb = this.submitCB) {
+      let cb = this.submitCB;
+      if (cb) {
         delete this.submitCB;
         cb(captcha);
         return this.updateCount();
@@ -84,8 +82,8 @@ const Captcha = {
     },
 
     noCaptcha(detail) {
-      let cb;
-      if (cb = this.submitCB) {
+      let cb = this.submitCB;
+      if (cb) {
         if (!this.haveCookie() || detail?.error) {
           QR.error(detail?.error || 'Failed to retrieve captcha.');
           QR.captcha.setup(d.activeElement === QR.nodes.status);
@@ -97,8 +95,8 @@ const Captcha = {
     },
 
     save(captcha) {
-      let cb;
-      if (cb = this.submitCB) {
+      let cb = this.submitCB;
+      if (cb) {
         this.abort();
         cb(captcha);
         return;

@@ -167,12 +167,7 @@ const CatalogLinks = {
     }
   },
 
-  index(board=g.BOARD) {
-    if (Index.enabledOn(board)) {
-      return CatalogLinks.jsonIndex(board, '#index');
-    } else {
-      return Get.url('index', board);
-    }
-  }
+  index: (board=g.BOARD) => Index.enabledOn(board) ? CatalogLinks.jsonIndex(board, '#index') : Get.url('index', board);
+
 };
 export default CatalogLinks;

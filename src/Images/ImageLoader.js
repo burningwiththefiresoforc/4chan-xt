@@ -20,7 +20,7 @@ const ImageLoader = {
       cb:   this.node
     });
 
-    $.on(d, 'PostsInserted', function() {
+    $.on(d, 'PostsInserted', () => {
       if (ImageLoader.prefetchEnabled || replace) {
         return g.posts.forEach(ImageLoader.prefetchAll);
       }
@@ -99,7 +99,7 @@ const ImageLoader = {
     const el = $.el(isImage ? 'img' : 'video');
     if (isVideo) { el.preload = 'auto'; }
     if (replace && isImage) {
-      $.on(el, 'load', function() {
+      $.on(el, 'load', () => {
         for (clone of post.clones) { clone.file.thumb.src = url; }
         return thumb.src = url;
       });
@@ -124,12 +124,15 @@ const ImageLoader = {
   playVideos() {
     // Special case: Quote previews are off screen when inserted into document, but quickly moved on screen.
     const qpClone = $.id('qp')?.firstElementChild;
-    return g.posts.forEach(function(post) {
+    return g.posts.forEach((post) => {
       for (post of [post, ...post.clones]) {
         for (const file of post.files) {
           if (file.videoThumb) {
             const {thumb} = file;
-            if (Header.isNodeVisible(thumb) || (post.nodes.root === qpClone)) { thumb.play(); } else { thumb.pause(); }
+            if (Header.isNodeVisible(thumb) || (post.nodes.root === qpClone)) {
+              thumb.play();
+            } else {
+              thumb.pause(); }
           }
         }
       }

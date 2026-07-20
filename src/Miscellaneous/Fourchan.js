@@ -58,9 +58,7 @@ var Fourchan = {
   },
 
   // Disable 4chan's ID highlighting (replaced by IDHighlight) and reported post hiding.
-  initReady() {
-    $.global('disable4chanIdHl');
-  },
+  initReady() { $.global('disable4chanIdHl'); },
 
   code() {
     if (this.isClone) { return; }

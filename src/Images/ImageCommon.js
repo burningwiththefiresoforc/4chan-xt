@@ -58,9 +58,7 @@ var ImageCommon = {
     return true;
   },
 
-  isFromArchive(file) {
-    return (g.SITE.software === 'yotsuba') && !ImageHost.test(file.src.split('/')[2]);
-  },
+  isFromArchive: (file) => (g.SITE.software === 'yotsuba') && !ImageHost.test(file.src.split('/')[2]),
 
   error(file, post, fileObj, delay, cb) {
     const src = fileObj.url.split('/');
@@ -115,10 +113,7 @@ var ImageCommon = {
   },
 
   // XXX Estimate whether clicks are on the video controls and should be ignored.
-  onControls(e) {
-    return (Conf['Show Controls'] && Conf['Click Passthrough'] && (e.target.nodeName === 'VIDEO')) ||
-      (e.target.controls && ((e.target.getBoundingClientRect().bottom - e.clientY) < 35));
-  },
+  onControls: (e) => (Conf['Show Controls'] && Conf['Click Passthrough'] && (e.target.nodeName === 'VIDEO')) || (e.target.controls && ((e.target.getBoundingClientRect().bottom - e.clientY) < 35)),
 
   download(e) {
     if (this.protocol === 'blob:') { return true; }

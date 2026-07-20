@@ -29,8 +29,6 @@ var ThreadLinks = {
     ThreadLinks.process(this.nodes.thumb.parentNode);
   },
 
-  process(link) {
-    return link.target = '_blank';
-  }
+  process: (link) => link.target = '_blank',
 };
 export default ThreadLinks;

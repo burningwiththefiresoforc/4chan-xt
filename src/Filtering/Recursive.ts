@@ -54,7 +54,7 @@ var Recursive = {
     ...args: DropFirst<Parameters<Fn>>
   ) {
     const {fullID} = post;
-    g.posts.forEach(function(post) {
+    g.posts.forEach((post) => {
       if (post.quotes.includes(fullID)) {
         recursive(post, ...args);
       }

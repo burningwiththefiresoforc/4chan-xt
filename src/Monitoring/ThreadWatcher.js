@@ -93,8 +93,8 @@ var ThreadWatcher = {
         el: $.el('a', {
           href:      'javascript:;',
           className: 'has-shortcut-text'
-        }
-        , {innerHTML: '<span></span><span class="shortcut-text">Alt+click</span>'}),
+        },
+          {innerHTML: '<span></span><span class="shortcut-text">Alt+click</span>'}),
         order: 6,
         open({thread}) {
           if (Conf['Index Mode'] !== 'catalog') { return false; }
@@ -123,13 +123,9 @@ var ThreadWatcher = {
     });
   },
 
-  isWatched(thread) {
-    return !!ThreadWatcher.db?.get({boardID: thread.board.ID, threadID: thread.ID});
-  },
+  isWatched: (thread) => !!ThreadWatcher.db?.get({boardID: thread.board.ID, threadID: thread.ID}),
 
-  isWatchedRaw(boardID, threadID) {
-    return !!ThreadWatcher.db?.get({boardID, threadID});
-  },
+  isWatchedRaw: (boardID, threadID) => !!ThreadWatcher.db?.get({boardID, threadID}),
 
   setToggler(toggler, isWatched) {
     toggler.classList.toggle('watched', isWatched);

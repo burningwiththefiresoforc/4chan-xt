@@ -392,7 +392,7 @@ var Filter = {
         Filter.catalogData[item.no] = item;
       }
     }
-    g.BOARD.threads.forEach(function(thread) {
+    g.BOARD.threads.forEach((thread) => {
       if (thread.catalogViewNative) {
         return Filter.catalogNode.call(thread.catalogViewNative);
       }
@@ -446,7 +446,7 @@ var Filter = {
     if ($.hasOwn(Filter.valueF, key)) {
       return Filter.valueF[key](post).filter(v => v != null);
     } else {
-      return [key.split('+').map(function(k) {
+      return [key.split('+').map((k) => {
         let f: (post: Post) => string[];
         if (f = $.getOwn(Filter.valueF, k)) {
           return f(post).map(v => v || '').join('\n');
@@ -459,16 +459,15 @@ var Filter = {
 
   addFilter(type: FilterType, re: string, cb?: () => void) {
     if (!$.hasOwn(Config.filter, type)) { return; }
-    return $.get(type, Conf[type], function(item) {
-      let save = item[type];
+    return $.get(type, Conf[type], (item) => {
       // Add a new line before the regexp unless the text is empty.
-      save = save ? `${save}\n${re}` : re;
+      const save = item[type] ? `${item[type]}\n${re}` : re;
       return $.set(type, save, cb);
     });
   },
 
   removeFilters(type: FilterType, res: FilterObj[] | Map<string, FilterObj[]>, cb?: () => void) {
-    return $.get(type, Conf[type], function (item) {
+    return $.get(type, Conf[type], (item) => {
       let save = item[type];
       const filterArray = Array.isArray(res) ? res : [...res.values()].flat();
       const r = filterArray.map(Filter.escape).join('|');
@@ -484,7 +483,7 @@ var Filter = {
     const select = $('select[name=filter]', section);
     select.value = type;
     Settings.selectFilter.call(select);
-    $.onExists(section, 'textarea', function(ta) {
+    $.onExists(section, 'textarea', (ta) => {
       const tl = ta.textLength;
       ta.setSelectionRange(tl, tl);
       ta.focus();
@@ -548,11 +547,7 @@ var Filter = {
     }
   },
 
-  escape(value) {
-    return value.replace(/[/\\^$\n.(){}[\]?*+|]/g, (c) =>
-      c === '\n' ? '\\n' : `\\${c}`
-    );
-  },
+  escape: (value) => value.replace(/[/\\^$\n.(){}[\]?*+|]/g, (c) => c === '\n' ? '\\n' : `\\${c}`),
 
   menu: {
     init() {

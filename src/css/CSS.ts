@@ -27,10 +27,8 @@ const CSS = {
   www,
 
   sub: function(css: string) {
-    var variables = {
-      site: g.SITE.selectors
-    };
-    return css.replace(/\$[\w\$]+/g, function(name) {
+    var variables = { site: g.SITE.selectors };
+    return css.replace(/\$[\w\$]+/g, (name) => {
       var words = name.slice(1).split('$');
       var sel = variables;
       for (var i = 0; i < words.length; i++) {

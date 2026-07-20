@@ -18,14 +18,10 @@ const ImageHost = {
 
   suggestions: ['i.4cdn.org', 'is2.4chan.org'],
 
-  host() {
-    return Conf.fourchanImageHost.trim() || 'i.4cdn.org';
-  },
-  flashHost() { return 'i.4cdn.org'; },
-  thumbHost() { return 'i.4cdn.org'; },
-  test(hostname) {
-    return (hostname === 'i.4cdn.org') || ImageHost.regex.test(hostname);
-  },
+  flashHost: () => 'i.4cdn.org',
+  thumbHost: () => 'i.4cdn.org',
+  host: () =>  Conf.fourchanImageHost.trim() || 'i.4cdn.org',
+  test: (hostname) => (hostname === 'i.4cdn.org') || ImageHost.regex.test(hostname),
 
   // regex: /^is\d*\.4chan(?:nel)?\.org$/,
   regex: /^is\d*\.4chan\.org$/,

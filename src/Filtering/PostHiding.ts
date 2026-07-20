@@ -39,9 +39,7 @@ var PostHiding = {
     });
   },
 
-  isHidden(boardID, threadID, postID) {
-    return !!(PostHiding.db && PostHiding.db.get({boardID, threadID, postID}));
-  },
+  isHidden: (boardID, threadID, postID) => !!(PostHiding.db && PostHiding.db.get({boardID, threadID, postID})),
 
   node(this: Post) {
     if (!this.isReply || this.isClone || this.isFetchedQuote) return;
@@ -260,9 +258,9 @@ var PostHiding = {
       $.event('CloseMenu');
     },
     hideStub() {
-      let data;
+      let data = PostHiding.db.get({boardID: post.board.ID, threadID: post.thread.ID, postID: post.ID});
       const {post} = PostHiding.menu;
-      if (data = PostHiding.db.get({boardID: post.board.ID, threadID: post.thread.ID, postID: post.ID})) {
+      if (data) {
         PostHiding.show(post, data.hideRecursively);
         PostHiding.hide(post, false, data.hideRecursively);
         PostHiding.saveHiddenState(post, true, true, false, data.hideRecursively, data.byId);

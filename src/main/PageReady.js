@@ -6,14 +6,13 @@ const PageReady = {
     if (!('thisPageIsLegit' in PageReady)) {
       PageReady.thisPageIsLegit = g.SITE.isThisPageLegit ?
         g.SITE.isThisPageLegit()
-      :
-        !/^[45]\d\d\b/.test(d.title) && !/\.(?:json|rss)$/.test(location.pathname);
+      : !/^[45]\d\d\b/.test(d.title) && !/\.(?:json|rss)$/.test(location.pathname);
     }
     return PageReady.thisPageIsLegit;
   },
 
   ready(cb) {
-    return $.ready(function() {
+    return $.ready(() => {
       if (PageReady.isThisPageLegit()) { return cb(); }
     });
   }

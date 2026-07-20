@@ -294,9 +294,7 @@ const Gallery = {
     });
   },
 
-  cacheError() {
-    delete Gallery.cache;
-  },
+  cacheError() { delete Gallery.cache; },
 
   cleanupTimer() {
     clearTimeout(Gallery.timeoutID);
@@ -305,9 +303,7 @@ const Gallery = {
     $.off(current, 'ended', Gallery.cb.next);
   },
 
-  startTimer() {
-    return Gallery.timeoutID = setTimeout(Gallery.checkTimer, Gallery.delay * SECOND);
-  },
+  startTimer: () => Gallery.timeoutID = setTimeout(Gallery.checkTimer, Gallery.delay * SECOND),
 
   setupTimer() {
     Gallery.cleanupTimer();
@@ -383,9 +379,9 @@ const Gallery = {
     },
 
     advance() { if (!Conf.Autoplay && Gallery.nodes.current.paused) { return Gallery.nodes.current.play(); } else { return Gallery.cb.next(); } },
-    toggle() { return (Gallery.nodes ? Gallery.cb.close : Gallery.build)(); },
-    blank(e) { if (e.target === this) { return Gallery.cb.close(); } },
-    toggleSlideshow() {  return Gallery.cb[Gallery.slideshow ? 'stop' : 'start'](); },
+    blank(e) { if (e.target === this) Gallery.cb.close(); },
+    toggleSlideshow: () => Gallery.cb[Gallery.slideshow ? 'stop' : 'start'](),
+    toggle: () => (Gallery.nodes ? Gallery.cb.close : Gallery.build)(),
 
     download() {
       const name = $('.gal-name');
@@ -413,8 +409,8 @@ const Gallery = {
       return Gallery.slideshow = false;
     },
 
-    rotateLeft() { return Gallery.cb.rotate(270); },
-    rotateRight() { return Gallery.cb.rotate(90); },
+    rotateLeft: () => Gallery.cb.rotate(270),
+    rotateRight: () => Gallery.cb.rotate(90),
 
     rotate: debounce(100, function(delta) {
       const {current} = Gallery.nodes;

@@ -334,11 +334,10 @@ $.event = (event, detail, root: EventTarget = d) => {
 $.modifiedClick = e => e.shiftKey || e.altKey || e.ctrlKey || e.metaKey || (e.button !== 0);
 
 if (!globalThis.chrome?.extension) {
-  $.open =
-    (GM?.openInTab != null) ?
-      GM.openInTab
-    : (typeof GM_openInTab !== 'undefined' && GM_openInTab !== null) ?
-      GM_openInTab
+  $.open = (GM?.openInTab != null)
+    ? GM.openInTab
+    : (typeof GM_openInTab !== 'undefined' && GM_openInTab !== null)
+    ? GM_openInTab
     : url => window.open(url, '_blank');
 } else {
   $.open = url => window.open(url, '_blank');
@@ -429,19 +428,18 @@ $.bytesToString = function(size) {
     unit++;
   }
   // Remove trailing 0s.
-  size =
-    unit > 1 ?
+  size = unit > 1
       // Keep the size as a float if the size is greater than 2^20 B.
       // Round to hundredth.
-      Math.round(size * 100) / 100
-    :
+     ? Math.round(size * 100) / 100
       // Round to an integer otherwise.
-      Math.round(size);
+     : Math.round(size);
   return `${size} ${['B', 'KB', 'MB', 'GB'][unit]}`;
 };
 
-$.minmax = (value, min, max) => value < min ?
-  min : value > max ? max : value;
+$.minmax = (value, min, max) => value < min
+  ? min : value > max
+  ? max : value;
 
 $.hasAudio = video =>
   video.mozHasAudio || !!video.webkitAudioDecodedByteCount ||

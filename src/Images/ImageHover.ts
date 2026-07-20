@@ -133,7 +133,7 @@ var ImageHover = {
         if (URL) {
           return this.src = URL + (this.src === URL ? '?' + Date.now() : '');
         } else {
-          return $.rm(this);
+          $.rm(this);
         }
       });
     };

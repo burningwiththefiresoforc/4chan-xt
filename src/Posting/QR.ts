@@ -160,7 +160,6 @@ var QR = {
   },
 
   initReady() {
-    let origToggle;
     // const captchaVersion = $('#g-recaptcha, #captcha-forced-noscript') ? 'v2' : 't';
     // QR.captcha = Captcha[captchaVersion];
     QR.captcha = Captcha.t;
@@ -183,9 +182,9 @@ var QR = {
     QR.forcedAnon = !!config.forced_anon;
     QR.spoiler    = !!config.spoilers;
 
-    if (origToggle = $.id('togglePostFormLink')) {
-      const link = $.el('h1',
-        {className: "qr-link-container"});
+    let origToggle = $.id('togglePostFormLink');
+    if (origToggle) {
+      const link = $.el('h1', {className: "qr-link-container"});
       $.extend(link, {
         innerHTML:
           `<a href="javascript:;" class="qr-link">${g.VIEW === "thread" ? "Reply to Thread" : "Start a Thread"}</a>`
@@ -202,7 +201,6 @@ var QR = {
     }
 
     if (g.VIEW === 'thread') {
-      let navLinksBot;
       const linkBot = $.el('div',
         {className: "brackets-wrap qr-link-container-bottom"});
       $.extend(linkBot, {innerHTML: '<a href="javascript:;" class="qr-link-bottom">Reply to Thread</a>'});
@@ -212,7 +210,8 @@ var QR = {
         QR.nodes.com.focus();
       });
 
-      if (navLinksBot = $('.navLinksBot')) { $.prepend(navLinksBot, linkBot); }
+      let navLinksBot = $('.navLinksBot');
+      if (navLinksBot) { $.prepend(navLinksBot, linkBot); }
     }
 
     $.on(d, 'QRGetFile',          QR.getFile);
@@ -426,9 +425,9 @@ var QR = {
     value = QR.req ? QR.req.progress : QR.cooldown.seconds || value;
 
     const {status} = QR.nodes;
-    status.value = !value ? 'Submit'
-    : QR.cooldown.auto ? `Auto ${value}`
-    : value;
+    status.value = !value
+    ? 'Submit' : QR.cooldown.auto
+    ? `Auto ${value}` : value;
     status.disabled = disabled || false;
     return status.disabled;
   },
@@ -444,7 +443,6 @@ var QR = {
   },
 
   quote(e) {
-    let range;
     e?.preventDefault();
     if (!QR.postingIsEnabled) { return; }
     const sel  = d.getSelection();
@@ -453,6 +451,7 @@ var QR = {
     const postRange = new Range();
     postRange.selectNode(root);
     let text = post.board.ID === g.BOARD.ID ? `>>${post}\n` : `>>>/${post.board}/${post}\n`;
+    let range;
     for (let i = 0; i < sel.rangeCount; i++) {
       try {
         var insideCode, node;
@@ -1172,17 +1171,18 @@ var QR = {
 
     QR.cooldown.add(threadID, postID);
 
-    const URL = threadID === postID ? ( // new thread
-      `${window.location.origin}/${g.BOARD}/thread/${threadID}`
-    ) : (threadID !== g.THREADID) && lastPostToThread && Conf['Open Post in New Tab'] ? ( // replying from the index or a different thread
-      `${window.location.origin}/${g.BOARD}/thread/${threadID}#p${postID}`
-    ) : undefined;
+    const URL = threadID === postID
+      // new thread
+      ? `${window.location.origin}/${g.BOARD}/thread/${threadID}`
+      : threadID !== g.THREADID && lastPostToThread && Conf['Open Post in New Tab']
+      // replying from the index or a different thread
+      ? `${window.location.origin}/${g.BOARD}/thread/${threadID}#p${postID}`
+      : undefined;
 
     if (URL) {
-      const open = Conf['Open Post in New Tab'] || postsCount ?
-        () => $.open(URL)
-      :
-        () => location.href = URL;
+      const open = Conf['Open Post in New Tab'] || postsCount
+      ? () => $.open(URL)
+      : () => location.href = URL;
 
       if (threadID === postID) {
         // XXX 4chan sometimes responds before the thread exists.
@@ -1215,8 +1215,8 @@ var QR = {
   },
 
   abort() {
-    let oldReq;
-    if ((oldReq = QR.req) && !QR.req.isUploadFinished) {
+    let oldReq = QR.req;
+    if ((oldReq) && !QR.req.isUploadFinished) {
       delete QR.req;
       oldReq.abort();
       // if ((QR.captcha === Captcha.v2) && QR.currentCaptcha) { Captcha.cache.save(QR.currentCaptcha); }
@@ -1369,11 +1369,10 @@ var QR = {
     },
 
     delete(post) {
-      let cooldown;
       if (!QR.cooldown.data) { return; }
       const cooldowns = (QR.cooldown.data[post.board.ID] || (QR.cooldown.data[post.board.ID] = dict()));
       for (var id in cooldowns) {
-        cooldown = cooldowns[id];
+        let cooldown = cooldowns[id];
         if ((cooldown.delay == null) && (cooldown.threadID === post.thread.ID) && (cooldown.postID === post.ID)) {
           QR.cooldown.set(post.board.ID, id, null);
         }
@@ -1477,10 +1476,9 @@ var QR = {
             }
 
             // Clean up expired cooldowns
-            var maxDelay = cooldown.threadID !== cooldown.postID ?
-              QR.cooldown.maxDelay
-              : QR.cooldown.delays[scope === 'global' ? 'thread_global'
-                : 'thread'];
+            var maxDelay = cooldown.threadID !== cooldown.postID
+              ? QR.cooldown.maxDelay
+              : QR.cooldown.delays[scope === 'global' ? 'thread_global' : 'thread'];
             if (QR.cooldown.customCooldown) {
               maxDelay = Math.max(maxDelay, parseInt(Conf.customCooldown, 10));
             }
@@ -1610,7 +1608,7 @@ var QR = {
       }
     },
 
-    draw() { return $.global('qrTegakiDraw'); },
+    draw: () => $.global('qrTegakiDraw'),
 
     button() {
       if (QR.selected.file) {
@@ -1781,27 +1779,18 @@ class post {
 
     const prev = QR.posts[QR.posts.length - 1];
     QR.posts.push(this);
-    this.nodes.spoiler.checked = (this.spoiler = prev && Conf['Remember Spoiler'] ?
-      prev.spoiler
-      :
-      false);
+    this.nodes.spoiler.checked = (this.spoiler = prev && Conf['Remember Spoiler']
+      ? prev.spoiler : false);
     QR.persona.get(persona => {
-      this.name = 'name' in QR.persona.always ?
-        QR.persona.always.name
-        : prev ?
-          prev.name
-          :
-          persona.name;
+      this.name = 'name' in QR.persona.always
+        ? QR.persona.always.name : prev
+        ? prev.name : persona.name;
 
-      this.email = 'email' in QR.persona.always ?
-        QR.persona.always.email
-        :
-        '';
+      this.email = 'email' in QR.persona.always
+        ? QR.persona.always.email : '';
 
-      this.sub = 'sub' in QR.persona.always ?
-        QR.persona.always.sub
-        :
-        '';
+      this.sub = 'sub' in QR.persona.always
+        ? QR.persona.always.sub : '';
 
       if (QR.nodes.flag) {
         this.flag = (() => {

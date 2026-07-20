@@ -89,7 +89,7 @@ const Sauce = {
 
     const missing = [];
     for (const key of ['url', 'text']) {
-      parts[key] = parts[key].replace(/%(T?URL|IMG|[sh]?MD5|board|name|%|semi|\$\d+)/g, function(orig, parameter) {
+      parts[key] = parts[key].replace(/%(T?URL|IMG|[sh]?MD5|board|name|%|semi|\$\d+)/g, (orig, parameter) => {
         let type;
         if (parameter[0] === '$') {
           if (!matches) { return orig; }
@@ -145,13 +145,11 @@ const Sauce = {
     $.add(file.text, nodes);
 
     if (skipped.length) {
-      const observer = new MutationObserver(function() {
+      const observer = new MutationObserver(() => {
         if (file.text.dataset.md5) {
           for ([link, node] of skipped) {
-            let node2;
-            if (node2 = Sauce.createSauceLink(link, post, file)) {
-              $.replace(node, node2);
-            }
+            let node2 = Sauce.createSauceLink(link, post, file);
+            if (node2) { $.replace(node, node2); }
           }
           return observer.disconnect();
         }

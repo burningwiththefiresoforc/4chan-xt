@@ -126,7 +126,7 @@ export default class Thread {
 
   collect() {
     let n = 0;
-    this.posts.forEach(function(post) {
+    this.posts.forEach((post) => {
       if (post.clones.length) {
         return n++;
       } else {

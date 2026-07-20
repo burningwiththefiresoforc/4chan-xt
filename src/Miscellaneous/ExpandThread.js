@@ -151,7 +151,7 @@ var ExpandThread = {
     $.after(a, postsRoot);
     $.event('PostsInserted', null, a.parentNode);
 
-    const postsCount    = postsRoot.length;
+    const postsCount = postsRoot.length;
     a.textContent = g.SITE.Build.summaryText('-', postsCount, filesCount);
 
     if (root) {

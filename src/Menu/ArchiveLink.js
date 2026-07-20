@@ -71,10 +71,7 @@ const ArchiveLink = {
         return true;
       };
 
-    return {
-      el,
-      open
-    };
+    return { el, open };
   }
 };
 export default ArchiveLink;

@@ -109,7 +109,7 @@ var ImageExpand = {
         func = ImageExpand.contract;
       }
 
-      return g.posts.forEach(function(post) {
+      return g.posts.forEach((post) => {
         for (post of [post, ...post.clones]) { toggle(post); }
       });
     },
@@ -205,7 +205,7 @@ var ImageExpand = {
     }
     if (Conf['Restart when Opened']) { ImageCommon.rewind(file.thumb); }
     delete file.fullImage;
-    $.queueTask(function() {
+    $.queueTask(() => {
       // XXX Work around Chrome/Chromium not firing mouseover on the thumbnail.
       if (file.isExpanding || file.isExpanded) { return; }
       $.rmClass(el, 'full-image');

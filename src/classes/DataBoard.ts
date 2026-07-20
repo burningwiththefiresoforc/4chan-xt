@@ -139,9 +139,7 @@ export default class DataBoard {
   }
 
   set(data: Parameters<DataBoard['setUnsafe']>[0], cb?: () => void) {
-    this.save(() => {
-      this.setUnsafe(data);
-    }, cb);
+    this.save(() => { this.setUnsafe(data); }, cb);
   }
 
   setUnsafe({ siteID, boardID, threadID, postID, val }: PostInfo & { val?: any }) {
@@ -177,9 +175,7 @@ export default class DataBoard {
   }
 
   setLastChecked(key='lastChecked') {
-    this.save(() => {
-      this.data[key] = Date.now();
-    });
+    this.save(() => { this.data[key] = Date.now(); });
   }
 
   get({ siteID, boardID, threadID, postID, defaultValue }: PostInfo & { defaultValue?: any }) {

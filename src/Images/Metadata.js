@@ -61,7 +61,7 @@ var Metadata = {
   },
 
   parse(data) {
-    const readInt = function() {
+    const readInt = () => {
       let n = data[i++];
       let len = 0;
       while (n < (0x80 >> len)) { len++; }

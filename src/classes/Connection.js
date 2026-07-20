@@ -17,11 +17,7 @@ export default class Connection {
   }
 
   targetWindow() {
-    if (this.target instanceof window.HTMLIFrameElement) {
-      return this.target.contentWindow;
-    } else {
-      return this.target;
-    }
+    return this.target instanceof window.HTMLIFrameElement ? this.target.contentWindow : this.target;
   }
 
   send(data) {
