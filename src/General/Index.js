@@ -270,8 +270,8 @@ var Index = {
         order: 20,
         open({thread}) {
           if (Conf['Index Mode'] !== 'catalog') { return false; }
-          this.el.firstElementChild.textContent = thread.isHidden ?
-            'Unhide' : 'Hide';
+          this.el.firstElementChild.textContent = thread.isHidden
+            ? 'Unhide' : 'Hide';
           if (this.cb) { $.off(this.el, 'click', this.cb); }
           this.cb = () => {
             $.event('CloseMenu');
@@ -480,10 +480,8 @@ var Index = {
     }
   },
 
-  scrollToIndex() {
     // Scroll to navlinks, or top of board if navlinks are hidden.
-    return Header.scrollToIfNeeded((Index.navLinks.getBoundingClientRect().height ? Index.navLinks : Index.root));
-  },
+  scrollToIndex: () => Header.scrollToIfNeeded((Index.navLinks.getBoundingClientRect().height ? Index.navLinks : Index.root)),
 
   getCurrentPage: () => +window.location.pathname.split(/\/+/)[2] || 1,
 

@@ -348,8 +348,7 @@ const Embedding = {
       key: 'BitChute',
       regExp:  /^\w+:\/\/(?:www\.)?bitchute\.com\/video\/([\w\-]+)/,
       el(a) {
-        const el = $.el('iframe',
-          {src: `https://www.bitchute.com/embed/${a.dataset.uid}/`});
+        const el = $.el('iframe', {src: `https://www.bitchute.com/embed/${a.dataset.uid}/`});
         el.setAttribute("allowfullscreen", "true");
         return el;
       }
@@ -358,13 +357,10 @@ const Embedding = {
       key: 'Clyp',
       regExp: /^\w+:\/\/(?:www\.)?clyp\.it\/(\w{8})/,
       style: 'border: 0; width: 640px; height: 160px;',
-      el(a) {
-        return $.el('iframe',
-          {src: `https://clyp.it/${a.dataset.uid}/widget`});
-      },
+      el: (a) => $.el('iframe', {src: `https://clyp.it/${a.dataset.uid}/widget`}),
       title: {
-        api(uid) { return `https://api.clyp.it/oembed?url=https://clyp.it/${uid}`; },
-        text(_) { return _.title; }
+        api: (uid) => `https://api.clyp.it/oembed?url=https://clyp.it/${uid}`,
+        text: (_) => _.title,
       }
     }
     , {
@@ -373,19 +369,18 @@ const Embedding = {
       el(a) {
         let start = a.dataset.options.match(/[?&](start=\d+)/);
         const options = start ? `?${start[1]}` : '';
-        const el = $.el('iframe',
-          {src: `//www.dailymotion.com/embed/video/${a.dataset.uid}${options}`});
+        const el = $.el('iframe', {src: `//www.dailymotion.com/embed/video/${a.dataset.uid}${options}`});
         el.setAttribute("allowfullscreen", "true");
         return el;
       },
       title: {
-        api(uid) { return `https://api.dailymotion.com/video/${uid}`; },
-        text(_) { return _.title; }
-      },
-      preview: {
-        url(uid) { return `https://www.dailymotion.com/thumbnail/video/${uid}`; },
-        height: 240
-      }
+      api: (uid) => `https://api.dailymotion.com/video/${uid}`,
+      text: (_) => _.title
+    },
+    preview: {
+      url: (uid) => `https://www.dailymotion.com/thumbnail/video/${uid}`,
+      height: 240
+    }
     }
     , {
       key: 'Gist',
@@ -408,7 +403,7 @@ const Embedding = {
         };
       })(),
       title: {
-        api(uid) { return `https://api.github.com/gists/${uid}`; },
+        api: (uid) => `https://api.github.com/gists/${uid}`,
         text({files}) {
           for (const file in files) { if (files.hasOwnProperty(file)) { return file; } }
         }
@@ -489,8 +484,7 @@ const Embedding = {
       regExp: /^\w+:\/\/openings.moe\/\?video=([^.&=]+)/,
       style: 'width: 1280px; height: 720px; max-width: 80vw; max-height: 80vh;',
       el(a) {
-        const el = $.el('iframe',
-          {src: `https://openings.moe/?video=${a.dataset.uid}`,});
+        const el = $.el('iframe', {src: `https://openings.moe/?video=${a.dataset.uid}`,});
         el.setAttribute("allowfullscreen", "true");
         return el;
       }
@@ -498,46 +492,35 @@ const Embedding = {
     , {
       key: 'Pastebin',
       regExp: /^\w+:\/\/(?:\w+\.)?pastebin\.com\/(?!u\/)(?:[\w.]+(?:\/|\?i\=))?(\w+)/,
-      el(a) {
-        let div = $.el('iframe',
-          {src: `//pastebin.com/embed_iframe/${a.dataset.uid}`});
-        return div
-      }
+      el: (a) => $.el('iframe', {src: `//pastebin.com/embed_iframe/${a.dataset.uid}`}),
     }
     , {
       key: 'SoundCloud',
       regExp: /^\w+:\/\/(?:www\.)?(?:soundcloud\.com\/|snd\.sc\/)([\w\-\/]+)/,
       style: 'border: 0; width: 500px; height: 400px;',
-      el(a) {
-        return $.el('iframe',
-          {src: `https://w.soundcloud.com/player/?visual=true&show_comments=false&url=https%3A%2F%2Fsoundcloud.com%2F${encodeURIComponent(a.dataset.uid)}`});
-      },
+      el: (a) => $.el('iframe', {src: `https://w.soundcloud.com/player/?visual=true&show_comments=false&url=https%3A%2F%2Fsoundcloud.com%2F${encodeURIComponent(a.dataset.uid)}`}),
       title: {
-        api(uid) { return `${location.protocol}//soundcloud.com/oembed?format=json&url=https%3A%2F%2Fsoundcloud.com%2F${encodeURIComponent(uid)}`; },
-        text(_) { return _.title; }
+        api: (uid) => `${location.protocol}//soundcloud.com/oembed?format=json&url=https%3A%2F%2Fsoundcloud.com%2F${encodeURIComponent(uid)}`,
+        text: (_) => _.title,
       }
     }
     , {
       key: 'StrawPoll',
       regExp: /^\w+:\/\/(?:www\.)?strawpoll\.me\/(?:embed_\d+\/)?(\d+(?:\/r)?)/,
       style: 'border: 0; width: 600px; height: 406px;',
-      el(a) {
-        return $.el('iframe',
-          {src: `https://www.strawpoll.me/embed_1/${a.dataset.uid}`});
-      }
+      el: (a) => $.el('iframe', {src: `https://www.strawpoll.me/embed_1/${a.dataset.uid}`}),
     }
     , {
       key: 'Streamable',
       regExp: /^\w+:\/\/(?:www\.)?streamable\.com\/(\w+)/,
       el(a) {
-        const el = $.el('iframe',
-          {src: `https://streamable.com/o/${a.dataset.uid}`});
+        const el = $.el('iframe', {src: `https://streamable.com/o/${a.dataset.uid}`});
         el.setAttribute("allowfullscreen", "true");
         return el;
       },
       title: {
-        api(uid) { return `https://api.streamable.com/oembed?url=https://streamable.com/${uid}`; },
-        text(_) { return _.title; }
+        api: (uid) => `https://api.streamable.com/oembed?url=https://streamable.com/${uid}`,
+        text: (_) => _.title,
       }
     }
     , {
@@ -556,16 +539,14 @@ const Embedding = {
             url += `&time=${time[1]}`;
           }
         }
-        const el = $.el('iframe',
-          {src: url});
+        const el = $.el('iframe', {src: url});
         el.setAttribute("allowfullscreen", "true");
         return el;
       }
     }
     , {
       key: 'Twitter',
-      regExp:
-        /^\w+:\/\/(?:www\.|mobile\.)?(?:(?:(?:[fv]x|fix(?:up|v))?twitt[ep]r|x(?:cancel)?)\.com|nitter\.\w+.\w+)\/(\w+\/status\/\d+)/,
+      regExp: /^\w+:\/\/(?:www\.|mobile\.)?(?:(?:(?:[fv]x|fix(?:up|v))?twitt[ep]r|x(?:cancel)?)\.com|nitter\.\w+.\w+)\/(\w+\/status\/\d+)/,
       style: 'border: none; width: 550px; height: 250px; overflow: hidden; resize: both;',
       el(a) {
         if (Conf.XEmbedder === 'tf') {
@@ -596,27 +577,25 @@ const Embedding = {
     }
     , {
       key: 'VidLii',
-      regExp:  /^\w+:\/\/(?:www\.)?vidlii\.com\/watch\?v=(\w{11})/,
+      regExp: /^\w+:\/\/(?:www\.)?vidlii\.com\/watch\?v=(\w{11})/,
       style: 'border: none; width: 640px; height: 392px;',
       el(a) {
-        const el = $.el('iframe',
-          {src: `https://www.vidlii.com/embed?v=${a.dataset.uid}&a=0`});
+        const el = $.el('iframe', {src: `https://www.vidlii.com/embed?v=${a.dataset.uid}&a=0`});
         el.setAttribute("allowfullscreen", "true");
         return el;
       }
     }
     , {
       key: 'Vimeo',
-      regExp:  /^\w+:\/\/(?:www\.)?vimeo\.com\/(\d+)/,
+      regExp: /^\w+:\/\/(?:www\.)?vimeo\.com\/(\d+)/,
       el(a) {
-        const el = $.el('iframe',
-          {src: `//player.vimeo.com/video/${a.dataset.uid}?wmode=opaque`});
+        const el = $.el('iframe', {src: `//player.vimeo.com/video/${a.dataset.uid}?wmode=opaque`});
         el.setAttribute("allowfullscreen", "true");
         return el;
       },
       title: {
-        api(uid) { return `https://vimeo.com/api/oembed.json?url=https://vimeo.com/${uid}`; },
-        text(_) { return _.title; }
+        api: (uid) => `https://vimeo.com/api/oembed.json?url=https://vimeo.com/${uid}`,
+        text: (_) => _.title,
       }
     }
     , {
@@ -641,14 +620,13 @@ const Embedding = {
           start += ' 0h0m0s';
           start = (3600 * start.match(/(\d+)h/)[1]) + (60 * start.match(/(\d+)m/)[1]) + (1 * start.match(/(\d+)s/)[1]);
         }
-        const el = $.el('iframe',
-          {src: `//www.youtube.com/embed/${a.dataset.uid}?rel=0&wmode=opaque${start ? '&start=' + start : ''}`});
+        const el = $.el('iframe', {src: `//www.youtube.com/embed/${a.dataset.uid}?rel=0&wmode=opaque${start ? '&start=' + start : ''}`});
         el.setAttribute("allowfullscreen", "true");
         return el;
       },
       title: {
-        api(uid) { return `https://www.youtube.com/oembed?url=https%3A//www.youtube.com/watch%3Fv%3D${uid}&format=json`; },
-        text(_) { return _.title; },
+        api: (uid) => `https://www.youtube.com/oembed?url=https%3A//www.youtube.com/watch%3Fv%3D${uid}&format=json`,
+        text: (_) => _.title,
         status(_) {
           if (_.error) {
             const m = _.error.match(/^(\d*)\s*(.*)/);
@@ -659,7 +637,7 @@ const Embedding = {
         }
       },
       preview: {
-        url(uid) { return `https://img.youtube.com/vi/${uid}/0.jpg`; },
+        url: (uid) => `https://img.youtube.com/vi/${uid}/0.jpg`,
         height: 360
       }
     }

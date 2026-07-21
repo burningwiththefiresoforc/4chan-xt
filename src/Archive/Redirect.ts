@@ -207,8 +207,10 @@ const Redirect = {
       value = value.replace(/[+/=]/g, c => ({'+': '-', '/': '_', '=': ''})[c]);
     }
     value = encodeURIComponent(value);
-    const path  = archive.software === 'foolfuuka' ? `${boardID}/search/${type}/${value}/`
-      : type === 'image' ? `${boardID}/image/${value}`
+    const path  = archive.software === 'foolfuuka'
+      ? `${boardID}/search/${type}/${value}/`
+      : type === 'image'
+      ? `${boardID}/image/${value}`
       : `${boardID}/?task=search2&search_${type}=${value}`;
     return `${Redirect.protocol(archive)}${archive.domain}/${path}`;
   },

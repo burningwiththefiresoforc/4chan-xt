@@ -17,7 +17,9 @@ var ThreadStats = {
       this[g.SITE.isPrunedByAge?.(g.BOARD) ? 'showPurgePos' : 'showPage'] = true;
     }
 
-    const statsHTML = {innerHTML: "<span id=\"post-count\">?</span> / <span id=\"file-count\">?</span>" + ((Conf["IP Count in Stats"] && g.SITE.hasIPCount) ? " / <span id=\"ip-count\">?</span>" : "") + ((Conf["Page Count in Stats"]) ? " / <span id=\"page-count\">?</span>" : "")};
+    const statsHTML = {innerHTML: "<span id=\"post-count\">?</span> / <span id=\"file-count\">?</span>" + ((Conf["IP Count in Stats"] && g.SITE.hasIPCount)
+      ? " / <span id=\"ip-count\">?</span>" : "") + ((Conf["Page Count in Stats"])
+      ? " / <span id=\"page-count\">?</span>" : "")};
     let statsTitle = 'Posts / Files';
     if (Conf['IP Count in Stats'] && g.SITE.hasIPCount) { statsTitle += ' / IPs'; }
     if (Conf['Page Count in Stats']) {

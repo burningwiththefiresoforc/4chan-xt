@@ -68,9 +68,9 @@ const SWTinyboard = {
       const s = (this.selectors = Object.create(this.selectors));
       s.boardFor = {index: '.page-container'};
       s.thread = 'div[id^="thread_"]';
-      return Main.mounted(cb);
+      Main.mounted(cb);
     } else {
-      return cb();
+      cb();
     }
   },
 
@@ -219,13 +219,9 @@ $\
     }
   },
 
-  bgColoredEl() {
-    return $.el('div', {className: 'post reply'});
-  },
+  bgColoredEl: () => $.el('div', {className: 'post reply'}),
 
-  isFileURL(url) {
-    return /\/src\/[^\/]+/.test(url.pathname);
-  },
+  isFileURL: (url) => /\/src\/[^\/]+/.test(url.pathname),
 
   preParsingFixes(board) {
     // fixes effects of unclosed link in announcement
@@ -237,7 +233,6 @@ $\
 
   parseNodes(post, nodes) {
     // Add vichan's span.poster_id around the ID if not already present.
-    let m;
     if (nodes.uniqueID) { return; }
     let text = '';
     let node = nodes.nameBlock.nextSibling;
@@ -245,7 +240,8 @@ $\
       text += node.textContent;
       node = node.nextSibling;
     }
-    if (m = text.match(/(\s*ID:\s*)(\S+)/)) {
+    let m = text.match(/(\s*ID:\s*)(\S+)/);
+    if (m) {
       let uniqueID;
       nodes.info.normalize();
       let {nextSibling} = nodes.nameBlock;
@@ -286,17 +282,11 @@ $\
     return true;
   },
 
-  isThumbExpanded(file) {
     // Detect old Tinyboard image expansion that changes src attribute on thumbnail.
-    return $.hasClass(file.thumb.parentNode, 'expanded') || (file.thumb.parentNode.dataset.expanded === 'true');
-  },
+  isThumbExpanded: (file) => $.hasClass(file.thumb.parentNode, 'expanded') || (file.thumb.parentNode.dataset.expanded === 'true'),
 
-  isLinkified(link) {
-    return /\bnofollow\b/.test(link.rel);
-  },
+  isLinkified: (link) => /\bnofollow\b/.test(link.rel),
 
-  catalogPin(threadRoot) {
-    return threadRoot.dataset.sticky = 'true';
-  }
+  catalogPin: (threadRoot) => threadRoot.dataset.sticky = 'true',
 };
 export default SWTinyboard;

@@ -69,12 +69,12 @@ var Site = {
 
   set(hostname) {
     for (var ID in Conf.siteProperties) {
-      var site;
       var properties = Conf.siteProperties[ID];
       if (properties.canonical) { continue; }
       var {software} = properties;
       if (!software || !$.hasOwn(SW, software)) { continue; }
-      g.sites[ID] = (site = Object.create(SW[software]));
+      let site = Object.create(SW[software]);
+      g.sites[ID] = site;
       $.extend(site, {ID, siteID: ID, properties, software});
     }
     return g.SITE = g.sites[hostname];

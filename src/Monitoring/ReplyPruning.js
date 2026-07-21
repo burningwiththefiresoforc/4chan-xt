@@ -42,10 +42,7 @@ var ReplyPruning = {
     $.on(this.inputs.enabled, 'change', this.setEnabled);
     $.on(this.inputs.replies, 'change', $.cb.value);
 
-    Header.menu.addEntry({
-      el,
-      order: 190
-    });
+    Header.menu.addEntry({ el, order: 190 });
 
     Callbacks.Thread.push({
       name: 'Reply Pruning',

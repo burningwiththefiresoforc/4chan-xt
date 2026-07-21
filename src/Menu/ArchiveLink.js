@@ -47,19 +47,17 @@ const ArchiveLink = {
       target: '_blank'
     });
 
-    const open = type === 'post' ?
-      ({ID, thread, board}) => {
+    const open = type === 'post'
+      ? ({ID, thread, board}) => {
         el.href = Redirect.to('thread', {postID: ID, threadID: thread.ID, boardID: board.ID});
         return true;
-      }
-    :
-      (post) => {
-        const typeParam = (type === 'country') && post.info.flagCodeTroll ?
-          'troll_country'
-        : type;
-        const value = type === 'country' ?
-          post.info.flagCode || post.info.flagCodeTroll?.toLowerCase()
-        : Filter.values(type, post)[0];
+        }
+      : (post) => {
+        const typeParam = (type === 'country') && post.info.flagCodeTroll
+          ? 'troll_country' : type;
+        const value = type === 'country'
+          ? post.info.flagCode || post.info.flagCodeTroll?.toLowerCase()
+          : Filter.values(type, post)[0];
         // We want to parse the exact same stuff as the filter does already.
         if (!value) { return false; }
         el.href = Redirect.to('search', {

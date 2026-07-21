@@ -42,7 +42,7 @@ const ExpandComment = {
     let a = $('.abbr > a', post.nodes.comment);
     if (!a) return;
     a.textContent = `Post No.${post} Loading...`;
-    return $.cache(g.SITE.urls.threadJSON({boardID: post.boardID, threadID: post.threadID}), function() { return ExpandComment.parse(this, a, post); });
+    $.cache(g.SITE.urls.threadJSON({boardID: post.boardID, threadID: post.threadID}), function() { ExpandComment.parse(this, a, post); });
   },
 
   contract(post) {

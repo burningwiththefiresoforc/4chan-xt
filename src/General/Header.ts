@@ -388,8 +388,7 @@ var Header = {
 
   toggleLinkJustify() {
     $.event('CloseMenu');
-    const centered = this.nodeName === 'INPUT' ?
-      this.checked : undefined;
+    const centered = this.nodeName === 'INPUT' ? this.checked : undefined;
     Header.setLinkJustify(centered);
     $.set('Centered links', centered);
   },
@@ -420,14 +419,14 @@ var Header = {
   },
 
   toggleBarVisibility() {
-    const hide = this.nodeName === 'INPUT' ? this.checked
-      : !$.hasClass(Header.bar, 'autohide');
+    const hide = this.nodeName === 'INPUT'
+      ? this.checked : !$.hasClass(Header.bar, 'autohide');
 
     Conf['Header auto-hide'] = hide;
     $.set('Header auto-hide', hide);
     Header.setBarVisibility(hide);
-    const message = `The header bar will ${hide ?
-      'automatically hide itself.' : 'remain visible.'}`;
+    const message = `The header bar will ${hide
+      ? 'automatically hide itself.' : 'remain visible.'}`;
     new Notice('info', message, 2);
   },
 
@@ -482,8 +481,8 @@ var Header = {
     : $.hasClass(doc, 'hide-bottom-board-list');
     Header.setFooterVisibility(hide);
     $.set('Bottom Board List', hide);
-    const message = hide ?
-      'The bottom navigation will now be hidden.'
+    const message = hide
+    ? 'The bottom navigation will now be hidden.'
     : 'The bottom navigation will remain visible.';
     return new Notice('info', message, 2);
   },

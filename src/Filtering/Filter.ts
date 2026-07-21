@@ -416,30 +416,28 @@ var Filter = {
     }
   },
 
-  isHidden(post: Post) {
-    return !!Filter.test(post).hide;
-  },
+  isHidden: (post: Post) => !!Filter.test(post).hide,
 
   valueF: {
-    postID (post) { return [`${post.ID}`]; },
-    name(post) { return post.info.name === undefined ? [] : [post.info.name]; },
-    uniqueID(post) { return [post.info.uniqueID || '']; },
-    tripcode(post) { return post.info.tripcode === undefined ? [] : [post.info.tripcode]; },
-    capcode(post) { return post.info.capcode === undefined ? [] : [post.info.capcode]; },
-    pass(post) { return [post.info.pass]; },
-    email(post) { return [post.info.email]; },
-    subject(post) { return [post.info.subject || (post.isReply ? undefined : '')]; },
-    comment(post) {
+    postID: (post) => [`${post.ID}`],
+    name: (post) => post.info.name === undefined ? [] : [post.info.name],
+    uniqueID: (post) => [post.info.uniqueID || ''],
+    tripcode: (post) => post.info.tripcode === undefined ? [] : [post.info.tripcode],
+    capcode: (post) => post.info.capcode === undefined ? [] : [post.info.capcode],
+    pass: (post) => [post.info.pass],
+    email: (post) => [post.info.email],
+    subject: (post) => [post.info.subject || (post.isReply ? undefined : '')],
+    comment: (post) => {
       if (post.info.comment == null) {
         post.info.comment = g.sites[post.siteID]?.Build?.parseComment?.(post.info.commentHTML.innerHTML);
       }
       return [post.info.comment];
     },
-    flag(post) { return post.info.flag === undefined ? [] : [post.info.flag]; },
-    filename(post) { return post.files.map(f => f.name); },
-    dimensions(post) { return post.files.map(f => f.dimensions); },
-    filesize(post) { return post.files.map(f => f.size); },
-    MD5(post) { return post.files.map(f => f.MD5); }
+    flag: (post) => post.info.flag === undefined ? [] : [post.info.flag],
+    filename: (post) => post.files.map(f => f.name),
+    dimensions: (post) => post.files.map(f => f.dimensions),
+    filesize: (post) => post.files.map(f => f.size),
+    MD5: (post) => post.files.map(f => f.MD5)
   } satisfies Record<FilterType, (post: Post) => string[]>,
 
   values(key: FilterType, post: Post): string[] {

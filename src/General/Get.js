@@ -16,6 +16,7 @@ var Get = {
       return undefined;
     }
   },
+
   threadExcerpt(thread) {
     const {OP} = thread;
     const excerpt = (`/${decodeURIComponent(thread.board.ID)}/ - `) + (
@@ -26,23 +27,24 @@ var Get = {
     if (excerpt.length > 73) { return `${excerpt.slice(0, 70)}...`; }
     return excerpt;
   },
+
   threadFromRoot(root) {
     if (root == null) { return null; }
     const {board} = root.dataset;
     return g.threads.get(`${board ? encodeURIComponent(board) : g.BOARD.ID}.${root.id.match(/\d*$/)[0]}`);
   },
-  threadFromNode(node) {
-    return Get.threadFromRoot($.x(`ancestor-or-self::${g.SITE.xpath.thread}`, node));
-  },
+
   postFromRoot(root) {
     if (root == null) { return null; }
     const post  = g.posts.get(root.dataset.fullID);
     const index = root.dataset.clone;
     if (index) { return post.clones[+index]; } else { return post; }
   },
-  postFromNode(root) {
-    return Get.postFromRoot($.x(`ancestor-or-self::${g.SITE.xpath.postContainer}[1]`, root));
-  },
+
+  threadFromNode: (node) => Get.threadFromRoot($.x(`ancestor-or-self::${g.SITE.xpath.thread}`, node)),
+
+  postFromNode: (root) => Get.postFromRoot($.x(`ancestor-or-self::${g.SITE.xpath.postContainer}[1]`, root)),
+
   postDataFromLink(link) {
     let boardID, postID, threadID;
     if (link.dataset.postID) { // resurrected quote
@@ -59,17 +61,18 @@ var Get = {
       postID:   +postID
     };
   },
+
   allQuotelinksLinkingTo(post) {
     // Get quotelinks & backlinks linking to the given post.
     const quotelinks = [];
     const {posts} = g;
     const {fullID} = post;
-    const handleQuotes = function(qPost, type) {
+    const handleQuotes = (qPost, type) => {
       quotelinks.push(...(qPost.nodes[type] || []));
       for (var clone of qPost.clones) { quotelinks.push(...(clone.nodes[type] || [])); }
     };
     // First: In every posts, if it did quote this post, get all their backlinks.
-    posts.forEach(function(qPost) {
+    posts.forEach((qPost) => {
       if (qPost.quotes.includes(fullID)) {
         return handleQuotes(qPost, 'quotelinks');
       }

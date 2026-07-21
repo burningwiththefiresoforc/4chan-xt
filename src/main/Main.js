@@ -132,8 +132,7 @@ var Main = {
       });
     });
     try {
-      $.global(
-        'exposeVersion',
+      $.global( 'exposeVersion',
         { version: g.VERSION, buildDate: g.VERSION_DATE.getTime().toString() },
       );
     } catch (e) {
@@ -700,7 +699,7 @@ var Main = {
     const errors  = [];
     Main.parseCatalogThreads(threadRoots, threads, errors);
     if (errors.length) { Main.handleErrors(errors); }
-    return Main.callbackNodes('CatalogThreadNative', threads);
+    Main.callbackNodes('CatalogThreadNative', threads);
   },
 
   callbackNodes(klass, nodes) {
@@ -776,7 +775,7 @@ var Main = {
       $.add(logs, Main.parseError(error));
     }
 
-    return new Notice('error', [div, logs], 30);
+    new Notice('error', [div, logs], 30);
   },
 
   parseError(data, reportLink) {
@@ -824,7 +823,7 @@ User agent: ${navigator.userAgent}\
     return { innerHTML: `<span class="report-error"> [<a href="${url}" target="_blank">report</a>]</span>` };
   },
 
-  mounted: (cb) => Main.isMounted ? cb() : Main.mountedCBs.push(cb),
+  mounted(cb) { Main.isMounted ? cb() : Main.mountedCBs.push(cb) },
 
   mountedCBs: [],
 

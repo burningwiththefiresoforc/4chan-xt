@@ -287,8 +287,9 @@ export var dragstart = function (e) {
     isTouching
   };
 
-  [o.topBorder, o.bottomBorder] = Conf['Header auto-hide'] || !Conf['Fixed Header'] ? [0, 0]
-    : Conf['Bottom Header'] ? [0, Header.bar.getBoundingClientRect().height]
+  [o.topBorder, o.bottomBorder] = Conf['Header auto-hide'] || !Conf['Fixed Header']
+    ? [0, 0] : Conf['Bottom Header']
+    ? [0, Header.bar.getBoundingClientRect().height]
     : [Header.bar.getBoundingClientRect().height, 0];
 
   if (isTouching) {
@@ -318,13 +319,13 @@ export var drag = function (e) {
   const {clientX, clientY} = e;
 
   let left = clientX - this.dx;
-  left = left < 10 ? 0 : (this.width - left) < 10 ? ''
-  : ((left / this.screenWidth) * 100) + '%';
+  left = left < 10 ? 0 : (this.width - left) < 10
+    ? '' : ((left / this.screenWidth) * 100) + '%';
 
   let top = clientY - this.dy;
-  top = top < (10 + this.topBorder) ? this.topBorder + 'px'
-    : (this.height - top) < (10 + this.bottomBorder) ? ''
-    : ((top / this.screenHeight) * 100) + '%';
+  top = top < (10 + this.topBorder)
+    ? this.topBorder + 'px' : (this.height - top) < (10 + this.bottomBorder)
+    ? '' : ((top / this.screenHeight) * 100) + '%';
 
   const right = left === '' ? 0 : '';
 

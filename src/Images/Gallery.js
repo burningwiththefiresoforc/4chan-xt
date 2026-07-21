@@ -135,8 +135,8 @@ const Gallery = {
     $.on(window, 'resize', Gallery.cb.setHeight);
 
     for (const postThumb of $$(g.SITE.selectors.file.thumb)) {
-      let post;
-      if (!(post = Get.postFromNode(postThumb))) { continue; }
+      let post = Get.postFromNode(postThumb);
+      if (!post) { continue; }
       for (const file of post.files) {
         if (file.thumb) {
           Gallery.generateThumb(post, file);
@@ -158,7 +158,7 @@ const Gallery = {
     nodes.current.parentElement.scrollTop = 0;
 
     if (image) { thumb = $(`[href='${image.href}']`, nodes.thumbs); }
-    if (!thumb) { thumb = Gallery.images[Gallery.images.length-1]; }
+    thumb ||= Gallery.images[Gallery.images.length-1];
     if (thumb) { Gallery.open(thumb); }
 
     doc.style.overflow = 'hidden';

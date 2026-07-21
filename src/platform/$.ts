@@ -125,9 +125,9 @@ $.whenModified = function(url, bucket, cb, options={}) {
 (function() {
   const reqs = dict();
   $.cache = function(url, cb, options={}) {
-    let req;
     const {ajax} = options;
-    if (req = reqs[url]) {
+    let req = reqs[url];
+    if (req) {
       if (req.callbacks) {
         req.callbacks.push(cb);
       } else {
@@ -142,7 +142,7 @@ $.whenModified = function(url, bucket, cb, options={}) {
       for (cb of this.callbacks) {
         (cb => $.queueTask(() => cb.call(this, {isCached: false})))(cb);
       }
-      return delete this.callbacks;
+      delete this.callbacks;
     };
     req = (ajax || $.ajax)(url, {onloadend});
     req.callbacks = [cb];

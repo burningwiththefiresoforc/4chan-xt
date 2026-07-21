@@ -319,7 +319,7 @@ var QR = {
   },
 
   blur() {
-    if (QR.nodes.el.contains(d.activeElement)) { return d.activeElement.blur(); }
+    if (QR.nodes.el.contains(d.activeElement)) { d.activeElement.blur(); }
   },
 
   toggleSJIS(e) {

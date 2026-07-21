@@ -29,10 +29,7 @@ const FappeTyme = {
         if (Conf[lc]) { this.set(lc, true); }
         $.on(this.nodes[lc], 'change', this.toggle.bind(this, lc));
 
-        Header.menu.addEntry({
-          el,
-          order: 97
-        });
+        Header.menu.addEntry({ el, order: 97 });
 
         const indicator = $.el('span', {
           className: 'indicator',

@@ -816,9 +816,9 @@ var ThreadWatcher = {
         el: entryEl,
         order: 60,
         open() {
-          const [addClass, rmClass, text] = !!ThreadWatcher.db.get({boardID: g.BOARD.ID, threadID: g.THREADID}) ?
-            ['unwatch-thread', 'watch-thread', 'Unwatch thread']
-          : ['watch-thread', 'unwatch-thread', 'Watch thread'];
+          const [addClass, rmClass, text] = !!ThreadWatcher.db.get({boardID: g.BOARD.ID, threadID: g.THREADID})
+            ? ['unwatch-thread', 'watch-thread', 'Unwatch thread']
+            : ['watch-thread', 'unwatch-thread', 'Watch thread'];
           $.addClass(entryEl, addClass);
           $.rmClass(entryEl, rmClass);
           entryEl.textContent = text;

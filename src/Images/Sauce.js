@@ -159,20 +159,22 @@ const Sauce = {
   },
 
   formatters: {
-    TURL(post, file) { return file.thumbURL; },
-    URL(post, file) { return file.url; },
-    IMG(post, file, ext) { if (['gif', 'jpg', 'jpeg', 'png'].includes(ext)) { return file.url; } else { return file.thumbURL; } },
-    MD5(post, file) { return file.MD5; },
-    sMD5(post, file) { return file.MD5?.replace(/[+/=]/g, c => ({'+': '-', '/': '_', '=': ''})[c]); },
-    hMD5(post, file) {
+    TURL: (post, file) => file.thumbURL,
+    URL: (post, file) => file.url,
+    MD5: (post, file) => file.MD5,
+    sMD5: (post, file) => file.MD5?.replace(/[+/=]/g, c => ({'+': '-', '/': '_', '=': ''})[c]),
+    IMG: (post, file, ext) => {
+      if (['gif', 'jpg', 'jpeg', 'png'].includes(ext)) { return file.url; } else { return file.thumbURL; }
+    },
+    hMD5: (post, file) => {
       if (file.MD5) {
         return Array.from(atob(file.MD5), c => c.charCodeAt(0).toString(16).padStart(2,'0')).join('');
       }
     },
-    board(post) { return post.board.ID; },
-    name(post, file) { return file.name; },
-    '%'() { return '%'; },
-    semi() { return ';'; }
+    board: (post) => post.board.ID,
+    name: (post, file) => file.name,
+    '%': () => '%',
+    semi: () => ';'
   }
 };
 export default Sauce;

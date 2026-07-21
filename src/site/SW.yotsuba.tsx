@@ -143,9 +143,7 @@ const SWYotsuba = {
     captcha: /^https?:\/\/sys\.4chan\.org\/+captcha(?:$|[?#])/,
   },
 
-  bgColoredEl() {
-    return $.el('div', {className: 'reply'});
-  },
+  bgColoredEl: () => $.el('div', {className: 'reply'}),
 
   isThisPageLegit() {
     // not 404 error page or similar.
@@ -161,23 +159,15 @@ const SWYotsuba = {
     return ['4chan - Temporarily Offline', '4chan - 404 Not Found'].includes(d.title) || ((g.VIEW === 'thread') && $('.board') && !$('.opContainer'));
   },
 
-  isIncomplete() {
-    return ['index', 'thread'].includes(g.VIEW) && !$('.board + *');
-  },
+  isIncomplete: () => ['index', 'thread'].includes(g.VIEW) && !$('.board + *'),
 
-  isBoardlessPage(url) {
-    // return ['www.4chan.org', 'www.4channel.org'].includes(url.hostname);
-    return url.hostname === 'www.4chan.org'
-  },
+  // ['www.4chan.org', 'www.4channel.org'].includes(url.hostname);
+  isBoardlessPage: (url) => url.hostname === 'www.4chan.org',
 
-  isAuxiliaryPage(url) {
-    // return !['boards.4chan.org', 'boards.4channel.org'].includes(url.hostname);
-    return url.hostname !== 'boards.4chan.org'
-  },
+  // !['boards.4chan.org', 'boards.4channel.org'].includes(url.hostname);
+  isAuxiliaryPage: (url) => url.hostname !== 'boards.4chan.org',
 
-  isFileURL(url) {
-    return ImageHost.test(url.hostname);
-  },
+  isFileURL: (url) => ImageHost.test(url.hostname),
 
   initAuxiliary() {
     switch (location.hostname) {
@@ -217,11 +207,11 @@ const SWYotsuba = {
   },
 
   parseThreadMetadata(thread) {
-    let m;
     const scriptData = this.scriptData();
     thread.postLimit = /\bbumplimit *= *1\b/.test(scriptData);
     thread.fileLimit = /\bimagelimit *= *1\b/.test(scriptData);
-    thread.ipCount   = (m = scriptData.match(/\bunique_ips *= *(\d+)\b/)) ? +m[1] : undefined;
+    let m = scriptData.match(/\bunique_ips *= *(\d+)\b/);
+    thread.ipCount   = m ? +m[1] : undefined;
 
     if ((g.BOARD.ID === 'f') && thread.OP.file) {
       const {file} = thread.OP;
@@ -258,9 +248,9 @@ const SWYotsuba = {
   },
 
   parseFile(post, file) {
-    let info;
     const {text, link, thumb} = file;
-    if (!(info = link.nextSibling?.textContent.match(/\(([\d.]+ [KMG]?B).*\)/))) { return false; }
+    let info = link.nextSibling?.textContent.match(/\(([\d.]+ [KMG]?B).*\)/);
+    if (!info) { return false; }
     $.extend(file, {
       name:       text.title || link.title || link.textContent,
       size:       info[1],
@@ -275,31 +265,31 @@ const SWYotsuba = {
         isSpoiler: $.hasClass(thumb.parentNode, 'imgspoiler')
       });
       if (file.isSpoiler) {
-        let m;
-        file.thumbURL = (m = link.href.match(/\d+(?=\.\w+$)/)) ? `${location.protocol}//${ImageHost.thumbHost()}/${post.board}/${m[0]}s.jpg` : undefined;
+        let m = link.href.match(/\d+(?=\.\w+$)/);
+        file.thumbURL = m ? `${location.protocol}//${ImageHost.thumbHost()}/${post.board}/${m[0]}s.jpg` : undefined;
       }
     }
     return true;
   },
 
   cleanComment(bq) {
-    let abbr;
-    if (abbr = $('.abbr', bq)) { // 'Comment too long' or 'EXIF data available'
+    let abbr = $('.abbr', bq);
+    if (abbr) { // 'Comment too long' or 'EXIF data available'
       for (var node of $$('.abbr + br, .exif', bq)) {
         $.rm(node);
       }
       for (let i = 0; i < 2; i++) {
-        var br;
-        if ((br = abbr.previousSibling) && (br.nodeName === 'BR')) { $.rm(br); }
+        let br = abbr.previousSibling;
+        if (br && (br.nodeName === 'BR')) { $.rm(br); }
       }
       return $.rm(abbr);
     }
   },
 
   cleanCommentDisplay(bq) {
-    let b;
-    if ((b = $('b', bq)) && /^Rolled /.test(b.textContent)) { $.rm(b); }
-    return $.rm($('.fortune', bq));
+    let b = $('b', bq);
+    if (b && /^Rolled /.test(b.textContent)) { $.rm(b); }
+    $.rm($('.fortune', bq));
   },
 
   insertTags(bq) {
@@ -312,13 +302,9 @@ const SWYotsuba = {
     }
   },
 
-  hasCORS(url) {
-    return url.split('/').slice(0, 3).join('/') === (location.protocol + '//a.4cdn.org');
-  },
+  hasCORS: (url) => url.split('/').slice(0, 3).join('/') === (location.protocol + '//a.4cdn.org'),
 
-  sfwBoards(sfw) {
-    return BoardConfig.sfwBoards(sfw);
-  },
+  sfwBoards: (sfw) => BoardConfig.sfwBoards(sfw),
 
   uidColor(uid) {
     let msg = 0;
@@ -329,13 +315,9 @@ const SWYotsuba = {
     return (msg >> 8) & 0xFFFFFF;
   },
 
-  isLinkified(link) {
-    return ImageHost.test(link.hostname);
-  },
+  isLinkified: (link) => ImageHost.test(link.hostname),
 
-  testNativeExtension() {
-    return $.global('testNativeExtension', {});
-  },
+  testNativeExtension: () => $.global('testNativeExtension', {}),
 
   transformBoardList() {
     let node;
@@ -378,8 +360,8 @@ const SWYotsuba = {
     },
 
     spoilerThumb(boardID) {
-      let spoilerRange;
-      if ((spoilerRange = this.spoilerRange[boardID])) {
+      let spoilerRange = this.spoilerRange[boardID];
+      if (spoilerRange) {
         // Randomize the spoiler image.
         return `${this.staticPath}spoiler-${boardID}${Math.floor(1 + (spoilerRange * Math.random()))}.png`;
       } else {
@@ -461,9 +443,9 @@ const SWYotsuba = {
 
     parseJSONFile(data, { siteID, boardID }) {
       const site = g.sites[siteID];
-      const filename = (site.software === 'yotsuba') && (boardID === 'f') ?
-        `${encodeURIComponent(data.filename)}${data.ext}`
-      : `${data.tim}${data.ext}`;
+      const filename = (site.software === 'yotsuba') && (boardID === 'f')
+        ? `${encodeURIComponent(data.filename)}${data.ext}`
+        : `${data.tim}${data.ext}`;
       const o = {
         name: ($.unescape(data.filename)) + data.ext,
         url: site.urls.file({ siteID, boardID }, filename),
@@ -499,7 +481,7 @@ const SWYotsuba = {
         }
       }
       html = html
-        .replace(/^<b\b[^<]*>Rolled [^<]*<\/b>/i, '')      // Rolls (/tg/, /qst/)
+        .replace(/^<b\b[^<]*>Rolled [^<]*<\/b>/i, '') // Rolls (/tg/, /qst/)
         .replace(/<span\b[^<]* class="fortune"[^]*$/i, ''); // Fortunes (/s4s/)
       // Remove preceding and following new lines, trailing spaces.
       return this.parseComment(html).trim().replace(/\s+$/gm, '');
@@ -535,8 +517,8 @@ const SWYotsuba = {
 
       const url = this.threadURL(boardID, threadID);
       const postLink = `${url}#p${ID}`;
-      const quoteLink = this.sameThread(boardID, threadID) ?
-        `javascript:quote('${+ID}');` : `${url}#q${ID}`;
+      const quoteLink = this.sameThread(boardID, threadID)
+        ? `javascript:quote('${+ID}');` : `${url}#q${ID}`;
 
       const postInfo = generatePostInfoHtml(
         ID, o, subject, capcode, email, name, tripcode, pass, capcodeLC, capcodePlural, staticPath, gifIcon,
@@ -590,8 +572,8 @@ const SWYotsuba = {
             quote.href = this.threadURL(boardID, threadID) + href;
           }
         } else {
-          var match;
-          if ((match = quote.href.match(SWYotsuba.regexp.quotelink)) && (this.sameThread(match[1], match[2]))) {
+          let match = quote.href.match(SWYotsuba.regexp.quotelink);
+          if (match && (this.sameThread(match[1], match[2]))) {
             quote.href = href.match(/(#[^#]*)?$/)[0] || '#';
           }
         }
@@ -669,8 +651,7 @@ const SWYotsuba = {
       const postCount = data.replies + 1;
       const fileCount = data.images + !!data.ext;
 
-      const container = $.el(
-        'div',
+      const container = $.el( 'div',
         generateCatalogThreadHtml(thread, src, imgClass, data, postCount, fileCount, pageCount, staticPath, gifIcon)
       );
       $.before(thread.OP.nodes.info, [...container.childNodes]);

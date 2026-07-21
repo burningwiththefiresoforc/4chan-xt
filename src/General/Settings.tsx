@@ -618,8 +618,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
 
   addArchiveTable(section) {
     let boardID, o;
-    $('#lastarchivecheck', section).textContent = Conf.lastarchivecheck === 0 ?
-      'never' : new Date(Conf.lastarchivecheck).toLocaleString();
+    $('#lastarchivecheck', section).textContent = Conf.lastarchivecheck === 0
+      ? 'never' : new Date(Conf.lastarchivecheck).toLocaleString();
 
     const boardSelect = $('#archive-board-select', section);
     const table       = $('#archive-table', section);
@@ -686,9 +686,9 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     for (boardID in Conf.selectedArchives) {
       var data = Conf.selectedArchives[boardID];
       for (var type in data) {
-        var select;
-        var id = data[type];
-        if (select = $(`select[data-boardid='${boardID}'][data-type='${type}']`, tbody)) {
+        let id = data[type];
+        let select = $(`select[data-boardid='${boardID}'][data-type='${type}']`, tbody);
+        if (select) {
           select.value = JSON.stringify(id);
           if (!select.value) { select.value = select.firstChild.value; }
         }
