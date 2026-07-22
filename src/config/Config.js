@@ -823,11 +823,10 @@ https://flickr.com/photo.gne?id=%$1;regexp:/^(\\d+)_[\\da-f]{10}(?:_\\w)*\\b/
 https://www.facebook.com/photo.php?fbid=%$1;regexp:/^\\d+_(\\d+)_\\d+_[no]\\b/
 
 # Reverse image search:
-https://www.google.com/searchbyimage?sbisrc=4chanx&image_url=%IMG&safe=off
+https://lens.google.com/uploadbyurl?url=%IMG
 https://yandex.com/images/search?rpt=imageview&url=%IMG
 #//tineye.com/search?url=%IMG
 #//www.bing.com/images/search?q=imgurl:%IMG&view=detailv2&iss=sbi#enterInsights
-#https://lens.google.com/uploadbyurl?url=%IMG;text:lens
 
 # Specialized reverse image search:
 //iqdb.org/?url=%IMG
@@ -839,13 +838,10 @@ https://trace.moe/?auto&url=%IMG;text:wait
 http://eye.swfchan.com/search/?q=%name;types:swf
 #https://desuarchive.org/_/search/image/%sMD5/
 #https://archive.4plebs.org/_/search/image/%sMD5/
-#https://boards.fireden.net/_/search/image/%sMD5/
-#https://foolz.fireden.net/_/search/image/%sMD5/
 
 # Other tools:
 #http://exif.regex.info/exif.cgi?imgurl=%URL
-#//imgops.com/start?url=%URL;types:gif,jpg,png
-#//www.gif-explode.com/%URL;types:gif\
+#//imgops.com/start?url=%URL;types:gif,jpg,png\
 `,
 
   FappeT: {

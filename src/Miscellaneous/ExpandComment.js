@@ -60,7 +60,7 @@ const ExpandComment = {
       return;
     }
 
-    const { posts } = req.response;
+    const {posts} = req.response;
     let spoilerRange = posts[0].custom_spoiler;
     if (spoilerRange) {
       g.SITE.Build.spoilerRange[g.BOARD] = spoilerRange;

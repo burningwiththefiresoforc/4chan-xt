@@ -143,7 +143,7 @@ var Main = {
         delete Main.expectInitFinished;
       } else {
         new Notice('error', `Error: Multiple copies of ${meta.name} or 4chan X are enabled.`);
-        return $.addClass(doc, 'tainted');
+        $.addClass(doc, 'tainted');
       }
     });
 
@@ -152,8 +152,7 @@ var Main = {
       d.removeEventListener('mounted', mountedCB, true);
       Main.isMounted = true;
       return Main.mountedCBs.map((cb) => {
-        try { return cb();
-        } catch (error2) {}
+        try { return cb(); } catch (error2) {}
       });
     };
     d.addEventListener('mounted', mountedCB, true);

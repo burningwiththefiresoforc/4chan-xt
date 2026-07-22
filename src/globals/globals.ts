@@ -88,7 +88,6 @@ export const E = (() => {
 
 export const d = document;
 export const doc = d.documentElement;
-
 export const c = console;
 
  // return (doc = d.documentElement);

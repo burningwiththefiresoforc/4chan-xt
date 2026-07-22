@@ -423,13 +423,20 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         ).replace(
           /\/\/imgops\.com\/%URL/g,
           '//imgops.com/start?url=%URL'
-        ).replace(
-          /^#?\s*https:\/\/www\.google\.com\/searchbyimage\?image_url=%(IMG|T?URL)&safe=off(?=$|;)/mg,
-          'https://www.google.com/searchbyimage?sbisrc=4chanx&image_url=%$1&safe=off'
-        ).replace(
-          /^#?\s*https:\/\/lens\.google\.com\/uploadbyurl\?url=%(IMG|T?URL)(?=$|;)/m,
-          'https://www.google.com/searchbyimage?sbisrc=4chanx&image_url=%$1&safe=off'
         ));
+      }
+    }
+    if (compareString < '00002.00030.00000.00000') {
+      if (data.sauces != null) {
+        set('sauces', data.sauces
+          .replace( /^#?\s*(https:\/\/lens\.google\.com\/uploadbyurl\?url=%(?:IMG|T?URL)[^\n]*)/mg, '$1')
+          .replace(
+            /^#?\s*https:\/\/www\.google\.com\/searchbyimage\?(?:sbisrc=[^&]+&)?image_url=%(IMG|T?URL)(?:&safe=\w+)?[^\n]*\n?/mg,
+            (match, capture) => data.sauces.includes('lens.google.com') ? '' : `https://lens.google.com/uploadbyurl?url=%${capture}\n`
+          )
+          .replace( /^#?\s*https?:\/\/(?:[a-z0-9-]+\.)*fireden\.net\/_\/search\/image\/%s?MD5\/?[^\n]*\n?/mg, '')
+          .replace( /^#?\s*https?:\/\/(?:www\.)?gif-explode\.com\/%URL[^\n]*\n?/mg, '')
+        );
       }
     }
     if (compareString < '00001.00014.00017.00002') {
@@ -652,8 +659,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     const rows = [];
     const boardOptions = [];
     for (boardID of Object.keys(archBoards).sort()) { // Alphabetical order
-      var row = $.el('tr',
-        {className: `board-${boardID}`});
+      var row = $.el('tr', {className: `board-${boardID}`});
       row.hidden = boardID !== g.BOARD.ID;
 
       boardOptions.push($.el('option', {

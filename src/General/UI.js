@@ -114,10 +114,10 @@ var Menu = (function() {
       const bRect   = lastToggledButton.getBoundingClientRect();
       const cHeight = doc.clientHeight;
       const cWidth  = doc.clientWidth;
-      const [top, bottom] = (bRect.top + bRect.height + mRect.height) < cHeight ?
-        [`${bRect.bottom}px`, ''] : ['', `${cHeight - bRect.top}px`];
-      const [left, right] = (bRect.left + mRect.width) < cWidth ?
-        [`${bRect.left}px`, ''] : ['', `${cWidth - bRect.right}px`];
+      const [top, bottom] = (bRect.top + bRect.height + mRect.height) < cHeight
+        ? [`${bRect.bottom}px`, ''] : ['', `${cHeight - bRect.top}px`];
+      const [left, right] = (bRect.left + mRect.width) < cWidth
+        ? [`${bRect.left}px`, ''] : ['', `${cWidth - bRect.right}px`];
       $.extend(this.menu.style, {top, right, bottom, left});
       this.menu.classList.toggle('left', right);
     }
