@@ -66,7 +66,9 @@ const Gallery = {
     const {cb} = Gallery;
 
     if (Conf['Fullscreen Gallery']) {
-      $.one(d, 'fullscreenchange mozfullscreenchange webkitfullscreenchange', () => $.on(d, 'fullscreenchange mozfullscreenchange webkitfullscreenchange', cb.close));
+      $.one(d, 'fullscreenchange mozfullscreenchange webkitfullscreenchange',
+        () => $.on(d, 'fullscreenchange mozfullscreenchange webkitfullscreenchange', cb.close)
+      );
       doc.mozRequestFullScreen?.();
       doc.webkitRequestFullScreen?.(Element.ALLOW_KEYBOARD_INPUT);
     }
@@ -114,7 +116,7 @@ const Gallery = {
     $.on(close, 'click', cb.close);
 
     $.on(menuButton, 'click', function(e) {
-      return nodes.menu.toggle(e, this, g);
+      nodes.menu.toggle(e, this, g);
     });
 
     Icon.set(menuButton, 'caretDown');
@@ -254,8 +256,8 @@ const Gallery = {
     if (Conf.Sauce && Sauce.links && (post = g.posts.get(file.dataset.post))) {
       const sauces = [];
       for (const link of Sauce.links) {
-        let node;
-        if (node = Sauce.createSauceLink(link, post, post.files[+file.dataset.file])) {
+        let node = Sauce.createSauceLink(link, post, post.files[+file.dataset.file]);
+        if (node) {
           sauces.push($.tn(' '), node);
         }
       }
@@ -311,7 +313,7 @@ const Gallery = {
     const isVideo = current.nodeName === 'VIDEO';
     if (isVideo) { current.play(); }
     if ((isVideo ? current.readyState >= 4 : current.complete) || (current.nodeName === 'IFRAME')) {
-      return Gallery.startTimer();
+      Gallery.startTimer();
     } else {
       $.on(current, (isVideo ? 'canplaythrough' : 'load'), Gallery.startTimer);
     }
@@ -358,7 +360,7 @@ const Gallery = {
     image(e) {
       e.preventDefault();
       e.stopPropagation();
-      return Gallery.build(this);
+      Gallery.build(this);
     },
 
     prev() {

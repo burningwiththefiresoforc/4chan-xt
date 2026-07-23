@@ -63,10 +63,8 @@ const RestoreDeletedFromArchive = {
       RestoreDeletedFromArchive.restore();
       Header.menu.close();
     });
-    Header.menu.addEntry({
-      el: menuEntry,
-      order: 10,
-    });
+
+    Header.menu.addEntry({ el: menuEntry, order: 10, });
   },
 
   /**

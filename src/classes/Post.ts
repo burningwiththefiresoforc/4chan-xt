@@ -151,7 +151,8 @@ export default class Post {
     };
     g.SITE.parseInfo?.(this); // parses the tripcode
     // this now has to happen after the tripcode parsing
-    this.info.nameBlock = Conf.Anonymize ? 'Anonymous' : `${this.info.name || ''} ${this.info.tripcode || ''}`.trim();
+    this.info.nameBlock = Conf.Anonymize
+      ? 'Anonymous' : `${this.info.name || ''} ${this.info.tripcode || ''}`.trim();
 
     if (this.info.capcode) { this.info.nameBlock += ` ## ${this.info.capcode}`; }
     if (this.info.uniqueID) { this.info.nameBlock += ` (ID: ${this.info.uniqueID})`; }

@@ -120,64 +120,50 @@ export default class Fetcher {
   fetchedPost(req, isCached) {
     // In case of multiple callbacks for the same request,
     // don't parse the same original post more than once.
-    let post;
-    if (post = g.posts.get(`${this.boardID}.${this.postID}`)) {
-      this.insert(post);
+    const cachedPost = g.posts.get(`${this.boardID}.${this.postID}`);
+    if (cachedPost) {
+      this.insert(cachedPost);
       return;
     }
-
     const {status} = req;
     if (status !== 200) {
       // The thread can die by the time we check a quote.
       if (status && this.archivedPost()) { return; }
-
       $.addClass(this.root, 'warning');
       this.root.textContent =
-        status === 404 ? `Thread No.${this.threadID} 404'd.`
-          : !status ? 'Connection Error'
-            : `Error ${req.statusText} (${req.status}).`;
+        status === 404
+          ? `Thread No.${this.threadID} 404'd.` : !status
+          ? 'Connection Error' : `Error ${req.statusText} (${req.status}).`;
       return;
     }
-
     const {posts} = req.response;
     g.SITE.Build.spoilerRange[this.boardID] = posts[0].custom_spoiler;
-    for (post of posts) {
-      if (post.no === this.postID) { break; }
-    } // we found it!
-
-    if (post.no !== this.postID) {
+    const foundPost = posts.find(p => p.no === this.postID); // we found it!
+    if (!foundPost) {
       // Cached requests can be stale and must be rechecked.
       if (isCached) {
         const api = g.SITE.urls.threadJSON({boardID: this.boardID, threadID: this.threadID});
         $.cleanCache(url => url === api);
-        const that = this;
-        $.cache(api, function() {
-          return that.fetchedPost(this, false);
-        });
+        $.cache(api, (req) => this.fetchedPost(req, false));
         return;
       }
-
       // The post can be deleted by the time we check a quote.
       if (this.archivedPost()) { return; }
-
       $.addClass(this.root, 'warning');
       this.root.textContent = `Post No.${this.postID} was not found.`;
       return;
     }
-
-    const board = g.boards[this.boardID] ||
-      new Board(this.boardID);
-    const thread = g.threads.get(`${this.boardID}.${this.threadID}`) ||
-      new Thread(this.threadID, board);
-    post = new Post(g.SITE.Build.postFromObject(post, this.boardID), thread, board, {isFetchedQuote: true});
-    Main.callbackNodes('Post', [post]);
-    return this.insert(post);
-  }
+    const board = g.boards[this.boardID] || new Board(this.boardID);
+    const thread = g.threads.get(`${this.boardID}.${this.threadID}`) || new Thread(this.threadID, board);
+    const newPost = new Post(g.SITE.Build.postFromObject(foundPost, this.boardID), thread, board, {isFetchedQuote: true});
+    Main.callbackNodes('Post', [newPost]);
+    this.insert(newPost);
+  },
 
   archivedPost() {
-    let url: string;
-    if (!Conf['Resurrect Quotes']) { return false; }
-    if (!(url = Redirect.to('post', {boardID: this.boardID, postID: this.postID}))) { return false; }
+    if (!Conf['Resurrect Quotes']) return false;
+    let url: string = Redirect.to('post', {boardID: this.boardID, postID: this.postID});
+    if (!url) return false;
     const archive = Redirect.data.post.get(this.boardID);
     const encryptionOK = /^https:\/\//.test(url) || (location.protocol === 'http:');
     if (encryptionOK || Conf['Exempt Archives from Encryption']) {
@@ -203,8 +189,8 @@ export default class Fetcher {
   parseArchivedPost(data, url, archive) {
     // In case of multiple callbacks for the same request,
     // don't parse the same original post more than once.
-    let post: Post;
-    if (post = g.posts.get(`${this.boardID}.${this.postID}`)) {
+    let post: Post = g.posts.get(`${this.boardID}.${this.postID}`);
+    if (post) {
       this.insert(post);
       return;
     }

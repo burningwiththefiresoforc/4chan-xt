@@ -98,7 +98,7 @@ var ImageHover = {
         Sound.setupSoundpost(el, file);
       }
 
-      return UI.hover({
+      UI.hover({
         root: this,
         el,
         latestEvent: e,
@@ -126,7 +126,7 @@ var ImageHover = {
   },
 
   error(post: Post, file: File) {
-    return function () {
+    return function() {
       if (ImageCommon.decodeError(this, file)) return;
 
       return ImageCommon.error(this, post, file, 3 * SECOND, URL => {

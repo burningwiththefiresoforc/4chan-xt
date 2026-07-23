@@ -17,7 +17,8 @@ export default class Connection {
   }
 
   targetWindow() {
-    return this.target instanceof window.HTMLIFrameElement ? this.target.contentWindow : this.target;
+    return this.target instanceof window.HTMLIFrameElement
+      ? this.target.contentWindow : this.target;
   }
 
   send(data) {

@@ -116,10 +116,7 @@ var ThreadHiding = {
 
       const makeStub = UI.checkbox('Stubs', 'Make stub');
 
-      Menu.menu.addEntry({
-        el: div,
-        order: 20,
-        open({thread, isReply}) {
+      Menu.menu.addEntry({ el: div, order: 20, open({thread, isReply}) {
           if (isReply || thread.isHidden || (Conf['JSON Index'] && (Conf['Index Mode'] === 'catalog'))) {
             return false;
           }
@@ -135,11 +132,8 @@ var ThreadHiding = {
       });
       $.on(div, 'click', ThreadHiding.menu.show);
 
-      Menu.menu.addEntry({
-        el: div,
-        order: 20,
-        open({thread, isReply}) {
-          if (isReply || !thread.isHidden || (Conf['JSON Index'] && (Conf['Index Mode'] === 'catalog'))) {
+      Menu.menu.addEntry({ el: div, order: 20, open({thread, isReply}) {
+        if (isReply || !thread.isHidden || (Conf['JSON Index'] && (Conf['Index Mode'] === 'catalog'))) {
             return false;
           }
           ThreadHiding.menu.thread = thread;
@@ -153,10 +147,7 @@ var ThreadHiding = {
       });
       $.on(hideStubLink, 'click', ThreadHiding.menu.hideStub);
 
-      Menu.menu.addEntry({
-        el: hideStubLink,
-        order: 15,
-        open({thread, isReply}) {
+      Menu.menu.addEntry({ el: hideStubLink, order: 15, open({thread, isReply}) {
           if (isReply || !thread.isHidden || (Conf['JSON Index'] && (Conf['Index Mode'] === 'catalog'))) {
             return false;
           }
@@ -246,7 +237,7 @@ var ThreadHiding = {
 
     // Prevent hiding of thread divider on sites that put it inside the thread
     if (threadDivider = $(g.SITE.selectors.threadDivider, root)) {
-      return $.addClass(threadDivider, 'threadDivider');
+      $.addClass(threadDivider, 'threadDivider');
     }
   },
 
@@ -262,7 +253,7 @@ var ThreadHiding = {
         threadID: thread.ID
       });
     }
-    return ThreadHiding.catalogSet(thread.board);
+    ThreadHiding.catalogSet(thread.board);
   },
 
   toggle(thread) {
@@ -274,7 +265,7 @@ var ThreadHiding = {
     } else {
       ThreadHiding.hide(thread, undefined, 'Hidden manually');
     }
-    return ThreadHiding.saveHiddenState(thread);
+    ThreadHiding.saveHiddenState(thread);
   },
 
   hide(thread, makeStub=Conf.Stubs, reason) {

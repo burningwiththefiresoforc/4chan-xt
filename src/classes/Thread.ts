@@ -111,9 +111,9 @@ export default class Thread {
       icon.style.cssText = 'height: 18px; width: 18px;';
     }
 
-    const root = (type !== 'Sticky') && this.isSticky ?
-      $('.stickyIcon', this.OP.nodes.info)
-    : $('.page-num', this.OP.nodes.info) || this.OP.nodes.quote;
+    const root = (type !== 'Sticky') && this.isSticky
+      ? $('.stickyIcon', this.OP.nodes.info)
+      : $('.page-num', this.OP.nodes.info) || this.OP.nodes.quote;
     $.after(root, [$.tn(' '), icon]);
 
     if (!this.catalogView) { return; }

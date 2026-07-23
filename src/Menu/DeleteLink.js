@@ -65,12 +65,8 @@ var DeleteLink = {
   },
 
   menuText() {
-    let seconds = DeleteLink.cooldown.seconds[DeleteLink.post.fullID];
-    if (seconds) {
-      return `Delete (${seconds})`;
-    } else {
-      return 'Delete';
-    }
+    const seconds = DeleteLink.cooldown.seconds[DeleteLink.post.fullID];
+    return seconds ? `Delete (${seconds})` : 'Delete';
   },
 
   linkText(fileOnly) {

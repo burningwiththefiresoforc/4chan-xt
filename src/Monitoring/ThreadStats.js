@@ -17,9 +17,11 @@ var ThreadStats = {
       this[g.SITE.isPrunedByAge?.(g.BOARD) ? 'showPurgePos' : 'showPage'] = true;
     }
 
-    const statsHTML = {innerHTML: "<span id=\"post-count\">?</span> / <span id=\"file-count\">?</span>" + ((Conf["IP Count in Stats"] && g.SITE.hasIPCount)
-      ? " / <span id=\"ip-count\">?</span>" : "") + ((Conf["Page Count in Stats"])
-      ? " / <span id=\"page-count\">?</span>" : "")};
+    const statsHTML = {innerHTML: "<span id=\"post-count\">?</span> / <span id=\"file-count\">?</span>"
+      + ((Conf["IP Count in Stats"] && g.SITE.hasIPCount)
+        ? " / <span id=\"ip-count\">?</span>" : "")
+      + ((Conf["Page Count in Stats"])
+        ? " / <span id=\"page-count\">?</span>" : "")};
     let statsTitle = 'Posts / Files';
     if (Conf['IP Count in Stats'] && g.SITE.hasIPCount) { statsTitle += ' / IPs'; }
     if (Conf['Page Count in Stats']) {
@@ -188,10 +190,10 @@ var ThreadStats = {
     // If thread data is stale (modification date given < time of last post), try again.
     // Skip this on vichan sites due to sage posts not updating modification time in threads.json.
     if (
-      !ThreadStats.showPage ||
-      (ThreadStats.pageCountEl.textContent === '1') ||
-      !!g.SITE.threadModTimeIgnoresSage ||
-      (ThreadStats.thread.posts.get(ThreadStats.thread.lastPost).info.date <= ThreadStats.lastPageUpdate)
+         !ThreadStats.showPage
+      || (ThreadStats.pageCountEl.textContent === '1')
+      || !!g.SITE.threadModTimeIgnoresSage
+      || (ThreadStats.thread.posts.get(ThreadStats.thread.lastPost).info.date <= ThreadStats.lastPageUpdate)
     ) { return; }
     clearTimeout(ThreadStats.timeout);
     ThreadStats.timeout = setTimeout(ThreadStats.fetchPage, 5 * SECOND);

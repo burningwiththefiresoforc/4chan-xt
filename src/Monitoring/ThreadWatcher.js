@@ -98,8 +98,8 @@ var ThreadWatcher = {
         order: 6,
         open({thread}) {
           if (Conf['Index Mode'] !== 'catalog') { return false; }
-          this.el.firstElementChild.textContent = ThreadWatcher.isWatched(thread) ?
-            'Unwatch' : 'Watch';
+          this.el.firstElementChild.textContent = ThreadWatcher.isWatched(thread)
+            ? 'Unwatch' : 'Watch';
           if (this.cb) { $.off(this.el, 'click', this.cb); }
           this.cb = () => {
             $.event('CloseMenu');
@@ -493,10 +493,10 @@ var ThreadWatcher = {
     let {siteID, boardID, threadID, data, newData, force} = thread;
     const site = g.sites[siteID];
     if ((this.status === 200) && this.response) {
-      let isArchived;
       last = this.response.posts[this.response.posts.length-1].no;
       const replies = this.response.posts.length-1;
-      isDead = (isArchived = !!(this.response.posts[0].archived || isArchiveURL));
+      let isArchived = !!(this.response.posts[0].archived || isArchiveURL);
+      isDead = isArchived;
       if (isDead && Conf['Auto Prune']) {
         ThreadWatcher.rm(siteID, boardID, threadID);
         return;
@@ -804,7 +804,7 @@ var ThreadWatcher = {
       if (!Conf['Thread Watcher']) { return; }
       const menu = (this.menu = new UI.Menu('thread watcher'));
       $.on($('.menu-button', ThreadWatcher.dialog), 'click', function(e) {
-        return menu.toggle(e, this, ThreadWatcher);
+        menu.toggle(e, this, ThreadWatcher);
       });
       this.addMenuEntries();
     },

@@ -45,7 +45,8 @@ const CatalogLinks = {
             const catalogLink = link.parentNode.cloneNode(true);
             const link2 = catalogLink.firstElementChild;
             link2.href = catalogURL;
-            link2.textContent = link2.hostname === location.hostname ? `${meta.name} Catalog` : 'External Catalog';
+            link2.textContent = link2.hostname === location.hostname
+              ? `${meta.name} Catalog` : 'External Catalog';
             $.after(link.parentNode, [$.tn(' '), catalogLink]);
           }
         }
@@ -167,7 +168,8 @@ const CatalogLinks = {
     }
   },
 
-  index: (board=g.BOARD) => Index.enabledOn(board) ? CatalogLinks.jsonIndex(board, '#index') : Get.url('index', board);
+  index: (board=g.BOARD) => Index.enabledOn(board)
+    ? CatalogLinks.jsonIndex(board, '#index') : Get.url('index', board);
 
 };
 export default CatalogLinks;

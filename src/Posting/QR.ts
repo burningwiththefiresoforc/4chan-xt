@@ -387,7 +387,7 @@ var QR = {
         notif.onclose = () => notice.close();
         return notif.onshow = () => setTimeout(() => {
           notif.onclose = null;
-          return notif.close();
+          notif.close();
         }, 7 * SECOND);
       }
     }
@@ -425,9 +425,7 @@ var QR = {
     value = QR.req ? QR.req.progress : QR.cooldown.seconds || value;
 
     const {status} = QR.nodes;
-    status.value = !value
-    ? 'Submit' : QR.cooldown.auto
-    ? `Auto ${value}` : value;
+    status.value = !value ? 'Submit' : QR.cooldown.auto ? `Auto ${value}` : value;
     status.disabled = disabled || false;
     return status.disabled;
   },
@@ -719,8 +717,7 @@ var QR = {
   dialog() {
     let dialog, event, names, nodes: typeof QR.nodes;
     QR.nodes = (nodes = {
-      el: (dialog = UI.dialog('qr',
-        { innerHTML: QuickReplyPage }))
+      el: (dialog = UI.dialog('qr', { innerHTML: QuickReplyPage }))
     } as typeof QR.nodes);
 
     const setNode = (name, query) => nodes[name] = $(query, dialog);
@@ -1181,8 +1178,7 @@ var QR = {
 
     if (URL) {
       const open = Conf['Open Post in New Tab'] || postsCount
-      ? () => $.open(URL)
-      : () => location.href = URL;
+      ? () => $.open(URL) : () => location.href = URL;
 
       if (threadID === postID) {
         // XXX 4chan sometimes responds before the thread exists.
@@ -1216,7 +1212,7 @@ var QR = {
 
   abort() {
     let oldReq = QR.req;
-    if ((oldReq) && !QR.req.isUploadFinished) {
+    if (oldReq && !QR.req.isUploadFinished) {
       delete QR.req;
       oldReq.abort();
       // if ((QR.captcha === Captcha.v2) && QR.currentCaptcha) { Captcha.cache.save(QR.currentCaptcha); }
@@ -1326,11 +1322,9 @@ var QR = {
     },
 
     start() {
-      const { data } = QR.cooldown;
+      const {data} = QR.cooldown;
       if (
-        !Conf.Cooldown ||
-        !QR.cooldown.isSetup ||
-        !!QR.cooldown.isCounting ||
+        !Conf.Cooldown || !QR.cooldown.isSetup || !!QR.cooldown.isCounting ||
         ((Object.keys(data[g.BOARD.ID] || {}).length + Object.keys(data.global || {}).length) <= 0)
       ) { return; }
       QR.cooldown.isCounting = true;
@@ -1477,8 +1471,8 @@ var QR = {
 
             // Clean up expired cooldowns
             var maxDelay = cooldown.threadID !== cooldown.postID
-              ? QR.cooldown.maxDelay
-              : QR.cooldown.delays[scope === 'global' ? 'thread_global' : 'thread'];
+              ? QR.cooldown.maxDelay : QR.cooldown.delays[scope === 'global'
+              ? 'thread_global' : 'thread'];
             if (QR.cooldown.customCooldown) {
               maxDelay = Math.max(maxDelay, parseInt(Conf.customCooldown, 10));
             }
@@ -1541,12 +1535,9 @@ var QR = {
         });
         $.on(a, 'click', this.editFile);
 
-        Menu.menu.addEntry({
-          el: a,
-          order: 90,
-          open(post) {
+        Menu.menu.addEntry({ el: a, order: 90, open(post) {
             QR.oekaki.menu.post = post;
-            const { file } = post;
+            const {file} = post;
             return QR.postingIsEnabled && !!file && (file.isImage || file.isVideo);
           }
         });
@@ -1793,13 +1784,11 @@ class post {
         ? QR.persona.always.sub : '';
 
       if (QR.nodes.flag) {
-        this.flag = (() => {
-          if (prev) {
-            return prev.flag;
-          } else if (persona.flag && persona.flag in g.BOARD.config.board_flags) {
-            return persona.flag;
-          }
-        })();
+        if (prev) {
+          this.flag = prev.flag;
+        } else if (persona.flag && persona.flag in g.BOARD.config.board_flags) {
+          this.flag = persona.flag;
+        }
       }
       if (QR.selected === this) this.load();
     }); // load persona
@@ -1878,7 +1867,7 @@ class post {
       this.spoiler = input.checked;
       return;
     }
-    const { name } = input.dataset;
+    const {name} = input.dataset;
     if (!['thread', 'name', 'email', 'sub', 'com', 'filename', 'flag'].includes(name)) { return; }
     const prev = this[name] || input.dataset.default || null;
     this[name] = input.value || input.dataset.default || null;
@@ -2025,7 +2014,7 @@ class post {
         file = await QR.convert(file, file.type === 'image/jpeg' ? 'jpeg' : 'png', { width, height, img });
         img = undefined // just in case the file size shrinkage also needs to run using the new file
         new Notice('warning',
-          `Image was too large got shrunk from ${originalW} * ${originalH} to ${width} * ${height}.` +
+          `Image was too large and shrank from ${originalW}x${originalH} to ${width}x${height}.` +
           'It might have lost animation.'
         );
       }

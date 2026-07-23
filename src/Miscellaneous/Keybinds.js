@@ -257,9 +257,9 @@ var Keybinds = {
         }
       }
       if (key === Conf['Search form']) {
-        var searchInput = indexEnabled ? Index.searchInput
-          : g.SITE.selectors.searchBox ? $(g.SITE.selectors.searchBox)
-          : undefined;
+        var searchInput = indexEnabled
+          ? Index.searchInput : g.SITE.selectors.searchBox
+          ? $(g.SITE.selectors.searchBox) : undefined;
         if (searchInput) {
           Header.scrollToIfNeeded(searchInput);
           searchInput.focus();
@@ -274,8 +274,7 @@ var Keybinds = {
     if (mode && Index.enabledOn(g.BOARD)) {
       location.href =
         g.VIEW === 'index'
-          ? `#${mode}`
-          : `/${g.BOARD}/#${mode}`;
+          ? `#${mode}` : `/${g.BOARD}/#${mode}`;
     }
     if (key === Conf['Open catalog'] && (catalog = CatalogLinks.catalog())) {
       location.href = catalog;
@@ -363,8 +362,8 @@ var Keybinds = {
 
   post(thread) {
     const s = g.SITE.selectors;
-    return $(`${s.postContainer}${s.highlightable.reply}.${g.SITE.classes.highlight}`, thread) ||
-      $(`${g.SITE.isOPContainerThread ? s.thread : s.postContainer}${s.highlightable.op}`, thread);
+    return $(`${s.postContainer}${s.highlightable.reply}.${g.SITE.classes.highlight}`, thread)
+      || $(`${g.SITE.isOPContainerThread ? s.thread : s.postContainer}${s.highlightable.op}`, thread);
   },
 
   qr(thread) {

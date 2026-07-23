@@ -18,10 +18,7 @@ var CopyTextLink = {
     });
     $.on(a, 'click', CopyTextLink.copy);
 
-    Menu.menu.addEntry({
-      el: a,
-      order: 12,
-      open(post) {
+    Menu.menu.addEntry({ el: a, order: 12, open(post) {
         CopyTextLink.text = (post.origin || post).commentOrig();
         return true;
       }

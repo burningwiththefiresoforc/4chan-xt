@@ -154,10 +154,8 @@ const SWYotsuba = {
     !['4chan - Temporarily Offline', '4chan - Error', '504 Gateway Time-out', 'MathJax Equation Source'].includes(d.title);
   },
 
-  is404() {
     // XXX Sometimes threads don't 404 but are left over as stubs containing one garbage reply post.
-    return ['4chan - Temporarily Offline', '4chan - 404 Not Found'].includes(d.title) || ((g.VIEW === 'thread') && $('.board') && !$('.opContainer'));
-  },
+  is404: () => ['4chan - Temporarily Offline', '4chan - 404 Not Found'].includes(d.title) || ((g.VIEW === 'thread') && $('.board') && !$('.opContainer')),
 
   isIncomplete: () => ['index', 'thread'].includes(g.VIEW) && !$('.board + *'),
 
@@ -243,9 +241,7 @@ const SWYotsuba = {
     }
   },
 
-  parseDate(node) {
-    return new Date(node.dataset.utc * 1000);
-  },
+  parseDate: (node) => new Date(node.dataset.utc * 1000),
 
   parseFile(post, file) {
     const {text, link, thumb} = file;
@@ -282,7 +278,7 @@ const SWYotsuba = {
         let br = abbr.previousSibling;
         if (br && (br.nodeName === 'BR')) { $.rm(br); }
       }
-      return $.rm(abbr);
+      $.rm(abbr);
     }
   },
 
@@ -369,9 +365,7 @@ const SWYotsuba = {
       }
     },
 
-    sameThread(boardID, threadID) {
-      return (g.VIEW === 'thread') && (g.BOARD.ID === boardID) && (g.THREADID === +threadID);
-    },
+    sameThread: (boardID, threadID) => (g.VIEW === 'thread') && (g.BOARD.ID === boardID) && (g.THREADID === +threadID),
 
     threadURL(boardID, threadID) {
       if (boardID !== g.BOARD.ID) {
@@ -599,8 +593,8 @@ const SWYotsuba = {
     },
 
     thread(thread, data, withReplies) {
-      let root;
-      if (root = thread.nodes.root) {
+      let root = thread.nodes.root;
+      if (root) {
         $.rmAll(root);
       } else {
         thread.nodes.root = (root = $.el('div', {
@@ -611,10 +605,10 @@ const SWYotsuba = {
       if (this.hat) { $.add(root, this.hat.cloneNode(false)); }
       $.add(root, thread.OP.nodes.root);
       if (data.omitted_posts || (!withReplies && data.replies)) {
-        const [posts, files] = withReplies ?
+        const [posts, files] = withReplies 
           // XXX data.omitted_images is not accurate.
-          [data.omitted_posts, data.images - data.last_replies.filter(data => !!data.ext).length]
-        : [data.replies, data.images];
+          ? [data.omitted_posts, data.images - data.last_replies.filter(data => !!data.ext).length]
+          : [data.replies, data.images];
         const summary = this.summary(thread.board.ID, data.no, posts, files);
         $.add(root, summary);
       }
@@ -627,9 +621,9 @@ const SWYotsuba = {
       const { tn_w, tn_h } = data;
 
       if (data.spoiler && !Conf['Reveal Spoiler Thumbnails']) {
-        let spoilerRange;
         src = `${staticPath}spoiler`;
-        if (spoilerRange = this.spoilerRange[thread.board]) {
+        let spoilerRange = this.spoilerRange[thread.board];
+        if (spoilerRange) {
           // Randomize the spoiler image.
           src += (`-${thread.board}`) + Math.floor(1 + (spoilerRange * Math.random()));
         }

@@ -242,12 +242,12 @@ $\
     }
     let m = text.match(/(\s*ID:\s*)(\S+)/);
     if (m) {
-      let uniqueID;
       nodes.info.normalize();
       let {nextSibling} = nodes.nameBlock;
       nextSibling = nextSibling.splitText(m[1].length);
       nextSibling.splitText(m[2].length);
-      nodes.uniqueID = (uniqueID = $.el('span', {className: 'poster_id'}));
+      let uniqueID = $.el('span', {className: 'poster_id'});
+      nodes.uniqueID = uniqueID;
       $.replace(nextSibling, uniqueID);
       $.add(uniqueID, nextSibling);
     }

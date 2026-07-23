@@ -143,9 +143,7 @@ var Icon = {
   },
 
   /** Get the raw SVG string for an icon. */
-  get(name: keyof typeof icons): string {
-    return icons[name];
-  },
+  get(name: keyof typeof icons): string { return icons[name]; },
 
   /** Get the raw SVG string for an icon wrapped for use in JSX. */
   raw(name: keyof typeof icons): EscapedHtml {

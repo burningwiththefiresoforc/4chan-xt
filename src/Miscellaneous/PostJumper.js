@@ -86,7 +86,9 @@ const PostJumper = {
     const classPrev = 'prev';
     const classNext = 'next';
     const span = $.el('span', {className: 'postJumper'});
-    $.extend(span, {innerHTML: "<a href=\"javascript:;\" class=\"" + E(classPrev) + "\">" + E(charPrev) + "</a><a href=\"javascript:;\" class=\"" + E(classNext) + "\">" + E(charNext) + "</a>"});
+    $.extend(span, {innerHTML: "<a href=\"javascript:;\" class=\""
+      + E(classPrev) + "\">" + E(charPrev) + "</a><a href=\"javascript:;\" class=\""
+      + E(classNext) + "\">" + E(charNext) + "</a>"});
     return span;
   },
 

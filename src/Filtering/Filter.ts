@@ -187,7 +187,7 @@ var Filter = {
     }
 
     if (g.VIEW === 'catalog') {
-      return Filter.catalog();
+      Filter.catalog();
     } else {
       Callbacks.Post.push({
         name: 'Filter',
@@ -255,16 +255,19 @@ var Filter = {
 
         for (const filter of filtersForType) {
           if (
-            (filter.boards   && !(filter.boards[board]   || filter.boards[site]  )) ||
-            (filter.excludes &&  (filter.excludes[board] || filter.excludes[site])) ||
-            (filter.mask & mask) ||
-            (isString ? (filter.regexp !== value) : !(filter.regexp as RegExp).test(value))
+            (filter.boards && !(filter.boards[board]
+              || filter.boards[site] ))
+            || (filter.excludes &&  (filter.excludes[board]
+              || filter.excludes[site]))
+            || (filter.mask & mask)
+            || (isString ? (filter.regexp !== value)
+              : !(filter.regexp as RegExp).test(value))
           ) continue;
           if (filter.hide) {
             if (hideable) {
               hide = true;
               if (stub) {
-                ({ stub } = filter);
+                ({stub} = filter);
                 (reasons || (reasons = [])).push(filter.reason || `Filtered ${type} ${filter.regexp}`);
               }
             }
@@ -272,7 +275,7 @@ var Filter = {
           if (filter.hl && !hl?.includes(filter.hl)) {
             (hl || (hl = [])).push(filter.hl);
           }
-          if (!top) { ({ top } = filter); }
+          if (!top) { ({top} = filter); }
           if (filter.noti) noti = true;
           if (filter.poster) poster = true;
           if (filter.replies) replies = true;

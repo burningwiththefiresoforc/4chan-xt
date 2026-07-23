@@ -227,10 +227,10 @@ var Menu = (function() {
       const eRect   = entry.getBoundingClientRect();
       const cHeight = doc.clientHeight;
       const cWidth  = doc.clientWidth;
-      const [top, bottom] = (eRect.top + sRect.height) < cHeight ?
-        ['0px', 'auto'] : ['auto', '0px'];
-      const [left, right] = (eRect.right + sRect.width) < (cWidth - 150) ?
-        ['100%', 'auto'] : ['auto', '100%'];
+      const [top, bottom] = (eRect.top + sRect.height) < cHeight
+        ? ['0px', 'auto'] : ['auto', '0px'];
+      const [left, right] = (eRect.right + sRect.width) < (cWidth - 150)
+        ? ['100%', 'auto'] : ['auto', '100%'];
       const {style} = submenu;
       style.top    = top;
       style.bottom = bottom;
@@ -396,12 +396,12 @@ const hoverstart = function ({ root, el, latestEvent, endEvents, height, width, 
 
   $.on(root, endEvents,   o.hoverend);
   if ($.x('ancestor::div[contains(@class,"inline")][1]', root)) {
-    $.on(d,    'keydown',   o.hoverend);
+    $.on(d, 'keydown', o.hoverend);
   }
   $.on(root, 'mousemove', o.hover);
 
   // Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=674955
-  o.workaround = function(e) { if (!root.contains(e.target)) { return o.hoverend(e); } };
+  o.workaround = (e) => { if (!root.contains(e.target)) { return o.hoverend(e); } };
   $.on(doc,  'mousemove', o.workaround);
 };
 

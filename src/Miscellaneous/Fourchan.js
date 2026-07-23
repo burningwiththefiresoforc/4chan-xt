@@ -50,7 +50,7 @@ var Fourchan = {
       });
       g.posts.forEach((post) => {
         if (post.callbacksExecuted) {
-          return Callbacks.Post.execute(post, ['Parse [math] tags'], true);
+          Callbacks.Post.execute(post, ['Parse [math] tags'], true);
         }
       });
       ExpandComment.callbacks.push(Fourchan.math);

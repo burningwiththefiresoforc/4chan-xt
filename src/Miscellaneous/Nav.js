@@ -12,16 +12,8 @@ import Icon from "../Icons/icon";
  */
 var Nav = {
   init() {
-    switch (g.VIEW) {
-      case 'index':
-        if (!Conf['Index Navigation']) { return; }
-        break;
-      case 'thread':
-        if (!Conf['Reply Navigation']) { return; }
-        break;
-      default:
-        return;
-    }
+    const navConf = {index: 'Index Navigation', thread: 'Reply Navigation'}[g.VIEW];
+    if (!navConf || !Conf[navConf]) return;
 
     const span = $.el('span', {id: 'navlinks'});
     const prev = $.el('a', {

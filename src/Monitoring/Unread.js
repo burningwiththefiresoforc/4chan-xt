@@ -284,9 +284,10 @@ var Unread = {
     if (Conf['Unread Count']) {
       const titleQuotingYou = Conf['Quoted Title'] && countQuotingYou ? '(!) ' : '';
       const titleCount = count || !Conf['Hide Unread Count at (0)'] ? `(${count}) ` : '';
-      const titleDead = Unread.thread.isDead ?
-        Unread.title.replace('-', (Unread.thread.isArchived ? '- Archived -' : '- 404 -'))
-      : Unread.title;
+      const titleDead = Unread.thread.isDead
+        ? Unread.title.replace('-', (Unread.thread.isArchived
+          ? '- Archived -' : '- 404 -'))
+        : Unread.title;
       d.title = `${titleQuotingYou}${titleCount}${titleDead}`;
     }
 
@@ -295,9 +296,8 @@ var Unread = {
     if (Conf['Unread Favicon'] && (g.SITE.software === 'yotsuba')) {
       const {isDead} = Unread.thread;
       return Favicon.set((
-        countQuotingYou ?
-          (isDead ? 'unreadDeadY' : 'unreadY') : count ?
-          (isDead ? 'unreadDead' : 'unread') : (isDead ? 'dead' : 'default')
+        countQuotingYou ? (isDead ? 'unreadDeadY' : 'unreadY') : count
+          ? (isDead ? 'unreadDead' : 'unread') : (isDead ? 'dead' : 'default')
       ));
     }
   },
@@ -305,13 +305,12 @@ var Unread = {
   saveThreadWatcherCount: debounce(2 * SECOND, function() {
     $.forceSync('Remember Last Read Post');
     if (Conf['Remember Last Read Post'] && (!Unread.thread.isDead || Unread.thread.isArchived)) {
-      let posts;
       const quotingYou = !Conf['Require OP Quote Link'] && QuoteYou.isYou(Unread.thread.OP) ? Unread.posts : Unread.postsQuotingYou;
       if (!quotingYou.size) {
         quotingYou.last = 0;
       } else if (!quotingYou.has(quotingYou.last)) {
         quotingYou.last = 0;
-        posts = Unread.thread.posts.keys;
+        let posts = Unread.thread.posts.keys;
         for (let i = posts.length - 1; i >= 0; i--) {
           if (quotingYou.has(+posts[i])) {
             quotingYou.last = posts[i];

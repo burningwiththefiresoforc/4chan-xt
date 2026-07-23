@@ -91,7 +91,7 @@ const ImageLoader = {
       thumb.preload = 'auto';
       // XXX Cloned video elements with poster in Firefox cause momentary display of image loading icon.
       if ($.engine === 'gecko') {
-        $.on(thumb, 'loadeddata', function() { return this.removeAttribute('poster'); });
+        $.on(thumb, 'loadeddata', function() { this.removeAttribute('poster'); });
       }
       return;
     }
@@ -132,7 +132,8 @@ const ImageLoader = {
             if (Header.isNodeVisible(thumb) || (post.nodes.root === qpClone)) {
               thumb.play();
             } else {
-              thumb.pause(); }
+              thumb.pause();
+            }
           }
         }
       }

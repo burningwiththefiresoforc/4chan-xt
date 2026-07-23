@@ -110,9 +110,9 @@ var UnreadIndex = {
       $.rm(hr);
     }
 
-    const hasUnread = repliesShown ? firstUnread || !repliesRead
-      : indexEnabled ? thread.lastPost > lastReadPost
-      : thread.OP.ID > lastReadPost;
+    const hasUnread = repliesShown
+      ? firstUnread || !repliesRead : indexEnabled
+      ? thread.lastPost > lastReadPost : thread.OP.ID > lastReadPost;
     thread.nodes.root.classList.toggle('unread-thread', hasUnread);
 
     let link = UnreadIndex.markReadLink[thread.fullID];

@@ -54,8 +54,8 @@ const Redirect = {
     for (const boardID in Conf.selectedArchives) {
       const record = Conf.selectedArchives[boardID];
       for (const [type, id] of Object.entries(record)) {
-        let archive;
-        if ((archive = archives[JSON.stringify(id)]) && $.hasOwn(o, type)) {
+        let archive = archives[JSON.stringify(id)];
+        if (archive && $.hasOwn(o, type)) {
           const boards = type === 'file' ? archive.files : archive.boards;
           if (boards.includes(boardID)) { o[type].set(boardID, archive); }
         }
@@ -103,8 +103,7 @@ const Redirect = {
           }
           load(i).call({status: 200, response});
         } else {
-          CrossOrigin.ajax(url,
-            {onloadend: load(i)});
+          CrossOrigin.ajax(url, {onloadend: load(i)});
         }
       }
     } else {
@@ -137,7 +136,8 @@ const Redirect = {
     dest: 'post' | 'thread' | 'threadJSON' | 'file' | 'board' | 'search',
     data: { boardID: string, threadID?: string | number, postID?: string | number }
   ): string {
-    const archive = (['search', 'board'].includes(dest) ? Redirect.data.thread : Redirect.data[dest]).get(data.boardID);
+    const archive = (['search', 'board'].includes(dest)
+      ? Redirect.data.thread : Redirect.data[dest]).get(data.boardID);
     if (!archive) { return ''; }
     return Redirect[dest](archive, data);
   },
@@ -160,9 +160,7 @@ const Redirect = {
     return `${Redirect.protocol(archive)}${archive.domain}/${path}`;
   },
 
-  threadJSON(archive, { boardID, threadID }) {
-    return `${Redirect.protocol(archive)}${archive.domain}/_/api/chan/thread/?board=${boardID}&num=${threadID}`;
-  },
+  threadJSON: (archive, { boardID, threadID }) => `${Redirect.protocol(archive)}${archive.domain}/_/api/chan/thread/?board=${boardID}&num=${threadID}`,
 
   post(archive, {boardID, postID}) {
     // For fuuka-based archives:
@@ -191,9 +189,7 @@ const Redirect = {
     return `${Redirect.protocol(archive)}${archive.domain}/${boardID}/full_image/${filename}`;
   },
 
-  board(archive, {boardID}) {
-    return `${Redirect.protocol(archive)}${archive.domain}/${boardID}/`;
-  },
+  board: (archive, {boardID}) => `${Redirect.protocol(archive)}${archive.domain}/${boardID}/`,
 
   search(archive, {boardID, type, value}) {
     type = type === 'name' ? 'username' : type === 'MD5' ? 'image' : type;
@@ -226,11 +222,7 @@ const Redirect = {
     return urls;
   },
 
-  securityCheck(url) {
-    return /^https:\/\//.test(url) ||
-    (location.protocol === 'http:') ||
-    Conf['Exempt Archives from Encryption'];
-  },
+  securityCheck: (url) => /^https:\/\//.test(url) || (location.protocol === 'http:') || Conf['Exempt Archives from Encryption'],
 
   navigate(dest, data, alternative) {
     if (!Redirect.data) { Redirect.init(); }

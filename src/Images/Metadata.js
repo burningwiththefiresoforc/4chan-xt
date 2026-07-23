@@ -54,7 +54,7 @@ var Metadata = {
         return this.tabIndex = -1;
       } else {
         $.addClass(this.parentNode, 'error');
-        return $.one(this, 'click', Metadata.load);
+        $.one(this, 'click', Metadata.load);
       }
     },
       {Range: 'bytes=0-9999'});

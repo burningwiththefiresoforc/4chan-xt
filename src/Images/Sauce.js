@@ -151,10 +151,10 @@ const Sauce = {
             let node2 = Sauce.createSauceLink(link, post, file);
             if (node2) { $.replace(node, node2); }
           }
-          return observer.disconnect();
+          observer.disconnect();
         }
       });
-      return observer.observe(file.text, {attributes: true});
+      observer.observe(file.text, {attributes: true});
     }
   },
 

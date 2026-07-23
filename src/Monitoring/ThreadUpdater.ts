@@ -24,7 +24,6 @@ import type Thread from '../classes/Thread';
 
 var ThreadUpdater = {
   init(this: typeof ThreadUpdater) {
-    let sc;
 
     // Chromium won't play audio created in an inactive tab until the tab has been focused, so set it up now.
     // XXX Sometimes the loading stalls in Firefox, esp. when opening in private browsing window followed by normal window.
@@ -39,9 +38,9 @@ var ThreadUpdater = {
     if ((g.VIEW !== 'thread') || !Conf['Thread Updater']) return;
     this.enabled = true;
 
+    let sc;
     if (Conf['Updater and Stats in Header']) {
-      this.dialog = (sc = $.el('span',
-        {id:        'updater'}));
+      this.dialog = (sc = $.el('span', {id: 'updater'}));
       $.extend(sc, {innerHTML: '<span id="update-status" class="empty"></span><span id="update-timer" class="empty" title="Update now"></span>'});
       Header.addShortcut('updater', sc, 100);
     } else {

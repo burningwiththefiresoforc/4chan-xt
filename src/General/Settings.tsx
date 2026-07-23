@@ -509,8 +509,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
 
   selectFilter(this: HTMLSelectElement) {
     const div = this.nextElementSibling as HTMLElement;
-    let name: string;
-    if ((name = this.value) !== 'guide') {
+    let name: string = this.value;
+    if (name !== 'guide') {
       if (!$.hasOwn(Config.filter, name)) { return; }
       $.rmAll(div);
       const ta = $.el('textarea', {
@@ -558,9 +558,9 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       if (!['Interval', 'Custom CSS', 'timeLocale'].includes(name)) {
         items[name] = Conf[name];
         var event = (
-          (input.nodeName === 'SELECT') ||
-          ['checkbox', 'radio'].includes(input.type) ||
-          ((input.nodeName === 'TEXTAREA') && !(name in Settings))
+          (input.nodeName === 'SELECT')
+          || ['checkbox', 'radio'].includes(input.type)
+          || ((input.nodeName === 'TEXTAREA') && !(name in Settings))
         ) ? 'change' : 'input';
         $.on(input, event, $.cb[input.type === 'checkbox' ? 'checked' : 'value']);
         if (name in Settings) { $.on(input, event, Settings[name]); }

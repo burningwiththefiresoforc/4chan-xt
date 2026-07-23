@@ -88,7 +88,7 @@ var CrossOrigin = {
   },
 
   file(url: string, cb: (result: File) => void) {
-    return CrossOrigin.binary(url, function(data, headers) {
+    return CrossOrigin.binary(url, (data, headers) => {
       if (data == null) { return cb(null); }
       let name = url.match(/([^\/?#]+)\/*(?:$|[?#])/)?.[1];
       const contentType        = headers.match(/Content-Type:\s*(.*)/i)?.[1];

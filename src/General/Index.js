@@ -275,7 +275,7 @@ var Index = {
           if (this.cb) { $.off(this.el, 'click', this.cb); }
           this.cb = () => {
             $.event('CloseMenu');
-            return Index.toggleHide(thread);
+            Index.toggleHide(thread);
           };
           $.on(this.el, 'click', this.cb);
           return true;
@@ -400,9 +400,7 @@ var Index = {
       if (e) { Index.buildIndex(); }
     },
 
-    replies() {
-      Index.buildIndex();
-    },
+    replies() { Index.buildIndex(); },
 
     hover: () => doc.classList.toggle('catalog-hover-expand', Conf['Catalog Hover Expand']),
 
@@ -424,14 +422,14 @@ var Index = {
         const {searched, mode, sort} = e.state;
         const page = Index.getCurrentPage();
         Index.setState({search: searched, mode, sort, page});
-        return Index.pageLoad(false);
+        Index.pageLoad(false);
       } else {
         // page load or hash change
         const nCommands = Index.processHash();
         if (Conf['Refreshed Navigation'] && nCommands) {
-          return Index.update();
+          Index.update();
         } else {
-          return Index.pageLoad();
+          Index.pageLoad();
         }
       }
     },
@@ -452,7 +450,7 @@ var Index = {
       }
       if (a.textContent === 'Catalog') { return; }
       e.preventDefault();
-      return Index.userPageNav(+a.pathname.split(/\/+/)[2] || 1);
+      Index.userPageNav(+a.pathname.split(/\/+/)[2] || 1);
     },
 
     refreshFront() {
@@ -595,14 +593,11 @@ var Index = {
 
   savePerBoard(key, value) {
     typeof Conf[key] === 'object'
-      ? (Conf[key][g.BOARD.ID] = value)
-      : (Conf[key] = value);
+      ? (Conf[key][g.BOARD.ID] = value) : (Conf[key] = value);
     $.set(key, Conf[key]);
   },
 
-  saveSort() {
-    Index.savePerBoard('Index Sort', Index.currentSort);
-  },
+  saveSort() { Index.savePerBoard('Index Sort', Index.currentSort); },
 
   saveLastLongThresholds(i) {
     Index.savePerBoard(`Last Long Reply Thresholds ${i}`, Index.lastLongThresholds[i]);
@@ -621,7 +616,7 @@ var Index = {
     if (threads || mode || page || order) { Index.buildIndex(); }
     if (threads || page) { Index.setPage(); }
     if (scroll && !hash) { Index.scrollToIndex(); }
-    return Index.changed = {};
+    Index.changed = {};
   },
 
   setupMode() {
@@ -631,13 +626,13 @@ var Index = {
     Index.selectMode.value = Conf['Index Mode'];
     Index.cb.size();
     Index.showHiddenThreads = false;
-    return $('#hidden-toggle a', Index.navLinks).textContent = 'Show';
+    $('#hidden-toggle a', Index.navLinks).textContent = 'Show';
   },
 
   setupSort() {
     Index.selectRev.checked = /-rev$/.test(Index.currentSort);
     Index.selectSort.value  = Index.currentSort.replace(/-rev$/, '');
-    return Index.lastLongOptions.hidden = (Index.selectSort.value !== 'lastlong');
+    Index.lastLongOptions.hidden = (Index.selectSort.value !== 'lastlong');
   },
 
   getPagesNum: () => Index.search ? Math.ceil(Index.sortedThreadIDs.length / Index.threadsNumPerPage) : Index.pagesNum,
@@ -723,7 +718,8 @@ var Index = {
           if (Index.notice) {
             Index.notice.el.lastElementChild.textContent += ' (disable JSON Index if this takes too long)';
           }
-        }, 3 * SECOND); }
+        }, 3 * SECOND);
+      }
     } else {
       // Also display notice if Index Refresh is taking too long
       if (!Index.nTimeout) { Index.nTimeout = setTimeout(() => Index.notice || (Index.notice = new Notice('info', 'Refreshing index... (disable JSON Index if this takes too long)')), 3 * SECOND); }
@@ -877,7 +873,8 @@ var Index = {
           thread = new Thread(ID, g.BOARD);
           newThreads.push(thread);
         }
-        var lastPost = threadData.last_replies && threadData.last_replies.length ? threadData.last_replies[threadData.last_replies.length - 1].no : ID;
+        var lastPost = threadData.last_replies && threadData.last_replies.length
+          ? threadData.last_replies[threadData.last_replies.length - 1].no : ID;
         if (lastPost > thread.lastPost) { thread.lastPost = lastPost; }
         thread.json = threadData;
         threads.push(thread);
@@ -924,8 +921,8 @@ var Index = {
     let errors;
     const posts = [];
     for (var thread of threads) {
-      var lastReplies;
-      if (!(lastReplies = Index.liveThreadDict[thread.ID].last_replies)) { continue; }
+      let lastReplies = Index.liveThreadDict[thread.ID].last_replies;
+      if (!lastReplies) continue;
       var nodes = [];
       for (var data of lastReplies) {
         var node, post;
@@ -1003,7 +1000,8 @@ var Index = {
     if (!liveThreadData) { return; }
     const tmp_time = new Date().getTime()/1000;
     const sortType = Index.currentSort.replace(/-rev$/, '');
-    Index.sortedThreadIDs = (() => { switch (sortType) {
+    Index.sortedThreadIDs = (() => {
+      switch (sortType) {
       case 'lastreply': case 'lastlong':
         var repliesAvailable = liveThreadData.some(thread => thread.last_replies?.length);
         var lastlong = (thread) => {
@@ -1025,12 +1023,11 @@ var Index = {
           lastlongD[thread.no] = lastlong(thread).no;
         }
         return [...liveThreadData].sort((a, b) => lastlongD[b.no] - lastlongD[a.no]).map(post => post.no);
-      case 'bump':       return liveThreadIDs;
       case 'birth':      return [...liveThreadIDs ].sort((a, b) => b - a);
       case 'replycount': return [...liveThreadData].sort((a, b) => b.replies - a.replies).map(post => post.no);
       case 'filecount':  return [...liveThreadData].sort((a, b) => b.images  - a.images).map(post => post.no);
       case 'activity':   return [...liveThreadData].sort((a, b) => ((tmp_time-a.time)/(a.replies+1)) - ((tmp_time-b.time)/(b.replies+1))).map(post => post.no);
-      default: return liveThreadIDs;
+      case 'bump': default: return liveThreadIDs;
     } })();
     if (/-rev$/.test(Index.currentSort)) {
       Index.sortedThreadIDs.reverse();
@@ -1044,7 +1041,7 @@ var Index = {
     // Highlighted threads
     Index.sortOnTop(obj => obj.isOnTop || (Conf['Pin Watched Threads'] && ThreadWatcher.isWatchedRaw(obj.boardID, obj.threadID)));
     // Non-hidden threads
-    if (Conf['Anchor Hidden Threads']) { return Index.sortOnTop(obj => !Index.isHidden(obj.threadID)); }
+    if (Conf['Anchor Hidden Threads']) { Index.sortOnTop(obj => !Index.isHidden(obj.threadID)); }
   },
 
   sortOnTop(match) {
@@ -1053,7 +1050,7 @@ var Index = {
     for (var ID of Index.sortedThreadIDs) {
       (match(Index.parsedThreads[ID]) ? topThreads : bottomThreads).push(ID);
     }
-    return Index.sortedThreadIDs = topThreads.concat(bottomThreads);
+    Index.sortedThreadIDs = topThreads.concat(bottomThreads);
   },
 
   buildIndex() {

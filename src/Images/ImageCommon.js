@@ -51,7 +51,7 @@ var ImageCommon = {
     if (file.error?.code !== MediaError.MEDIA_ERR_DECODE) { return false; }
     let message = $('.warning', fileObj.thumb.parentNode);
     if (!message) {
-      message = $.el('div', {className:   'warning'});
+      message = $.el('div', {className: 'warning'});
       $.after(fileObj.thumb, message);
     }
     message.textContent = 'Error: Corrupt or unplayable video';
@@ -119,7 +119,7 @@ var ImageCommon = {
     if (this.protocol === 'blob:') { return true; }
     e.preventDefault();
     const {href, download} = this;
-    return CrossOrigin.file(href, function(blob) {
+    CrossOrigin.file(href, (blob) => {
       if (blob) {
         const a = $.el('a', {
           href: URL.createObjectURL(blob),

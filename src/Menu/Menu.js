@@ -44,7 +44,7 @@ var Menu = {
   },
 
   catalogNode() {
-    return $.after(this.nodes.icons, Menu.makeButton(this.thread.OP));
+    $.after(this.nodes.icons, Menu.makeButton(this.thread.OP));
   },
 
   makeButton(post, button) {

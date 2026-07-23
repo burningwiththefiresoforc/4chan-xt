@@ -71,7 +71,7 @@ var PSAHiding = {
     PSAHiding.sync(Conf.hiddenPSAList);
     return $.get('hiddenPSAList', Conf.hiddenPSAList, ({hiddenPSAList}) => {
       set(hiddenPSAList);
-      return $.set('hiddenPSAList', hiddenPSAList);
+      $.set('hiddenPSAList', hiddenPSAList);
     });
   },
 

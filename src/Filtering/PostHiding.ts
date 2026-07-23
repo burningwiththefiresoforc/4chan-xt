@@ -170,13 +170,9 @@ var PostHiding = {
         el: hideStubLink,
         order: 15,
         open(post) {
-          let data;
-          if (!post.isReply || post.isClone || !post.isHidden) {
-            return false;
-          }
-          if (!(data = PostHiding.db.get({boardID: post.board.ID, threadID: post.thread.ID, postID: post.ID}))) {
-            return false;
-          }
+          if (!post.isReply || post.isClone || !post.isHidden) return false;
+          let data = PostHiding.db.get({boardID: post.board.ID, threadID: post.thread.ID, postID: post.ID});
+          if (!data) return false;
           return PostHiding.menu.post = post;
         }
       });
@@ -309,7 +305,8 @@ var PostHiding = {
 
   toggle() {
     const post: Post = Get.postFromNode(this);
-    post.isHidden ? PostHiding.show(post) : PostHiding.hide(post, undefined, undefined, 'Hidden manually');
+    post.isHidden ? PostHiding.show(post)
+      : PostHiding.hide(post, undefined, undefined, 'Hidden manually');
     PostHiding.saveHiddenState(post, post.isHidden);
   },
 

@@ -107,7 +107,8 @@ var ExpandThread = {
     let filesCount = 0;
     for (var reply of replies) {
       // rm clones
-      if (Conf['Quote Inlining']) { var inlined;
+      if (Conf['Quote Inlining']) {
+      var inlined;
       while ((inlined = $('.inlined', reply))) { inlined.click(); } }
       postsCount++;
       if ('file' in Get.postFromRoot(reply)) { filesCount++; }

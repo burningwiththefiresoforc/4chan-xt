@@ -41,7 +41,7 @@ export default class Callbacks {
       }
     }
 
-    if (errors) { return Main.handleErrors(errors); }
+    if (errors) { Main.handleErrors(errors); }
   }
 }
 Callbacks.initClass();

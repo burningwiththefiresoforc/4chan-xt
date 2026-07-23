@@ -66,9 +66,7 @@ const Embedding = {
       items = $$('.linkify', post.nodes.comment);
       while ((el = items[i++])) {
         let data = Embedding.services(el);
-        if (data) {
-          Embedding.preview(data);
-        }
+        if (data) { Embedding.preview(data); }
       }
       return;
     }
@@ -82,7 +80,7 @@ const Embedding = {
       data.post = post;
       if (Conf.Embedding && (g.VIEW !== 'archive')) { Embedding.embed(data); }
       if (Embedding.shouldFetchTitles()) Embedding.title(data);
-      if (Conf['Cover Preview'] && (g.VIEW !== 'archive')) { return Embedding.preview(data); }
+      if (Conf['Cover Preview'] && (g.VIEW !== 'archive')) { Embedding.preview(data); }
     }
   },
 
@@ -143,7 +141,7 @@ const Embedding = {
   closeFloat() {
     delete Embedding.lastEmbed;
     $.addClass(Embedding.dialog, 'empty');
-    return $.replace(Embedding.media.firstChild, $.el('div'));
+    $.replace(Embedding.media.firstChild, $.el('div'));
   },
 
   dragEmbed() {
@@ -377,10 +375,10 @@ const Embedding = {
       api: (uid) => `https://api.dailymotion.com/video/${uid}`,
       text: (_) => _.title
     },
-    preview: {
-      url: (uid) => `https://www.dailymotion.com/thumbnail/video/${uid}`,
-      height: 240
-    }
+      preview: {
+        url: (uid) => `https://www.dailymotion.com/thumbnail/video/${uid}`,
+        height: 240
+      }
     }
     , {
       key: 'Gist',

@@ -197,7 +197,8 @@ var Header = {
         if (segment.length > 2) span.className = segment.slice(3, -1);
       } else if (segment === '}}') {
         spanStack.pop();
-        currentContainer = spanStack.length > 0 ? spanStack[spanStack.length - 1] : list;
+        currentContainer = spanStack.length > 0
+          ? spanStack[spanStack.length - 1] : list;
       } else {
         const re = /[\w@]+(-(all|title|replace|full|index|catalog|archive|expired|nt|(mode|sort|text):"[^"]+"(,"[^"]+")?))*|[^\w@]+/g;
         const segmentNodes = (segment.match(re) || []).map((t) => Header.mapCustomNavigation(t));
@@ -209,9 +210,7 @@ var Header = {
 
   mapCustomNavigation(t) {
     let a, href, m, url, urlV;
-    if (/^[^\w@]/.test(t)) {
-      return $.tn(t);
-    }
+    if (/^[^\w@]/.test(t)) { return $.tn(t); }
 
     let text = (url = null);
     t = t.replace(/-text:"([^"]+)"(?:,"([^"]+)")?/g, (m0, m1, m2) => {
@@ -301,9 +300,9 @@ var Header = {
       }
     }
 
-    a.textContent = /-title/.test(t) || (/-replace/.test(t) && (a.hostname === location.hostname) && (boardID === g.BOARD.ID)) ?
-      a.title || a.textContent
-      : /-full/.test(t) ? (`/${boardID}/`) + (a.title ? ` - ${a.title}` : '')
+    a.textContent = /-title/.test(t) || (/-replace/.test(t) && (a.hostname === location.hostname) && (boardID === g.BOARD.ID))
+      ? a.title || a.textContent : /-full/.test(t)
+      ? (`/${boardID}/`) + (a.title ? ` - ${a.title}` : '')
       : text || boardID;
 
     if (m = t.match(/-(index|catalog)/)) {
@@ -477,8 +476,8 @@ var Header = {
 
   toggleFooterVisibility() {
     $.event('CloseMenu');
-    const hide = this.nodeName === 'INPUT' ? this.checked
-    : $.hasClass(doc, 'hide-bottom-board-list');
+    const hide = this.nodeName === 'INPUT'
+      ? this.checked : $.hasClass(doc, 'hide-bottom-board-list');
     Header.setFooterVisibility(hide);
     $.set('Bottom Board List', hide);
     const message = hide
@@ -492,7 +491,8 @@ var Header = {
     const cust = $('#custom-board-list', Header.bar);
     const full = $('#full-board-list',   Header.bar);
     const btn = $('.hide-board-list-container', full);
-    return [cust.hidden, full.hidden, btn.hidden] = show ? [false, true, false] : [true, false, true];
+    return [cust.hidden, full.hidden, btn.hidden] = show
+      ? [false, true, false] : [true, false, true];
   },
 
   toggleCustomNav() {
@@ -561,11 +561,7 @@ var Header = {
 
   isHidden() {
     const {top} = Header.bar.getBoundingClientRect();
-    if (Conf['Bottom header']) {
-      return top === doc.clientHeight;
-    } else {
-      return top < 0;
-    }
+    return Conf['Bottom header'] ? top === doc.clientHeight : top < 0;
   },
 
   addShortcut(id: string, el: HTMLElement, index: number) {
@@ -584,18 +580,14 @@ var Header = {
     $.add(Header.shortcuts, shortcut);
   },
 
-  rmShortcut(el) {
-    $.rm(el.parentElement);
-  },
+  rmShortcut(el) { $.rm(el.parentElement); },
 
-  menuToggle(e) {
-    Header.menu.toggle(e, this, g);
-  },
+  menuToggle(e) { Header.menu.toggle(e, this, g); },
 
   createNotification(e) {
-    let notice;
     const {type, content, lifetime} = e.detail;
-    return notice = new Notice(type, content, lifetime);
+    let notice = new Notice(type, content, lifetime);
+    return notice;
   },
 
   areNotificationsEnabled: false,
@@ -606,11 +598,7 @@ var Header = {
       case 'granted':
         Header.areNotificationsEnabled = true;
         return;
-        break;
-      case 'denied':
-        // requestPermission doesn't work if status is 'denied', but it'll still work if status is 'default'.
-        return;
-        break;
+      case 'denied': return; // requestPermission doesn't work if status is 'denied', but it'll still work if status is 'default'.
     }
 
     const el = $.el('span',

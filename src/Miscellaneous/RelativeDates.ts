@@ -9,12 +9,9 @@ const RelativeDates = {
   INTERVAL: 30000,
 
   init() {
-    if ((
-        ['index', 'thread', 'archive'].includes(g.VIEW) &&
-        ['Show', 'Both', 'BothRelativeFirst'].includes(Conf.RelativeTime)
-      ) ||
-      Index.enabled
-    ) {
+    if (( ['index', 'thread', 'archive'].includes(g.VIEW)
+         && ['Show', 'Both', 'BothRelativeFirst'].includes(Conf.RelativeTime))
+       || Index.enabled) {
       this.flush();
       $.on(d, 'visibilitychange PostsInserted', this.flush);
     }
@@ -49,9 +46,9 @@ const RelativeDates = {
 
   /** @param diff is milliseconds from now. */
   relative(diff: number, now: Date, date: Date, abbrev: boolean): string {
-    let number: number;
+    let number: number = diff / DAY;
     let unit: string;
-        if ((number = (diff / DAY)) >= 1) {
+    if (number >= 1) {
       const years = now.getFullYear() - date.getFullYear();
       let months = now.getMonth() - date.getMonth();
       const days = now.getDate() - date.getDate();
@@ -127,7 +124,7 @@ const RelativeDates = {
     let abbrev: boolean, date: Date;
     const isPost = data instanceof Post;
     if (isPost) {
-      ({ date } = data.info);
+      ({date} = data.info);
       abbrev = false;
     } else {
       date = new Date(+data.dataset.utc);
@@ -146,7 +143,8 @@ const RelativeDates = {
             full = node.textContent;
             node.dataset.fullTime = full;
           }
-          node.textContent = Conf.RelativeTime === 'Both' ? `${full}, ${relative}` : `${relative}, ${full}`;
+          node.textContent = Conf.RelativeTime === 'Both'
+            ? `${full}, ${relative}` : `${relative}, ${full}`;
         }
       }
     } else {
@@ -156,10 +154,10 @@ const RelativeDates = {
   },
 
   setOwnTimeout(diff, data) {
-    const delay = diff < MINUTE ? SECOND - ((diff + (SECOND / 2)) % SECOND)
-    : diff < HOUR ? MINUTE - ((diff + (MINUTE / 2)) % MINUTE)
-    : diff < DAY ? HOUR - ((diff + (HOUR / 2)) % HOUR)
-    : DAY - ((diff + (DAY / 2)) % DAY);
+    const delay = diff < MINUTE
+      ? SECOND - ((diff + (SECOND / 2)) % SECOND) : diff < HOUR
+      ? MINUTE - ((diff + (MINUTE / 2)) % MINUTE) : diff < DAY
+      ? HOUR - ((diff + (HOUR / 2)) % HOUR) : DAY - ((diff + (DAY / 2)) % DAY);
     setTimeout(RelativeDates.markStale, delay, data);
   },
 

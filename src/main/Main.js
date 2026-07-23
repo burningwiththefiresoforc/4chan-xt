@@ -379,7 +379,7 @@ var Main = {
   },
 
   setClass() {
-    let mainStyleSheet, style, styleSheets;
+    let mainStyleSheet = null, style = null, styleSheets = null;
     const knownStyles = ['yotsuba', 'yotsuba-b', 'futaba', 'burichan', 'photon', 'tomorrow', 'spooky'];
 
     if ((g.SITE.software === 'yotsuba') && (g.VIEW === 'catalog')) {
@@ -391,8 +391,6 @@ var Main = {
         }
       }
     }
-
-    style = (mainStyleSheet = (styleSheets = null));
 
     const setStyle = function() {
       // Use preconfigured CSS for 4chan's default themes.
@@ -702,9 +700,8 @@ var Main = {
   },
 
   callbackNodes(klass, nodes) {
-    let node, i = 0;
     const cb = Callbacks[klass];
-    while ((node = nodes[i++])) {
+    for (const node of nodes) {
       cb.execute(node);
     }
   },

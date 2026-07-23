@@ -62,7 +62,7 @@ var ImageExpand = {
     } else if (ImageExpand.on && !this.isHidden && !this.isFetchedQuote &&
       (Conf['Expand spoilers'] || !this.file.isSpoiler) &&
       (Conf['Expand videos'] || !this.file.isVideo)) {
-      ImageExpand.expand(this);
+        ImageExpand.expand(this);
       }
   },
 
@@ -89,9 +89,9 @@ var ImageExpand = {
         if (!file || (!file.isImage && !file.isVideo) || !doc.contains(post.nodes.root)) { return; }
         if (ImageExpand.on &&
           ((!Conf['Expand spoilers']   && file.isSpoiler) ||
-          (!Conf['Expand videos']      && file.isVideo) ||
-          (Conf['Expand from here']   && (Header.getTopOf(file.thumb) < 0)) ||
-          (Conf['Expand thread only'] && (g.VIEW === 'index') && !threadRoot?.contains(file.thumb)))) {
+           (!Conf['Expand videos']     && file.isVideo) ||
+           (Conf['Expand from here']   && (Header.getTopOf(file.thumb) < 0)) ||
+           (Conf['Expand thread only'] && (g.VIEW === 'index') && !threadRoot?.contains(file.thumb)))) {
             return;
           }
         return $.queueTask(func, post);
@@ -381,7 +381,7 @@ var ImageExpand = {
     }
 
     if (file.isVideo) {
-      return ImageExpand.setupVideo(post, Conf.Autoplay, Conf['Show Controls']);
+      ImageExpand.setupVideo(post, Conf.Autoplay, Conf['Show Controls']);
     }
   },
 
@@ -407,10 +407,10 @@ var ImageExpand = {
     // dragging to the left contracts the video
     let mousedown = false;
     return {
-      mouseover() { return mousedown = false; },
-      mousedown(e) { if (e.button === 0) { return mousedown = true; } },
-      mouseup(e) { if (e.button === 0) { return mousedown = false; } },
-      mouseout(e) { if (((e.buttons & 1) || mousedown) && (e.clientX <= this.getBoundingClientRect().left)) { return ImageExpand.toggle(Get.postFromNode(this)); } }
+      mouseover: () => mousedown = false,
+      mousedown: (e) => { if (e.button === 0) { return mousedown = true; } },
+      mouseup: (e) => { if (e.button === 0) { return mousedown = false; } },
+      mouseout(e) { if (((e.buttons & 1) || mousedown) && (e.clientX <= this.getBoundingClientRect().left)) { ImageExpand.toggle(Get.postFromNode(this)); } }
     };
   })(),
 
@@ -433,13 +433,9 @@ var ImageExpand = {
     //  - after the image started loading.
     // Don't try to re-expand if it was already contracted.
     if (!post.file.isExpanding && !post.file.isExpanded) { return; }
-    if (ImageCommon.decodeError(this, post.file)) {
-      return ImageExpand.contract(post);
-    }
+    if (ImageCommon.decodeError(this, post.file)) { return ImageExpand.contract(post); }
     // Don't autoretry images from the archive.
-    if (ImageCommon.isFromArchive(this)) {
-      return ImageExpand.contract(post);
-    }
+    if (ImageCommon.isFromArchive(this)) { return ImageExpand.contract(post); }
     ImageCommon.error(this, post, post.file, 10 * SECOND, function(URL) {
       if (post.file.isExpanding || post.file.isExpanded) {
         ImageExpand.contract(post);
@@ -464,11 +460,7 @@ var ImageExpand = {
         subEntries.push(createSubEntry(name, conf[1]));
       }
 
-      Header.menu.addEntry({
-        el,
-        order: 105,
-        subEntries
-      });
+      Header.menu.addEntry({ el, order: 105, subEntries });
     },
 
     createSubEntry(name, desc) {
