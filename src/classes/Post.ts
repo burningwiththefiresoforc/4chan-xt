@@ -150,6 +150,13 @@ export default class Post {
       date:      this.nodes.date ? g.SITE.parseDate(this.nodes.date) : undefined,
     };
     g.SITE.parseInfo?.(this); // parses the tripcode
+    if (this.info.tripcode && !this.nodes.tripcode) {
+      if (this.nodes.name) { this.nodes.name.textContent = this.info.name; }
+      const span = $.el('span', { className: 'postertrip', textContent: this.info.tripcode });
+      this.nodes.name.insertAdjacentElement('afterend', span);
+      span.insertAdjacentText('beforebegin', ' ');
+      this.nodes.tripcode = span;
+    }
     // this now has to happen after the tripcode parsing
     this.info.nameBlock = Conf.Anonymize
       ? 'Anonymous' : `${this.info.name || ''} ${this.info.tripcode || ''}`.trim();
