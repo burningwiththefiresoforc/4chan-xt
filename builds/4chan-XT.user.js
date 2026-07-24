@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         4chan XT
-// @version      2.30.0
+// @version      2.30.1
 // @minGMVer     4.00
 // @minFFVer     115
 // @namespace    4chan-XT
@@ -158,8 +158,8 @@
   'use strict';
 
   var version = {
-    "version": "2.30.0",
-    "date": "2026-07-22T09:09:09Z"
+    "version": "2.30.1",
+    "date": "2026-07-23T09:09:09Z"
   }
   ;
 
@@ -1438,9 +1438,7 @@
       }));
     },
     /** Get the raw SVG string for an icon. */
-    get(name) {
-      return icons[name];
-    },
+    get(name) { return icons[name]; },
     /** Get the raw SVG string for an icon wrapped for use in JSX. */
     raw(name) {
       return { innerHTML: icons[name], [isEscaped]: true };
@@ -1559,7 +1557,7 @@
 
     },
     file(url, cb) {
-      return CrossOrigin.binary(url, function (data, headers) {
+      return CrossOrigin.binary(url, (data, headers) => {
         if (data == null) {
           return cb(null);
         }
@@ -1819,8 +1817,8 @@
       for (const boardID in Conf.selectedArchives) {
         const record = Conf.selectedArchives[boardID];
         for (const [type, id] of Object.entries(record)) {
-          let archive;
-          if ((archive = archives[JSON.stringify(id)]) && $.hasOwn(o, type)) {
+          let archive = archives[JSON.stringify(id)];
+          if (archive && $.hasOwn(o, type)) {
             const boards = type === 'file' ? archive.files : archive.boards;
             if (boards.includes(boardID)) {
               o[type].set(boardID, archive);
@@ -1899,7 +1897,8 @@
       return cb?.();
     },
     to(dest, data) {
-      const archive = (['search', 'board'].includes(dest) ? Redirect.data.thread : Redirect.data[dest]).get(data.boardID);
+      const archive = (['search', 'board'].includes(dest)
+        ? Redirect.data.thread : Redirect.data[dest]).get(data.boardID);
       if (!archive) {
         return '';
       }
@@ -1923,9 +1922,7 @@
       }
       return `${Redirect.protocol(archive)}${archive.domain}/${path}`;
     },
-    threadJSON(archive, { boardID, threadID }) {
-      return `${Redirect.protocol(archive)}${archive.domain}/_/api/chan/thread/?board=${boardID}&num=${threadID}`;
-    },
+    threadJSON: (archive, { boardID, threadID }) => `${Redirect.protocol(archive)}${archive.domain}/_/api/chan/thread/?board=${boardID}&num=${threadID}`,
     post(archive, { boardID, postID }) {
       // For fuuka-based archives:
       // https://github.com/eksopl/fuuka/issues/27
@@ -1956,9 +1953,7 @@
       }
       return `${Redirect.protocol(archive)}${archive.domain}/${boardID}/full_image/${filename}`;
     },
-    board(archive, { boardID }) {
-      return `${Redirect.protocol(archive)}${archive.domain}/${boardID}/`;
-    },
+    board: (archive, { boardID }) => `${Redirect.protocol(archive)}${archive.domain}/${boardID}/`,
     search(archive, { boardID, type, value }) {
       type = type === 'name' ? 'username' : type === 'MD5' ? 'image' : type;
       if (type === 'capcode') {
@@ -1988,11 +1983,7 @@
       }
       return urls;
     },
-    securityCheck(url) {
-      return /^https:\/\//.test(url) ||
-        (location.protocol === 'http:') ||
-        Conf['Exempt Archives from Encryption'];
-    },
+    securityCheck: (url) => /^https:\/\//.test(url) || (location.protocol === 'http:') || Conf['Exempt Archives from Encryption'],
     navigate(dest, data, alternative) {
       if (!Redirect.data) {
         Redirect.init();
@@ -2226,7 +2217,7 @@
               }
           }
           if (errors) {
-              return Main.handleErrors(errors);
+              Main.handleErrors(errors);
           }
       }
   }
@@ -2315,8 +2306,8 @@
       if (g.BOARD.ID === 'f') {
         icon.style.cssText = 'height: 18px; width: 18px;';
       }
-      const root = (type !== 'Sticky') && this.isSticky ?
-        $('.stickyIcon', this.OP.nodes.info)
+      const root = (type !== 'Sticky') && this.isSticky
+        ? $('.stickyIcon', this.OP.nodes.info)
         : $('.page-num', this.OP.nodes.info) || this.OP.nodes.quote;
       $.after(root, [$.tn(' '), icon]);
       if (!this.catalogView) {
@@ -2479,8 +2470,8 @@
         this.data[siteID] = { boards: dict() };
       const boards = this.data[siteID].boards;
       if (postID !== undefined) {
-        let base;
-        (((base = boards[boardID] || (boards[boardID] = dict())))[threadID] || (base[threadID] = dict()))[postID] = val;
+        let base = boards[boardID];
+        (((base || (boards[boardID] = dict())))[threadID] || (base[threadID] = dict()))[postID] = val;
       } else if (threadID !== undefined) {
         (boards[boardID] || (boards[boardID] = dict()))[threadID] = val;
       } else {
@@ -3899,8 +3890,8 @@ current-archive-text:"Archive"]
   const PageReady = {
       isThisPageLegit() {
           if (!('thisPageIsLegit' in PageReady)) {
-              PageReady.thisPageIsLegit = g.SITE.isThisPageLegit ?
-                  g.SITE.isThisPageLegit()
+              PageReady.thisPageIsLegit = g.SITE.isThisPageLegit
+                  ? g.SITE.isThisPageLegit()
                   : !/^[45]\d\d\b/.test(d.title) && !/\.(?:json|rss)$/.test(location.pathname);
           }
           return PageReady.thisPageIsLegit;
@@ -7708,10 +7699,10 @@ svg.icon {
               const eRect = entry.getBoundingClientRect();
               const cHeight = doc.clientHeight;
               const cWidth = doc.clientWidth;
-              const [top, bottom] = (eRect.top + sRect.height) < cHeight ?
-                  ['0px', 'auto'] : ['auto', '0px'];
-              const [left, right] = (eRect.right + sRect.width) < (cWidth - 150) ?
-                  ['100%', 'auto'] : ['auto', '100%'];
+              const [top, bottom] = (eRect.top + sRect.height) < cHeight
+                  ? ['0px', 'auto'] : ['auto', '0px'];
+              const [left, right] = (eRect.right + sRect.width) < (cWidth - 150)
+                  ? ['100%', 'auto'] : ['auto', '100%'];
               const { style } = submenu;
               style.top = top;
               style.bottom = bottom;
@@ -7877,7 +7868,7 @@ svg.icon {
       }
       $.on(root, 'mousemove', o.hover);
       // Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=674955
-      o.workaround = function (e) { if (!root.contains(e.target)) {
+      o.workaround = (e) => { if (!root.contains(e.target)) {
           return o.hoverend(e);
       } };
       $.on(doc, 'mousemove', o.workaround);
@@ -8170,7 +8161,7 @@ svg.icon {
           }
           e.preventDefault();
           const { href, download } = this;
-          return CrossOrigin.file(href, function (blob) {
+          CrossOrigin.file(href, (blob) => {
               if (blob) {
                   const a = $.el('a', {
                       href: URL.createObjectURL(blob),
@@ -8476,7 +8467,7 @@ svg.icon {
           $.add(this.nodes.info, Menu.makeButton(this));
       },
       catalogNode() {
-          return $.after(this.nodes.icons, Menu.makeButton(this.thread.OP));
+          $.after(this.nodes.icons, Menu.makeButton(this.thread.OP));
       },
       makeButton(post, button) {
           button || (button = Menu.button.cloneNode(true));
@@ -8778,7 +8769,7 @@ svg.icon {
           notif.onclose = () => notice.close();
           return notif.onshow = () => setTimeout(() => {
             notif.onclose = null;
-            return notif.close();
+            notif.close();
           }, 7 * SECOND);
         }
       }
@@ -8809,9 +8800,7 @@ svg.icon {
       }
       value = QR.req ? QR.req.progress : QR.cooldown.seconds || value;
       const { status } = QR.nodes;
-      status.value = !value
-        ? 'Submit' : QR.cooldown.auto
-        ? `Auto ${value}` : value;
+      status.value = !value ? 'Submit' : QR.cooldown.auto ? `Auto ${value}` : value;
       status.disabled = disabled || false;
       return status.disabled;
     },
@@ -9530,8 +9519,7 @@ svg.icon {
           : undefined;
       if (URL) {
         const open = Conf['Open Post in New Tab'] || postsCount
-          ? () => $.open(URL)
-          : () => location.href = URL;
+          ? () => $.open(URL) : () => location.href = URL;
         if (threadID === postID) {
           // XXX 4chan sometimes responds before the thread exists.
           QR.waitForThread(URL, open);
@@ -9561,7 +9549,7 @@ svg.icon {
     },
     abort() {
       let oldReq = QR.req;
-      if ((oldReq) && !QR.req.isUploadFinished) {
+      if (oldReq && !QR.req.isUploadFinished) {
         delete QR.req;
         oldReq.abort();
         // if ((QR.captcha === Captcha.v2) && QR.currentCaptcha) { Captcha.cache.save(QR.currentCaptcha); }
@@ -9659,9 +9647,7 @@ svg.icon {
       },
       start() {
         const { data } = QR.cooldown;
-        if (!Conf.Cooldown ||
-          !QR.cooldown.isSetup ||
-          !!QR.cooldown.isCounting ||
+        if (!Conf.Cooldown || !QR.cooldown.isSetup || !!QR.cooldown.isCounting ||
           ((Object.keys(data[g.BOARD.ID] || {}).length + Object.keys(data.global || {}).length) <= 0)) {
           return;
         }
@@ -9809,8 +9795,8 @@ svg.icon {
               }
               // Clean up expired cooldowns
               var maxDelay = cooldown.threadID !== cooldown.postID
-                ? QR.cooldown.maxDelay
-                : QR.cooldown.delays[scope === 'global' ? 'thread_global' : 'thread'];
+                ? QR.cooldown.maxDelay : QR.cooldown.delays[scope === 'global'
+                ? 'thread_global' : 'thread'];
               if (QR.cooldown.customCooldown) {
                 maxDelay = Math.max(maxDelay, parseInt(Conf.customCooldown, 10));
               }
@@ -9869,10 +9855,7 @@ svg.icon {
             textContent: 'Edit image'
           });
           $.on(a, 'click', this.editFile);
-          Menu.menu.addEntry({
-            el: a,
-            order: 90,
-            open(post) {
+          Menu.menu.addEntry({ el: a, order: 90, open(post) {
               QR.oekaki.menu.post = post;
               const { file } = post;
               return QR.postingIsEnabled && !!file && (file.isImage || file.isVideo);
@@ -10080,13 +10063,11 @@ svg.icon {
         this.sub = 'sub' in QR.persona.always
           ? QR.persona.always.sub : '';
         if (QR.nodes.flag) {
-          this.flag = (() => {
-            if (prev) {
-              return prev.flag;
-            } else if (persona.flag && persona.flag in g.BOARD.config.board_flags) {
-              return persona.flag;
-            }
-          })();
+          if (prev) {
+            this.flag = prev.flag;
+          } else if (persona.flag && persona.flag in g.BOARD.config.board_flags) {
+            this.flag = persona.flag;
+          }
         }
         if (QR.selected === this)
           this.load();
@@ -10308,7 +10289,7 @@ svg.icon {
         if (width !== originalW || height !== originalH) {
           file = await QR.convert(file, file.type === 'image/jpeg' ? 'jpeg' : 'png', { width, height, img });
           img = undefined; // just in case the file size shrinkage also needs to run using the new file
-          new Notice('warning', `Image was too large got shrunk from ${originalW} * ${originalH} to ${width} * ${height}.` +
+          new Notice('warning', `Image was too large and shrank from ${originalW}x${originalH} to ${width}x${height}.` +
             'It might have lost animation.');
         }
         if (file.size > maxSize) {
@@ -10875,12 +10856,11 @@ svg.icon {
           el: hideStubLink,
           order: 15,
           open(post) {
-            if (!post.isReply || post.isClone || !post.isHidden) {
+            if (!post.isReply || post.isClone || !post.isHidden)
               return false;
-            }
-            if (!(PostHiding.db.get({ boardID: post.board.ID, threadID: post.thread.ID, postID: post.ID }))) {
+            let data = PostHiding.db.get({ boardID: post.board.ID, threadID: post.thread.ID, postID: post.ID });
+            if (!data)
               return false;
-            }
             return PostHiding.menu.post = post;
           }
         });
@@ -10995,7 +10975,8 @@ svg.icon {
     },
     toggle() {
       const post = Get.postFromNode(this);
-      post.isHidden ? PostHiding.show(post) : PostHiding.hide(post, undefined, undefined, 'Hidden manually');
+      post.isHidden ? PostHiding.show(post)
+        : PostHiding.hide(post, undefined, undefined, 'Hidden manually');
       PostHiding.saveHiddenState(post, post.isHidden);
     },
     hide(post, makeStub = Conf.Stubs, hideRecursively = Conf['Recursive Hiding'], reason) {
@@ -11055,9 +11036,9 @@ svg.icon {
   const RelativeDates = {
     INTERVAL: 30000,
     init() {
-      if ((['index', 'thread', 'archive'].includes(g.VIEW) &&
-        ['Show', 'Both', 'BothRelativeFirst'].includes(Conf.RelativeTime)) ||
-        Index.enabled) {
+      if ((['index', 'thread', 'archive'].includes(g.VIEW)
+        && ['Show', 'Both', 'BothRelativeFirst'].includes(Conf.RelativeTime))
+        || Index.enabled) {
         this.flush();
         $.on(d, 'visibilitychange PostsInserted', this.flush);
       }
@@ -11091,9 +11072,9 @@ svg.icon {
     },
     /** @param diff is milliseconds from now. */
     relative(diff, now, date, abbrev) {
-      let number;
+      let number = diff / DAY;
       let unit;
-      if ((number = (diff / DAY)) >= 1) {
+      if (number >= 1) {
         const years = now.getFullYear() - date.getFullYear();
         let months = now.getMonth() - date.getMonth();
         const days = now.getDate() - date.getDate();
@@ -11190,7 +11171,8 @@ svg.icon {
               full = node.textContent;
               node.dataset.fullTime = full;
             }
-            node.textContent = Conf.RelativeTime === 'Both' ? `${full}, ${relative}` : `${relative}, ${full}`;
+            node.textContent = Conf.RelativeTime === 'Both'
+              ? `${full}, ${relative}` : `${relative}, ${full}`;
           }
         }
       } else {
@@ -11199,10 +11181,10 @@ svg.icon {
       RelativeDates.setOwnTimeout(diff, data);
     },
     setOwnTimeout(diff, data) {
-      const delay = diff < MINUTE ? SECOND - ((diff + (SECOND / 2)) % SECOND)
-        : diff < HOUR ? MINUTE - ((diff + (MINUTE / 2)) % MINUTE)
-          : diff < DAY ? HOUR - ((diff + (HOUR / 2)) % HOUR)
-            : DAY - ((diff + (DAY / 2)) % DAY);
+      const delay = diff < MINUTE
+        ? SECOND - ((diff + (SECOND / 2)) % SECOND) : diff < HOUR
+        ? MINUTE - ((diff + (MINUTE / 2)) % MINUTE) : diff < DAY
+        ? HOUR - ((diff + (HOUR / 2)) % HOUR) : DAY - ((diff + (DAY / 2)) % DAY);
       setTimeout(RelativeDates.markStale, delay, data);
     },
     markStale(data) {
@@ -11981,30 +11963,29 @@ svg.icon {
           if (Conf['Unread Count']) {
               const titleQuotingYou = Conf['Quoted Title'] && countQuotingYou ? '(!) ' : '';
               const titleCount = count || !Conf['Hide Unread Count at (0)'] ? `(${count}) ` : '';
-              const titleDead = Unread.thread.isDead ?
-                  Unread.title.replace('-', (Unread.thread.isArchived ? '- Archived -' : '- 404 -'))
+              const titleDead = Unread.thread.isDead
+                  ? Unread.title.replace('-', (Unread.thread.isArchived
+                      ? '- Archived -' : '- 404 -'))
                   : Unread.title;
               d.title = `${titleQuotingYou}${titleCount}${titleDead}`;
           }
           Unread.saveThreadWatcherCount();
           if (Conf['Unread Favicon'] && (g.SITE.software === 'yotsuba')) {
               const { isDead } = Unread.thread;
-              return Favicon.set((countQuotingYou ?
-                  (isDead ? 'unreadDeadY' : 'unreadY') : count ?
-                  (isDead ? 'unreadDead' : 'unread') : (isDead ? 'dead' : 'default')));
+              return Favicon.set((countQuotingYou ? (isDead ? 'unreadDeadY' : 'unreadY') : count
+                  ? (isDead ? 'unreadDead' : 'unread') : (isDead ? 'dead' : 'default')));
           }
       },
       saveThreadWatcherCount: debounce(2 * SECOND, function () {
           $.forceSync('Remember Last Read Post');
           if (Conf['Remember Last Read Post'] && (!Unread.thread.isDead || Unread.thread.isArchived)) {
-              let posts;
               const quotingYou = !Conf['Require OP Quote Link'] && QuoteYou.isYou(Unread.thread.OP) ? Unread.posts : Unread.postsQuotingYou;
               if (!quotingYou.size) {
                   quotingYou.last = 0;
               }
               else if (!quotingYou.has(quotingYou.last)) {
                   quotingYou.last = 0;
-                  posts = Unread.thread.posts.keys;
+                  let posts = Unread.thread.posts.keys;
                   for (let i = posts.length - 1; i >= 0; i--) {
                       if (quotingYou.has(+posts[i])) {
                           quotingYou.last = posts[i];
@@ -12290,9 +12271,9 @@ svg.icon {
           else {
               $.rm(hr);
           }
-          const hasUnread = repliesShown ? firstUnread || !repliesRead
-              : indexEnabled ? thread.lastPost > lastReadPost
-                  : thread.OP.ID > lastReadPost;
+          const hasUnread = repliesShown
+              ? firstUnread || !repliesRead : indexEnabled
+              ? thread.lastPost > lastReadPost : thread.OP.ID > lastReadPost;
           thread.nodes.root.classList.toggle('unread-thread', hasUnread);
           let link = UnreadIndex.markReadLink[thread.fullID];
           if (!link) {
@@ -12390,8 +12371,8 @@ svg.icon {
                       if (Conf['Index Mode'] !== 'catalog') {
                           return false;
                       }
-                      this.el.firstElementChild.textContent = ThreadWatcher.isWatched(thread) ?
-                          'Unwatch' : 'Watch';
+                      this.el.firstElementChild.textContent = ThreadWatcher.isWatched(thread)
+                          ? 'Unwatch' : 'Watch';
                       if (this.cb) {
                           $.off(this.el, 'click', this.cb);
                       }
@@ -12818,10 +12799,10 @@ svg.icon {
           let { siteID, boardID, threadID, data, newData, force } = thread;
           const site = g.sites[siteID];
           if ((this.status === 200) && this.response) {
-              let isArchived;
               last = this.response.posts[this.response.posts.length - 1].no;
               const replies = this.response.posts.length - 1;
-              isDead = (isArchived = !!(this.response.posts[0].archived || isArchiveURL));
+              let isArchived = !!(this.response.posts[0].archived || isArchiveURL);
+              isDead = isArchived;
               if (isDead && Conf['Auto Prune']) {
                   ThreadWatcher.rm(siteID, boardID, threadID);
                   return;
@@ -13157,7 +13138,7 @@ svg.icon {
               }
               const menu = (this.menu = new UI.Menu('thread watcher'));
               $.on($('.menu-button', ThreadWatcher.dialog), 'click', function (e) {
-                  return menu.toggle(e, this, ThreadWatcher);
+                  menu.toggle(e, this, ThreadWatcher);
               });
               this.addMenuEntries();
           },
@@ -13517,10 +13498,9 @@ svg.icon {
               $.after(ReplyPruning.summary, frag);
               $.event('PostsInserted', null, ReplyPruning.summary.parentNode);
           }
-          ReplyPruning.summary.textContent = ReplyPruning.active ?
-              g.SITE.Build.summaryText('+', ReplyPruning.hidden, ReplyPruning.hiddenFiles)
-              :
-                  g.SITE.Build.summaryText('-', ReplyPruning.total, ReplyPruning.totalFiles);
+          ReplyPruning.summary.textContent = ReplyPruning.active
+              ? g.SITE.Build.summaryText('+', ReplyPruning.hidden, ReplyPruning.hiddenFiles)
+              : g.SITE.Build.summaryText('-', ReplyPruning.total, ReplyPruning.totalFiles);
           ReplyPruning.summary.hidden = (ReplyPruning.total <= +Conf["Max Replies"]);
           // Maintain position in thread when posts are added/removed above
           if ((hidden1 !== hidden2) && ((boardTop = Header.getTopOf($('.board'))) < 0)) {
@@ -13775,10 +13755,7 @@ svg.icon {
         RestoreDeletedFromArchive.restore();
         Header.menu.close();
       });
-      Header.menu.addEntry({
-        el: menuEntry,
-        order: 10,
-      });
+      Header.menu.addEntry({ el: menuEntry, order: 10, });
     },
     /**
     * Inserts a post from the archive in the thread. Will automatically skip posts from other threads and posts already
@@ -13880,9 +13857,9 @@ svg.icon {
     fetchedPost(req, isCached) {
       // In case of multiple callbacks for the same request,
       // don't parse the same original post more than once.
-      let post;
-      if (post = g.posts.get(`${this.boardID}.${this.postID}`)) {
-        this.insert(post);
+      const cachedPost = g.posts.get(`${this.boardID}.${this.postID}`);
+      if (cachedPost) {
+        this.insert(cachedPost);
         return;
       }
       const { status } = req;
@@ -13893,27 +13870,20 @@ svg.icon {
         }
         $.addClass(this.root, 'warning');
         this.root.textContent =
-          status === 404 ? `Thread No.${this.threadID} 404'd.`
-            : !status ? 'Connection Error'
-              : `Error ${req.statusText} (${req.status}).`;
+          status === 404
+            ? `Thread No.${this.threadID} 404'd.` : !status
+            ? 'Connection Error' : `Error ${req.statusText} (${req.status}).`;
         return;
       }
       const { posts } = req.response;
       g.SITE.Build.spoilerRange[this.boardID] = posts[0].custom_spoiler;
-      for (post of posts) {
-        if (post.no === this.postID) {
-          break;
-        }
-      } // we found it!
-      if (post.no !== this.postID) {
+      const foundPost = posts.find(p => p.no === this.postID); // we found it!
+      if (!foundPost) {
         // Cached requests can be stale and must be rechecked.
         if (isCached) {
           const api = g.SITE.urls.threadJSON({ boardID: this.boardID, threadID: this.threadID });
           $.cleanCache(url => url === api);
-          const that = this;
-          $.cache(api, function () {
-            return that.fetchedPost(this, false);
-          });
+          $.cache(api, (req) => this.fetchedPost(req, false));
           return;
         }
         // The post can be deleted by the time we check a quote.
@@ -13924,22 +13894,18 @@ svg.icon {
         this.root.textContent = `Post No.${this.postID} was not found.`;
         return;
       }
-      const board = g.boards[this.boardID] ||
-        new Board(this.boardID);
-      const thread = g.threads.get(`${this.boardID}.${this.threadID}`) ||
-        new Thread(this.threadID, board);
-      post = new Post(g.SITE.Build.postFromObject(post, this.boardID), thread, board, { isFetchedQuote: true });
-      Main.callbackNodes('Post', [post]);
-      return this.insert(post);
+      const board = g.boards[this.boardID] || new Board(this.boardID);
+      const thread = g.threads.get(`${this.boardID}.${this.threadID}`) || new Thread(this.threadID, board);
+      const newPost = new Post(g.SITE.Build.postFromObject(foundPost, this.boardID), thread, board, { isFetchedQuote: true });
+      Main.callbackNodes('Post', [newPost]);
+      this.insert(newPost);
     }
     archivedPost() {
-      let url;
-      if (!Conf['Resurrect Quotes']) {
+      if (!Conf['Resurrect Quotes'])
         return false;
-      }
-      if (!(url = Redirect.to('post', { boardID: this.boardID, postID: this.postID }))) {
+      let url = Redirect.to('post', { boardID: this.boardID, postID: this.postID });
+      if (!url)
         return false;
-      }
       const archive = Redirect.data.post.get(this.boardID);
       const encryptionOK = /^https:\/\//.test(url) || (location.protocol === 'http:');
       if (encryptionOK || Conf['Exempt Archives from Encryption']) {
@@ -13966,8 +13932,8 @@ svg.icon {
     parseArchivedPost(data, url, archive) {
       // In case of multiple callbacks for the same request,
       // don't parse the same original post more than once.
-      let post;
-      if (post = g.posts.get(`${this.boardID}.${this.postID}`)) {
+      let post = g.posts.get(`${this.boardID}.${this.postID}`);
+      if (post) {
         this.insert(post);
         return;
       }
@@ -14367,7 +14333,7 @@ svg.icon {
                       }
                       this.cb = () => {
                           $.event('CloseMenu');
-                          return Index.toggleHide(thread);
+                          Index.toggleHide(thread);
                       };
                       $.on(this.el, 'click', this.cb);
                       return true;
@@ -14497,9 +14463,7 @@ svg.icon {
                   Index.buildIndex();
               }
           },
-          replies() {
-              Index.buildIndex();
-          },
+          replies() { Index.buildIndex(); },
           hover: () => doc.classList.toggle('catalog-hover-expand', Conf['Catalog Hover Expand']),
           hoverToggle(e) {
               if (Conf['Catalog Hover Toggle'] && $.hasClass(doc, 'catalog-mode') && !$.modifiedClick(e) && !$.x('ancestor-or-self::a', e.target)) {
@@ -14518,16 +14482,16 @@ svg.icon {
                   const { searched, mode, sort } = e.state;
                   const page = Index.getCurrentPage();
                   Index.setState({ search: searched, mode, sort, page });
-                  return Index.pageLoad(false);
+                  Index.pageLoad(false);
               }
               else {
                   // page load or hash change
                   const nCommands = Index.processHash();
                   if (Conf['Refreshed Navigation'] && nCommands) {
-                      return Index.update();
+                      Index.update();
                   }
                   else {
-                      return Index.pageLoad();
+                      Index.pageLoad();
                   }
               }
           },
@@ -14551,7 +14515,7 @@ svg.icon {
                   return;
               }
               e.preventDefault();
-              return Index.userPageNav(+a.pathname.split(/\/+/)[2] || 1);
+              Index.userPageNav(+a.pathname.split(/\/+/)[2] || 1);
           },
           refreshFront() {
               Index.pushState({ page: 1 });
@@ -14697,13 +14661,10 @@ svg.icon {
       },
       savePerBoard(key, value) {
           typeof Conf[key] === 'object'
-              ? (Conf[key][g.BOARD.ID] = value)
-              : (Conf[key] = value);
+              ? (Conf[key][g.BOARD.ID] = value) : (Conf[key] = value);
           $.set(key, Conf[key]);
       },
-      saveSort() {
-          Index.savePerBoard('Index Sort', Index.currentSort);
-      },
+      saveSort() { Index.savePerBoard('Index Sort', Index.currentSort); },
       saveLastLongThresholds(i) {
           Index.savePerBoard(`Last Long Reply Thresholds ${i}`, Index.lastLongThresholds[i]);
       },
@@ -14742,7 +14703,7 @@ svg.icon {
           if (scroll && !hash) {
               Index.scrollToIndex();
           }
-          return Index.changed = {};
+          Index.changed = {};
       },
       setupMode() {
           for (var mode of ['paged', 'infinite', 'all pages', 'catalog']) {
@@ -14751,12 +14712,12 @@ svg.icon {
           Index.selectMode.value = Conf['Index Mode'];
           Index.cb.size();
           Index.showHiddenThreads = false;
-          return $('#hidden-toggle a', Index.navLinks).textContent = 'Show';
+          $('#hidden-toggle a', Index.navLinks).textContent = 'Show';
       },
       setupSort() {
           Index.selectRev.checked = /-rev$/.test(Index.currentSort);
           Index.selectSort.value = Index.currentSort.replace(/-rev$/, '');
-          return Index.lastLongOptions.hidden = (Index.selectSort.value !== 'lastlong');
+          Index.lastLongOptions.hidden = (Index.selectSort.value !== 'lastlong');
       },
       getPagesNum: () => Index.search ? Math.ceil(Index.sortedThreadIDs.length / Index.threadsNumPerPage) : Index.pagesNum,
       getMaxPageNum: () => Math.max(1, Index.getPagesNum()),
@@ -14993,7 +14954,8 @@ svg.icon {
                       thread = new Thread(ID, g.BOARD);
                       newThreads.push(thread);
                   }
-                  var lastPost = threadData.last_replies && threadData.last_replies.length ? threadData.last_replies[threadData.last_replies.length - 1].no : ID;
+                  var lastPost = threadData.last_replies && threadData.last_replies.length
+                      ? threadData.last_replies[threadData.last_replies.length - 1].no : ID;
                   if (lastPost > thread.lastPost) {
                       thread.lastPost = lastPost;
                   }
@@ -15042,10 +15004,9 @@ svg.icon {
           let errors;
           const posts = [];
           for (var thread of threads) {
-              var lastReplies;
-              if (!(lastReplies = Index.liveThreadDict[thread.ID].last_replies)) {
+              let lastReplies = Index.liveThreadDict[thread.ID].last_replies;
+              if (!lastReplies)
                   continue;
-              }
               var nodes = [];
               for (var data of lastReplies) {
                   var node, post;
@@ -15163,11 +15124,11 @@ svg.icon {
                           lastlongD[thread.no] = lastlong(thread).no;
                       }
                       return [...liveThreadData].sort((a, b) => lastlongD[b.no] - lastlongD[a.no]).map(post => post.no);
-                  case 'bump': return liveThreadIDs;
                   case 'birth': return [...liveThreadIDs].sort((a, b) => b - a);
                   case 'replycount': return [...liveThreadData].sort((a, b) => b.replies - a.replies).map(post => post.no);
                   case 'filecount': return [...liveThreadData].sort((a, b) => b.images - a.images).map(post => post.no);
                   case 'activity': return [...liveThreadData].sort((a, b) => ((tmp_time - a.time) / (a.replies + 1)) - ((tmp_time - b.time) / (b.replies + 1))).map(post => post.no);
+                  case 'bump':
                   default: return liveThreadIDs;
               }
           })();
@@ -15184,7 +15145,7 @@ svg.icon {
           Index.sortOnTop(obj => obj.isOnTop || (Conf['Pin Watched Threads'] && ThreadWatcher.isWatchedRaw(obj.boardID, obj.threadID)));
           // Non-hidden threads
           if (Conf['Anchor Hidden Threads']) {
-              return Index.sortOnTop(obj => !Index.isHidden(obj.threadID));
+              Index.sortOnTop(obj => !Index.isHidden(obj.threadID));
           }
       },
       sortOnTop(match) {
@@ -15193,7 +15154,7 @@ svg.icon {
           for (var ID of Index.sortedThreadIDs) {
               (match(Index.parsedThreads[ID]) ? topThreads : bottomThreads).push(ID);
           }
-          return Index.sortedThreadIDs = topThreads.concat(bottomThreads);
+          Index.sortedThreadIDs = topThreads.concat(bottomThreads);
       },
       buildIndex() {
           let threadIDs;
@@ -15447,28 +15408,21 @@ svg.icon {
               });
               $.on(apply, 'click', ThreadHiding.menu.hide);
               const makeStub = UI.checkbox('Stubs', 'Make stub');
-              Menu.menu.addEntry({
-                  el: div,
-                  order: 20,
-                  open({ thread, isReply }) {
+              Menu.menu.addEntry({ el: div, order: 20, open({ thread, isReply }) {
                       if (isReply || thread.isHidden || (Conf['JSON Index'] && (Conf['Index Mode'] === 'catalog'))) {
                           return false;
                       }
                       ThreadHiding.menu.thread = thread;
                       return true;
                   },
-                  subEntries: [{ el: apply }, { el: makeStub }]
-              });
+                  subEntries: [{ el: apply }, { el: makeStub }] });
               div = $.el('a', {
                   className: 'show-thread-link',
                   textContent: 'Show',
                   href: 'javascript:;'
               });
               $.on(div, 'click', ThreadHiding.menu.show);
-              Menu.menu.addEntry({
-                  el: div,
-                  order: 20,
-                  open({ thread, isReply }) {
+              Menu.menu.addEntry({ el: div, order: 20, open({ thread, isReply }) {
                       if (isReply || !thread.isHidden || (Conf['JSON Index'] && (Conf['Index Mode'] === 'catalog'))) {
                           return false;
                       }
@@ -15481,10 +15435,7 @@ svg.icon {
                   href: 'javascript:;'
               });
               $.on(hideStubLink, 'click', ThreadHiding.menu.hideStub);
-              Menu.menu.addEntry({
-                  el: hideStubLink,
-                  order: 15,
-                  open({ thread, isReply }) {
+              Menu.menu.addEntry({ el: hideStubLink, order: 15, open({ thread, isReply }) {
                       if (isReply || !thread.isHidden || (Conf['JSON Index'] && (Conf['Index Mode'] === 'catalog'))) {
                           return false;
                       }
@@ -15567,7 +15518,7 @@ svg.icon {
           $.prepend(root, thread.stub);
           // Prevent hiding of thread divider on sites that put it inside the thread
           if (threadDivider = $(g.SITE.selectors.threadDivider, root)) {
-              return $.addClass(threadDivider, 'threadDivider');
+              $.addClass(threadDivider, 'threadDivider');
           }
       },
       saveHiddenState(thread, makeStub) {
@@ -15584,7 +15535,7 @@ svg.icon {
                   threadID: thread.ID
               });
           }
-          return ThreadHiding.catalogSet(thread.board);
+          ThreadHiding.catalogSet(thread.board);
       },
       toggle(thread) {
           if (!(thread instanceof Thread)) {
@@ -15596,7 +15547,7 @@ svg.icon {
           else {
               ThreadHiding.hide(thread, undefined, 'Hidden manually');
           }
-          return ThreadHiding.saveHiddenState(thread);
+          ThreadHiding.saveHiddenState(thread);
       },
       hide(thread, makeStub = Conf.Stubs, reason) {
           if (thread.isHidden) {
@@ -15900,10 +15851,10 @@ svg.icon {
                               $.replace(node, node2);
                           }
                       }
-                      return observer.disconnect();
+                      observer.disconnect();
                   }
               });
-              return observer.observe(file.text, { attributes: true });
+              observer.observe(file.text, { attributes: true });
           }
       },
       formatters: {
@@ -16016,7 +15967,7 @@ svg.icon {
           $.on(stop, 'click', cb.stop);
           $.on(close, 'click', cb.close);
           $.on(menuButton, 'click', function (e) {
-              return nodes.menu.toggle(e, this, g);
+              nodes.menu.toggle(e, this, g);
           });
           Icon.set(menuButton, 'caretDown');
           Icon.set(start, 'play');
@@ -16151,8 +16102,8 @@ svg.icon {
           if (Conf.Sauce && Sauce.links && (post = g.posts.get(file.dataset.post))) {
               const sauces = [];
               for (const link of Sauce.links) {
-                  let node;
-                  if (node = Sauce.createSauceLink(link, post, post.files[+file.dataset.file])) {
+                  let node = Sauce.createSauceLink(link, post, post.files[+file.dataset.file]);
+                  if (node) {
                       sauces.push($.tn(' '), node);
                   }
               }
@@ -16209,7 +16160,7 @@ svg.icon {
               current.play();
           }
           if ((isVideo ? current.readyState >= 4 : current.complete) || (current.nodeName === 'IFRAME')) {
-              return Gallery.startTimer();
+              Gallery.startTimer();
           }
           else {
               $.on(current, (isVideo ? 'canplaythrough' : 'load'), Gallery.startTimer);
@@ -16260,7 +16211,7 @@ svg.icon {
           image(e) {
               e.preventDefault();
               e.stopPropagation();
-              return Gallery.build(this);
+              Gallery.build(this);
           },
           prev() {
               Gallery.cb.open.call(Gallery.images[+Gallery.nodes.current.dataset.id - 1] || Gallery.images[Gallery.images.length - 1]);
@@ -16965,7 +16916,7 @@ svg.icon {
         if (Embedding.shouldFetchTitles())
           Embedding.title(data);
         if (Conf['Cover Preview'] && (g.VIEW !== 'archive')) {
-          return Embedding.preview(data);
+          Embedding.preview(data);
         }
       }
     },
@@ -17023,7 +16974,7 @@ svg.icon {
     closeFloat() {
       delete Embedding.lastEmbed;
       $.addClass(Embedding.dialog, 'empty');
-      return $.replace(Embedding.media.firstChild, $.el('div'));
+      $.replace(Embedding.media.firstChild, $.el('div'));
     },
     dragEmbed() {
       // only webkit can handle a blocking div
@@ -17530,7 +17481,6 @@ svg.icon {
 
   var ThreadUpdater = {
     init() {
-      let sc;
       // Chromium won't play audio created in an inactive tab until the tab has been focused, so set it up now.
       // XXX Sometimes the loading stalls in Firefox, esp. when opening in private browsing window followed by normal window.
       // Don't let it keep the loading icon on indefinitely.
@@ -17545,6 +17495,7 @@ svg.icon {
       if ((g.VIEW !== 'thread') || !Conf['Thread Updater'])
         return;
       this.enabled = true;
+      let sc;
       if (Conf['Updater and Stats in Header']) {
         this.dialog = (sc = $.el('span', { id: 'updater' }));
         $.extend(sc, { innerHTML: '<span id="update-status" class="empty"></span><span id="update-timer" class="empty" title="Update now"></span>' });
@@ -17923,20 +17874,9 @@ svg.icon {
 
   var Nav = {
       init() {
-          switch (g.VIEW) {
-              case 'index':
-                  if (!Conf['Index Navigation']) {
-                      return;
-                  }
-                  break;
-              case 'thread':
-                  if (!Conf['Reply Navigation']) {
-                      return;
-                  }
-                  break;
-              default:
-                  return;
-          }
+          const navConf = { index: 'Index Navigation', thread: 'Reply Navigation' }[g.VIEW];
+          if (!navConf || !Conf[navConf])
+              return;
           const span = $.el('span', { id: 'navlinks' });
           const prev = $.el('a', {
               textContent: '▲',
@@ -18274,9 +18214,9 @@ svg.icon {
                   }
               }
               if (key === Conf['Search form']) {
-                  var searchInput = indexEnabled ? Index.searchInput
-                      : g.SITE.selectors.searchBox ? $(g.SITE.selectors.searchBox)
-                          : undefined;
+                  var searchInput = indexEnabled
+                      ? Index.searchInput : g.SITE.selectors.searchBox
+                      ? $(g.SITE.selectors.searchBox) : undefined;
                   if (searchInput) {
                       Header.scrollToIfNeeded(searchInput);
                       searchInput.focus();
@@ -18291,8 +18231,7 @@ svg.icon {
           if (mode && Index.enabledOn(g.BOARD)) {
               location.href =
                   g.VIEW === 'index'
-                      ? `#${mode}`
-                      : `/${g.BOARD}/#${mode}`;
+                      ? `#${mode}` : `/${g.BOARD}/#${mode}`;
           }
           if (key === Conf['Open catalog'] && (catalog = CatalogLinks.catalog())) {
               location.href = catalog;
@@ -18390,8 +18329,8 @@ svg.icon {
       },
       post(thread) {
           const s = g.SITE.selectors;
-          return $(`${s.postContainer}${s.highlightable.reply}.${g.SITE.classes.highlight}`, thread) ||
-              $(`${g.SITE.isOPContainerThread ? s.thread : s.postContainer}${s.highlightable.op}`, thread);
+          return $(`${s.postContainer}${s.highlightable.reply}.${g.SITE.classes.highlight}`, thread)
+              || $(`${g.SITE.isOPContainerThread ? s.thread : s.postContainer}${s.highlightable.op}`, thread);
       },
       qr(thread) {
           QR.open();
@@ -18880,7 +18819,7 @@ svg.icon {
               fieldset.hidden = !$('[value="31"]', types).checked;
               $.on(types, 'change', (e) => {
                   fieldset.hidden = (e.target.value !== '31');
-                  return Report.fit('body');
+                  Report.fit('body');
               });
               $.after(types, fieldset);
               Report.fit('body');
@@ -19213,10 +19152,8 @@ svg.icon {
         !$('link[href*="favicon-status.ico"]', d.head) &&
         !['4chan - Temporarily Offline', '4chan - Error', '504 Gateway Time-out', 'MathJax Equation Source'].includes(d.title);
     },
-    is404() {
-      // XXX Sometimes threads don't 404 but are left over as stubs containing one garbage reply post.
-      return ['4chan - Temporarily Offline', '4chan - 404 Not Found'].includes(d.title) || ((g.VIEW === 'thread') && $('.board') && !$('.opContainer'));
-    },
+    // XXX Sometimes threads don't 404 but are left over as stubs containing one garbage reply post.
+    is404: () => ['4chan - Temporarily Offline', '4chan - 404 Not Found'].includes(d.title) || ((g.VIEW === 'thread') && $('.board') && !$('.opContainer')),
     isIncomplete: () => ['index', 'thread'].includes(g.VIEW) && !$('.board + *'),
     // ['www.4chan.org', 'www.4channel.org'].includes(url.hostname);
     isBoardlessPage: (url) => url.hostname === 'www.4chan.org',
@@ -19295,9 +19232,7 @@ svg.icon {
         [, post.info.name, post.info.tripcode] = post.info.name.match(/(.*?) ?(!.*)/);
       }
     },
-    parseDate(node) {
-      return new Date(node.dataset.utc * 1000);
-    },
+    parseDate: (node) => new Date(node.dataset.utc * 1000),
     parseFile(post, file) {
       const { text, link, thumb } = file;
       let info = link.nextSibling?.textContent.match(/\(([\d.]+ [KMG]?B).*\)/);
@@ -19336,7 +19271,7 @@ svg.icon {
             $.rm(br);
           }
         }
-        return $.rm(abbr);
+        $.rm(abbr);
       }
     },
     cleanCommentDisplay(bq) {
@@ -19419,9 +19354,7 @@ svg.icon {
           return `${this.staticPath}spoiler.png`;
         }
       },
-      sameThread(boardID, threadID) {
-        return (g.VIEW === 'thread') && (g.BOARD.ID === boardID) && (g.THREADID === +threadID);
-      },
+      sameThread: (boardID, threadID) => (g.VIEW === 'thread') && (g.BOARD.ID === boardID) && (g.THREADID === +threadID),
       threadURL(boardID, threadID) {
         if (boardID !== g.BOARD.ID) {
           return `//boards.4chan.org/${boardID}/thread/${threadID}`;
@@ -19620,8 +19553,8 @@ svg.icon {
         });
       },
       thread(thread, data, withReplies) {
-        let root;
-        if (root = thread.nodes.root) {
+        let root = thread.nodes.root;
+        if (root) {
           $.rmAll(root);
         } else {
           thread.nodes.root = (root = $.el('div', {
@@ -19634,9 +19567,9 @@ svg.icon {
         }
         $.add(root, thread.OP.nodes.root);
         if (data.omitted_posts || (!withReplies && data.replies)) {
-          const [posts, files] = withReplies ?
+          const [posts, files] = withReplies
             // XXX data.omitted_images is not accurate.
-            [data.omitted_posts, data.images - data.last_replies.filter(data => !!data.ext).length]
+            ? [data.omitted_posts, data.images - data.last_replies.filter(data => !!data.ext).length]
             : [data.replies, data.images];
           const summary = this.summary(thread.board.ID, data.no, posts, files);
           $.add(root, summary);
@@ -19648,9 +19581,9 @@ svg.icon {
         const { staticPath, gifIcon } = this;
         const { tn_w, tn_h } = data;
         if (data.spoiler && !Conf['Reveal Spoiler Thumbnails']) {
-          let spoilerRange;
           src = `${staticPath}spoiler`;
-          if (spoilerRange = this.spoilerRange[thread.board]) {
+          let spoilerRange = this.spoilerRange[thread.board];
+          if (spoilerRange) {
             // Randomize the spoiler image.
             src += (`-${thread.board}`) + Math.floor(1 + (spoilerRange * Math.random()));
           }
@@ -19939,12 +19872,12 @@ $\
           }
           let m = text.match(/(\s*ID:\s*)(\S+)/);
           if (m) {
-              let uniqueID;
               nodes.info.normalize();
               let { nextSibling } = nodes.nameBlock;
               nextSibling = nextSibling.splitText(m[1].length);
               nextSibling.splitText(m[2].length);
-              nodes.uniqueID = (uniqueID = $.el('span', { className: 'poster_id' }));
+              let uniqueID = $.el('span', { className: 'poster_id' });
+              nodes.uniqueID = uniqueID;
               $.replace(nextSibling, uniqueID);
               $.add(uniqueID, nextSibling);
           }
@@ -20527,8 +20460,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     },
     selectFilter() {
       const div = this.nextElementSibling;
-      let name;
-      if ((name = this.value) !== 'guide') {
+      let name = this.value;
+      if (name !== 'guide') {
         if (!$.hasOwn(Config.filter, name)) {
           return;
         }
@@ -20574,9 +20507,9 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         input = inputs[name];
         if (!['Interval', 'Custom CSS', 'timeLocale'].includes(name)) {
           items[name] = Conf[name];
-          var event = ((input.nodeName === 'SELECT') ||
-            ['checkbox', 'radio'].includes(input.type) ||
-            ((input.nodeName === 'TEXTAREA') && !(name in Settings))) ? 'change' : 'input';
+          var event = ((input.nodeName === 'SELECT')
+            || ['checkbox', 'radio'].includes(input.type)
+            || ((input.nodeName === 'TEXTAREA') && !(name in Settings))) ? 'change' : 'input';
           $.on(input, event, $.cb[input.type === 'checkbox' ? 'checked' : 'value']);
           if (name in Settings) {
             $.on(input, event, Settings[name]);
@@ -20975,7 +20908,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         this.filters.set(type, map);
       }
       if (g.VIEW === 'catalog') {
-        return Filter.catalog();
+        Filter.catalog();
       } else {
         Callbacks.Post.push({
           name: 'Filter',
@@ -21042,10 +20975,13 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
             continue;
           const isString = type === 'uniqueID' || type === 'MD5';
           for (const filter of filtersForType) {
-            if ((filter.boards && !(filter.boards[board] || filter.boards[site])) ||
-              (filter.excludes && (filter.excludes[board] || filter.excludes[site])) ||
-              (filter.mask & mask) ||
-              (isString ? (filter.regexp !== value) : !filter.regexp.test(value)))
+            if ((filter.boards && !(filter.boards[board]
+              || filter.boards[site]))
+              || (filter.excludes && (filter.excludes[board]
+                || filter.excludes[site]))
+              || (filter.mask & mask)
+              || (isString ? (filter.regexp !== value)
+                : !filter.regexp.test(value)))
               continue;
             if (filter.hide) {
               if (hideable) {
@@ -21488,7 +21424,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
                           const catalogLink = link.parentNode.cloneNode(true);
                           const link2 = catalogLink.firstElementChild;
                           link2.href = catalogURL;
-                          link2.textContent = link2.hostname === location.hostname ? `${meta.name} Catalog` : 'External Catalog';
+                          link2.textContent = link2.hostname === location.hostname
+                              ? `${meta.name} Catalog` : 'External Catalog';
                           $.after(link.parentNode, [$.tn(' '), catalogLink]);
                       }
                   }
@@ -21611,7 +21548,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               return CatalogLinks.external(board);
           }
       },
-      index: (board = g.BOARD) => Index.enabledOn(board) ? CatalogLinks.jsonIndex(board, '#index') : Get.url('index', board)
+      index: (board = g.BOARD) => Index.enabledOn(board)
+          ? CatalogLinks.jsonIndex(board, '#index') : Get.url('index', board)
   };
 
   var Header = {
@@ -21779,7 +21717,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
             span.className = segment.slice(3, -1);
         } else if (segment === '}}') {
           spanStack.pop();
-          currentContainer = spanStack.length > 0 ? spanStack[spanStack.length - 1] : list;
+          currentContainer = spanStack.length > 0
+            ? spanStack[spanStack.length - 1] : list;
         } else {
           const re = /[\w@]+(-(all|title|replace|full|index|catalog|archive|expired|nt|(mode|sort|text):"[^"]+"(,"[^"]+")?))*|[^\w@]+/g;
           const segmentNodes = (segment.match(re) || []).map((t) => Header.mapCustomNavigation(t));
@@ -21873,10 +21812,10 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           a.className = 'current';
         }
       }
-      a.textContent = /-title/.test(t) || (/-replace/.test(t) && (a.hostname === location.hostname) && (boardID === g.BOARD.ID)) ?
-        a.title || a.textContent
-        : /-full/.test(t) ? (`/${boardID}/`) + (a.title ? ` - ${a.title}` : '')
-          : text || boardID;
+      a.textContent = /-title/.test(t) || (/-replace/.test(t) && (a.hostname === location.hostname) && (boardID === g.BOARD.ID))
+        ? a.title || a.textContent : /-full/.test(t)
+        ? (`/${boardID}/`) + (a.title ? ` - ${a.title}` : '')
+        : text || boardID;
       if (m = t.match(/-(index|catalog)/)) {
         const urlIC = CatalogLinks[m[1]]({ siteID: '4chan.org', boardID });
         if (urlIC) {
@@ -22023,8 +21962,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     },
     toggleFooterVisibility() {
       $.event('CloseMenu');
-      const hide = this.nodeName === 'INPUT' ? this.checked
-        : $.hasClass(doc, 'hide-bottom-board-list');
+      const hide = this.nodeName === 'INPUT'
+        ? this.checked : $.hasClass(doc, 'hide-bottom-board-list');
       Header.setFooterVisibility(hide);
       $.set('Bottom Board List', hide);
       const message = hide
@@ -22037,7 +21976,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       const cust = $('#custom-board-list', Header.bar);
       const full = $('#full-board-list', Header.bar);
       const btn = $('.hide-board-list-container', full);
-      return [cust.hidden, full.hidden, btn.hidden] = show ? [false, true, false] : [true, false, true];
+      return [cust.hidden, full.hidden, btn.hidden] = show
+        ? [false, true, false] : [true, false, true];
     },
     toggleCustomNav() {
       $.cb.checked.call(this);
@@ -22110,11 +22050,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     },
     isHidden() {
       const { top } = Header.bar.getBoundingClientRect();
-      if (Conf['Bottom header']) {
-        return top === doc.clientHeight;
-      } else {
-        return top < 0;
-      }
+      return Conf['Bottom header'] ? top === doc.clientHeight : top < 0;
     },
     addShortcut(id, el, index) {
       const shortcut = $.el('span', {
@@ -22131,15 +22067,12 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       }
       $.add(Header.shortcuts, shortcut);
     },
-    rmShortcut(el) {
-      $.rm(el.parentElement);
-    },
-    menuToggle(e) {
-      Header.menu.toggle(e, this, g);
-    },
+    rmShortcut(el) { $.rm(el.parentElement); },
+    menuToggle(e) { Header.menu.toggle(e, this, g); },
     createNotification(e) {
       const { type, content, lifetime } = e.detail;
-      return new Notice(type, content, lifetime);
+      let notice = new Notice(type, content, lifetime);
+      return notice;
     },
     areNotificationsEnabled: false,
     enableDesktopNotifications() {
@@ -22151,9 +22084,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         case 'granted':
           Header.areNotificationsEnabled = true;
           return;
-        case 'denied':
-          // requestPermission doesn't work if status is 'denied', but it'll still work if status is 'default'.
-          return;
+        case 'denied': return; // requestPermission doesn't work if status is 'denied', but it'll still work if status is 'default'.
       }
       const el = $.el('span', { innerHTML: `${meta.name} needs your permission to show desktop notifications. ` +
           `[<a href=\"${E(meta.upstreamFaq)}#why-is-4chan-x-asking-for-permission-to-show-desktop-notifications\" target=\"_blank\">FAQ</a>]` +
@@ -22570,7 +22501,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         }
       }
       if (file.isVideo) {
-        return ImageExpand.setupVideo(post, Conf.Autoplay, Conf['Show Controls']);
+        ImageExpand.setupVideo(post, Conf.Autoplay, Conf['Show Controls']);
       }
     },
     setupVideo(post, playing, controls) {
@@ -22594,15 +22525,15 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       // dragging to the left contracts the video
       let mousedown = false;
       return {
-        mouseover() { return mousedown = false; },
-        mousedown(e) { if (e.button === 0) {
+        mouseover: () => mousedown = false,
+        mousedown: (e) => { if (e.button === 0) {
           return mousedown = true;
         } },
-        mouseup(e) { if (e.button === 0) {
+        mouseup: (e) => { if (e.button === 0) {
           return mousedown = false;
         } },
         mouseout(e) { if (((e.buttons & 1) || mousedown) && (e.clientX <= this.getBoundingClientRect().left)) {
-          return ImageExpand.toggle(Get.postFromNode(this));
+          ImageExpand.toggle(Get.postFromNode(this));
         } }
       };
     })(),
@@ -22657,11 +22588,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           var conf = Config.imageExpansion[name];
           subEntries.push(createSubEntry(name, conf[1]));
         }
-        Header.menu.addEntry({
-          el,
-          order: 105,
-          subEntries
-        });
+        Header.menu.addEntry({ el, order: 105, subEntries });
       },
       createSubEntry(name, desc) {
         const label = UI.checkbox(name, name);
@@ -22727,8 +22654,18 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         date: this.nodes.date ? g.SITE.parseDate(this.nodes.date) : undefined,
       };
       g.SITE.parseInfo?.(this); // parses the tripcode
+      if (this.info.tripcode && !this.nodes.tripcode) {
+        if (this.nodes.name) {
+          this.nodes.name.textContent = this.info.name;
+        }
+        const span = $.el('span', { className: 'postertrip', textContent: this.info.tripcode });
+        this.nodes.name.insertAdjacentElement('afterend', span);
+        span.insertAdjacentText('beforebegin', ' ');
+        this.nodes.tripcode = span;
+      }
       // this now has to happen after the tripcode parsing
-      this.info.nameBlock = Conf.Anonymize ? 'Anonymous' : `${this.info.name || ''} ${this.info.tripcode || ''}`.trim();
+      this.info.nameBlock = Conf.Anonymize
+        ? 'Anonymous' : `${this.info.name || ''} ${this.info.tripcode || ''}`.trim();
       if (this.info.capcode) {
         this.info.nameBlock += ` ## ${this.info.capcode}`;
       }
@@ -23203,7 +23140,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         if (Conf['Enable sound posts'] && Conf['Allow Sound']) {
           Sound.setupSoundpost(el, file);
         }
-        return UI.hover({
+        UI.hover({
           root: this,
           el,
           latestEvent: e,
@@ -23341,7 +23278,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               thumb.preload = 'auto';
               // XXX Cloned video elements with poster in Firefox cause momentary display of image loading icon.
               if ($.engine === 'gecko') {
-                  $.on(thumb, 'loadeddata', function () { return this.removeAttribute('poster'); });
+                  $.on(thumb, 'loadeddata', function () { this.removeAttribute('poster'); });
               }
               return;
           }
@@ -23496,10 +23433,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               textContent: 'Copy Text'
           });
           $.on(a, 'click', CopyTextLink.copy);
-          Menu.menu.addEntry({
-              el: a,
-              order: 12,
-              open(post) {
+          Menu.menu.addEntry({ el: a, order: 12, open(post) {
                   CopyTextLink.text = (post.origin || post).commentOrig();
                   return true;
               }
@@ -23577,13 +23511,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           });
       },
       menuText() {
-          let seconds = DeleteLink.cooldown.seconds[DeleteLink.post.fullID];
-          if (seconds) {
-              return `Delete (${seconds})`;
-          }
-          else {
-              return 'Delete';
-          }
+          const seconds = DeleteLink.cooldown.seconds[DeleteLink.post.fullID];
+          return seconds ? `Delete (${seconds})` : 'Delete';
       },
       linkText(fileOnly) {
           let text = fileOnly ? 'File' : 'Post';
@@ -23736,10 +23665,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               textContent: 'Report'
           });
           $.on(a, 'click', ReportLink.report);
-          Menu.menu.addEntry({
-              el: a,
-              order: 10,
-              open(post) {
+          Menu.menu.addEntry({ el: a, order: 10, open(post) {
                   ReportLink.url = `//sys.${location.hostname.split('.')[1]}.org/${post.board}/imgboard.php?mode=report&no=${post}`;
                   if (d.cookie.indexOf('pass_enabled=1') >= 0) {
                       ReportLink.dims = 'width=350,height=275';
@@ -23986,7 +23912,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               });
               g.posts.forEach((post) => {
                   if (post.callbacksExecuted) {
-                      return Callbacks.Post.execute(post, ['Parse [math] tags'], true);
+                      Callbacks.Post.execute(post, ['Parse [math] tags'], true);
                   }
               });
               ExpandComment.callbacks.push(Fourchan.math);
@@ -24274,7 +24200,9 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           const classPrev = 'prev';
           const classNext = 'next';
           const span = $.el('span', { className: 'postJumper' });
-          $.extend(span, { innerHTML: "<a href=\"javascript:;\" class=\"" + E(classPrev) + "\">" + E(charPrev) + "</a><a href=\"javascript:;\" class=\"" + E(classNext) + "\">" + E(charNext) + "</a>" });
+          $.extend(span, { innerHTML: "<a href=\"javascript:;\" class=\""
+                  + E(classPrev) + "\">" + E(charPrev) + "</a><a href=\"javascript:;\" class=\""
+                  + E(classNext) + "\">" + E(charNext) + "</a>" });
           return span;
       },
       scroll(fromJumper, toJumper) {
@@ -24352,7 +24280,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           PSAHiding.sync(Conf.hiddenPSAList);
           return $.get('hiddenPSAList', Conf.hiddenPSAList, ({ hiddenPSAList }) => {
               set(hiddenPSAList);
-              return $.set('hiddenPSAList', hiddenPSAList);
+              $.set('hiddenPSAList', hiddenPSAList);
           });
       },
       sync(hiddenPSAList) {
@@ -24501,9 +24429,11 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           if (Conf['Page Count in Stats']) {
               this[g.SITE.isPrunedByAge?.(g.BOARD) ? 'showPurgePos' : 'showPage'] = true;
           }
-          const statsHTML = { innerHTML: "<span id=\"post-count\">?</span> / <span id=\"file-count\">?</span>" + ((Conf["IP Count in Stats"] && g.SITE.hasIPCount)
-                  ? " / <span id=\"ip-count\">?</span>" : "") + ((Conf["Page Count in Stats"])
-                  ? " / <span id=\"page-count\">?</span>" : "") };
+          const statsHTML = { innerHTML: "<span id=\"post-count\">?</span> / <span id=\"file-count\">?</span>"
+                  + ((Conf["IP Count in Stats"] && g.SITE.hasIPCount)
+                      ? " / <span id=\"ip-count\">?</span>" : "")
+                  + ((Conf["Page Count in Stats"])
+                      ? " / <span id=\"page-count\">?</span>" : "") };
           let statsTitle = 'Posts / Files';
           if (Conf['IP Count in Stats'] && g.SITE.hasIPCount) {
               statsTitle += ' / IPs';
@@ -24668,10 +24598,10 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       retry() {
           // If thread data is stale (modification date given < time of last post), try again.
           // Skip this on vichan sites due to sage posts not updating modification time in threads.json.
-          if (!ThreadStats.showPage ||
-              (ThreadStats.pageCountEl.textContent === '1') ||
-              !!g.SITE.threadModTimeIgnoresSage ||
-              (ThreadStats.thread.posts.get(ThreadStats.thread.lastPost).info.date <= ThreadStats.lastPageUpdate)) {
+          if (!ThreadStats.showPage
+              || (ThreadStats.pageCountEl.textContent === '1')
+              || !!g.SITE.threadModTimeIgnoresSage
+              || (ThreadStats.thread.posts.get(ThreadStats.thread.lastPost).info.date <= ThreadStats.lastPageUpdate)) {
               return;
           }
           clearTimeout(ThreadStats.timeout);
@@ -25428,7 +25358,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           Main.setClass();
       },
       setClass() {
-          let mainStyleSheet, style, styleSheets;
+          let mainStyleSheet = null, style = null, styleSheets = null;
           const knownStyles = ['yotsuba', 'yotsuba-b', 'futaba', 'burichan', 'photon', 'tomorrow', 'spooky'];
           if ((g.SITE.software === 'yotsuba') && (g.VIEW === 'catalog')) {
               if (mainStyleSheet = $.id('base-css')) {
@@ -25439,7 +25369,6 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
                   }
               }
           }
-          style = (mainStyleSheet = (styleSheets = null));
           const setStyle = function () {
               // Use preconfigured CSS for 4chan's default themes.
               if (g.SITE.software === 'yotsuba') {
@@ -25753,9 +25682,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           Main.callbackNodes('CatalogThreadNative', threads);
       },
       callbackNodes(klass, nodes) {
-          let node, i = 0;
           const cb = Callbacks[klass];
-          while ((node = nodes[i++])) {
+          for (const node of nodes) {
               cb.execute(node);
           }
       },
