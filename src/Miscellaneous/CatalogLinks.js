@@ -97,7 +97,7 @@ const CatalogLinks = {
 
   // Also called by Header when board lists are loaded / generated.
   setLinks(list) {
-    if ((!(CatalogLinks.enabled ?? Conf['Catalog Links'])) || !list) { return; }
+    if ((!(CatalogLinks.enabled ?? Conf['Catalog Links'])) || !list) return;
 
     // do not transform links unless they differ from the expected value at most by this tail
     const tail = /(?:index)?(?:\.\w+)?$/;

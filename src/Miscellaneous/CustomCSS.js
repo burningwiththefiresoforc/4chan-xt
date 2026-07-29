@@ -9,7 +9,7 @@ import { Conf } from "../globals/globals";
  */
 const CustomCSS = {
   init() {
-    if (!Conf['Custom CSS']) { return; }
+    if (!Conf['Custom CSS']) return;
     this.addStyle();
   },
 

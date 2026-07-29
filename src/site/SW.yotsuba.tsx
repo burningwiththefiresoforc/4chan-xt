@@ -47,10 +47,10 @@ const SWYotsuba = {
     },
   },
 
-  isPrunedByAge({boardID}) { return boardID === 'f'; },
-  areMD5sDeferred({boardID}) { return boardID === 'f'; },
-  isOnePage({boardID}) { return boardID === 'f'; },
-  noAudio({boardID}) { return BoardConfig.noAudio(boardID); },
+  isPrunedByAge: ({boardID}) => boardID === 'f',
+  areMD5sDeferred: ({boardID}) => boardID === 'f',
+  isOnePage: ({boardID}) => boardID === 'f',
+  noAudio: ({boardID}) => BoardConfig.noAudio(boardID),
 
   selectors: {
     board:         '.board',
@@ -199,7 +199,7 @@ const SWYotsuba = {
 
   scriptData() {
     for (var script of $$('script:not([src])', d.head)) {
-      if (/\bcooldowns *=/.test(script.textContent)) { return script.textContent; }
+      if (/\bcooldowns *=/.test(script.textContent)) return script.textContent;
     }
     return '';
   },
@@ -246,7 +246,7 @@ const SWYotsuba = {
   parseFile(post, file) {
     const {text, link, thumb} = file;
     let info = link.nextSibling?.textContent.match(/\(([\d.]+ [KMG]?B).*\)/);
-    if (!info) { return false; }
+    if (!info) return false;
     $.extend(file, {
       name:       text.title || link.title || link.textContent,
       size:       info[1],

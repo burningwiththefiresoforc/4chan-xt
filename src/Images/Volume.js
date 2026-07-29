@@ -13,7 +13,7 @@ import $ from "../platform/$";
 const Volume = {
   init() {
     if (!['index', 'thread'].includes(g.VIEW) ||
-      (!Conf['Image Expansion'] && !Conf['Image Hover'] && !Conf['Image Hover in Catalog'] && !Conf.Gallery)) { return; }
+      (!Conf['Image Expansion'] && !Conf['Image Hover'] && !Conf['Image Hover in Catalog'] && !Conf.Gallery)) return;
 
     $.sync('Allow Sound', (x) => {
       Conf['Allow Sound'] = x;
@@ -32,7 +32,7 @@ const Volume = {
       });
     }
 
-    if (g.SITE.noAudio?.(g.BOARD)) { return; }
+    if (g.SITE.noAudio?.(g.BOARD)) return;
 
     if (Conf['Mouse Wheel Volume']) {
       Callbacks.CatalogThread.push({
@@ -87,7 +87,7 @@ const Volume = {
   },
 
   node() {
-    if (g.SITE.noAudio?.(this.board)) { return; }
+    if (g.SITE.noAudio?.(this.board)) return;
     for (const file of this.files) {
       if (file.isVideo) {
         if (file.thumb) { $.on(file.thumb, 'wheel', Volume.wheel.bind(Header.hover)); }
@@ -98,7 +98,7 @@ const Volume = {
 
   catalogNode() {
     const file = this.thread.OP.files[0];
-    if (!file?.isVideo) { return; }
+    if (!file?.isVideo) return;
     $.on(this.nodes.thumb, 'wheel', Volume.wheel.bind(Header.hover));
   },
 
@@ -106,7 +106,7 @@ const Volume = {
     if (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) return;
     let el = $('video:not([data-md5])', this);
     if (!el) return;
-    if (el.muted || !$.hasAudio(el)) { return; }
+    if (el.muted || !$.hasAudio(el)) return;
     let volume = el.volume + 0.1;
     if (e.deltaY < 0) { volume *= 1.1; }
     if (e.deltaY > 0) { volume /= 1.1; }

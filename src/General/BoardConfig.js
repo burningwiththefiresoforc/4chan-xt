@@ -15,7 +15,7 @@ var BoardConfig = {
 
   init() {
     let middle;
-    if (g.SITE.software !== 'yotsuba') { return; }
+    if (g.SITE.software !== 'yotsuba') return;
     const now = Date.now();
     if (now - (2 * HOUR) >= ((middle = Conf.boardConfig.lastChecked || 0)) || middle > now) {
       $.ajax(`${location.protocol}//a.4cdn.org/boards.json`,
@@ -92,7 +92,7 @@ var BoardConfig = {
   },
 
   noAudio(boardID) {
-    if (g.SITE.software !== 'yotsuba') { return false; }
+    if (g.SITE.software !== 'yotsuba') return false;
     const boards = this.boards || Conf.boardConfig.boards;
     return boards && boards[boardID] && !boards[boardID].webm_audio;
   },

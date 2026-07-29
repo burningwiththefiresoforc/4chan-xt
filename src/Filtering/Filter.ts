@@ -199,9 +199,9 @@ var Filter = {
   // Parse comma-separated list of boards.
   // Sites can be specified by a beginning part of the site domain followed by a colon.
   parseBoards(boardsRaw: string) {
-    if (!boardsRaw) { return false; }
+    if (!boardsRaw) return false;
     let boards = Filter.parseBoardsMemo[boardsRaw];
-    if (boards) { return boards; }
+    if (boards) return boards;
     boards = dict();
     let siteFilter = '';
     for (var boardID of boardsRaw.split(',')) {
@@ -257,7 +257,7 @@ var Filter = {
           if (
             (filter.boards && !(filter.boards[board]
               || filter.boards[site] ))
-            || (filter.excludes &&  (filter.excludes[board]
+            || (filter.excludes && (filter.excludes[board]
               || filter.excludes[site]))
             || (filter.mask & mask)
             || (isString ? (filter.regexp !== value)
@@ -403,8 +403,8 @@ var Filter = {
   },
 
   catalogNode(this: Post) {
-    if ((this.boardID !== g.BOARD.ID) || !Filter.catalogData[this.ID]) { return; }
-    if (QuoteYou.db?.get({siteID: g.SITE.ID, boardID: this.boardID, threadID: this.ID, postID: this.ID})) { return; }
+    if ((this.boardID !== g.BOARD.ID) || !Filter.catalogData[this.ID]) return;
+    if (QuoteYou.db?.get({siteID: g.SITE.ID, boardID: this.boardID, threadID: this.ID, postID: this.ID})) return;
     const {hide, hl, top} = Filter.test(g.SITE.Build.parseJSON(Filter.catalogData[this.ID], this));
     if (hide) {
       this.nodes.root.hidden = true;
@@ -459,7 +459,7 @@ var Filter = {
   },
 
   addFilter(type: FilterType, re: string, cb?: () => void) {
-    if (!$.hasOwn(Config.filter, type)) { return; }
+    if (!$.hasOwn(Config.filter, type)) return;
     return $.get(type, Conf[type], (item) => {
       // Add a new line before the regexp unless the text is empty.
       const save = item[type] ? `${item[type]}\n${re}` : re;
@@ -494,7 +494,7 @@ var Filter = {
   quickFilterMD5() {
     const post: Post = this instanceof Post ? this : Get.postFromNode(this);
     const files = post.files.filter(f => f.MD5);
-    if (!files.length) { return; }
+    if (!files.length) return;
     const filter = files.map(f => `/${f.MD5}/`).join('\n');
     Filter.addFilter('MD5', filter);
     const origin = post.origin || post;
@@ -552,7 +552,7 @@ var Filter = {
 
   menu: {
     init() {
-      if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf.Filter) { return; }
+      if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf.Filter) return;
 
       const div = $.el('div', {textContent: 'Filter'});
 

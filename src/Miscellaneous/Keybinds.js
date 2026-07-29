@@ -51,7 +51,7 @@ const KEY_NAMES = {
 
 var Keybinds = {
   init() {
-    if (!Conf.Keybinds) { return; }
+    if (!Conf.Keybinds) return;
 
     for (var hotkey in Config.hotkeys) {
       $.sync(hotkey, Keybinds.sync);
@@ -73,7 +73,7 @@ var Keybinds = {
 
   keydown(e) {
     let key, thread, threadRoot, catalog, notifications;
-    if (!(key = Keybinds.keyCode(e))) { return; }
+    if (!(key = Keybinds.keyCode(e))) return;
     const tag = {
       [Conf['Spoiler tags']]: 'spoiler',
       [Conf['Code tags']]: 'code',
@@ -93,7 +93,7 @@ var Keybinds = {
     }[key];
     const {target} = e;
     if (['INPUT', 'TEXTAREA'].includes(target.nodeName)) {
-      if (!/(Esc|Alt|Ctrl|Meta|Shift\+\w{2,})/.test(key) || !!/^Alt\+(\d|Up|Down|Left|Right)$/.test(key)) { return; }
+      if (!/(Esc|Alt|Ctrl|Meta|Shift\+\w{2,})/.test(key) || !!/^Alt\+(\d|Up|Down|Left|Right)$/.test(key)) return;
     }
     if (['index', 'thread'].includes(g.VIEW)) {
       threadRoot = Nav.getThread();
@@ -239,7 +239,7 @@ var Keybinds = {
       if (!g.SITE.isOnePage?.(g.BOARD)) {
         if (key === Conf['Next page']) {
           if (indexEnabled) {
-            if (!['paged', 'infinite'].includes(Conf['Index Mode'])) { return; }
+            if (!['paged', 'infinite'].includes(Conf['Index Mode'])) return;
             $('.next button', Index.pagelist).click();
           } else {
             $(g.SITE.selectors.nav.next)?.click();
@@ -248,7 +248,7 @@ var Keybinds = {
         }
         if (key === Conf['Previous page']) {
           if (indexEnabled) {
-            if (!['paged', 'infinite'].includes(Conf['Index Mode'])) { return; }
+            if (!['paged', 'infinite'].includes(Conf['Index Mode'])) return;
             $('.prev button', Index.pagelist).click();
           } else {
             $(g.SITE.selectors.nav.prev)?.click();
@@ -383,7 +383,7 @@ var Keybinds = {
         sjis: 'sjis_tags',
       };
       const supported = !!config[TAG_SUPPORT[tag]];
-      if (!supported) { return new Notice('warning', `[${tag}] tags are not supported on /${g.BOARD}/.`, 20); }
+      if (!supported) { new Notice('warning', `[${tag}] tags are not supported on /${g.BOARD}/.`, 20); }
     });
 
     const {value} = ta;
@@ -406,7 +406,7 @@ var Keybinds = {
   sage: () => QR.nodes.email.value = /sage/i.test(QR.nodes.email.value) ? "" : "sage",
 
   open(thread, tab) {
-    if (g.VIEW !== 'index') { return; }
+    if (g.VIEW !== 'index') return;
     const url = Get.url('thread', thread);
     if (tab) {
       return $.open(url);
@@ -429,10 +429,10 @@ var Keybinds = {
     if (postEl) {
       const {height} = postEl.getBoundingClientRect();
       if ((Header.getTopOf(postEl) >= -height) && (Header.getBottomOf(postEl) >= -height)) { // We're at least partially visible
-        let next;
         const {root} = Get.postFromNode(postEl).nodes;
         const axis = delta === +1 ? 'following' : 'preceding';
-        if (!(next = $.x(`${axis}-sibling::${g.SITE.xpath.replyContainer}[not(@hidden) and not(child::div[@class='stub'])][1]`, root))) { return; }
+        let next = $.x(`${axis}-sibling::${g.SITE.xpath.replyContainer}[not(@hidden) and not(child::div[@class='stub'])][1]`, root);
+        if (!next) return;
         if (!next.matches(replySelector)) { next = $(replySelector, next); }
         Header.scrollToIfNeeded(next, delta === +1);
         $.addClass(next, highlight);

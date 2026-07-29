@@ -11,7 +11,7 @@ import Icon from "../Icons/icon";
  */
 const PostJumper = {
   init() {
-    if (!Conf['Unique ID and Capcode Navigation'] || !['index', 'thread'].includes(g.VIEW)) { return; }
+    if (!Conf['Unique ID and Capcode Navigation'] || !['index', 'thread'].includes(g.VIEW)) return;
 
     this.buttons = this.makeButtons();
     Icon.set(this.buttons.firstChild, 'arrowUpLong');
@@ -70,13 +70,13 @@ const PostJumper = {
     while (true) {
       node = $.x(`${axis}::${xpath}`, node);
       if (!node) {
-        if (wrapped) { return null; } // full circle
+        if (wrapped) return null; // full circle
         node = $.x(`(//${xpath})[${dir < 0 ? 'last()' : '1'}]`);
         wrapped = true;
-        if (!node) { return null; }
+        if (!node) return null;
       }
-      if (node === jumper) { return null; } // full circle
-      if (node.getBoundingClientRect().height) { return node; }
+      if (node === jumper) return null; // full circle
+      if (node.getBoundingClientRect().height) return node;
     }
   },
 

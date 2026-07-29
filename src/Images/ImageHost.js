@@ -9,7 +9,7 @@ import $$ from "../platform/$$";
  */
 const ImageHost = {
   init() {
-    if ((!(this.useFaster = /\S/.test(Conf.fourchanImageHost))) || (g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW)) { return; }
+    if ((!(this.useFaster = /\S/.test(Conf.fourchanImageHost))) || (g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW)) return;
     Callbacks.Post.push({
       name: 'Image Host Rewriting',
       cb:   this.node
@@ -20,14 +20,14 @@ const ImageHost = {
 
   flashHost: () => 'i.4cdn.org',
   thumbHost: () => 'i.4cdn.org',
-  host: () =>  Conf.fourchanImageHost.trim() || 'i.4cdn.org',
+  host: () => Conf.fourchanImageHost.trim() || 'i.4cdn.org',
   test: (hostname) => (hostname === 'i.4cdn.org') || ImageHost.regex.test(hostname),
 
   // regex: /^is\d*\.4chan(?:nel)?\.org$/,
   regex: /^is\d*\.4chan\.org$/,
 
   node() {
-    if (this.isClone) { return; }
+    if (this.isClone) return;
     const host = ImageHost.host();
     if (this.file && ImageHost.test(this.file.url.split('/')[2]) && !/\.swf$/.test(this.file.url)) {
       this.file.link.hostname = host;

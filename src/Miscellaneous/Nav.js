@@ -58,8 +58,8 @@ var Nav = {
   },
 
   getThread() {
-    if (g.VIEW === 'thread') { return g.threads.get(`${g.BOARD}.${g.THREADID}`).nodes.root; }
-    if ($.hasClass(doc, 'catalog-mode')) { return; }
+    if (g.VIEW === 'thread') return g.threads.get(`${g.BOARD}.${g.THREADID}`).nodes.root;
+    if ($.hasClass(doc, 'catalog-mode')) return;
     for (var threadRoot of $$(g.SITE.selectors.thread)) {
       var thread = Get.threadFromRoot(threadRoot);
       if (thread.isHidden && !thread.stub) { continue; }
@@ -72,7 +72,7 @@ var Nav = {
   scroll(delta) {
     d.activeElement?.blur();
     let thread = Nav.getThread();
-    if (!thread) { return; }
+    if (!thread) return;
     const axis = delta === +1 ? 'following' : 'preceding';
     const next = $.x(`${axis}-sibling::${g.SITE.xpath.thread}[not(@hidden)][1]`, thread);
     if (next) {

@@ -7,7 +7,7 @@ import { Conf, g } from "../globals/globals";
  */
 const NormalizeURL = {
   init() {
-    if (!Conf['Normalize URL']) { return; }
+    if (!Conf['Normalize URL']) return;
 
     let pathname = location.pathname.split(/\/+/);
     if (g.SITE.software === 'yotsuba') {

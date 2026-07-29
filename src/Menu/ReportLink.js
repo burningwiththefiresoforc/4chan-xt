@@ -9,7 +9,7 @@ import Menu from "./Menu";
  */
 var ReportLink = {
   init() {
-    if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf['Report Link']) { return; }
+    if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf['Report Link']) return;
 
     const a = $.el('a', {
       className: 'report-link',

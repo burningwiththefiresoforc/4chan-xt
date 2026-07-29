@@ -9,7 +9,7 @@ import Icon from "../Icons/icon";
  */
 var PSAHiding = {
   init() {
-    if (!Conf['Announcement Hiding'] || !g.SITE.selectors.psa) { return; }
+    if (!Conf['Announcement Hiding'] || !g.SITE.selectors.psa) return;
     $.addClass(doc, 'hide-announcement');
     $.onExists(doc, g.SITE.selectors.psa, this.setup);
     $.ready(() => {

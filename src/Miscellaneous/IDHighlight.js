@@ -9,7 +9,7 @@ import $ from "../platform/$";
  */
 var IDHighlight = {
   init() {
-    if (!['index', 'thread'].includes(g.VIEW)) { return; }
+    if (!['index', 'thread'].includes(g.VIEW)) return;
 
     Callbacks.Post.push({
       name: 'Highlight by User ID',

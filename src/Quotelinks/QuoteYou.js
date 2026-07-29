@@ -18,20 +18,20 @@ import PostRedirect from "../Posting/PostRedirect";
  */
 var QuoteYou = {
   init() {
-    if (!Conf['Remember Your Posts']) { return; }
+    if (!Conf['Remember Your Posts']) return;
 
     this.db = new DataBoard('yourPosts');
     $.sync('Remember Your Posts', enabled => Conf['Remember Your Posts'] = enabled);
     $.on(d, 'QRPostSuccessful', function(e) {
       const cb = PostRedirect.delay();
       return $.get('Remember Your Posts', Conf['Remember Your Posts'], function(items) {
-        if (!items['Remember Your Posts']) { return; }
+        if (!items['Remember Your Posts']) return;
         const {boardID, threadID, postID} = e.detail;
         return QuoteYou.db.set({boardID, threadID, postID, val: true}, cb);
       });
     });
 
-    if (!['index', 'thread', 'archive'].includes(g.VIEW)) { return; }
+    if (!['index', 'thread', 'archive'].includes(g.VIEW)) return;
 
     if (Conf['Highlight Own Posts']) {
       $.addClass(doc, 'highlight-own');
@@ -67,7 +67,7 @@ var QuoteYou = {
   },
 
   node() {
-    if (this.isClone) { return; }
+    if (this.isClone) return;
 
     if (QuoteYou.isYou(this)) {
       $.addClass(this.nodes.root, 'yourPost');
@@ -75,7 +75,7 @@ var QuoteYou = {
     }
 
     // Stop there if there's no quotes in that post.
-    if (!this.quotes.length) { return; }
+    if (!this.quotes.length) return;
 
     for (var quotelink of this.nodes.quotelinks) {
       if (QuoteYou.db.get(Get.postDataFromLink(quotelink))) {
@@ -142,7 +142,7 @@ var QuoteYou = {
           new Notice('warning', 'No posts are currently quoting you, loser.', 20);
           return;
         }
-        if (QuoteYou.cb.scroll(post)) { return; }
+        if (QuoteYou.cb.scroll(post)) return;
       } else {
         post = QuoteYou.lastRead;
       }
@@ -150,7 +150,7 @@ var QuoteYou = {
       const str = `${type}::div[contains(@class,'quotesYou')]`;
 
       while (post = (result = $.X(str, post)).snapshotItem(type === 'preceding' ? result.snapshotLength - 1 : 0)) {
-        if (QuoteYou.cb.scroll(post)) { return; }
+        if (QuoteYou.cb.scroll(post)) return;
       }
 
       const posts = $$('.quotesYou');

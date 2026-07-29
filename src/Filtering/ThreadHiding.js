@@ -33,7 +33,7 @@ var ThreadHiding = {
   },
 
   catalogSet(board) {
-    if (!$.hasStorage || (g.SITE.software !== 'yotsuba')) { return; }
+    if (!$.hasStorage || (g.SITE.software !== 'yotsuba')) return;
     const hiddenThreads = ThreadHiding.db.get({
       boardID: board.ID,
       defaultValue: dict()
@@ -43,7 +43,7 @@ var ThreadHiding = {
   },
 
   catalogWatch() {
-    if (!$.hasStorage || (g.SITE.software !== 'yotsuba')) { return; }
+    if (!$.hasStorage || (g.SITE.software !== 'yotsuba')) return;
     this.hiddenThreads = JSON.parse(localStorage.getItem(`4chan-hide-t-${g.BOARD}`)) || {};
     return PageReady.ready(() => // 4chan's catalog sets the style to "display: none;" when hiding or unhiding a thread.
     new MutationObserver(ThreadHiding.catalogSave).observe($.id('threads'), {
@@ -59,15 +59,15 @@ var ThreadHiding = {
     for (threadID in hiddenThreads2) {
       if (!$.hasOwn(ThreadHiding.hiddenThreads, threadID)) {
         ThreadHiding.db.set({
-          boardID:  g.BOARD.ID,
+          boardID: g.BOARD.ID,
           threadID,
-          val:      {makeStub: Conf.Stubs}});
+          val: {makeStub: Conf.Stubs}});
       }
     }
     for (threadID in ThreadHiding.hiddenThreads) {
       if (!$.hasOwn(hiddenThreads2, threadID)) {
         ThreadHiding.db.delete({
-          boardID:  g.BOARD.ID,
+          boardID: g.BOARD.ID,
           threadID
         });
       }
@@ -78,7 +78,7 @@ var ThreadHiding = {
   isHidden: (boardID, threadID) => !!(ThreadHiding.db && ThreadHiding.db.get({boardID, threadID})),
 
   node() {
-    if (this.isReply || this.isClone || this.isFetchedQuote) { return; }
+    if (this.isReply || this.isClone || this.isFetchedQuote) return;
 
     if (Conf['Thread Hiding Buttons']) {
       $.prepend(this.nodes.root, ThreadHiding.makeButton(this.thread, 'hide'));
@@ -101,7 +101,7 @@ var ThreadHiding = {
 
   menu: {
     init() {
-      if ((g.VIEW !== 'index') || !Conf.Menu || !Conf['Thread Hiding Link']) { return; }
+      if ((g.VIEW !== 'index') || !Conf.Menu || !Conf['Thread Hiding Link']) return;
 
       let div = $.el('div', {
         className: 'hide-thread-link',
@@ -195,7 +195,7 @@ var ThreadHiding = {
 
   makeStub(thread, root, reason) {
     let summary, threadDivider;
-    let numReplies  = $$(g.SITE.selectors.replyOriginal, root).length;
+    let numReplies = $$(g.SITE.selectors.replyOriginal, root).length;
     if (summary = $(g.SITE.selectors.summary, root)) { numReplies += +summary.textContent.match(/\d+/); }
 
     const a = ThreadHiding.makeButton(thread, 'show');
@@ -269,7 +269,7 @@ var ThreadHiding = {
   },
 
   hide(thread, makeStub=Conf.Stubs, reason) {
-    if (thread.isHidden) { return; }
+    if (thread.isHidden) return;
     const threadRoot = thread.nodes.root;
     thread.isHidden = true;
     Index.updateHideLabel();
@@ -278,7 +278,7 @@ var ThreadHiding = {
       $.event('PostsRemoved', null, Index.root);
     }
 
-    if (!makeStub) { return threadRoot.hidden = true; }
+    if (!makeStub) return threadRoot.hidden = true;
 
     ThreadHiding.makeStub(thread, threadRoot, reason);
   },

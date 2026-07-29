@@ -82,7 +82,7 @@ export default class DataBoard {
     change();
     this.changes.push(change);
     return $.get(this.key, { boards: dict() }, (items: DataBoardData) => {
-      if (!this.changes.length) { return; }
+      if (!this.changes.length) return;
       const needSync = ((items[this.key].version || 0) > (this.data.version || 0));
       if (needSync) {
         this.initData(items[this.key]);
@@ -110,14 +110,14 @@ export default class DataBoard {
 
   delete({siteID, boardID, threadID, postID}, cb) {
     if (!siteID) { siteID = g.SITE.ID; }
-    if (!this.data[siteID]) { return; }
+    if (!this.data[siteID]) return;
     this.save(() => {
       if (postID) {
-        if (!this.data[siteID].boards[boardID]?.[threadID]) { return; }
+        if (!this.data[siteID].boards[boardID]?.[threadID]) return;
         delete this.data[siteID].boards[boardID][threadID][postID];
         this.deleteIfEmpty({siteID, boardID, threadID});
       } else if (threadID) {
-        if (!this.data[siteID].boards[boardID]) { return; }
+        if (!this.data[siteID].boards[boardID]) return;
         delete this.data[siteID].boards[boardID][threadID];
         this.deleteIfEmpty({siteID, boardID});
       } else {
@@ -127,7 +127,7 @@ export default class DataBoard {
   }
 
   deleteIfEmpty({ siteID, boardID, threadID }: { siteID: string, boardID: string, threadID?: string | number }) {
-    if (!this.data[siteID]) { return; }
+    if (!this.data[siteID]) return;
     if (threadID) {
       if (!Object.keys(this.data[siteID].boards[boardID][threadID]).length) {
         delete this.data[siteID].boards[boardID][threadID];
@@ -220,14 +220,14 @@ export default class DataBoard {
     const that = this;
     const siteID = g.SITE.ID;
     const threadsList = g.SITE.urls.threadsListJSON?.({siteID, boardID});
-    if (!threadsList) { return; }
+    if (!threadsList) return;
     $.cache(threadsList, function() {
-      if (this.status !== 200) { return; }
+      if (this.status !== 200) return;
       const archiveList = g.SITE.urls.archiveListJSON?.({siteID, boardID});
       if (!archiveList) return that.ajaxCleanParse(boardID, this.response);
       const response1 = this.response;
       $.cache(archiveList, function() {
-        if ((this.status !== 200) && (!!g.SITE.archivedBoardsKnown || (this.status !== 404))) { return; }
+        if ((this.status !== 200) && (!!g.SITE.archivedBoardsKnown || (this.status !== 404))) return;
         that.ajaxCleanParse(boardID, response1, this.response);
       });
     });
@@ -257,7 +257,7 @@ export default class DataBoard {
   }
 
   onSync(data) {
-    if ((data.version || 0) <= (this.data.version || 0)) { return; }
+    if ((data.version || 0) <= (this.data.version || 0)) return;
     this.initData(data);
     this.sync?.();
   }

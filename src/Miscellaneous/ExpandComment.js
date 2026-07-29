@@ -11,7 +11,7 @@ import $$ from "../platform/$$";
  */
 const ExpandComment = {
   init() {
-    if ((g.VIEW !== 'index') || !Conf['Comment Expansion'] || Conf['JSON Index']) { return; }
+    if ((g.VIEW !== 'index') || !Conf['Comment Expansion'] || Conf['JSON Index']) return;
 
     Callbacks.Post.push({
       name: 'Comment Expansion',
@@ -46,7 +46,7 @@ const ExpandComment = {
   },
 
   contract(post) {
-    if (!post.nodes.shortComment) { return; }
+    if (!post.nodes.shortComment) return;
     const a = $('.abbr > a', post.nodes.shortComment);
     a.textContent = 'here';
     $.replace(post.nodes.longComment, post.nodes.shortComment);

@@ -13,7 +13,7 @@ import QuoteThreading from "../Quotelinks/QuoteThreading";
  */
 var ReplyPruning = {
   init() {
-    if ((g.VIEW !== 'thread') || !Conf['Reply Pruning']) { return; }
+    if ((g.VIEW !== 'thread') || !Conf['Reply Pruning']) return;
 
     this.container = $.frag();
 
@@ -79,7 +79,7 @@ var ReplyPruning = {
     this.posts.forEach((post) => {
       if (post.isReply) {
         ReplyPruning.total++;
-        if (post.file) { return ReplyPruning.totalFiles++; }
+        if (post.file) return ReplyPruning.totalFiles++;
       }
     });
 
@@ -104,7 +104,7 @@ var ReplyPruning = {
   },
 
   updateCount(e) {
-    if (e.detail[404]) { return; }
+    if (e.detail[404]) return;
     for (var fullID of e.detail.newPosts) {
       ReplyPruning.total++;
       if (g.posts.get(fullID).file) { ReplyPruning.totalFiles++; }

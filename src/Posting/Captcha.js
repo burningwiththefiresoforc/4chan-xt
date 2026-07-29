@@ -22,21 +22,13 @@ const Captcha = {
 
     captchas: [],
 
-    getCount() {
-      return this.captchas.length;
-    },
+    getCount() { return this.captchas.length; },
 
     neededRaw() {
-      return !(
-        this.haveCookie() || this.captchas.length || QR.req || this.submitCB
-      ) && (
-          (QR.posts.length > 1) || Conf['Auto-load captcha'] || !QR.posts[0].isOnlyQuotes() || QR.posts[0].file
-        );
+      return !(this.haveCookie() || this.captchas.length || QR.req || this.submitCB) && ((QR.posts.length > 1) || Conf['Auto-load captcha'] || !QR.posts[0].isOnlyQuotes() || QR.posts[0].file);
     },
 
-    needed() {
-      return this.neededRaw() && $.event('LoadCaptcha');
-    },
+    needed() { return this.neededRaw() && $.event('LoadCaptcha'); },
 
     haveCookie: () => /\b_ct=/.test(d.cookie) && (QR.posts[0].thread !== 'new'),
 
@@ -54,7 +46,7 @@ const Captcha = {
 
     request(isReply) {
       if (!this.submitCB) {
-        if ($.event('RequestCaptcha', { isReply })) { return; }
+        if ($.event('RequestCaptcha', { isReply })) return;
       }
       return cb => {
         this.submitCB = cb;

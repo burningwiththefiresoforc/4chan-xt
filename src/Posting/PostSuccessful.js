@@ -9,12 +9,12 @@ import $ from "../platform/$";
  */
 const PostSuccessful = {
   init() {
-    if (!Conf['Remember Your Posts']) { return; }
+    if (!Conf['Remember Your Posts']) return;
     $.ready(this.ready);
   },
 
   ready() {
-    if (d.title !== 'Post successful!') { return; }
+    if (d.title !== 'Post successful!') return;
 
     let [_, threadID, postID] = $('h1').nextSibling.textContent.match(/thread:(\d+),no:(\d+)/);
     postID   = +postID;

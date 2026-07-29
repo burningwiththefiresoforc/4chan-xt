@@ -70,11 +70,11 @@ export default class Thread {
     }
     icon.title       = `This thread is on page ${pageNum} in the original index.`;
     icon.textContent = `[${pageNum}]`;
-    if (this.catalogView) { return this.catalogView.nodes.pageCount.textContent = pageNum; }
+    if (this.catalogView) return this.catalogView.nodes.pageCount.textContent = pageNum;
   }
 
   setCount(type, count, reachedLimit) {
-    if (!this.catalogView) { return; }
+    if (!this.catalogView) return;
     const el = this.catalogView.nodes[`${type}Count`];
     el.textContent = count;
     return (reachedLimit ? $.addClass : $.rmClass)(el, 'warning');
@@ -82,9 +82,9 @@ export default class Thread {
 
   setStatus(type, status) {
     const name = `is${type}`;
-    if (this[name] === status) { return; }
+    if (this[name] === status) return;
     this[name] = status;
-    if (!this.OP) { return; }
+    if (!this.OP) return;
     this.setIcon('Sticky',   this.isSticky);
     this.setIcon('Closed',   this.isClosed && !this.isArchived);
     this.setIcon('Archived', this.isArchived);
@@ -93,7 +93,7 @@ export default class Thread {
   setIcon(type, status) {
     const typeLC = type.toLowerCase();
     let icon = $(`.${typeLC}Icon`, this.OP.nodes.info);
-    if (!!icon === status) { return; }
+    if (!!icon === status) return;
 
     if (!status) {
       $.rm(icon.previousSibling);
@@ -116,13 +116,11 @@ export default class Thread {
       : $('.page-num', this.OP.nodes.info) || this.OP.nodes.quote;
     $.after(root, [$.tn(' '), icon]);
 
-    if (!this.catalogView) { return; }
+    if (!this.catalogView) return;
     return ((type === 'Sticky') && this.isClosed ? $.prepend : $.add)(this.catalogView.nodes.icons, icon.cloneNode());
   }
 
-  kill() {
-    return this.isDead = true;
-  }
+  kill() { return this.isDead = true; }
 
   collect() {
     let n = 0;

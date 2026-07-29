@@ -25,7 +25,7 @@ var PostHiding = {
   posterIdDb: undefined as DataBoard,
 
   init() {
-    if (!['index', 'thread'].includes(g.VIEW) || (!Conf['Reply Hiding Buttons'] && !(Conf.Menu && Conf['Reply Hiding Link']))) { return; }
+    if (!['index', 'thread'].includes(g.VIEW) || (!Conf['Reply Hiding Buttons'] && !(Conf.Menu && Conf['Reply Hiding Link']))) return;
 
     if (Conf['Reply Hiding Buttons']) {
       $.addClass(doc, "reply-hide");
@@ -219,7 +219,7 @@ var PostHiding = {
       const thisPost = $('input[name=thisPost]', parent).checked;
       const replies  = $('input[name=replies]',  parent).checked;
       const byId     = $('input[name=byId]', parent)?.checked;
-      const { post } = PostHiding.menu as { post: Post };
+      const {post} = PostHiding.menu as { post: Post };
       const { boardID, threadID, postID } = post;
 
       if (!thisPost && !replies && !byId) return;

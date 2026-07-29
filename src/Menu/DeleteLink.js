@@ -14,7 +14,7 @@ var DeleteLink = {
   auto: [dict(), dict()],
 
   init() {
-    if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf['Delete Link']) { return; }
+    if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf['Delete Link']) return;
 
     const div = $.el('div', {
       className: 'delete-link',
@@ -44,7 +44,7 @@ var DeleteLink = {
     const fileEntry = {
       el: fileEl,
       open({file}) {
-        if (!file || file.isDead) { return false; }
+        if (!file || file.isDead) return false;
         fileEl.textContent = DeleteLink.linkText(true);
         $.on(fileEl, 'click', DeleteLink.toggle);
         return true;
@@ -55,7 +55,7 @@ var DeleteLink = {
       el: div,
       order: 40,
       open(post) {
-        if (post.isDead) { return false; }
+        if (post.isDead) return false;
         DeleteLink.post = post;
         DeleteLink.nodes.menu.textContent = DeleteLink.menuText();
         DeleteLink.cooldown.start(post);
@@ -140,7 +140,7 @@ var DeleteLink = {
         // We're 100% sure.
         (post.origin || post).kill(fileOnly);
       }
-      if (post.fullID === DeleteLink.post.fullID) { return link.textContent = 'Deleted'; }
+      if (post.fullID === DeleteLink.post.fullID) return link.textContent = 'Deleted';
     }
   },
 
@@ -149,7 +149,7 @@ var DeleteLink = {
 
     start(post, seconds) {
       // Already counting.
-      if (DeleteLink.cooldown.seconds[post.fullID]) { return; }
+      if (DeleteLink.cooldown.seconds[post.fullID]) return;
 
       if (!seconds) { seconds = QR.cooldown.secondsDeletion(post); }
       if (seconds > 0) {

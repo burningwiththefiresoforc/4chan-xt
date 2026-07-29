@@ -14,7 +14,7 @@ const RemoveSpoilers = {
       $.addClass(doc, 'reveal-spoilers');
     }
 
-    if (!Conf['Remove Spoilers']) { return; }
+    if (!Conf['Remove Spoilers']) return;
 
     Callbacks.Post.push({
       name: 'Reveal Spoilers',

@@ -123,7 +123,7 @@ var QR = {
 
   init() {
     let sc;
-    if (!Conf['Quick Reply']) { return; }
+    if (!Conf['Quick Reply']) return;
 
     this.posts = [];
 
@@ -226,13 +226,13 @@ var QR = {
     $.on(d, 'IndexRefreshInternal', QR.generatePostableThreadsList);
     $.on(d, 'ThreadUpdate', QR.statusCheck);
 
-    if (!Conf['Persistent QR']) { return; }
+    if (!Conf['Persistent QR']) return;
     QR.open();
-    if (Conf['Auto Hide QR']) { return QR.hide(); }
+    if (Conf['Auto Hide QR']) return QR.hide();
   },
 
   statusCheck() {
-    if (!QR.nodes) { return; }
+    if (!QR.nodes) return;
     const {thread} = QR.posts[0];
     if ((thread !== 'new') && g.threads.get(`${g.BOARD}.${thread}`).isDead) {
       return QR.abort();
@@ -243,7 +243,7 @@ var QR = {
 
   node() {
     $.on(this.nodes.quote, 'click', QR.quote);
-    if (this.isFetchedQuote) { return QR.generatePostableThreadsList(); }
+    if (this.isFetchedQuote) return QR.generatePostableThreadsList();
   },
 
   open() {
@@ -330,7 +330,7 @@ var QR = {
   },
 
   texPreviewShow() {
-    if ($.hasClass(QR.nodes.el, 'tex-preview')) { return QR.texPreviewHide(); }
+    if ($.hasClass(QR.nodes.el, 'tex-preview')) return QR.texPreviewHide();
     $.addClass(QR.nodes.el, 'tex-preview');
     QR.nodes.texPreview.textContent = QR.nodes.com.value;
     $.event('mathjax', null, QR.nodes.texPreview);
@@ -374,7 +374,7 @@ var QR = {
     const notice = new Notice('warning', el);
     QR.notifications.push(notice);
     if (!Header.areNotificationsEnabled) {
-      if (d.hidden && !QR.cooldown.auto) { return alert(el.textContent); }
+      if (d.hidden && !QR.cooldown.auto) return alert(el.textContent);
     } else if (d.hidden || !(focusOverride || d.hasFocus())) {
       const notif = new Notification(el.textContent, {
         body: el.textContent,
@@ -414,7 +414,7 @@ var QR = {
   /* Returns true if the QR is disabled. */
   status() {
     let disabled, value;
-    if (!QR.nodes) { return; }
+    if (!QR.nodes) return;
     const {thread} = QR.posts[0];
     if ((thread !== 'new') && g.threads.get(`${g.BOARD}.${thread}`).isDead) {
       value    = 'Dead';
@@ -442,7 +442,7 @@ var QR = {
 
   quote(e) {
     e?.preventDefault();
-    if (!QR.postingIsEnabled) { return; }
+    if (!QR.postingIsEnabled) return;
     const sel  = d.getSelection();
     const post = Get.postFromNode(this);
     const {root} = post.nodes;
@@ -567,7 +567,7 @@ var QR = {
 
   drawFile(e) {
     const file = QR.selected?.file;
-    if (!file || !/^(image|video)\//.test(file.type)) { return; }
+    if (!file || !/^(image|video)\//.test(file.type)) return;
     const isVideo = /^video\//.test(file);
     const el = $.el((isVideo ? 'video' : 'img'));
     $.on(el, 'error', () => QR.openError());
@@ -610,14 +610,14 @@ var QR = {
 
   dropFile(e) {
     // Let it only handle files from the desktop.
-    if (!e.dataTransfer.files.length) { return; }
+    if (!e.dataTransfer.files.length) return;
     e.preventDefault();
     QR.open();
     return QR.handleFiles(e.dataTransfer.files);
   },
 
   paste(e) {
-    if (!e.clipboardData.items) { return; }
+    if (!e.clipboardData.items) return;
     let file = null;
     let score = -1;
     for (var item of e.clipboardData.items) {
@@ -663,7 +663,7 @@ var QR = {
       files  = [...this.files];
       this.value = null;
     }
-    if (!files.length) { return; }
+    if (!files.length) return;
     QR.cleanNotifications();
     for (var file of files) {
       QR.handleFile(file, files.length);
@@ -689,13 +689,13 @@ var QR = {
   },
 
   openFileInput() {
-    if (QR.nodes.fileButton.disabled) { return; }
+    if (QR.nodes.fileButton.disabled) return;
     QR.nodes.fileInput.click();
     return QR.nodes.fileButton.focus();
   },
 
   generatePostableThreadsList() {
-    if (!QR.nodes) { return; }
+    if (!QR.nodes) return;
     const list    = QR.nodes.thread;
     const options = [list.firstElementChild];
     for (var thread of g.BOARD.threads.keys) {
@@ -708,7 +708,7 @@ var QR = {
     $.rmAll(list);
     $.add(list, options);
     list.value = val;
-    if (list.value === val) { return; }
+    if (list.value === val) return;
     // Fix the value if the option disappeared.
     list.value = g.VIEW === 'thread' ? g.THREADID : 'new';
     return (g.VIEW === 'thread' ? $.addClass : $.rmClass)(QR.nodes.el, 'reply-to-thread');
@@ -822,7 +822,7 @@ var QR = {
     if (Conf['Remember QR Size']) {
       $.get('QR Size', '', item => nodes.com.style.cssText = item['QR Size']);
       $.on(nodes.com, 'mouseup', function(e) {
-        if (e.button !== 0) { return; }
+        if (e.button !== 0) return;
         $.set('QR Size', this.style.cssText);
       });
     }
@@ -875,7 +875,7 @@ var QR = {
 
   flagsInput() {
     const {nodes} = QR;
-    if (!nodes) { return; }
+    if (!nodes) return;
     if (nodes.flag) {
       $.rm(nodes.flag);
       delete nodes.flag;
@@ -989,7 +989,7 @@ var QR = {
     };
     if (Conf['Show Upload Progress']) {
       options.onprogress = function(e) {
-        if (this !== QR.req?.upload) { return; } // aborted
+        if (this !== QR.req?.upload) return; // aborted
         if (e.loaded < e.total) {
           // Uploading...
           QR.req.progress = `${Math.round((e.loaded / e.total) * 100)}%`;
@@ -1059,7 +1059,7 @@ var QR = {
 
   response() {
     let connErr, err;
-    if (this !== QR.req) { return; } // aborted
+    if (this !== QR.req) return; // aborted
     delete QR.req;
 
     const post = QR.posts[0];
@@ -1297,7 +1297,7 @@ var QR = {
 
     // Called from Main
     init() {
-      if (!Conf['Quick Reply']) { return; }
+      if (!Conf['Quick Reply']) return;
       this.data = Conf.cooldowns;
       this.changes = dict();
       $.sync('cooldowns', this.sync);
@@ -1323,10 +1323,7 @@ var QR = {
 
     start() {
       const {data} = QR.cooldown;
-      if (
-        !Conf.Cooldown || !QR.cooldown.isSetup || !!QR.cooldown.isCounting ||
-        ((Object.keys(data[g.BOARD.ID] || {}).length + Object.keys(data.global || {}).length) <= 0)
-      ) { return; }
+      if (!Conf.Cooldown || !QR.cooldown.isSetup || QR.cooldown.isCounting || ((Object.keys(data[g.BOARD.ID] || {}).length + Object.keys(data.global || {}).length) <= 0)) return;
       QR.cooldown.isCounting = true;
       QR.cooldown.count();
     },
@@ -1337,7 +1334,7 @@ var QR = {
     },
 
     add(threadID, postID) {
-      if (!Conf.Cooldown) { return; }
+      if (!Conf.Cooldown) return;
       const start = Date.now();
       const boardID = g.BOARD.ID;
       QR.cooldown.set(boardID, start, { threadID, postID });
@@ -1347,7 +1344,7 @@ var QR = {
     },
 
     addDelay(post, delay) {
-      if (!Conf.Cooldown) { return; }
+      if (!Conf.Cooldown) return;
       const cooldown = QR.cooldown.categorize(post);
       cooldown.delay = delay;
       QR.cooldown.set(g.BOARD.ID, Date.now(), cooldown);
@@ -1356,14 +1353,14 @@ var QR = {
     },
 
     addMute(delay) {
-      if (!Conf.Cooldown) { return; }
+      if (!Conf.Cooldown) return;
       QR.cooldown.set(g.BOARD.ID, Date.now(), { type: 'mute', delay });
       QR.cooldown.save();
       QR.cooldown.start();
     },
 
     delete(post) {
-      if (!QR.cooldown.data) { return; }
+      if (!QR.cooldown.data) return;
       const cooldowns = (QR.cooldown.data[post.board.ID] || (QR.cooldown.data[post.board.ID] = dict()));
       for (var id in cooldowns) {
         let cooldown = cooldowns[id];
@@ -1375,7 +1372,7 @@ var QR = {
     },
 
     secondsDeletion(post) {
-      if (!QR.cooldown.data || !Conf.Cooldown) { return 0; }
+      if (!QR.cooldown.data || !Conf.Cooldown) return 0;
       const cooldowns = QR.cooldown.data[post.board.ID] || dict();
       for (var start in cooldowns) {
         var cooldown = cooldowns[start];
@@ -1412,7 +1409,7 @@ var QR = {
 
     save() {
       const { changes } = QR.cooldown;
-      if (!Object.keys(changes).length) { return; }
+      if (!Object.keys(changes).length) return;
       $.get('cooldowns', dict(), ({cooldowns}) => {
         for (var scope in QR.cooldown.changes) {
           for (var id in QR.cooldown.changes[scope]) {
@@ -1435,7 +1432,7 @@ var QR = {
 
     update() {
       let cooldown;
-      if (!QR.cooldown.isCounting) { return; }
+      if (!QR.cooldown.isCounting) return;
 
       let save = false;
       let nCooldowns = 0;
@@ -1526,7 +1523,7 @@ var QR = {
   oekaki: {
     menu: {
       init() {
-        if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf['Edit Link'] || !Conf['Quick Reply']) { return; }
+        if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf['Edit Link'] || !Conf['Quick Reply']) return;
 
         const a = $.el('a', {
           className: 'edit-link',
@@ -1627,7 +1624,7 @@ var QR = {
     },
 
     init() {
-      if (!Conf['Quick Reply'] && (!Conf.Menu || !Conf['Delete Link'])) { return; }
+      if (!Conf['Quick Reply'] && (!Conf.Menu || !Conf['Delete Link'])) return;
       for (var item of Conf['QR.personas'].split('\n')) {
         QR.persona.parseItem(item.trim());
       }
@@ -1637,14 +1634,14 @@ var QR = {
       if (item[0] === '#') return;
       const regexMatch = item.match(/(name|options|email|subject|password):"(.*)"/i);
       if(!regexMatch) return;
-      let needle: string;
       let [match, type, val] = regexMatch;
 
       // Don't mix up item settings with val.
       item = item.replace(match, '');
 
       const boards = item.match(/boards:([^;]+)/i)?.[1].toLowerCase() || 'global';
-      if ((boards !== 'global') && (needle = g.BOARD.ID, !boards.split(',').includes(needle))) { return; }
+      let needle: string = g.BOARD.ID, !boards.split(',').includes(needle);
+      if ((boards !== 'global') && needle) return;
 
 
       if (type === 'password') {
@@ -1819,7 +1816,7 @@ class post {
 
   lock(lock = true) {
     this.isLocked = lock;
-    if (this !== QR.selected) { return; }
+    if (this !== QR.selected) return;
       for (const name of ['thread', 'name', 'email', 'sub', 'com', 'fileButton', 'filename', 'spoiler', 'flag']) {
       let node = QR.nodes[name];
       if (node) node.disabled = lock;
@@ -1868,7 +1865,7 @@ class post {
       return;
     }
     const {name} = input.dataset;
-    if (!['thread', 'name', 'email', 'sub', 'com', 'filename', 'flag'].includes(name)) { return; }
+    if (!['thread', 'name', 'email', 'sub', 'com', 'filename', 'flag'].includes(name)) return;
     const prev = this[name] || input.dataset.default || null;
     this[name] = input.value || input.dataset.default || null;
     switch (name) {
@@ -1881,7 +1878,7 @@ class post {
         this.updateComment();
         break;
       case 'filename':
-        if (!this.file) { return; }
+        if (!this.file) return;
         this.saveFilename();
         this.updateFilename();
         break;

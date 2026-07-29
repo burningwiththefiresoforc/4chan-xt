@@ -10,7 +10,7 @@ import $ from "../platform/$";
  */
 var IDPostCount = {
   init() {
-    if ((g.VIEW !== 'thread') || !Conf['Count Posts by ID']) { return; }
+    if ((g.VIEW !== 'thread') || !Conf['Count Posts by ID']) return;
     Callbacks.Thread.push({
       name: 'Count Posts by ID',
       cb() { return IDPostCount.thread = this; }
@@ -31,7 +31,7 @@ var IDPostCount = {
     const {uniqueID} = Get.postFromNode(this).info;
     let n = 0;
     IDPostCount.thread.posts.forEach((post) => {
-      if (post.info.uniqueID === uniqueID) { return n++; }
+      if (post.info.uniqueID === uniqueID) return n++;
     });
     return this.title = `${n} post${n === 1 ? '' : 's'} by this ID`;
   }

@@ -83,7 +83,7 @@ export default class Fetcher {
 
   insert(post) {
     // Stop here if the container has been removed while loading.
-    if (!this.root.parentNode) { return; }
+    if (!this.root.parentNode) return;
     if (!this.quoter) { this.quoter = post; }
     const clone = post.addClone(this.quoter.context, ($.hasClass(this.root, 'dialog')));
     Main.callbackNodes('Post', [clone]);
@@ -128,7 +128,7 @@ export default class Fetcher {
     const {status} = req;
     if (status !== 200) {
       // The thread can die by the time we check a quote.
-      if (status && this.archivedPost()) { return; }
+      if (status && this.archivedPost()) return;
       $.addClass(this.root, 'warning');
       this.root.textContent =
         status === 404
@@ -148,7 +148,7 @@ export default class Fetcher {
         return;
       }
       // The post can be deleted by the time we check a quote.
-      if (this.archivedPost()) { return; }
+      if (this.archivedPost()) return;
       $.addClass(this.root, 'warning');
       this.root.textContent = `Post No.${this.postID} was not found.`;
       return;

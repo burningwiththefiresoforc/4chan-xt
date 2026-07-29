@@ -4,8 +4,8 @@ import QR from "./QR";
 
 const CaptchaT = {
   init() {
-    if (d.cookie.indexOf('pass_enabled=1') >= 0) { return; }
-    if (!(this.isEnabled = !!$('#t-root') || !$.id('postForm'))) { return; }
+    if (d.cookie.indexOf('pass_enabled=1') >= 0) return;
+    if (!(this.isEnabled = !!$('#t-root') || !$.id('postForm'))) return;
 
     const root = $.el('div', {className: 'captcha-root'});
     this.nodes = {root};
@@ -24,7 +24,7 @@ const CaptchaT = {
   },
 
   setup(focus) {
-    if (!this.isEnabled) { return; }
+    if (!this.isEnabled) return;
 
     if (!this.nodes.container) {
       this.nodes.container = $.el('div', {className: 'captcha-container'});
@@ -38,14 +38,14 @@ const CaptchaT = {
   },
 
   destroy() {
-    if (!this.isEnabled || !this.nodes.container) { return; }
+    if (!this.isEnabled || !this.nodes.container) return;
     $.global('destroyTCaptcha');
     $.rm(this.nodes.container);
     delete this.nodes.container;
   },
 
   updateThread() {
-    if (!this.isEnabled) { return; }
+    if (!this.isEnabled) return;
     const {boardID, threadID} = (CaptchaT.currentThread || {});
     const newThread = CaptchaT.getThread();
     if ((newThread.boardID !== boardID) || (newThread.threadID !== threadID)) {
@@ -74,8 +74,6 @@ const CaptchaT = {
     }
   },
 
-  occupied() {
-    return !!this.nodes.container;
-  }
+  occupied() { return !!this.nodes.container; }
 };
 export default CaptchaT;

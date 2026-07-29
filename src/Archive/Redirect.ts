@@ -138,7 +138,7 @@ const Redirect = {
   ): string {
     const archive = (['search', 'board'].includes(dest)
       ? Redirect.data.thread : Redirect.data[dest]).get(data.boardID);
-    if (!archive) { return ''; }
+    if (!archive) return '';
     return Redirect[dest](archive, data);
   },
 
@@ -167,17 +167,17 @@ const Redirect = {
     // https://github.com/eksopl/fuuka/issues/27
     const protocol = Redirect.protocol(archive);
     const url = `${protocol}${archive.domain}/_/api/chan/post/?board=${boardID}&num=${postID}`;
-    if (!Redirect.securityCheck(url)) { return ''; }
+    if (!Redirect.securityCheck(url)) return '';
 
     return url;
   },
 
   file(archive, {boardID, filename}) {
-    if (!filename) { return ''; }
+    if (!filename) return '';
     if (boardID === 'f') {
       filename = encodeURIComponent($.unescape(decodeURIComponent(filename)));
     } else {
-      if (/[sm]\.jpg$/.test(filename)) { return ''; }
+      if (/[sm]\.jpg$/.test(filename)) return '';
     }
     if (archive.name.endsWith('arch.b4k.co') || archive.name.endsWith('Desuarchive' || archive.name.endsWith('palanq.win'))) {
       const [timeStamp, ext] = filename.split('.');

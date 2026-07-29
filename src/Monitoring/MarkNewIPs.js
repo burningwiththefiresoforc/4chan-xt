@@ -10,7 +10,7 @@ import $ from "../platform/$";
  */
 var MarkNewIPs = {
   init() {
-    if ((g.SITE.software !== 'yotsuba') || (g.VIEW !== 'thread') || !Conf['Mark New IPs']) { return; }
+    if ((g.SITE.software !== 'yotsuba') || (g.VIEW !== 'thread') || !Conf['Mark New IPs']) return;
     Callbacks.Thread.push({
       name: 'Mark New IPs',
       cb:   this.node
@@ -25,7 +25,7 @@ var MarkNewIPs = {
 
   onUpdate(e) {
     const {ipCount, postCount, newPosts, deletedPosts} = e.detail;
-    if (ipCount == null) { return; }
+    if (ipCount == null) return;
 
     let fullID;
     switch (ipCount - MarkNewIPs.ipCount) {

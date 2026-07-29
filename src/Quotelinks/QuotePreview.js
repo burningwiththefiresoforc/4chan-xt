@@ -14,7 +14,7 @@ import $ from "../platform/$";
  */
 var QuotePreview = {
   init() {
-    if (!Conf['Quote Previewing']) { return; }
+    if (!Conf['Quote Previewing']) return;
 
     if (g.VIEW === 'archive') {
       $.on(d, 'mouseover', function(e) {
@@ -24,7 +24,7 @@ var QuotePreview = {
       });
     }
 
-    if (!['index', 'thread'].includes(g.VIEW)) { return; }
+    if (!['index', 'thread'].includes(g.VIEW)) return;
 
     if (Conf['Comment Expansion']) {
       ExpandComment.callbacks.push(this.node);
@@ -43,7 +43,7 @@ var QuotePreview = {
   },
 
   mouseover(e) {
-    if (($.hasClass(this, 'inlined') && !$.hasClass(doc, 'catalog-mode')) || !d.contains(this)) { return; }
+    if (($.hasClass(this, 'inlined') && !$.hasClass(doc, 'catalog-mode')) || !d.contains(this)) return;
 
     const {boardID, threadID, postID} = Get.postDataFromLink(this);
 
@@ -82,7 +82,7 @@ var QuotePreview = {
     let post  = clone.origin;
     post.rmClone(root.dataset.clone);
 
-    if (!Conf['Quote Highlighting']) { return; }
+    if (!Conf['Quote Highlighting']) return;
     for (post of [post].concat(post.clones)) {
       $.rmClass(post.nodes.post, 'qphl');
     }

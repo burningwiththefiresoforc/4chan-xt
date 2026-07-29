@@ -45,7 +45,7 @@ const Report = {
 
   archive() {
     let match, urls;
-    if (!(urls = Redirect.report(g.BOARD.ID)).length) { return; }
+    if (!(urls = Redirect.report(g.BOARD.ID)).length) return;
 
     const form    = $('form');
     const types   = $.id('reportTypes');

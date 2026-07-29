@@ -13,7 +13,7 @@ import $ from "../platform/$";
  */
 var QuoteInline = {
   init() {
-    if (!['index', 'thread'].includes(g.VIEW) || !Conf['Quote Inlining']) { return; }
+    if (!['index', 'thread'].includes(g.VIEW) || !Conf['Quote Inlining']) return;
 
     if (Conf['Comment Expansion']) {
       ExpandComment.callbacks.push(this.node);
@@ -51,11 +51,11 @@ var QuoteInline = {
   },
 
   toggle(e) {
-    if ($.modifiedClick(e)) { return; }
+    if ($.modifiedClick(e)) return;
 
     const {boardID, threadID, postID} = Get.postDataFromLink(this);
-    if (Conf['Inline Cross-thread Quotes Only'] && (g.VIEW === 'thread') && g.posts.get(`${boardID}.${postID}`)?.nodes.root.offsetParent) { return; } // exists and not hidden
-    if ($.hasClass(doc, 'catalog-mode')) { return; }
+    if (Conf['Inline Cross-thread Quotes Only'] && (g.VIEW === 'thread') && g.posts.get(`${boardID}.${postID}`)?.nodes.root.offsetParent) return; // exists and not hidden
+    if ($.hasClass(doc, 'catalog-mode')) return;
 
     e.preventDefault();
     const quoter = Get.postFromNode(this);
@@ -63,7 +63,7 @@ var QuoteInline = {
     if ($.hasClass(this, 'inlined')) {
       QuoteInline.rm(this, boardID, threadID, postID, context);
     } else {
-      if ($.x(`ancestor::div[@data-full-i-d='${boardID}.${postID}']`, this)) { return; }
+      if ($.x(`ancestor::div[@data-full-i-d='${boardID}.${postID}']`, this)) return;
       QuoteInline.add(this, boardID, threadID, postID, context, quoter);
     }
     this.classList.toggle('inlined');
@@ -101,7 +101,7 @@ var QuoteInline = {
 
     // Decrease the unread count if this post
     // is in the array of unread posts.
-    if (!Unread.posts) { return; }
+    if (!Unread.posts) return;
     Unread.readSinglePost(post);
   },
 

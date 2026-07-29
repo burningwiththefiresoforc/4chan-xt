@@ -12,7 +12,7 @@ export default class RandomAccessList {
   push(data) {
     let {ID} = data;
     if (!ID) { ID = data.id; }
-    if (this[ID]) { return; }
+    if (this[ID]) return;
     const {last} = this;
     let item = {
       prev: last,
@@ -27,7 +27,7 @@ export default class RandomAccessList {
   }
 
   before(root, item) {
-    if ((item.next === root) || (item === root)) { return; }
+    if ((item.next === root) || (item === root)) return;
 
     this.rmi(item);
 
@@ -43,7 +43,7 @@ export default class RandomAccessList {
   }
 
   after(root, item) {
-    if ((item.prev === root) || (item === root)) { return; }
+    if ((item.prev === root) || (item === root)) return;
 
     this.rmi(item);
 
@@ -60,7 +60,7 @@ export default class RandomAccessList {
 
   prepend(item) {
     const {first} = this;
-    if ((item === first) || !this[item.ID]) { return; }
+    if ((item === first) || !this[item.ID]) return;
     this.rmi(item);
     item.next = first;
     if (first) {
@@ -85,7 +85,7 @@ export default class RandomAccessList {
 
   rm(ID) {
     const item = this[ID];
-    if (!item) { return; }
+    if (!item) return;
     delete this[ID];
     this.length--;
     this.rmi(item);

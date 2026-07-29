@@ -15,7 +15,7 @@ import { dict } from "../platform/helpers";
  */
 const Sauce = {
   init() {
-    if (!['index', 'thread'].includes(g.VIEW) || !Conf.Sauce) { return; }
+    if (!['index', 'thread'].includes(g.VIEW) || !Conf.Sauce) return;
     $.addClass(doc, 'show-sauce');
 
     const links = [];
@@ -25,7 +25,7 @@ const Sauce = {
         links.push(linkData);
       }
     }
-    if (!links.length) { return; }
+    if (!links.length) return;
 
     this.links = links;
     this.link  = $.el('a', {
@@ -39,7 +39,7 @@ const Sauce = {
   },
 
   parseLink(link) {
-    if (!(link = link.trim())) { return null; }
+    if (!(link = link.trim())) return null;
     const parts = dict();
     const iterable = link.split(/;(?=(?:text|boards|types|regexp|sandbox):?)/);
     for (let i = 0; i < iterable.length; i++) {
@@ -78,21 +78,23 @@ const Sauce = {
   },
 
   createSauceLink(link, post, file) {
-    let a, matches, needle;
     const ext = file.url.match(/[^.]*$/)[0];
     const parts = dict();
     $.extend(parts, link);
 
-    if (!!parts.boards && !parts.boards[`${post.siteID}/${post.boardID}`] && !parts.boards[`${post.siteID}/*`]) { return null; }
-    if (!!parts.types  && (needle = ext, !parts.types.split(',').includes(needle))) { return null; }
-    if (!!parts.regexp && (!(matches = file.name.match(parts.regexp)))) { return null; }
+    let matches = file.name.match(parts.regexp);
+    if (
+      (parts.boards && !parts.boards[`${post.siteID}/${post.boardID}`] && !parts.boards[`${post.siteID}/*`]) ||
+      (parts.types && !parts.types.split(',').includes(ext)) ||
+      (parts.regexp && !matches)
+    ) return null;
 
     const missing = [];
     for (const key of ['url', 'text']) {
       parts[key] = parts[key].replace(/%(T?URL|IMG|[sh]?MD5|board|name|%|semi|\$\d+)/g, (orig, parameter) => {
         let type;
         if (parameter[0] === '$') {
-          if (!matches) { return orig; }
+          if (!matches) return orig;
           type = matches[parameter.slice(1)] || '';
         } else {
           type = Sauce.formatters[parameter](post, file, ext);
@@ -110,15 +112,14 @@ const Sauce = {
       });
     }
 
+    let a = Sauce.link.cloneNode(false);
     if (g.SITE.areMD5sDeferred?.(post.board) && missing.length && !missing.filter(x => !/^.?MD5$/.test(x)).length) {
-      a = Sauce.link.cloneNode(false);
       a.dataset.skip = '1';
       return a;
     }
 
-    if (missing.length) { return null; }
+    if (missing.length) return null;
 
-    a = Sauce.link.cloneNode(false);
     a.href = parts.url;
     a.textContent = parts.text;
     if (/^javascript:/i.test(parts.url)) { a.removeAttribute('target'); }
@@ -126,7 +127,7 @@ const Sauce = {
   },
 
   node() {
-    if (this.isClone) { return; }
+    if (this.isClone) return;
     for (const file of this.files) {
       Sauce.file(this, file);
     }

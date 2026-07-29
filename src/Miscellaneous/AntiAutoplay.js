@@ -10,7 +10,7 @@ import $$ from "../platform/$$";
  */
 var AntiAutoplay = {
   init() {
-    if (!Conf['Disable Autoplaying Sounds']) { return; }
+    if (!Conf['Disable Autoplaying Sounds']) return;
     $.addClass(doc, 'anti-autoplay');
     for (var audio of $$('audio[autoplay]', doc)) { this.stop(audio); }
     window.addEventListener('loadstart', (e => this.stop(e.target)), true);
@@ -22,10 +22,10 @@ var AntiAutoplay = {
   },
 
   stop(audio) {
-    if (!audio.autoplay) { return; }
+    if (!audio.autoplay) return;
     audio.pause();
     audio.autoplay = false;
-    if (audio.controls) { return; }
+    if (audio.controls) return;
     audio.controls = true;
     $.addClass(audio, 'controls-added');
   },

@@ -13,7 +13,7 @@ import ExpandComment from "./ExpandComment";
  */
 var Fourchan = {
   init() {
-    if ((g.SITE.software !== 'yotsuba') || !['index', 'thread', 'archive'].includes(g.VIEW)) { return; }
+    if ((g.SITE.software !== 'yotsuba') || !['index', 'thread', 'archive'].includes(g.VIEW)) return;
     BoardConfig.ready(this.initBoard);
     PageReady.ready(this.initReady);
   },
@@ -22,8 +22,8 @@ var Fourchan = {
     if (g.BOARD.config.code_tags) {
       $.on(window, 'prettyprint:cb', (e) => {
         let post, pre;
-        if (!(post = g.posts.get(e.detail.ID))) { return; }
-        if (!(pre  = $$('.prettyprint', post.nodes.comment)[+e.detail.i])) { return; }
+        if (!(post = g.posts.get(e.detail.ID))) return;
+        if (!(pre = $$('.prettyprint', post.nodes.comment)[+e.detail.i])) return;
         if (!$.hasClass(pre, 'prettyprinted')) {
           pre.innerHTML = e.detail.html;
           return $.addClass(pre, 'prettyprinted');
@@ -61,7 +61,7 @@ var Fourchan = {
   initReady() { $.global('disable4chanIdHl'); },
 
   code() {
-    if (this.isClone) { return; }
+    if (this.isClone) return;
     return $.ready(() => {
       const iterable = $$('.prettyprint', this.nodes.comment);
       for (let i = 0; i < iterable.length; i++) {
@@ -74,7 +74,7 @@ var Fourchan = {
   },
 
   math() {
-    if (!/\[(math|eqn)\]/.test(this.nodes.comment.textContent)) { return; }
+    if (!/\[(math|eqn)\]/.test(this.nodes.comment.textContent)) return;
     // XXX <wbr> tags frequently break MathJax; remove them.
     let wbrs = $$('wbr', this.nodes.comment);
     if (wbrs.length) {
@@ -82,7 +82,7 @@ var Fourchan = {
       this.nodes.comment.normalize();
     }
     var cb = () => {
-      if (!doc.contains(this.nodes.comment)) { return; }
+      if (!doc.contains(this.nodes.comment)) return;
       $.off(d, 'PostsInserted', cb);
       $.event('mathjax', null, this.nodes.comment);
     };

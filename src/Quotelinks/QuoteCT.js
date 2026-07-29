@@ -11,7 +11,7 @@ import Get from "../General/Get";
  */
 var QuoteCT = {
   init() {
-    if (!['index', 'thread'].includes(g.VIEW) || !Conf['Mark Cross-thread Quotes']) { return; }
+    if (!['index', 'thread'].includes(g.VIEW) || !Conf['Mark Cross-thread Quotes']) return;
 
     if (Conf['Comment Expansion']) {
       ExpandComment.callbacks.push(this.node);
@@ -29,7 +29,7 @@ var QuoteCT = {
   },
   node() {
     // Stop there if it's a clone of a post in the same thread.
-    if (this.isClone && (this.thread === this.context.thread)) { return; }
+    if (this.isClone && (this.thread === this.context.thread)) return;
 
     const {board, thread} = this.context;
     for (var quotelink of this.nodes.quotelinks) {

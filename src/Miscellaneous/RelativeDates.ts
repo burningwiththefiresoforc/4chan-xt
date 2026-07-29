@@ -25,13 +25,13 @@ const RelativeDates = {
   },
 
   node(this: Post) {
-    if (!this.info.date) { return; }
+    if (!this.info.date) return;
     const dateEl = this.nodes.date;
     if (Conf.RelativeTime === 'Hover') {
       $.on(dateEl, 'mouseover', () => RelativeDates.hover(this));
       return;
     }
-    if (this.isClone) { return; }
+    if (this.isClone) return;
 
     // Show original absolute time as tooltip so users can still know exact times
     // Since "Time Formatting" runs its `node` before us, the title tooltip will
@@ -100,7 +100,7 @@ const RelativeDates = {
   timeout: undefined as undefined | number,
   flush() {
     // No point in changing the dates until the user sees them.
-    if (d.hidden) { return; }
+    if (d.hidden) return;
 
     const now = new Date();
     for (const data of RelativeDates.stale) { RelativeDates.update(data, now); }
@@ -162,9 +162,9 @@ const RelativeDates = {
   },
 
   markStale(data) {
-    if (RelativeDates.stale.includes(data)) { return; } // We can call RelativeDates.update() multiple times.
-    if (data instanceof Post && !g.posts.get(data.fullID)) { return; } // collected post.
-    if (data instanceof Element && !doc.contains(data)) { return; } // removed catalog reply.
+    if (RelativeDates.stale.includes(data)) return; // We can call RelativeDates.update() multiple times.
+    if (data instanceof Post && !g.posts.get(data.fullID)) return; // collected post.
+    if (data instanceof Element && !doc.contains(data)) return; // removed catalog reply.
     RelativeDates.stale.push(data);
   }
 };

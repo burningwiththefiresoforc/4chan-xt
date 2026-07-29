@@ -192,7 +192,7 @@ const PageContextFunctions = {
       if (e) { this.removeEventListener('QRMetadata', cb, false); }
       const selected = document.getElementById('selected');
       if (!selected?.dataset.type) return error('No file to edit.');
-      if (!/^(image|video)\//.test(selected.dataset.type)) { return error('Not an image.'); }
+      if (!/^(image|video)\//.test(selected.dataset.type)) return error('Not an image.');
       if (!selected.dataset.height) return error('Metadata not available.');
       if (selected.dataset.height === 'loading') {
         selected.addEventListener('QRMetadata', cb, false);

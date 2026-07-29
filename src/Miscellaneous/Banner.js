@@ -39,7 +39,7 @@ const Banner = {
 
     if (Conf['Custom Board Titles']) {
       Banner.custom(children[1]);
-      if (children[2]) { return Banner.custom(children[2]); }
+      if (children[2]) return Banner.custom(children[2]);
     }
   },
 
@@ -74,7 +74,7 @@ const Banner = {
     },
 
     click(e) {
-      if (!e.ctrlKey && !e.metaKey) { return; }
+      if (!e.ctrlKey && !e.metaKey) return;
       Banner.original[this.className] ??= this.cloneNode(true);
       this.contentEditable = true;
       for (const br of $$('br', this)) { $.replace(br, $.tn('\n')); }
@@ -83,7 +83,7 @@ const Banner = {
 
     keydown(e) {
       e.stopPropagation();
-      if (!e.shiftKey && (e.keyCode === 13)) { return this.blur(); }
+      if (!e.shiftKey && (e.keyCode === 13)) return this.blur();
     },
 
     blur() {

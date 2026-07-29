@@ -45,13 +45,13 @@ var Index = {
 
   init() {
     let input, inputs, name;
-    if (g.VIEW !== 'index') { return; }
+    if (g.VIEW !== 'index') return;
 
     // For IndexRefresh events
     $.one(d, '4chanXInitFinished', this.cb.initFinished);
     $.on(d, 'PostsInserted', this.cb.postsInserted);
 
-    if (!this.enabledOn(g.BOARD)) { return; }
+    if (!this.enabledOn(g.BOARD)) return;
 
     setIndexEnabled(true);
 
@@ -223,7 +223,7 @@ var Index = {
       $.before(topNavPos, $.el('hr'));
       $.before(topNavPos, Index.navLinks);
       const timeEl = $('#index-last-refresh time', Index.navLinks);
-      if (timeEl.dataset.utc) { return RelativeDates.update(timeEl); }
+      if (timeEl.dataset.utc) return RelativeDates.update(timeEl);
     });
 
     PageReady.ready(() => {
@@ -236,11 +236,11 @@ var Index = {
   },
 
   scroll() {
-    if (Index.req || !Index.liveThreadData || (Conf['Index Mode'] !== 'infinite') || (window.scrollY <= (doc.scrollHeight - (300 + window.innerHeight)))) { return; }
+    if (Index.req || !Index.liveThreadData || (Conf['Index Mode'] !== 'infinite') || (window.scrollY <= (doc.scrollHeight - (300 + window.innerHeight)))) return;
     Index.pageNum ??= Index.currentPage; // Avoid having to pushState to keep track of the current page
 
     const pageNum = ++Index.pageNum;
-    if (pageNum > Index.pagesNum) { return Index.endNotice(); }
+    if (pageNum > Index.pagesNum) return Index.endNotice();
 
     const threadIDs = Index.threadsOnPage(pageNum);
     Index.buildStructure(threadIDs);
@@ -250,7 +250,7 @@ var Index = {
     let notify = false;
     const reset = () => notify = false;
     return () => {
-      if (notify) { return; }
+      if (notify) return;
       notify = true;
       new Notice('info', "Last page reached.", 2);
       setTimeout(reset, 3 * SECOND);
@@ -259,7 +259,7 @@ var Index = {
 
   menu: {
     init() {
-      if ((g.VIEW !== 'index') || !Conf.Menu || !Conf['Thread Hiding Link'] || !Index.enabledOn(g.BOARD)) { return; }
+      if ((g.VIEW !== 'index') || !Conf.Menu || !Conf['Thread Hiding Link'] || !Index.enabledOn(g.BOARD)) return;
 
       Menu.menu.addEntry({
         el: $.el('a', {
@@ -269,7 +269,7 @@ var Index = {
           {innerHTML: "<span></span><span class=\"shortcut-text\">Shift+click</span>"}),
         order: 20,
         open({thread}) {
-          if (Conf['Index Mode'] !== 'catalog') { return false; }
+          if (Conf['Index Mode'] !== 'catalog') return false;
           this.el.firstElementChild.textContent = thread.isHidden
             ? 'Unhide' : 'Hide';
           if (this.cb) { $.off(this.el, 'click', this.cb); }
@@ -285,7 +285,7 @@ var Index = {
   },
 
   node() {
-    if (this.isReply || this.isClone || !Index.threadPosition[this.ID]) { return; }
+    if (this.isReply || this.isClone || !Index.threadPosition[this.ID]) return;
     this.thread.setPage(Math.floor(Index.threadPosition[this.ID] / Index.threadsNumPerPage) + 1);
   },
 
@@ -305,7 +305,7 @@ var Index = {
   toggleHide(thread) {
     if (Index.showHiddenThreads) {
       ThreadHiding.show(thread);
-      if (!ThreadHiding.db.get({boardID: thread.board.ID, threadID: thread.ID})) { return; }
+      if (!ThreadHiding.db.get({boardID: thread.board.ID, threadID: thread.ID})) return;
       // Don't save when un-hiding filtered threads.
     } else {
       ThreadHiding.hide(thread);
@@ -331,7 +331,7 @@ var Index = {
     },
 
     postsInserted() {
-      if (!Index.initFinishedFired) { return; }
+      if (!Index.initFinishedFired) return;
       let n = 0;
       g.posts.forEach((post) => {
         if (!post.isFetchedQuote && !post.indexRefreshSeen && doc.contains(post.nodes.root)) {
@@ -339,7 +339,7 @@ var Index = {
           return n++;
         }
       });
-      if (n) { return $.event('IndexRefresh'); }
+      if (n) return $.event('IndexRefresh');
     },
 
     toggleHiddenThreads() {
@@ -436,7 +436,7 @@ var Index = {
 
     pageNav(e) {
       let a;
-      if ($.modifiedClick(e)) { return; }
+      if ($.modifiedClick(e)) return;
       switch (e.target.nodeName) {
         case 'BUTTON':
           e.target.blur();
@@ -448,7 +448,7 @@ var Index = {
         default:
           return;
       }
-      if (a.textContent === 'Catalog') { return; }
+      if (a.textContent === 'Catalog') return;
       e.preventDefault();
       Index.userPageNav(+a.pathname.split(/\/+/)[2] || 1);
     },
@@ -466,7 +466,7 @@ var Index = {
 
     hoverAdjust() {
       // Prevent hovered catalog threads from going offscreen.
-      if (!$.hasClass(doc, 'catalog-hover-expand')) { return; }
+      if (!$.hasClass(doc, 'catalog-hover-expand')) return;
       const rect = this.post.getBoundingClientRect();
       let x = $.minmax(0, -rect.left, doc.clientWidth - rect.right);
       if (x) {
@@ -604,7 +604,7 @@ var Index = {
   },
 
   pageLoad(scroll=true) {
-    if (!Index.liveThreadData) { return; }
+    if (!Index.liveThreadData) return;
     let {threads, order, search, mode, sort, page, hash} = Index.changed;
     if (!threads) { threads = search; }
     if (!order) { order = sort; }
@@ -674,7 +674,7 @@ var Index = {
 
     // <strong> current page
     if (strong = $('strong', pagesRoot)) {
-      if (+strong.textContent === pageNum) { return; }
+      if (+strong.textContent === pageNum) return;
       $.replace(strong, strong.firstChild);
     } else {
       strong = $.el('strong');
@@ -687,7 +687,7 @@ var Index = {
   },
 
   updateHideLabel() {
-    if (!Index.hideLabel) { return; }
+    if (!Index.hideLabel) return;
     let hiddenCount = 0;
     for (var threadID of Index.liveThreadIDs) {
       if (Index.isHidden(threadID)) {
@@ -829,7 +829,7 @@ var Index = {
       g.SITE.Build.spoilerRange[g.BOARD.ID] = Index.liveThreadData[0].custom_spoiler;
     }
     g.BOARD.threads.forEach((thread) => {
-      if (!Index.liveThreadIDs.includes(thread.ID)) { return thread.collect(); }
+      if (!Index.liveThreadIDs.includes(thread.ID)) return thread.collect();
     });
     $.event('IndexUpdate',
       {threads: ((Index.liveThreadIDs.map((ID) => `${g.BOARD}.${ID}`)))});
@@ -997,7 +997,7 @@ var Index = {
 
   sort() {
     const {liveThreadIDs, liveThreadData} = Index;
-    if (!liveThreadData) { return; }
+    if (!liveThreadData) return;
     const tmp_time = new Date().getTime()/1000;
     const sortType = Index.currentSort.replace(/-rev$/, '');
     Index.sortedThreadIDs = (() => {
@@ -1012,9 +1012,9 @@ var Index = {
           for (let i = iterable.length - 1; i >= 0; i--) {
             var r = iterable[i];
             if (Index.isHiddenReply(thread.no, r)) { continue; }
-            if (sortType === 'lastreply') { return r; }
+            if (sortType === 'lastreply') return r;
             var len = r.com ? g.SITE.Build.parseComment(r.com).replace(/[^a-z]/ig, '').length : 0;
-            if (len >= Index.lastLongThresholds[+!!r.ext]) { return r; }
+            if (len >= Index.lastLongThresholds[+!!r.ext]) return r;
           }
           if (thread.omitted_posts && thread.last_replies?.length) { return thread.last_replies[0]; } else { return thread; }
         };
@@ -1055,7 +1055,7 @@ var Index = {
 
   buildIndex() {
     let threadIDs;
-    if (!Index.liveThreadData) { return; }
+    if (!Index.liveThreadData) return;
     switch (Conf['Index Mode']) {
       case 'all pages':
         threadIDs = Index.sortedThreadIDs;
@@ -1103,7 +1103,7 @@ var Index = {
     const n = threadIDs.length;
     let node0 = null;
     var fn = () => {
-      if (node0 && !node0.parentNode) { return; } // Index.root cleared
+      if (node0 && !node0.parentNode) return; // Index.root cleared
       const j = (i > 0) && Index.root.parentNode ? n : i + 30;
       node0 = Index.buildCatalogPart(threadIDs.slice(i, j))[0];
       i = j;
@@ -1153,7 +1153,7 @@ var Index = {
 
   onSearchInput() {
     const search = Index.searchInput.value.trim();
-    if (search === Index.search) { return; }
+    if (search === Index.search) return;
     Index.pushState({
       search,
       replace: !!search === !!Index.search
@@ -1172,7 +1172,7 @@ var Index = {
       }
       return Index.sortedThreadIDs.filter(ID => regexp.test(Filter.values(match[1], Index.parsedThreads[ID]).join('\n')));
     }
-    if (!(keywords = query.toLowerCase().match(/\S+/g))) { return; }
+    if (!(keywords = query.toLowerCase().match(/\S+/g))) return;
     return Index.sortedThreadIDs.filter(ID => Index.searchMatch(Index.parsedThreads[ID], keywords));
   },
 
@@ -1186,7 +1186,7 @@ var Index = {
     if (file) { text.push(file.name); }
     text = text.join(' ').toLowerCase();
     for (var keyword of keywords) {
-      if (-1 === text.indexOf(keyword)) { return false; }
+      if (-1 === text.indexOf(keyword)) return false;
     }
     return true;
   }

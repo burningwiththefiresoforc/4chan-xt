@@ -11,9 +11,9 @@ import $ from "../platform/$";
  */
 const ImageLoader = {
   init() {
-    if (!['index', 'thread', 'archive'].includes(g.VIEW)) { return; }
+    if (!['index', 'thread', 'archive'].includes(g.VIEW)) return;
     const replace = Conf['Replace JPG'] || Conf['Replace PNG'] || Conf['Replace GIF'] || Conf['Replace WEBM'];
-    if (!Conf['Image Prefetching'] && !replace) { return; }
+    if (!Conf['Image Prefetching'] && !replace) return;
 
     Callbacks.Post.push({
       name: 'Image Replace',
@@ -30,7 +30,7 @@ const ImageLoader = {
       $.on(d, 'scroll visibilitychange 4chanXInitFinished PostsInserted', this.playVideos);
     }
 
-    if (!Conf['Image Prefetching'] || !['index', 'thread'].includes(g.VIEW)) { return; }
+    if (!Conf['Image Prefetching'] || !['index', 'thread'].includes(g.VIEW)) return;
 
     const el = $.el('a', {
       href: 'javascript:;',
@@ -45,7 +45,7 @@ const ImageLoader = {
   },
 
   node() {
-    if (this.isClone) { return; }
+    if (this.isClone) return;
     for (const file of this.files) {
       if (Conf['Replace WEBM'] && file.isVideo) { ImageLoader.replaceVideo(this, file); }
       ImageLoader.prefetch(this, file);
@@ -74,7 +74,7 @@ const ImageLoader = {
   prefetch(post, file) {
     let clone, type;
     const {isImage, isVideo, thumb, url} = file;
-    if (file.isPrefetched || !(isImage || isVideo) || post.isHidden || post.thread.isHidden) { return; }
+    if (file.isPrefetched || !(isImage || isVideo) || post.isHidden || post.thread.isHidden) return;
     if (isVideo) {
       type = 'WEBM';
     } else {
@@ -82,9 +82,9 @@ const ImageLoader = {
       if (type === 'JPEG') { type = 'JPG'; }
     }
     const replace = Conf[`Replace ${type}`] && !/spoiler/.test(thumb.src || thumb.dataset.src);
-    if (!replace && !ImageLoader.prefetchEnabled) { return; }
-    if ($.hasClass(doc, 'catalog-mode')) { return; }
-    if (![post, ...post.clones].some(clone => doc.contains(clone.nodes.root))) { return; }
+    if (!replace && !ImageLoader.prefetchEnabled) return;
+    if ($.hasClass(doc, 'catalog-mode')) return;
+    if (![post, ...post.clones].some(clone => doc.contains(clone.nodes.root))) return;
     file.isPrefetched = true;
     if (file.videoThumb) {
       for (clone of post.clones) { clone.file.thumb.preload = 'auto'; }

@@ -13,7 +13,7 @@ import $$ from "../platform/$$";
  */
 var Quotify = {
   init() {
-    if (!['index', 'thread'].includes(g.VIEW) || !Conf['Resurrect Quotes']) { return; }
+    if (!['index', 'thread'].includes(g.VIEW) || !Conf['Resurrect Quotes']) return;
 
     $.addClass(doc, 'resurrect-quotes');
 
@@ -45,7 +45,7 @@ var Quotify = {
     let m = link.pathname.match(/^\/([^/]+)\/thread\/S?(\d+)\/?$/);
     if (!m) return;
     // if (['boards.4chan.org', 'boards.4channel.org'].includes(link.hostname)) { return; }
-    if (link.hostname === 'boards.4chan.org') { return; }
+    if (link.hostname === 'boards.4chan.org') return;
     const boardID  = m[1];
     const threadID = m[2];
     const postID   = link.hash.match(/^#[pq]?(\d+)$|$/)[1] || threadID;
@@ -67,7 +67,7 @@ var Quotify = {
     }
 
     const quote = deadlink.textContent;
-    if (!(postID = quote.match(/\d+$/)?.[0])) { return; }
+    if (!(postID = quote.match(/\d+$/)?.[0])) return;
     if (postID[0] === '0') {
       // Fix quotelinks that start with a `0`.
       Quotify.fixDeadlink(deadlink);

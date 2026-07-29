@@ -11,7 +11,7 @@ import $ from "../platform/$";
  */
 const FappeTyme = {
   init() {
-    if ((!Conf['Fappe Tyme'] && !Conf['Werk Tyme']) || !['index', 'thread', 'archive'].includes(g.VIEW)) { return; }
+    if ((!Conf['Fappe Tyme'] && !Conf['Werk Tyme']) || !['index', 'thread', 'archive'].includes(g.VIEW)) return;
 
     this.nodes = {};
     this.enabled = {
@@ -66,7 +66,7 @@ const FappeTyme = {
 
   catalogNode() {
     const file = this.thread.OP.files[0];
-    if (!file) { return; }
+    if (!file) return;
     const filename = $.el('div', {
       textContent: file.name,
       className:   'werkTyme-filename'
@@ -81,7 +81,7 @@ const FappeTyme = {
 
   toggle(type) {
     this.set(type, !this.enabled[type]);
-    if (type === 'werk') { return $.cb.checked.call(this.nodes[type]); }
+    if (type === 'werk') return $.cb.checked.call(this.nodes[type]);
   }
 };
 export default FappeTyme;

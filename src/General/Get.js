@@ -29,13 +29,13 @@ var Get = {
   },
 
   threadFromRoot(root) {
-    if (root == null) { return null; }
+    if (root == null) return null;
     const {board} = root.dataset;
     return g.threads.get(`${board ? encodeURIComponent(board) : g.BOARD.ID}.${root.id.match(/\d*$/)[0]}`);
   },
 
   postFromRoot(root) {
-    if (root == null) { return null; }
+    if (root == null) return null;
     const post  = g.posts.get(root.dataset.fullID);
     const index = root.dataset.clone;
     if (index) { return post.clones[+index]; } else { return post; }

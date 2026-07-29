@@ -16,7 +16,7 @@ import Embedding from "./Embedding";
  */
 const Linkify = {
   init() {
-    if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf.Linkify) { return; }
+    if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf.Linkify) return;
 
     if (Conf['Comment Expansion']) {
       ExpandComment.callbacks.push(this.node);
@@ -35,8 +35,8 @@ const Linkify = {
 
   node() {
     let link;
-    if (this.isClone) { return Embedding.events(this); }
-    if (!Linkify.regString.test(this.info.comment)) { return; }
+    if (this.isClone) return Embedding.events(this);
+    if (!Linkify.regString.test(this.info.comment)) return;
     for (link of $$('a', this.nodes.comment)) {
       if (g.SITE.isLinkified?.(link)) {
         $.addClass(link, 'linkify');

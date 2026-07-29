@@ -11,7 +11,7 @@ import Menu from "./Menu";
  */
 const ArchiveLink = {
   init() {
-    if ((g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf['Archive Link']) { return; }
+    if ((g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf['Archive Link']) return;
 
     const div = $.el('div', {textContent: 'Archive'});
 
@@ -59,7 +59,7 @@ const ArchiveLink = {
           ? post.info.flagCode || post.info.flagCodeTroll?.toLowerCase()
           : Filter.values(type, post)[0];
         // We want to parse the exact same stuff as the filter does already.
-        if (!value) { return false; }
+        if (!value) return false;
         el.href = Redirect.to('search', {
           boardID:  post.board.ID,
           type:     typeParam,

@@ -8,7 +8,7 @@ import { g, Conf } from "../globals/globals";
  */
 var ThreadLinks = {
   init() {
-    if ((g.VIEW !== 'index') || !Conf['Open Threads in New Tab']) { return; }
+    if ((g.VIEW !== 'index') || !Conf['Open Threads in New Tab']) return;
 
     Callbacks.Post.push({
       name: 'Thread Links',
@@ -21,7 +21,7 @@ var ThreadLinks = {
   },
 
   node() {
-    if (this.isReply || this.isClone) { return; }
+    if (this.isReply || this.isClone) return;
     ThreadLinks.process(this.nodes.reply);
   },
 

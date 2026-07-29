@@ -21,7 +21,7 @@ import Icon from "../Icons/icon";
 var Header = {
   init() {
     $.onExists(doc, 'body', () => {
-      if (!PageReady.isThisPageLegit()) { return; }
+      if (!PageReady.isThisPageLegit()) return;
       $.add(this.bar, [noticesRoot, this.toggle]);
       $.prepend(d.body, this.bar);
       $.add(d.body, Header.hover);
@@ -210,7 +210,7 @@ var Header = {
 
   mapCustomNavigation(t) {
     let a, href, m, url, urlV;
-    if (/^[^\w@]/.test(t)) { return $.tn(t); }
+    if (/^[^\w@]/.test(t)) return $.tn(t);
 
     let text = (url = null);
     t = t.replace(/-text:"([^"]+)"(?:,"([^"]+)")?/g, (m0, m1, m2) => {
@@ -508,7 +508,7 @@ var Header = {
 
   scrollTo(root: HTMLElement, down = false, needed = false) {
     let height, x;
-    if (!root.offsetParent) { return; } // hidden or fixed
+    if (!root.offsetParent) return; // hidden or fixed
     if (down) {
       x = Header.getBottomOf(root);
       if (Conf['Fixed Header'] && Conf['Header auto-hide on scroll'] && Conf['Bottom header']) {
@@ -517,7 +517,7 @@ var Header = {
         if (x <= 0 && !isHidden) x += height;
         else if (x > 0 && isHidden) x -= height;
       }
-      if (!needed || (x < 0)) { return window.scrollBy(0, -x); }
+      if (!needed || (x < 0)) return window.scrollBy(0, -x);
     } else {
       x = Header.getTopOf(root);
       if (Conf['Fixed Header'] && Conf['Header auto-hide on scroll'] && !Conf['Bottom header']) {
@@ -526,7 +526,7 @@ var Header = {
         if (x >= 0 && !isHidden) x += height;
         else if (x < 0 && isHidden) x -= height;
       }
-      if (!needed || (x < 0)) { return window.scrollBy(0,  x); }
+      if (!needed || (x < 0)) return window.scrollBy(0,  x);
     }
   },
 
@@ -554,7 +554,7 @@ var Header = {
   },
 
   isNodeVisible(node) {
-    if (d.hidden || !doc.contains(node)) { return false; }
+    if (d.hidden || !doc.contains(node)) return false;
     const {height} = node.getBoundingClientRect();
     return ((Header.getTopOf(node) + height) >= 0) && ((Header.getBottomOf(node) + height) >= 0);
   },
@@ -593,7 +593,7 @@ var Header = {
   areNotificationsEnabled: false,
   enableDesktopNotifications() {
     let notice;
-    if (!window.Notification || !Conf['Desktop Notifications']) { return; }
+    if (!window.Notification || !Conf['Desktop Notifications']) return;
     switch (Notification.permission) {
       case 'granted':
         Header.areNotificationsEnabled = true;
@@ -610,7 +610,7 @@ var Header = {
     const [authorize, disable] = $$('button', el);
     $.on(authorize, 'click', () => Notification.requestPermission((status) => {
       Header.areNotificationsEnabled = status === 'granted';
-      if (status === 'default') { return; }
+      if (status === 'default') return;
       notice.close();
     }));
     $.on(disable, 'click', () => {

@@ -10,7 +10,7 @@ import { dict } from "../platform/helpers";
  */
 var IDColor = {
   init() {
-    if (!['index', 'thread'].includes(g.VIEW) || !Conf['Color User IDs']) { return; }
+    if (!['index', 'thread'].includes(g.VIEW) || !Conf['Color User IDs']) return;
     this.ids = dict();
     this.ids.Heaven = [0, 0, 0, '#fff'];
 
@@ -22,7 +22,7 @@ var IDColor = {
 
   node() {
     let span, uid;
-    if (this.isClone || !((uid = this.info.uniqueID) && (span = this.nodes.uniqueID))) { return; }
+    if (this.isClone || !((uid = this.info.uniqueID) && (span = this.nodes.uniqueID))) return;
 
     const rgb = IDColor.ids[uid] || IDColor.compute(uid);
 

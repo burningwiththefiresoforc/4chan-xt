@@ -23,7 +23,7 @@ var UnreadIndex = {
   markReadLink: dict(),
 
   init() {
-    if ((g.VIEW !== 'index') || !Conf['Remember Last Read Post'] || !Conf['Unread Line in Index']) { return; }
+    if ((g.VIEW !== 'index') || !Conf['Remember Last Read Post'] || !Conf['Unread Line in Index']) return;
 
     this.enabled = true;
     this.db = new DataBoard('lastReadPosts', this.sync);
@@ -48,7 +48,7 @@ var UnreadIndex = {
   },
 
   onIndexRefresh(e) {
-    if (e.detail.isCatalog) { return; }
+    if (e.detail.isCatalog) return;
     const result = [];
     for (const threadID of e.detail.threadIDs) {
       const thread = g.threads.get(threadID);
@@ -58,9 +58,9 @@ var UnreadIndex = {
   },
 
   onPostsInserted(e) {
-    if (e.target === Index.root) { return; } // onIndexRefresh handles this case
+    if (e.target === Index.root) return; // onIndexRefresh handles this case
     const thread = Get.threadFromNode(e.target);
-    if (!thread || (thread.nodes.root !== e.target)) { return; }
+    if (!thread || (thread.nodes.root !== e.target)) return;
     const wasVisible = !!UnreadIndex.hr[thread.fullID]?.parentNode;
     UnreadIndex.update(thread);
     if (Conf['Scroll to Last Read Post'] && (e.type === 'PostsInserted') && !wasVisible && !!UnreadIndex.hr[thread.fullID]?.parentNode) {

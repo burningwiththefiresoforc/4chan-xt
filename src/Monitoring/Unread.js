@@ -25,7 +25,7 @@ var Unread = {
       !Conf['Remember Last Read Post'] &&
       !Conf['Desktop Notifications'] &&
       !Conf['Quote Threading']
-    )) { return; }
+    )) return;
 
     if (Conf['Remember Last Read Post']) {
       $.sync('Remember Last Read Post', enabled => Conf['Remember Last Read Post'] = enabled);
@@ -82,7 +82,7 @@ var Unread = {
     Unread.read();
     Unread.update();
     $.on(d, 'scroll visibilitychange', Unread.read);
-    if (Conf['Unread Line']) { return $.on(d, 'visibilitychange',        Unread.setLine); }
+    if (Conf['Unread Line']) $.on(d, 'visibilitychange', Unread.setLine);
   },
 
   positionPrev() {
@@ -108,7 +108,7 @@ var Unread = {
   },
 
   reset() {
-    if (Unread.lastReadPost == null) { return; }
+    if (Unread.lastReadPost == null) return;
 
     Unread.posts = new Set();
     Unread.postsQuotingYou = new Set();
@@ -133,13 +133,13 @@ var Unread = {
   },
 
   sync() {
-    if (Unread.lastReadPost == null) { return; }
+    if (Unread.lastReadPost == null) return;
     const lastReadPost = Unread.db.get({
       boardID: Unread.thread.board.ID,
       threadID: Unread.thread.ID,
       defaultValue: 0
     });
-    if (Unread.lastReadPost >= lastReadPost) { return; }
+    if (Unread.lastReadPost >= lastReadPost) return;
     Unread.lastReadPost = lastReadPost;
 
     const postIDs = Unread.thread.posts.keys;
@@ -178,7 +178,7 @@ var Unread = {
   },
 
   openNotification(post, predicate=' replied to you') {
-    if (!Header.areNotificationsEnabled) { return; }
+    if (!Header.areNotificationsEnabled) return;
     const notif = new Notification(`${post.info.nameBlock}${predicate}`, {
       body: post.commentDisplay(),
       icon: Favicon.logo
@@ -200,7 +200,7 @@ var Unread = {
 
   readSinglePost(post) {
     const {ID} = post;
-    if (!Unread.posts.has(ID)) { return; }
+    if (!Unread.posts.has(ID)) return;
     Unread.posts.delete(ID);
     Unread.postsQuotingYou.delete(ID);
     Unread.updatePosition();
@@ -214,7 +214,7 @@ var Unread = {
       Unread.saveLastReadPost();
     }
 
-    if (d.hidden || !Unread.posts.size) { return; }
+    if (d.hidden || !Unread.posts.size) return;
 
     let count = 0;
     while (Unread.position) {
@@ -228,10 +228,10 @@ var Unread = {
       Unread.position = Unread.position.next;
     }
 
-    if (!count) { return; }
+    if (!count) return;
     Unread.updatePosition();
     Unread.saveLastReadPost();
-    if (e) { return Unread.update(); }
+    if (e) return Unread.update();
   }),
 
   updatePosition() {
@@ -242,7 +242,7 @@ var Unread = {
 
   saveLastReadPost: debounce(2 * SECOND, function() {
     $.forceSync('Remember Last Read Post');
-    if (!Conf['Remember Last Read Post'] || !Unread.db) { return; }
+    if (!Conf['Remember Last Read Post'] || !Unread.db) return;
     const postIDs = Unread.thread.posts.keys;
     for (let i = Unread.readCount, end = postIDs.length; i < end; i++) {
     let ID = +postIDs[i];
@@ -252,7 +252,7 @@ var Unread = {
       }
       Unread.readCount++;
     }
-    if (Unread.thread.isDead && !Unread.thread.isArchived) { return; }
+    if (Unread.thread.isDead && !Unread.thread.isArchived) return;
     return Unread.db.set({
       boardID:  Unread.thread.board.ID,
       threadID: Unread.thread.ID,
@@ -261,7 +261,7 @@ var Unread = {
   }),
 
   setLine(force) {
-    if (!Conf['Unread Line']) { return; }
+    if (!Conf['Unread Line']) return;
     if (Unread.hr.hidden || d.hidden || (force === true)) {
       const oldPosition = Unread.linePosition;
       if (Unread.linePosition = Unread.positionPrev()) {

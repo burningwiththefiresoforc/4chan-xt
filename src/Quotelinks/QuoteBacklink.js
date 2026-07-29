@@ -25,7 +25,7 @@ var QuoteBacklink = {
   // and that as much backlinks are appended in the background as possible.
   containers: dict(),
   init() {
-    if (!['index', 'thread'].includes(g.VIEW) || !Conf['Quote Backlinks']) { return; }
+    if (!['index', 'thread'].includes(g.VIEW) || !Conf['Quote Backlinks']) return;
 
     // Add a class to differentiate when backlinks are at
     // the top (default) or bottom of a post
@@ -44,7 +44,7 @@ var QuoteBacklink = {
   },
 
   firstNode() {
-    if (this.isClone || !this.quotes.length || this.isRebuilt) { return; }
+    if (this.isClone || !this.quotes.length || this.isRebuilt) return;
     const markYours = Conf['Mark Quotes of You'] && QuoteYou.isYou(this);
     const a = $.el('a', {
       href: g.SITE.Build.postURL(this.board.ID, this.thread.ID, this.ID),
@@ -85,7 +85,7 @@ var QuoteBacklink = {
       return;
     }
     // Don't backlink the OP.
-    if (!this.isReply && !Conf['OP Backlinks']) { return; }
+    if (!this.isReply && !Conf['OP Backlinks']) return;
     const container = QuoteBacklink.getContainer(this.fullID);
     this.nodes.backlinkContainer = container;
     if (QuoteBacklink.bottomBacklinks) {

@@ -22,7 +22,7 @@ import Icon from '../Icons/icon';
 
 const Embedding = {
   init() {
-    if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf.Linkify || (!Conf.Embedding && !Conf['Link Title'] && !Conf['Cover Preview'])) { return; }
+    if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf.Linkify || (!Conf.Embedding && !Conf['Link Title'] && !Conf['Cover Preview'])) return;
     this.types = dict();
     for (const type of this.ordered_types) { this.types[type.key] = type; }
 
@@ -52,7 +52,7 @@ const Embedding = {
 
   events(post) {
     let el, i, items;
-    if (g.VIEW === 'archive') { return; }
+    if (g.VIEW === 'archive') return;
     if (Conf.Embedding) {
       i = 0;
       items = (post.nodes.embedlinks = $$('.embedder', post.nodes.comment));
@@ -74,8 +74,8 @@ const Embedding = {
 
   process(link, post) {
     let data = Embedding.services(link);
-    if (!Conf.Embedding && !Conf['Link Title'] && !Conf['Cover Preview']) { return; }
-    if ($.x('ancestor::pre', link)) { return; }
+    if (!Conf.Embedding && !Conf['Link Title'] && !Conf['Cover Preview']) return;
+    if ($.x('ancestor::pre', link)) return;
     if (data) {
       data.post = post;
       if (Conf.Embedding && (g.VIEW !== 'archive')) { Embedding.embed(data); }
@@ -124,7 +124,7 @@ const Embedding = {
   },
 
   ready() {
-    if (!PageReady.isThisPageLegit()) { return; }
+    if (!PageReady.isThisPageLegit()) return;
     $.addClass(Embedding.dialog, 'empty');
     const close = $('.close', Embedding.dialog);
     const jump = $('.jump', Embedding.dialog)
@@ -176,7 +176,7 @@ const Embedding = {
   flushTitles(service) {
     let data;
     const {queue} = service;
-    if (!queue?.length) { return; }
+    if (!queue?.length) return;
     service.queue = [];
     const cb = function() {
       for (data of queue) { Embedding.cb.title(this, data); }
@@ -256,7 +256,7 @@ const Embedding = {
         status = service.status(req.response)[0];
       }
 
-      if (!status) { return; }
+      if (!status) return;
 
       const statusText = () => {
         switch (status) {

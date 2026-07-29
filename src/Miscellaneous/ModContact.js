@@ -9,7 +9,7 @@ import { g } from "../globals/globals";
  */
 const ModContact = {
   init() {
-    if ((g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW)) { return; }
+    if ((g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW)) return;
     Callbacks.Post.push({
       name: 'Mod Contact Links',
       cb:   this.node
@@ -17,7 +17,7 @@ const ModContact = {
   },
 
   node() {
-    if (this.isClone || !$.hasOwn(ModContact.specific, this.info.capcode)) { return; }
+    if (this.isClone || !$.hasOwn(ModContact.specific, this.info.capcode)) return;
     const links = $.el('span', {className: 'contact-links brackets-wrap'});
     $.extend(links, ModContact.template(this.info.capcode));
     $.after(this.nodes.capcode, links);

@@ -233,7 +233,7 @@ $\
 
   parseNodes(post, nodes) {
     // Add vichan's span.poster_id around the ID if not already present.
-    if (nodes.uniqueID) { return; }
+    if (nodes.uniqueID) return;
     let text = '';
     let node = nodes.nameBlock.nextSibling;
     while (node && (node.nodeType === 3)) {

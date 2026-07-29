@@ -17,7 +17,7 @@ import Volume from "./Volume";
 var ImageCommon = {
   // Pause and mute video in preparation for removing the element from the document.
   pause(video) {
-    if (video.nodeName !== 'VIDEO') { return; }
+    if (video.nodeName !== 'VIDEO') return;
     video.pause();
     $.off(video, 'volumechange', Volume.change);
     return video.muted = true;
@@ -25,7 +25,7 @@ var ImageCommon = {
 
   rewind(el) {
     if (el.nodeName === 'VIDEO') {
-      if (el.readyState >= el.HAVE_METADATA) { return el.currentTime = 0; }
+      if (el.readyState >= el.HAVE_METADATA) return el.currentTime = 0;
     } else if (/\.gif$/.test(el.src)) {
       return $.queueTask(() => el.src = el.src);
     }
@@ -48,7 +48,7 @@ var ImageCommon = {
   },
 
   decodeError(file, fileObj) {
-    if (file.error?.code !== MediaError.MEDIA_ERR_DECODE) { return false; }
+    if (file.error?.code !== MediaError.MEDIA_ERR_DECODE) return false;
     let message = $('.warning', fileObj.thumb.parentNode);
     if (!message) {
       message = $.el('div', {className: 'warning'});
@@ -71,11 +71,11 @@ var ImageCommon = {
     }
     if (!url || !Redirect.securityCheck(url)) { url = null; }
 
-    if ((post.isDead || fileObj.isDead) && !ImageCommon.isFromArchive(file)) { return cb(url); }
+    if ((post.isDead || fileObj.isDead) && !ImageCommon.isFromArchive(file)) return cb(url);
 
     let timeoutID;
     if (delay) { timeoutID = setTimeout((() => cb(url)), delay); }
-    if (post.isDead || fileObj.isDead) { return; }
+    if (post.isDead || fileObj.isDead) return;
     const redirect = () => {
       if (!ImageCommon.isFromArchive(file)) {
         if (delay) { clearTimeout(timeoutID); }
@@ -84,7 +84,7 @@ var ImageCommon = {
     };
 
     const threadJSON = g.SITE.urls.threadJSON?.(post);
-    if (!threadJSON) { return; }
+    if (!threadJSON) return;
     var parseJSON = function(isArchiveURL) {
       let needle, postObj;
       if (this.status === 404) {
@@ -95,7 +95,7 @@ var ImageCommon = {
           post.kill(!post.isClone, fileObj.index);
         }
       }
-      if (this.status !== 200) { return redirect(); }
+      if (this.status !== 200) return redirect();
       for (postObj of this.response.posts) {
         if (postObj.no === post.ID) { break; }
       }
@@ -116,7 +116,7 @@ var ImageCommon = {
   onControls: (e) => (Conf['Show Controls'] && Conf['Click Passthrough'] && (e.target.nodeName === 'VIDEO')) || (e.target.controls && ((e.target.getBoundingClientRect().bottom - e.clientY) < 35)),
 
   download(e) {
-    if (this.protocol === 'blob:') { return true; }
+    if (this.protocol === 'blob:') return true;
     e.preventDefault();
     const {href, download} = this;
     CrossOrigin.file(href, (blob) => {

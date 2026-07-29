@@ -146,8 +146,8 @@ export const parseArchivePost = (data: RawArchivePost) => {
       name: data.media.media_filename,
       url: media_link ||
         (o.boardID === 'f'
-        ? `${location.protocol}//${ImageHost.flashHost()}/${o.boardID}/${encodeURIComponent(E(data.media.media_filename))}`
-        : `${location.protocol}//${ImageHost.host()}/${o.boardID}/${data.media.media_orig}`),
+          ? `${location.protocol}//${ImageHost.flashHost()}/${o.boardID}/${encodeURIComponent(E(data.media.media_filename))}`
+          : `${location.protocol}//${ImageHost.host()}/${o.boardID}/${data.media.media_orig}`),
       height: data.media.media_h,
       width: data.media.media_w,
       MD5: data.media.media_hash,

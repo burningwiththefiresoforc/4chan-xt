@@ -62,7 +62,7 @@ var ThreadUpdater = {
     $.extend(updateLink, {innerHTML: '<a href="javascript:;">Update</a>'});
     PageReady.ready(() => {
       let navLinksBot = $('.navLinksBot');
-      if (navLinksBot) { return $.add(navLinksBot, [$.tn(' '), updateLink]); }
+      if (navLinksBot) return $.add(navLinksBot, [$.tn(' '), updateLink]);
     });
     $.on(updateLink.firstElementChild, 'click', this.update);
 
@@ -141,7 +141,7 @@ var ThreadUpdater = {
 
   cb: {
     checkpost(e) {
-      if (e.detail.threadID !== ThreadUpdater.thread.ID) { return; }
+      if (e.detail.threadID !== ThreadUpdater.thread.ID) return;
       ThreadUpdater.postID = e.detail.postID;
       ThreadUpdater.checkPostCount = 0;
       ThreadUpdater.outdateCount = 0;
@@ -149,7 +149,7 @@ var ThreadUpdater = {
     },
 
     visibility() {
-      if (d.hidden) { return; }
+      if (d.hidden) return;
       // Reset the counter when we focus this tab.
       ThreadUpdater.outdateCount = 0;
       if (ThreadUpdater.seconds > ThreadUpdater.interval) {
@@ -163,11 +163,11 @@ var ThreadUpdater = {
       let val = parseInt(this.value, 10);
       if (val < 1) { val = 1; }
       ThreadUpdater.interval = (this.value = val);
-      if (e) { return $.cb.value.call(this); }
+      if (e) return $.cb.value.call(this);
     },
 
     load(this: XMLHttpRequest) {
-      if (this !== ThreadUpdater.req) { return; } // aborted
+      if (this !== ThreadUpdater.req) return; // aborted
       switch (this.status) {
         case 200:
           ThreadUpdater.parse(this);
@@ -312,7 +312,7 @@ var ThreadUpdater = {
     let hasChanged = ThreadUpdater.thread[`is${type}`] !== status;
     if (!hasChanged) return;
     ThreadUpdater.thread.setStatus(type, status);
-    if ((type === 'Closed') && ThreadUpdater.thread.isArchived) { return; }
+    if ((type === 'Closed') && ThreadUpdater.thread.isArchived) return;
     const change = type === 'Sticky' ? status ? 'now a sticky'
       : 'not a sticky anymore' : status ? 'now closed' : 'not closed anymore';
     new Notice('info', `The thread is ${change}.`, 30);
@@ -328,7 +328,7 @@ var ThreadUpdater = {
 
     // XXX Reject updates that falsely delete the last post.
     if ((postObjects[postObjects.length-1].no < lastPost) &&
-      ((new Date(req.getResponseHeader('Last-Modified')) - thread.posts.get(lastPost).info.date) < (30 * SECOND))) { return; }
+      ((new Date(req.getResponseHeader('Last-Modified')) - thread.posts.get(lastPost).info.date) < (30 * SECOND))) return;
 
     g.SITE.Build.spoilerRange[board] = OP.custom_spoiler;
     thread.setStatus('Archived', !!OP.archived);

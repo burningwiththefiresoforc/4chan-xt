@@ -23,7 +23,7 @@ import Icon from '../Icons/icon';
 
 const Gallery = {
   init() {
-    if (!(this.enabled = Conf.Gallery && ['index', 'thread'].includes(g.VIEW))) { return; }
+    if (!(this.enabled = Conf.Gallery && ['index', 'thread'].includes(g.VIEW))) return;
 
     this.delay = Conf['Slide Delay'];
 
@@ -168,9 +168,9 @@ const Gallery = {
   },
 
   generateThumb(post, file) {
-    if (post.isClone || post.isHidden) { return; }
-    if (!file || !file.thumb || (!file.isImage && !file.isVideo && !Conf['PDF in Gallery'])) { return; }
-    if (Gallery.fileIDs[`${post.fullID}.${file.index}`]) { return; }
+    if (post.isClone || post.isHidden) return;
+    if (!file || !file.thumb || (!file.isImage && !file.isVideo && !Conf['PDF in Gallery'])) return;
+    if (Gallery.fileIDs[`${post.fullID}.${file.index}`]) return;
 
     Gallery.fileIDs[`${post.fullID}.${file.index}`] = true;
 
@@ -286,13 +286,13 @@ const Gallery = {
     if (this.error?.code === MediaError.MEDIA_ERR_DECODE) {
       return new Notice('error', 'Corrupt or unplayable video', 30);
     }
-    if (ImageCommon.isFromArchive(this)) { return; }
+    if (ImageCommon.isFromArchive(this)) return;
     const post = g.posts.get(this.dataset.post);
     const file = post.files[+this.dataset.file];
     return ImageCommon.error(this, post, file, null, url => {
-      if (!url) { return; }
+      if (!url) return;
       Gallery.images[+this.dataset.id].href = url;
-      if (Gallery.nodes.current === this) { return this.src = url; }
+      if (Gallery.nodes.current === this) return this.src = url;
     });
   },
 
@@ -354,7 +354,7 @@ const Gallery = {
 
     open(e) {
       if (e) { e.preventDefault(); }
-      if (this) { return Gallery.open(this); }
+      if (this) return Gallery.open(this);
     },
 
     image(e) {
@@ -375,7 +375,7 @@ const Gallery = {
     },
 
     click(e) {
-      if (ImageCommon.onControls(e)) { return; }
+      if (ImageCommon.onControls(e)) return;
       e.preventDefault();
       Gallery.cb.advance();
     },
@@ -393,7 +393,7 @@ const Gallery = {
     pause() {
       Gallery.cb.stop();
       const {current} = Gallery.nodes;
-      if (current.nodeName === 'VIDEO') { return current[current.paused ? 'play' : 'pause'](); }
+      if (current.nodeName === 'VIDEO') return current[current.paused ? 'play' : 'pause']();
     },
 
     start() {
@@ -403,7 +403,7 @@ const Gallery = {
     },
 
     stop() {
-      if (!Gallery.slideshow) { return; }
+      if (!Gallery.slideshow) return;
       Gallery.cleanupTimer();
       const {current} = Gallery.nodes;
       if (current.nodeName === 'VIDEO') { current.loop = true; }
@@ -416,7 +416,7 @@ const Gallery = {
 
     rotate: debounce(100, function(delta) {
       const {current} = Gallery.nodes;
-      if (current.nodeName === 'IFRAME') { return; }
+      if (current.nodeName === 'IFRAME') return;
       current.dataRotate = ((current.dataRotate || 0) + delta) % 360;
       current.style.transform = `rotate(${current.dataRotate}deg)`;
       Gallery.cb.setHeight();
@@ -482,7 +482,7 @@ const Gallery = {
 
   menu: {
     init() {
-      if (!Gallery.enabled) { return; }
+      if (!Gallery.enabled) return;
 
       const el = $.el('span', {
         textContent: 'Gallery',

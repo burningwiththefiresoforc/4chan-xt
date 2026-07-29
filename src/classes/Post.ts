@@ -173,7 +173,7 @@ export default class Post {
 
     this.clones = [];
     // #region tests_enabled
-    if (this.forBuildTest)  return;
+    if (this.forBuildTest) return;
     // #endregion
     if (g.posts.get(this.fullID)) {
       this.isRebuilt = true;
@@ -306,11 +306,11 @@ export default class Post {
     //  - rules links. (>>>/a/rules)
     //  - text-board quotelinks. (>>>/img/1234)
     const match = quotelink.href.match(g.SITE.regexp.quotelink);
-    if (!match && (!this.isClone || !quotelink.dataset.postID)) { return; } // normal or resurrected quote
+    if (!match && (!this.isClone || !quotelink.dataset.postID)) return; // normal or resurrected quote
 
     this.nodes.quotelinks.push(quotelink);
 
-    if (this.isClone) { return; }
+    if (this.isClone) return;
 
     // ES6 Set when?
     const fullID = `${match[1]}.${match[3]}`;
@@ -338,7 +338,7 @@ export default class Post {
   fileRoots() {
     if (g.SITE.selectors.multifile) {
       const roots = $$(g.SITE.selectors.multifile, this.nodes.root);
-      if (roots.length) { return roots; }
+      if (roots.length) return roots;
     }
     return [this.nodes.root];
   }
@@ -351,8 +351,8 @@ export default class Post {
     }
     file.thumbLink = file.thumb?.parentNode as HTMLElement;
 
-    if (!(file.text && file.link)) { return; }
-    if (!g.SITE.parseFile(this, file)) { return; }
+    if (!(file.text && file.link)) return;
+    if (!g.SITE.parseFile(this, file)) return;
 
     $.extend(file, {
       url:     file.link.href,
@@ -369,11 +369,11 @@ export default class Post {
 
   kill(file = false, index = 0) {
     if (file) {
-      if (this.isDead || this.files[index].isDead) { return; }
+      if (this.isDead || this.files[index].isDead) return;
       this.files[index].isDead = true;
       $.addClass(this.nodes.root, 'deleted-file');
     } else {
-      if (this.isDead) { return; }
+      if (this.isDead) return;
       this.isDead = true;
       $.rmClass(this.nodes.root, 'deleted-file');
       $.addClass(this.nodes.root, 'deleted-post');
@@ -386,12 +386,12 @@ export default class Post {
     }
     strong.textContent = file ? '[File deleted]' : '[Deleted]';
 
-    if (this.isClone) { return; }
+    if (this.isClone) return;
     for (var clone of this.clones) {
       clone.kill(file, index);
     }
 
-    if (file) { return; }
+    if (file) return;
     // Get quotelinks/backlinks to this post
     // and paint them (Dead).
     for (var quotelink of Get.allQuotelinksLinkingTo(this)) {
@@ -411,7 +411,7 @@ export default class Post {
     strong.textContent = '[Deleted, restored from external archive]';
     $.addClass(this.nodes.root, 'from-archive');
 
-    if (this.isClone) { return; }
+    if (this.isClone) return;
     for (var clone of this.clones) {
       clone.markAsFromArchive();
     }
@@ -434,7 +434,7 @@ export default class Post {
       $.rm(strong);
     }
 
-    if (this.isClone) { return; }
+    if (this.isClone) return;
     for (var clone of this.clones) {
       clone.resurrect();
     }

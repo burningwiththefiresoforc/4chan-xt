@@ -11,7 +11,7 @@ import { dict } from "../platform/helpers";
 var ExpandThread = {
   statuses: dict(),
   init() {
-    if (!((g.VIEW === 'index') && Conf['Thread Expansion'])) { return; }
+    if (!((g.VIEW === 'index') && Conf['Thread Expansion'])) return;
     if (Conf['JSON Index']) {
       $.on(d, 'IndexRefreshInternal', this.onIndexRefresh);
     } else {
@@ -32,7 +32,7 @@ var ExpandThread = {
   },
 
   disconnect(refresh) {
-    if ((g.VIEW === 'thread') || !Conf['Thread Expansion']) { return; }
+    if ((g.VIEW === 'thread') || !Conf['Thread Expansion']) return;
     for (var threadID in ExpandThread.statuses) {
       let status = ExpandThread.statuses[threadID];
       let oldReq = status.req;
@@ -52,13 +52,13 @@ var ExpandThread = {
   },
 
   cbToggle(e) {
-    if ($.modifiedClick(e)) { return; }
+    if ($.modifiedClick(e)) return;
     e.preventDefault();
     ExpandThread.toggle(Get.threadFromNode(this));
   },
 
   cbToggleBottom(e) {
-    if ($.modifiedClick(e)) { return; }
+    if ($.modifiedClick(e)) return;
     e.preventDefault();
     const thread = Get.threadFromNode(this);
     $.rm(this); // remove before fixing bottom of thread position
@@ -83,7 +83,7 @@ var ExpandThread = {
     ExpandThread.statuses[thread] = status;
     a.textContent = g.SITE.Build.summaryText('...', ...a.textContent.match(/\d+/g));
     status.req = $.cache(g.SITE.urls.threadJSON({boardID: thread.board.ID, threadID: thread.ID}), function() {
-      if (this !== status.req) { return; } // aborted
+      if (this !== status.req) return; // aborted
       delete status.req;
       ExpandThread.parse(this, thread, a);
     });

@@ -11,7 +11,7 @@ var ThreadStats = {
   postIndex: 0,
 
   init() {
-    if ((g.VIEW !== 'thread') || !Conf['Thread Stats']) { return; }
+    if ((g.VIEW !== 'thread') || !Conf['Thread Stats']) return;
 
     if (Conf['Page Count in Stats']) {
       this[g.SITE.isPrunedByAge?.(g.BOARD) ? 'showPurgePos' : 'showPage'] = true;
@@ -84,7 +84,7 @@ var ThreadStats = {
   },
 
   onUpdate(e) {
-    if (e.detail[404]) { return; }
+    if (e.detail[404]) return;
     const {postCount, fileCount} = e.detail;
     $.extend(ThreadStats, {postCount, fileCount});
     ThreadStats.postIndex = ThreadStats.thread.posts.keys.length;
@@ -95,7 +95,7 @@ var ThreadStats = {
   },
 
   onPostsInserted() {
-    if (ThreadStats.thread.posts.keys.length <= ThreadStats.postIndex) { return; }
+    if (ThreadStats.thread.posts.keys.length <= ThreadStats.postIndex) return;
     ThreadStats.count();
     ThreadStats.update();
     if (ThreadStats.showPage && (ThreadStats.pageCountEl.textContent !== '1')) {
@@ -125,7 +125,7 @@ var ThreadStats = {
   },
 
   fetchPage() {
-    if (!ThreadStats.pageCountEl) { return; }
+    if (!ThreadStats.pageCountEl) return;
     clearTimeout(ThreadStats.timeout);
     if (ThreadStats.thread.isDead) {
       ThreadStats.pageCountEl.textContent = 'Dead';
@@ -194,7 +194,7 @@ var ThreadStats = {
       || (ThreadStats.pageCountEl.textContent === '1')
       || !!g.SITE.threadModTimeIgnoresSage
       || (ThreadStats.thread.posts.get(ThreadStats.thread.lastPost).info.date <= ThreadStats.lastPageUpdate)
-    ) { return; }
+    ) return;
     clearTimeout(ThreadStats.timeout);
     ThreadStats.timeout = setTimeout(ThreadStats.fetchPage, 5 * SECOND);
   }

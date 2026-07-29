@@ -14,7 +14,7 @@ import { dict } from "../platform/helpers";
 
 var QuoteThreading = {
   init() {
-    if (!Conf['Quote Threading'] || (g.VIEW !== 'thread')) { return; }
+    if (!Conf['Quote Threading'] || (g.VIEW !== 'thread')) return;
 
     this.controls = $.el('label',
       {innerHTML: "<input id=\"threadingControl\" name=\"Thread Quotes\" type=\"checkbox\"> Threading"});
@@ -84,7 +84,7 @@ var QuoteThreading = {
   },
 
   node(this: Post) {
-    if (this.isFetchedQuote || this.isClone || !this.isReply) { return; }
+    if (this.isFetchedQuote || this.isClone || !this.isReply) return;
 
     const parents = new Set();
     let lastParent = null;
@@ -127,7 +127,7 @@ var QuoteThreading = {
       Conf['Thread Quotes'] &&
       (parent = QuoteThreading.parent[post.fullID]) &&
       !QuoteThreading.inserted[post.fullID]
-    )) { return false; }
+    )) return false;
 
     const descendants = QuoteThreading.descendants(post);
     if (!Unread.posts.has(parent.ID)) {
@@ -173,7 +173,7 @@ var QuoteThreading = {
   },
 
   rethread() {
-    if (!QuoteThreading.ready) { return; }
+    if (!QuoteThreading.ready) return;
     const {thread} = QuoteThreading;
     const {posts} = thread;
 
@@ -186,7 +186,7 @@ var QuoteThreading = {
       Unread.order = new RandomAccessList();
       QuoteThreading.inserted = dict();
       posts.forEach(function(post) {
-        if (post.isFetchedQuote) { return; }
+        if (post.isFetchedQuote) return;
         Unread.order.push(post);
         if (post.isReply) { nodes.push(post.nodes.root); }
         if (QuoteThreading.children[post.fullID]) {

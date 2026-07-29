@@ -20,7 +20,7 @@ import Menu from "../Menu/Menu";
 
 const Test = {
   init() {
-    if ((g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW)) { return; }
+    if ((g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW)) return;
 
     if (Conf.Menu) {
       const a = $.el('a',
@@ -109,13 +109,13 @@ const Test = {
   firstDiff(x, y) {
     let x2 = x.cloneNode(false);
     let y2 = y.cloneNode(false);
-    if (!x2.isEqualNode(y2)) { return [x2, y2]; }
+    if (!x2.isEqualNode(y2)) return [x2, y2];
     let i = 0;
     while (true) {
       x2 = x.childNodes[i];
       y2 = y.childNodes[i];
-      if (!x2 || !y2) { return [x2, y2]; }
-      if (!x2.isEqualNode(y2)) { return Test.firstDiff(x2, y2); }
+      if (!x2 || !y2) return [x2, y2];
+      if (!x2.isEqualNode(y2)) return Test.firstDiff(x2, y2);
       i++;
     }
   },
@@ -123,7 +123,7 @@ const Test = {
   testOne(post) {
     Test.postsRemaining++;
     return $.cache(g.SITE.urls.threadJSON({boardID: post.boardID, threadID: post.threadID}), function() {
-      if (!this.response) { return; }
+      if (!this.response) return;
       const {posts} = this.response;
       g.SITE.Build.spoilerRange[post.board.ID] = posts[0].custom_spoiler;
       for (var postData of posts) {

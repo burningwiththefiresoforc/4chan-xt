@@ -4,7 +4,7 @@ import { g, Conf } from "../globals/globals";
 
 var Time = {
   init() {
-    if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf['Time Formatting']) { return; }
+    if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf['Time Formatting']) return;
 
     Callbacks.Post.push({
       name: 'Time Formatting',
@@ -13,7 +13,7 @@ var Time = {
   },
 
   node() {
-    if (!this.info.date || this.isClone) { return; }
+    if (!this.info.date || this.isClone) return;
     const {textContent} = this.nodes.date;
     this.nodes.date.textContent = textContent.match(/^\s*/)[0] + Time.format(this.info.date) + textContent.match(/\s*$/)[0];
   },

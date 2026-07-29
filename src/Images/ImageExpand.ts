@@ -21,7 +21,7 @@ import Icon from "../Icons/icon";
  */
 var ImageExpand = {
   init() {
-    if (!(this.enabled = Conf['Image Expansion'] && ['index', 'thread'].includes(g.VIEW))) { return; }
+    if (!(this.enabled = Conf['Image Expansion'] && ['index', 'thread'].includes(g.VIEW))) return;
 
     this.EAI = $.el('a', {
       className: 'expand-all-shortcut',
@@ -43,7 +43,7 @@ var ImageExpand = {
   },
 
   node(this: Post | PostClone) {
-    if (!this.file || (!this.file.isImage && !this.file.isVideo)) { return; }
+    if (!this.file || (!this.file.isImage && !this.file.isVideo)) return;
     $.on(this.file.thumbLink, 'click', ImageExpand.cb.toggle);
 
     if (this.isClone) {
@@ -68,10 +68,10 @@ var ImageExpand = {
 
   cb: {
     toggle(e) {
-      if ($.modifiedClick(e)) { return; }
+      if ($.modifiedClick(e)) return;
       const post = Get.postFromNode(this);
       const {file} = post;
-      if (file.isExpanded && ImageCommon.onControls(e)) { return; }
+      if (file.isExpanded && ImageCommon.onControls(e)) return;
       e.preventDefault();
       if (!Conf.Autoplay && file.fullImage?.paused) {
         file.fullImage.play();
@@ -86,7 +86,7 @@ var ImageExpand = {
       const threadRoot = Nav.getThread();
       const toggle = (post) => {
         const {file} = post;
-        if (!file || (!file.isImage && !file.isVideo) || !doc.contains(post.nodes.root)) { return; }
+        if (!file || (!file.isImage && !file.isVideo) || !doc.contains(post.nodes.root)) return;
         if (ImageExpand.on &&
           ((!Conf['Expand spoilers']   && file.isSpoiler) ||
            (!Conf['Expand videos']     && file.isVideo) ||
@@ -178,7 +178,7 @@ var ImageExpand = {
       delete file[x];
     }
 
-    if (!el) { return; }
+    if (!el) return;
 
     if (doc.contains(el)) {
       if (bottom <= 0) {
@@ -207,9 +207,9 @@ var ImageExpand = {
     delete file.fullImage;
     $.queueTask(() => {
       // XXX Work around Chrome/Chromium not firing mouseover on the thumbnail.
-      if (file.isExpanding || file.isExpanded) { return; }
+      if (file.isExpanding || file.isExpanded) return;
       $.rmClass(el, 'full-image');
-      if (el.id) { return; }
+      if (el.id) return;
       $.rm(el);
     });
 
@@ -232,7 +232,7 @@ var ImageExpand = {
     const {file} = post;
     const {thumb, thumbLink, isVideo } = file;
     // Do not expand images of hidden/filtered replies, or already expanded pictures.
-    if (post.isHidden || file.isExpanding || file.isExpanded) { return; }
+    if (post.isHidden || file.isExpanding || file.isExpanded) return;
 
     let el: HTMLImageElement| HTMLVideoElement;
 
@@ -353,7 +353,7 @@ var ImageExpand = {
 
   completeExpand(post) {
     const {file} = post;
-    if (!file.isExpanding) { return; } // contracted before the image loaded
+    if (!file.isExpanding) return; // contracted before the image loaded
 
     const bottom = Header.getTopOf(file.thumb) + file.thumb.getBoundingClientRect().height;
     const oldHeight = d.body.clientHeight;
@@ -430,21 +430,21 @@ var ImageExpand = {
     //  - before the image started loading.
     //  - after the image started loading.
     // Don't try to re-expand if it was already contracted.
-    if (!post.file.isExpanding && !post.file.isExpanded) { return; }
-    if (ImageCommon.decodeError(this, post.file)) { return ImageExpand.contract(post); }
+    if (!post.file.isExpanding && !post.file.isExpanded) return;
+    if (ImageCommon.decodeError(this, post.file)) return ImageExpand.contract(post);
     // Don't autoretry images from the archive.
-    if (ImageCommon.isFromArchive(this)) { return ImageExpand.contract(post); }
+    if (ImageCommon.isFromArchive(this)) return ImageExpand.contract(post);
     ImageCommon.error(this, post, post.file, 10 * SECOND, function(URL) {
       if (post.file.isExpanding || post.file.isExpanded) {
         ImageExpand.contract(post);
-        if (URL) { return ImageExpand.expand(post, URL); }
+        if (URL) return ImageExpand.expand(post, URL);
       }
     });
   },
 
   menu: {
     init() {
-      if (!ImageExpand.enabled) { return; }
+      if (!ImageExpand.enabled) return;
 
       const el = $.el('span', {
         textContent: 'Image Expansion',

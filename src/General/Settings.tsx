@@ -64,7 +64,7 @@ var Settings = {
 
   open(openSection) {
     let dialog, sectionToOpen;
-    if (Settings.dialog) { return; }
+    if (Settings.dialog) return;
     $.event('CloseMenu');
 
     Settings.dialog = (dialog = $.el('div', { id: 'overlay' } , SettingsPage));
@@ -106,7 +106,7 @@ var Settings = {
   },
 
   close() {
-    if (!Settings.dialog) { return; }
+    if (!Settings.dialog) return;
     // Unfocus current field to trigger change event.
     d.activeElement?.blur();
     $.rm(Settings.dialog);
@@ -474,7 +474,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       Settings.upgrade(data.Conf, data.version);
     }
     $.clear((err) => {
-      if (err) { return cb(err); }
+      if (err) return cb(err);
       $.set(data.Conf, cb);
     });
   },
@@ -510,7 +510,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     const div = this.nextElementSibling as HTMLElement;
     let name: string = this.value;
     if (name !== 'guide') {
-      if (!$.hasOwn(Config.filter, name)) { return; }
+      if (!$.hasOwn(Config.filter, name)) return;
       $.rmAll(div);
       const ta = $.el('textarea', {
         name,

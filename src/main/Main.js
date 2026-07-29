@@ -113,17 +113,17 @@ var Main = {
     // XXX Firefox reinjects WebExtension content scripts when extension is updated / reloaded.
     try {
       let w = platform === 'crx' ? (window.wrappedJSObject || window) : window;
-      if (`${meta.name} antidup` in w) { return; }
+      if (`${meta.name} antidup` in w) return;
       w[`${meta.name} antidup`] = true;
     } catch (error) {}
 
     // Don't run inside ad iframes.
     try {
-      if (window.frameElement && ['', 'about:blank'].includes(window.frameElement.src)) { return; }
+      if (window.frameElement && ['', 'about:blank'].includes(window.frameElement.src)) return;
     } catch (error1) {}
 
     // Detect multiple copies of 4chan X
-    if (doc && $.hasClass(doc, 'fourchan-x')) { return; }
+    if (doc && $.hasClass(doc, 'fourchan-x')) return;
     $.asap(docSet, () => {
       $.addClass(doc, 'fourchan-xt', 'fourchan-x', 'seaweedchan');
       if ($.engine) $.addClass(doc, `ua-${$.engine}`);
@@ -266,10 +266,10 @@ var Main = {
   parseURL(site=g.SITE, url=location) {
     const r = {};
 
-    if (!site) { return r; }
+    if (!site) return r;
     r.siteID = site.ID;
 
-    if (site.isBoardlessPage?.(url)) { return r; }
+    if (site.isBoardlessPage?.(url)) return r;
     const pathname = url.pathname.split(/\/+/);
     r.boardID = pathname[1];
 
@@ -355,7 +355,7 @@ var Main = {
   },
 
   initStyle() {
-    if (!PageReady.isThisPageLegit()) { return; }
+    if (!PageReady.isThisPageLegit()) return;
 
     // disable the mobile layout
     const mobileLink = $('link[href*=mobile]', d.head);
@@ -553,7 +553,7 @@ var Main = {
         boardObj = g.BOARD;
       }
       var threadID = +threadRoot.id.match(/\d*$/)[0];
-      if (!threadID || boardObj.threads.get(threadID)?.nodes.root) { return; }
+      if (!threadID || boardObj.threads.get(threadID)?.nodes.root) return;
       var thread = new Thread(threadID, boardObj);
       thread.nodes.root = threadRoot;
       threads.push(thread);
@@ -590,7 +590,7 @@ var Main = {
         }
       }
     }
-    if (!threadRoots.length) { return; }
+    if (!threadRoots.length) return;
     const threads = [];
     const posts   = [];
     const errors  = [];
@@ -691,7 +691,7 @@ var Main = {
         }
       }
     }
-    if (!threadRoots.length) { return; }
+    if (!threadRoots.length) return;
     const threads = [];
     const errors  = [];
     Main.parseCatalogThreads(threadRoots, threads, errors);
@@ -711,7 +711,7 @@ var Main = {
     const cbs = Callbacks[klass];
     const fn  = () => {
       let node = nodes[i];
-      if (!node) { return false; }
+      if (!node) return false;
       cbs.execute(node);
       return ++i % 250;
     };
@@ -727,7 +727,6 @@ var Main = {
 
   handleErrors(errors) {
     // Detect conflicts with 4chan X v2
-    let error;
     if (d.body && $.hasClass(d.body, 'fourchan_x') && !$.hasClass(doc, 'tainted')) {
       new Notice('error', `Error: Multiple copies of ${meta.name} or 4chan X are enabled.`);
       $.addClass(doc, 'tainted');
@@ -748,6 +747,7 @@ var Main = {
       });
     }
 
+    let error;
     if (!(errors instanceof Array)) {
       error = errors;
     } else if (errors.length === 1) {

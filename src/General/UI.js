@@ -45,7 +45,7 @@ var Menu = (function() {
       this.addEntry = this.addEntry.bind(this);
       this.type = type;
       $.on(d, 'AddMenuEntry', ({detail}) => {
-        if (detail.type !== this.type) { return; }
+        if (detail.type !== this.type) return;
         delete detail.open;
         return this.addEntry(detail);
       });
@@ -73,10 +73,10 @@ var Menu = (function() {
         // Reopen if we clicked on another button.
         const previousButton = lastToggledButton;
         currentMenu.close();
-        if (previousButton === button) { return; }
+        if (previousButton === button) return;
       }
 
-      if (!this.entries.length) { return; }
+      if (!this.entries.length) return;
       this.open(button, data);
     }
 
@@ -125,7 +125,7 @@ var Menu = (function() {
     insertEntry(entry, parent, data) {
       if (typeof entry.open === 'function') {
         try {
-          if (!entry.open(data)) { return; }
+          if (!entry.open(data)) return;
         } catch (err) {
           Main.handleErrors({
             message: `Error in building the ${this.type} menu.`,
@@ -220,7 +220,7 @@ var Menu = (function() {
       $.addClass(entry, 'focused');
 
       // Submenu positioning.
-      if (!(submenu = $('.submenu', entry))) { return; }
+      if (!(submenu = $('.submenu', entry))) return;
       const sRect   = submenu.getBoundingClientRect();
       const eRect   = entry.getBoundingClientRect();
       const cHeight = doc.clientHeight;
@@ -246,7 +246,7 @@ var Menu = (function() {
       $.addClass(el, 'entry');
       $.on(el, 'focus mouseover', this.onFocus);
       el.style.order = entry.order || 100;
-      if (!subEntries) { return; }
+      if (!subEntries) return;
       $.addClass(el, 'has-submenu');
       for (var subEntry of subEntries) {
         this.parseEntry(subEntry);
@@ -261,7 +261,7 @@ var Menu = (function() {
 })();
 
 export var dragstart = function (e) {
-  if ((e.type === 'mousedown') && (e.button !== 0)) { return; } // not LMB
+  if ((e.type === 'mousedown') && (e.button !== 0)) return; // not LMB
   // prevent text selection
   e.preventDefault();
   let isTouching = e.type === 'touchstart';
@@ -389,7 +389,7 @@ const hoverstart = ({root, el, latestEvent, endEvents, height, width, cb, noRemo
 
   o.hover(o.latestEvent);
   new MutationObserver(() => {
-    if (el.parentNode) { return o.hover(o.latestEvent); }
+    if (el.parentNode) return o.hover(o.latestEvent);
   }).observe(el, {childList: true});
 
   $.on(root, endEvents,   o.hoverend);
@@ -412,8 +412,8 @@ export var hover = function (e) {
   const {clientX, clientY} = Conf['Follow Cursor'] ? e : this;
 
   const top = this.isImage
-  ? Math.max(0, (clientY * (this.clientHeight - height)) / this.clientHeight)
-  : Math.max(0, Math.min(this.clientHeight - height, clientY - 120));
+    ? Math.max(0, (clientY * (this.clientHeight - height)) / this.clientHeight)
+    : Math.max(0, Math.min(this.clientHeight - height, clientY - 120));
 
   let threshold = this.clientWidth / 2;
   if (!this.isImage) { threshold = Math.max(threshold, this.clientWidth - 400); }
@@ -429,14 +429,14 @@ export var hover = function (e) {
 };
 
 export var hoverend = function (e) {
-  if (((e.type === 'keydown') && (e.keyCode !== 13)) || (e.target.nodeName === "TEXTAREA")) { return; }
+  if (((e.type === 'keydown') && (e.keyCode !== 13)) || (e.target.nodeName === "TEXTAREA")) return;
   if (!this.noRemove) { $.rm(this.el); }
   $.off(this.root, this.endEvents, this.hoverend);
   $.off(d, 'keydown', this.hoverend);
   $.off(this.root, 'mousemove', this.hover);
   // Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=674955
   $.off(doc, 'mousemove', this.workaround);
-  if (this.cb) { return this.cb.call(this); }
+  if (this.cb) return this.cb.call(this);
 };
 
 export const checkbox = (name, text, checked) => {

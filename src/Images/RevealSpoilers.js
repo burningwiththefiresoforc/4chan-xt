@@ -8,7 +8,7 @@ import { g, Conf } from "../globals/globals";
  */
 const RevealSpoilers = {
   init() {
-    if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf['Reveal Spoiler Thumbnails']) { return; }
+    if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf['Reveal Spoiler Thumbnails']) return;
 
     Callbacks.Post.push({
       name: 'Reveal Spoiler Thumbnails',
@@ -17,7 +17,7 @@ const RevealSpoilers = {
   },
 
   node() {
-    if (this.isClone) { return; }
+    if (this.isClone) return;
     for (const file of this.files) {
       if (file.thumb && file.isSpoiler) {
         const {thumb} = file;

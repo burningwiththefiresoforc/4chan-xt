@@ -72,12 +72,8 @@ var CrossOrigin = {
           }
           return cb(data, xhr.responseHeaders);
         },
-        onerror() {
-          return cb(null);
-        },
-        onabort() {
-          return cb(null);
-        }
+        onerror() { return cb(null); },
+        onabort() { return cb(null); }
       };
       try {
         return (GM?.xmlHttpRequest || GM_xmlhttpRequest)(gmOptions);

@@ -12,7 +12,7 @@ import Get from "../General/Get";
  */
 var Metadata = {
   init() {
-    if (!Conf['WEBM Metadata'] || !['index', 'thread'].includes(g.VIEW)) { return; }
+    if (!Conf['WEBM Metadata'] || !['index', 'thread'].includes(g.VIEW)) return;
 
     Callbacks.Post.push({
       name: 'WEBM Metadata',

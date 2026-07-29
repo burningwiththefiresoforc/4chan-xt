@@ -16,7 +16,7 @@ import SW from "../site/SW";
 
 var FileInfo = {
   init() {
-    if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf['File Info Formatting']) { return; }
+    if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf['File Info Formatting']) return;
 
     Callbacks.Post.push({
       name: 'File Info Formatting',
@@ -26,7 +26,7 @@ var FileInfo = {
 
   node() {
     let a;
-    if (!this.file) { return; }
+    if (!this.file) return;
     if (this.isClone) {
       for (a of $$('.file-info .download-button', this.file.text)) {
         $.on(a, 'click', ImageCommon.download);
