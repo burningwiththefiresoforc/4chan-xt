@@ -34,7 +34,7 @@ const ImageHost = {
       if (this.file.thumbLink) { this.file.thumbLink.hostname = host; }
       this.file.url = this.file.link.href;
     }
-    return ImageHost.fixLinks($$('a', this.nodes.comment));
+    ImageHost.fixLinks($$('a', this.nodes.comment));
   },
 
   fixLinks(links) {

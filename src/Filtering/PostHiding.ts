@@ -253,6 +253,7 @@ var PostHiding = {
       }
       $.event('CloseMenu');
     },
+
     hideStub() {
       let data = PostHiding.db.get({boardID: post.board.ID, threadID: post.thread.ID, postID: post.ID});
       const {post} = PostHiding.menu;

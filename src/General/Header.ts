@@ -481,8 +481,8 @@ var Header = {
     Header.setFooterVisibility(hide);
     $.set('Bottom Board List', hide);
     const message = hide
-    ? 'The bottom navigation will now be hidden.'
-    : 'The bottom navigation will remain visible.';
+      ? 'The bottom navigation will now be hidden.'
+      : 'The bottom navigation will remain visible.';
     return new Notice('info', message, 2);
   },
 

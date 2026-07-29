@@ -115,7 +115,7 @@ var ImageExpand = {
     },
 
     playVideos() {
-      return g.posts.forEach(function(post) {
+      return g.posts.forEach((post) => {
         for (post of [post, ...post.clones]) {
           var {file} = post;
           if (!file || !file.isVideo || !file.isExpanded) { continue; }
@@ -300,9 +300,7 @@ var ImageExpand = {
      let currentRotationState = 0;
      let initialImageContentWidth = 0;
 
-     function positiveModulo(a: number, n: number): number {
-       return ((a % n) + n) % n;
-     }
+     const positiveModulo = (a: number, n: number): number => ((a % n) + n) % n;
 
      const compensateTransformedSize = () => {
        const rotationState = positiveModulo(currentRotationState, totalRotationStates);

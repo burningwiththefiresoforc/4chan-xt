@@ -22,7 +22,7 @@ const ImageLoader = {
 
     $.on(d, 'PostsInserted', () => {
       if (ImageLoader.prefetchEnabled || replace) {
-        return g.posts.forEach(ImageLoader.prefetchAll);
+        g.posts.forEach(ImageLoader.prefetchAll);
       }
     });
 

@@ -136,7 +136,7 @@ export const parseArchivePost = (data: RawArchivePost) => {
   if (data.media && !!+data.media.banned) {
     o.fileDeleted = true;
   } else if (data.media?.media_filename) {
-    let { thumb_link } = data.media;
+    let {thumb_link} = data.media;
     // Fix URLs missing origin
     if (thumb_link?.[0] === '/') { thumb_link = url.split('/', 3).join('/') + thumb_link; }
     if (!Redirect.securityCheck(thumb_link)) { thumb_link = ''; }

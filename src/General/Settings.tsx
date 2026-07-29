@@ -429,7 +429,6 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     if (compareString < '00002.00030.00000.00000') {
       if (data.sauces != null) {
         set('sauces', data.sauces
-          .replace( /^#?\s*(https:\/\/lens\.google\.com\/uploadbyurl\?url=%(?:IMG|T?URL)[^\n]*)/mg, '$1')
           .replace(
             /^#?\s*https:\/\/www\.google\.com\/searchbyimage\?(?:sbisrc=[^&]+&)?image_url=%(IMG|T?URL)(?:&safe=\w+)?[^\n]*\n?/mg,
             (match, capture) => data.sauces.includes('lens.google.com') ? '' : `https://lens.google.com/uploadbyurl?url=%${capture}\n`
@@ -557,11 +556,10 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       input = inputs[name];
       if (!['Interval', 'Custom CSS', 'timeLocale'].includes(name)) {
         items[name] = Conf[name];
-        var event = (
-          (input.nodeName === 'SELECT')
-          || ['checkbox', 'radio'].includes(input.type)
-          || ((input.nodeName === 'TEXTAREA') && !(name in Settings))
-        ) ? 'change' : 'input';
+        var event = ((input.nodeName === 'SELECT')
+            || ['checkbox', 'radio'].includes(input.type)
+            || ((input.nodeName === 'TEXTAREA') && !(name in Settings)))
+          ? 'change' : 'input';
         $.on(input, event, $.cb[input.type === 'checkbox' ? 'checked' : 'value']);
         if (name in Settings) { $.on(input, event, Settings[name]); }
       }

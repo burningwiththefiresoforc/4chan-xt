@@ -147,8 +147,8 @@ export default class DataBoard {
     if (!this.data[siteID]) this.data[siteID] = { boards: dict() };
     const boards = this.data[siteID].boards;
     if (postID !== undefined) {
-      let base = boards[boardID];
-      (((base || (boards[boardID] = dict())))[threadID] || (base[threadID] = dict()))[postID] = val;
+      let base = boards[boardID] || (boards[boardID] = dict());
+      (base[threadID] || (base[threadID] = dict()))[postID] = val;
     } else if (threadID !== undefined) {
       (boards[boardID] || (boards[boardID] = dict()))[threadID] = val;
     } else {

@@ -138,10 +138,8 @@ var Menu = (function() {
 
       if (!entry.subEntries) return;
       let submenu = $('.submenu', entry.el);
-      if (submenu) {
-        // Reset sub menu, remove irrelevant entries.
-        $.rm(submenu);
-      }
+      // Reset sub menu, remove irrelevant entries.
+      if (submenu) { $.rm(submenu); }
       submenu = $.el('div', {className: 'dialog submenu'});
       for (var subEntry of entry.subEntries) {
         this.insertEntry(subEntry, submenu, data);
@@ -368,7 +366,7 @@ export var dragend = function () {
   }
 };
 
-const hoverstart = function ({ root, el, latestEvent, endEvents, height, width, cb, noRemove }) {
+const hoverstart = ({root, el, latestEvent, endEvents, height, width, cb, noRemove}) => {
   const rect = root.getBoundingClientRect();
   const o = {
     root,
@@ -390,7 +388,7 @@ const hoverstart = function ({ root, el, latestEvent, endEvents, height, width, 
   o.hoverend = hoverend.bind(o);
 
   o.hover(o.latestEvent);
-  new MutationObserver(function() {
+  new MutationObserver(() => {
     if (el.parentNode) { return o.hover(o.latestEvent); }
   }).observe(el, {childList: true});
 
@@ -433,15 +431,15 @@ export var hover = function (e) {
 export var hoverend = function (e) {
   if (((e.type === 'keydown') && (e.keyCode !== 13)) || (e.target.nodeName === "TEXTAREA")) { return; }
   if (!this.noRemove) { $.rm(this.el); }
-  $.off(this.root, this.endEvents,  this.hoverend);
-  $.off(d,     'keydown',   this.hoverend);
+  $.off(this.root, this.endEvents, this.hoverend);
+  $.off(d, 'keydown', this.hoverend);
   $.off(this.root, 'mousemove', this.hover);
   // Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=674955
-  $.off(doc,   'mousemove', this.workaround);
+  $.off(doc, 'mousemove', this.workaround);
   if (this.cb) { return this.cb.call(this); }
 };
 
-export const checkbox = function (name, text, checked) {
+export const checkbox = (name, text, checked) => {
   if (checked == null) { checked = Conf[name]; }
   const label = $.el('label');
   const input = $.el('input', {type: 'checkbox', name, checked});
