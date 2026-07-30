@@ -97,12 +97,12 @@ var ExpandThread = {
     if (oldReq) {
       delete status.req;
       oldReq.abort();
-      if (a) { a.textContent = g.SITE.Build.summaryText('+', ...a.textContent.match(/\d+/g)); }
+      if (a) a.textContent = g.SITE.Build.summaryText('+', ...a.textContent.match(/\d+/g));
       return;
     }
 
     let replies = $$('.thread > .replyContainer', threadRoot);
-    if (status.numReplies) { replies = replies.slice(0, (-status.numReplies)); }
+    if (status.numReplies) replies = replies.slice(0, (-status.numReplies));
     let postsCount = 0;
     let filesCount = 0;
     for (var reply of replies) {
@@ -111,12 +111,10 @@ var ExpandThread = {
       var inlined;
       while ((inlined = $('.inlined', reply))) { inlined.click(); } }
       postsCount++;
-      if ('file' in Get.postFromRoot(reply)) { filesCount++; }
+      if ('file' in Get.postFromRoot(reply)) filesCount++;
       $.rm(reply);
     }
-    if (indexEnabled) { // otherwise handled by Main.addPosts
-      $.event('PostsRemoved', null, a.parentNode);
-    }
+    if (indexEnabled) $.event('PostsRemoved', null, a.parentNode); // otherwise handled by Main.addPosts
     a.textContent = g.SITE.Build.summaryText('+', postsCount, filesCount);
     $.rm($('.summary-bottom', threadRoot));
   },
@@ -144,7 +142,7 @@ var ExpandThread = {
       }
       root = g.SITE.Build.postFromObject(postData, thread.board.ID);
       post = new Post(root, thread, thread.board);
-      if ('file' in post) { filesCount++; }
+      if ('file' in post) filesCount++;
       posts.push(post);
       postsRoot.push(root);
     }

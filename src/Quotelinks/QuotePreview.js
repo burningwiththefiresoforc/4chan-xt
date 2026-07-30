@@ -26,14 +26,9 @@ var QuotePreview = {
 
     if (!['index', 'thread'].includes(g.VIEW)) return;
 
-    if (Conf['Comment Expansion']) {
-      ExpandComment.callbacks.push(this.node);
-    }
+    if (Conf['Comment Expansion']) ExpandComment.callbacks.push(this.node);
 
-    Callbacks.Post.push({
-      name: 'Quote Previewing',
-      cb:   this.node
-    });
+    Callbacks.Post.push({ name: 'Quote Previewing', cb:   this.node });
   },
 
   node() {

@@ -35,9 +35,7 @@ var Fourchan = {
         cb:   Fourchan.code
       });
       g.posts.forEach((post) => {
-        if (post.callbacksExecuted) {
-          Callbacks.Post.execute(post, ['Parse [code] tags'], true);
-        }
+        if (post.callbacksExecuted) Callbacks.Post.execute(post, ['Parse [code] tags'], true);
       });
       ExpandComment.callbacks.push(Fourchan.code);
     }
@@ -49,9 +47,7 @@ var Fourchan = {
         cb:   Fourchan.math
       });
       g.posts.forEach((post) => {
-        if (post.callbacksExecuted) {
-          Callbacks.Post.execute(post, ['Parse [math] tags'], true);
-        }
+        if (post.callbacksExecuted) Callbacks.Post.execute(post, ['Parse [math] tags'], true);
       });
       ExpandComment.callbacks.push(Fourchan.math);
     }

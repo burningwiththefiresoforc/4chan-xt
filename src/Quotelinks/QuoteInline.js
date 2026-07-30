@@ -15,14 +15,9 @@ var QuoteInline = {
   init() {
     if (!['index', 'thread'].includes(g.VIEW) || !Conf['Quote Inlining']) return;
 
-    if (Conf['Comment Expansion']) {
-      ExpandComment.callbacks.push(this.node);
-    }
+    if (Conf['Comment Expansion']) ExpandComment.callbacks.push(this.node);
 
-    Callbacks.Post.push({
-      name: 'Quote Inlining',
-      cb:   this.node
-    });
+    Callbacks.Post.push({ name: 'Quote Inlining', cb: this.node });
   },
 
   node() {
@@ -42,7 +37,7 @@ var QuoteInline = {
 
   qiQuote(link, hidden) {
     let name = "hashlink";
-    if (hidden) { name += " filtered"; }
+    if (hidden) name += " filtered";
     return $.el('a', {
       className: name,
       textContent: '#',

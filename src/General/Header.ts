@@ -310,7 +310,7 @@ var Header = {
       if (urlIC) {
         a.dataset.only = m[1];
         a.href = urlIC;
-        if (m[1] === 'catalog') { $.addClass(a, 'catalog'); }
+        if (m[1] === 'catalog') $.addClass(a, 'catalog');
       } else {
         return a.firstChild; // Its text node.
       }
@@ -530,9 +530,7 @@ var Header = {
     }
   },
 
-  scrollToIfNeeded(root, down) {
-    Header.scrollTo(root, down, true);
-  },
+  scrollToIfNeeded(root, down) { Header.scrollTo(root, down, true); },
 
   getTopOf(root) {
     let {top} = root.getBoundingClientRect();

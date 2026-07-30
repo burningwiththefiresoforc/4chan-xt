@@ -89,15 +89,13 @@ var DeleteLink = {
     }
     this.textContent = DeleteLink.linkText(fileOnly);
 
-    if (!DeleteLink.cooldown.seconds[post.fullID]) {
-      DeleteLink.delete(post, fileOnly);
-    }
+    if (!DeleteLink.cooldown.seconds[post.fullID]) DeleteLink.delete(post, fileOnly);
   },
 
   delete(post, fileOnly) {
     const link = DeleteLink.nodes.links[+fileOnly];
     delete DeleteLink.auto[+fileOnly][post.fullID];
-    if (post.fullID === DeleteLink.post.fullID) { $.off(link, 'click', DeleteLink.toggle); }
+    if (post.fullID === DeleteLink.post.fullID) $.off(link, 'click', DeleteLink.toggle);
 
     const form = {
       mode: 'usrdel',
@@ -117,7 +115,7 @@ var DeleteLink = {
   load(link, post, fileOnly, resDoc) {
     if (!resDoc) {
       new Notice('warning', 'Connection error, please retry.', 20);
-      if (post.fullID === DeleteLink.post.fullID) { $.on(link, 'click', DeleteLink.toggle); }
+      if (post.fullID === DeleteLink.post.fullID) $.on(link, 'click', DeleteLink.toggle);
       return;
     }
 
@@ -128,18 +126,15 @@ var DeleteLink = {
       return new Notice('warning', el, 20);
     } else if (msg = resDoc.getElementById('errmsg')) { // error!
       new Notice('warning', msg.textContent, 20);
-      if (post.fullID === DeleteLink.post.fullID) { $.on(link, 'click', DeleteLink.toggle); }
+      if (post.fullID === DeleteLink.post.fullID) $.on(link, 'click', DeleteLink.toggle);
       if (QR.cooldown.data && Conf.Cooldown && /\bwait\b/i.test(msg.textContent)) {
         DeleteLink.cooldown.start(post, 5);
         DeleteLink.auto[+fileOnly][post.fullID] = true;
         DeleteLink.nodes.links[+fileOnly].textContent = DeleteLink.linkText(fileOnly);
       }
     } else {
-      if (!fileOnly) { QR.cooldown.delete(post); }
-      if (resDoc.title === 'Updating index...') {
-        // We're 100% sure.
-        (post.origin || post).kill(fileOnly);
-      }
+      if (!fileOnly) QR.cooldown.delete(post);
+      if (resDoc.title === 'Updating index...') (post.origin || post).kill(fileOnly); // We're 100% sure.
       if (post.fullID === DeleteLink.post.fullID) return link.textContent = 'Deleted';
     }
   },
@@ -151,7 +146,7 @@ var DeleteLink = {
       // Already counting.
       if (DeleteLink.cooldown.seconds[post.fullID]) return;
 
-      if (!seconds) { seconds = QR.cooldown.secondsDeletion(post); }
+      if (!seconds) seconds = QR.cooldown.secondsDeletion(post);
       if (seconds > 0) {
         DeleteLink.cooldown.seconds[post.fullID] = seconds;
         DeleteLink.cooldown.count(post);
@@ -159,7 +154,7 @@ var DeleteLink = {
     },
 
     count(post) {
-      if (post.fullID === DeleteLink.post.fullID) { DeleteLink.nodes.menu.textContent = DeleteLink.menuText(); }
+      if (post.fullID === DeleteLink.post.fullID) DeleteLink.nodes.menu.textContent = DeleteLink.menuText();
       if ((DeleteLink.cooldown.seconds[post.fullID] > 0) && Conf.Cooldown) {
         DeleteLink.cooldown.seconds[post.fullID]--;
         setTimeout(DeleteLink.cooldown.count, 1000, post);

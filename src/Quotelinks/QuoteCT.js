@@ -13,9 +13,7 @@ var QuoteCT = {
   init() {
     if (!['index', 'thread'].includes(g.VIEW) || !Conf['Mark Cross-thread Quotes']) return;
 
-    if (Conf['Comment Expansion']) {
-      ExpandComment.callbacks.push(this.node);
-    }
+    if (Conf['Comment Expansion']) ExpandComment.callbacks.push(this.node);
 
     // \u00A0 is nbsp
     this.mark = $.el('span', {
@@ -34,10 +32,8 @@ var QuoteCT = {
     const {board, thread} = this.context;
     for (var quotelink of this.nodes.quotelinks) {
       var {boardID, threadID} = Get.postDataFromLink(quotelink);
-      if (!threadID) { continue; } // deadlink
-      if (this.isClone) {
-        $.rm($('.qmark-ct', quotelink));
-      }
+      if (!threadID) continue; // deadlink
+      if (this.isClone) $.rm($('.qmark-ct', quotelink));
       if ((boardID === board.ID) && (threadID !== thread.ID)) {
         $.add(quotelink, QuoteCT.mark.cloneNode(true));
       }

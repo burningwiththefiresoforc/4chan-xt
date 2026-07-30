@@ -63,7 +63,7 @@ var UnreadIndex = {
     if (!thread || (thread.nodes.root !== e.target)) return;
     const wasVisible = !!UnreadIndex.hr[thread.fullID]?.parentNode;
     UnreadIndex.update(thread);
-    if (Conf['Scroll to Last Read Post'] && (e.type === 'PostsInserted') && !wasVisible && !!UnreadIndex.hr[thread.fullID]?.parentNode) {
+    if (Conf['Scroll to Last Read Post'] && (e.type === 'PostsInserted') && !wasVisible && UnreadIndex.hr[thread.fullID]?.parentNode) {
       Header.scrollToIfNeeded(UnreadIndex.hr[thread.fullID], true);
     }
   },

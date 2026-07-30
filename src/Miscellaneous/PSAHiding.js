@@ -21,9 +21,7 @@ var PSAHiding = {
     let btn, hr;
     PSAHiding.psa = psa;
     PSAHiding.text = psa.dataset.utc ?? psa.innerHTML;
-    if (g.SITE.selectors.psaTop && (hr = $(g.SITE.selectors.psaTop)?.previousElementSibling) && (hr.nodeName === 'HR')) {
-      PSAHiding.hr = hr;
-    }
+    if (g.SITE.selectors.psaTop && (hr = $(g.SITE.selectors.psaTop)?.previousElementSibling) && (hr.nodeName === 'HR')) PSAHiding.hr = hr;
     PSAHiding.content = $.el('div');
 
     const entry = {

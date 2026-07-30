@@ -37,9 +37,7 @@ var Site = {
               changed++;
             }
           }
-          if (changed) {
-            $.set('siteProperties', Conf.siteProperties);
-          }
+          if (changed) $.set('siteProperties', Conf.siteProperties);
           if (!g.SITE) {
             this.set(hostname);
             cb();
@@ -57,7 +55,7 @@ var Site = {
     }
     if (hostname) {
       let canonical = Conf.siteProperties[hostname].canonical;
-      if (canonical) { hostname = canonical; }
+      if (canonical) hostname = canonical;
     }
     return hostname;
   },

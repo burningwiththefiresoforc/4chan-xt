@@ -17,9 +17,7 @@ const Flash = {
     if ($.hasStorage) {
       $.global('initFlash');
     } else {
-      if (g.VIEW === 'thread') {
-        $.global('setThreadId');
-      }
+      if (g.VIEW === 'thread') $.global('setThreadId');
       $.global('initFlashNoStorage');
     }
   }

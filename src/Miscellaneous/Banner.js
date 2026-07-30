@@ -14,9 +14,7 @@ import { dict } from "../platform/helpers";
  */
 const Banner = {
   init() {
-    if (Conf['Custom Board Titles']) {
-      this.db = new DataBoard('customTitles', null, true);
-    }
+    if (Conf['Custom Board Titles']) this.db = new DataBoard('customTitles', null, true);
 
     $.asap((() => d.body), () => $.asap((() => $('hr')), Banner.ready));
 

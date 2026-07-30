@@ -12,7 +12,7 @@ import Icon from "../Icons/icon";
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const dialog = function(id, properties) {
+const dialog = (id, properties) => {
   const el = $.el('div', { className: 'dialog', id });
   $.extend(el, properties);
   el.style.cssText = Conf[`${id}.position`];
@@ -20,7 +20,7 @@ const dialog = function(id, properties) {
   const move = $('.move', el);
   $.on(move, 'touchstart mousedown', dragstart);
   for (var child of move.children) {
-    if (!child.tagName) { continue; }
+    if (!child.tagName) continue;
     $.on(child, 'touchstart mousedown', e => e.stopPropagation());
   }
 
@@ -139,7 +139,7 @@ var Menu = (function() {
       if (!entry.subEntries) return;
       let submenu = $('.submenu', entry.el);
       // Reset sub menu, remove irrelevant entries.
-      if (submenu) { $.rm(submenu); }
+      if (submenu) $.rm(submenu);
       submenu = $.el('div', {className: 'dialog submenu'});
       for (var subEntry of entry.subEntries) {
         this.insertEntry(subEntry, submenu, data);
@@ -265,9 +265,7 @@ export var dragstart = function (e) {
   // prevent text selection
   e.preventDefault();
   let isTouching = e.type === 'touchstart';
-  if (isTouching) {
-    e = e.changedTouches[e.changedTouches.length - 1];
-  }
+  if (isTouching) e = e.changedTouches[e.changedTouches.length - 1];
   // distance from pointer to el edge is constant; calculate it here.
   const el = $.x('ancestor::div[contains(@class,"dialog")][1]', this);
   const rect = el.getBoundingClientRect();
@@ -440,7 +438,7 @@ export var hoverend = function (e) {
 };
 
 export const checkbox = (name, text, checked) => {
-  if (checked == null) { checked = Conf[name]; }
+  if (checked == null) checked = Conf[name];
   const label = $.el('label');
   const input = $.el('input', {type: 'checkbox', name, checked});
   $.add(label, [input, $.tn(` ${text}`)]);

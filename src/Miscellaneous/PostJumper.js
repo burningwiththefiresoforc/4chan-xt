@@ -31,13 +31,9 @@ const PostJumper = {
       return;
     }
 
-    if (this.nodes.uniqueIDRoot) {
-      PostJumper.addButtons(this,'uniqueID');
-    }
+    if (this.nodes.uniqueIDRoot) PostJumper.addButtons(this,'uniqueID');
 
-    if (this.nodes.capcode) {
-      PostJumper.addButtons(this,'capcode');
-    }
+    if (this.nodes.capcode) PostJumper.addButtons(this,'capcode');
   },
 
   addButtons(post,type) {
@@ -56,9 +52,7 @@ const PostJumper = {
   buttonClick() {
     const dir = $.hasClass(this, 'prev') ? -1 : 1;
     const toJumper = PostJumper.find(this.parentNode, dir);
-    if (toJumper) {
-      PostJumper.scroll(this.parentNode, toJumper);
-    }
+    if (toJumper) PostJumper.scroll(this.parentNode, toJumper);
   },
 
   find(jumper, dir) {

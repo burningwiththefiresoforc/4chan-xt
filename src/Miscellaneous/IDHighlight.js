@@ -20,9 +20,9 @@ var IDHighlight = {
   uniqueID: null,
 
   node() {
-    if (this.nodes.uniqueIDRoot) { $.on(this.nodes.uniqueIDRoot, 'click', IDHighlight.click(this)); }
-    if (this.nodes.capcode) { $.on(this.nodes.capcode, 'click', IDHighlight.click(this)); }
-    if (!this.isClone) { IDHighlight.set(this); }
+    if (this.nodes.uniqueIDRoot) $.on(this.nodes.uniqueIDRoot, 'click', IDHighlight.click(this));
+    if (this.nodes.capcode) $.on(this.nodes.capcode, 'click', IDHighlight.click(this));
+    if (!this.isClone) IDHighlight.set(this);
   },
 
   set(post) {

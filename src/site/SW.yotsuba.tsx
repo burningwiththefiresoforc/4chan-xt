@@ -229,9 +229,7 @@ const SWYotsuba = {
     if (post.boardID !== 'f') return;
     for (const type of ['Sticky', 'Closed']) {
       const icon = $(`img[alt=${type}]`, nodes.info);
-      if (icon) {
-        $.addClass(icon, `${type.toLowerCase()}Icon`, 'retina');
-      }
+      if (icon) $.addClass(icon, `${type.toLowerCase()}Icon`, 'retina');
     }
   },
 
@@ -276,7 +274,7 @@ const SWYotsuba = {
       }
       for (let i = 0; i < 2; i++) {
         let br = abbr.previousSibling;
-        if (br && (br.nodeName === 'BR')) { $.rm(br); }
+        if (br && (br.nodeName === 'BR')) $.rm(br);
       }
       $.rm(abbr);
     }
@@ -284,7 +282,7 @@ const SWYotsuba = {
 
   cleanCommentDisplay(bq) {
     let b = $('b', bq);
-    if (b && /^Rolled /.test(b.textContent)) { $.rm(b); }
+    if (b && /^Rolled /.test(b.textContent)) $.rm(b);
     $.rm($('.fortune', bq));
   },
 
@@ -326,10 +324,10 @@ const SWYotsuba = {
         case '#text':
           for (var chr of node.nodeValue) {
             var span = $.el('span', {textContent: chr});
-            if (chr === ' ') { span.className = 'space'; }
-            if (chr === ']') { nodes.push(spacer()); }
+            if (chr === ' ') span.className = 'space';
+            if (chr === ']') nodes.push(spacer());
             nodes.push(span);
-            if (chr === '[') { nodes.push(spacer()); }
+            if (chr === '[') nodes.push(spacer());
           }
           break;
         case 'A':
@@ -428,9 +426,7 @@ const SWYotsuba = {
       // Temporary JSON properties for events such as April 1 / Halloween
       o.extra = dict();
       for (var key in data) {
-        if (key[0] === 'x') {
-          o.extra[key] = data[key];
-        }
+        if (key[0] === 'x') o.extra[key] = data[key];
       }
       return o;
     },
@@ -454,7 +450,7 @@ const SWYotsuba = {
         tag: data.tag,
         hasDownscale: !!data.m_img
       };
-      if ((data.h != null) && !/\.pdf$/.test(o.url)) { o.dimensions = `${o.width}x${o.height}`; }
+      if ((data.h != null) && !/\.pdf$/.test(o.url)) o.dimensions = `${o.width}x${o.height}`;
       return o;
     },
 
@@ -605,7 +601,7 @@ const SWYotsuba = {
       if (this.hat) { $.add(root, this.hat.cloneNode(false)); }
       $.add(root, thread.OP.nodes.root);
       if (data.omitted_posts || (!withReplies && data.replies)) {
-        const [posts, files] = withReplies 
+        const [posts, files] = withReplies
           // XXX data.omitted_images is not accurate.
           ? [data.omitted_posts, data.images - data.last_replies.filter(data => !!data.ext).length]
           : [data.replies, data.images];
@@ -660,8 +656,8 @@ const SWYotsuba = {
         className: 'thread catalog-thread',
         id: `t${thread}`
       });
-      if (thread.OP.highlights) { $.addClass(root, ...thread.OP.highlights); }
-      if (!thread.OP.file) { $.addClass(root, 'noFile'); }
+      if (thread.OP.highlights) $.addClass(root, ...thread.OP.highlights);
+      if (!thread.OP.file) $.addClass(root, 'noFile');
       root.style.cssText = cssText || '';
 
       return root;
@@ -672,12 +668,10 @@ const SWYotsuba = {
       if (data.com) {
         excerpt = this.parseCommentDisplay(data.com).replace(/>>\d+/g, '').trim().replace(/\n+/g, ' // ');
       }
-      if (data.ext) { excerpt ||= `${$.unescape(data.filename)}${data.ext}`; }
-      if (data.com) {
-        if (!excerpt) { excerpt = $.unescape(data.com.replace(/<br\b[^<]*>/gi, ' // ')); }
-      }
-      if (!excerpt) { excerpt = '\xA0'; }
-      if (excerpt.length > 73) { excerpt = `${excerpt.slice(0, 70)}...`; }
+      if (data.ext) excerpt ||= `${$.unescape(data.filename)}${data.ext}`;
+      if (data.com) excerpt ||= $.unescape(data.com.replace(/<br\b[^<]*>/gi, ' // '));
+      if (!excerpt) excerpt = '\xA0';
+      if (excerpt.length > 73) excerpt = `${excerpt.slice(0, 70)}...`;
 
       const link = this.postURL(thread.board.ID, thread.ID, data.no);
       return $.el('div', { className: 'catalog-reply' },

@@ -227,7 +227,7 @@ export default class DataBoard {
       if (!archiveList) return that.ajaxCleanParse(boardID, this.response);
       const response1 = this.response;
       $.cache(archiveList, function() {
-        if ((this.status !== 200) && (!!g.SITE.archivedBoardsKnown || (this.status !== 404))) return;
+        if ((this.status !== 200) && (g.SITE.archivedBoardsKnown || (this.status !== 404))) return;
         that.ajaxCleanParse(boardID, response1, this.response);
       });
     });

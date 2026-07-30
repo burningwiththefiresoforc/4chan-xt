@@ -122,7 +122,6 @@ var QR = {
   },
 
   init() {
-    let sc;
     if (!Conf['Quick Reply']) return;
 
     this.posts = [];
@@ -134,11 +133,12 @@ var QR = {
       cb:   this.node
     });
 
-    this.shortcut = (sc = $.el('a', {
+    let sc = $.el('a', {
       className: 'disabled',
       title: 'Quick Reply',
       href: 'javascript:;',
-    }));
+    });
+    this.shortcut = sc;
     Icon.set(this.shortcut, 'comment', 'Quick Reply')
     $.on(sc, 'click', () => {
       if (!QR.postingIsEnabled) return;
@@ -211,7 +211,7 @@ var QR = {
       });
 
       let navLinksBot = $('.navLinksBot');
-      if (navLinksBot) { $.prepend(navLinksBot, linkBot); }
+      if (navLinksBot) $.prepend(navLinksBot, linkBot);
     }
 
     $.on(d, 'QRGetFile',          QR.getFile);
@@ -248,7 +248,7 @@ var QR = {
 
   open() {
     if (QR.nodes) {
-      if (QR.nodes.el.hidden) { QR.captcha.setup(); }
+      if (QR.nodes.el.hidden) QR.captcha.setup();
       QR.nodes.el.hidden = false;
       QR.unhide();
     } else {
@@ -319,7 +319,7 @@ var QR = {
   },
 
   blur() {
-    if (QR.nodes.el.contains(d.activeElement)) { d.activeElement.blur(); }
+    if (QR.nodes.el.contains(d.activeElement)) d.activeElement.blur();
   },
 
   toggleSJIS(e) {
@@ -336,13 +336,11 @@ var QR = {
     $.event('mathjax', null, QR.nodes.texPreview);
   },
 
-  texPreviewHide() {
-    $.rmClass(QR.nodes.el, 'tex-preview');
-  },
+  texPreviewHide() { $.rmClass(QR.nodes.el, 'tex-preview'); },
 
   addPost() {
-    const wasOpen = (QR.nodes && !QR.nodes.el.hidden);
     QR.open();
+    const wasOpen = (QR.nodes && !QR.nodes.el.hidden);
     if (wasOpen) {
       $.addClass(QR.nodes.el, 'dump');
       new QR.post(true);
@@ -462,7 +460,7 @@ var QR = {
           range.setEndAfter(root);
         }
 
-        if (!range.toString().trim()) { continue; }
+        if (!range.toString().trim()) continue;
 
         var frag  = range.cloneContents();
         var ancestor = range.commonAncestorContainer;
@@ -479,7 +477,7 @@ var QR = {
           $.replace(node, $.tn('\n'));
         }
         for (node of $$('br', frag)) {
-          if (node !== frag.lastChild) { $.replace(node, $.tn('\n>')); }
+          if (node !== frag.lastChild) $.replace(node, $.tn('\n>'));
         }
         g.SITE.insertTags?.(frag);
         for (node of $$('.linkify[data-original]', frag)) {
@@ -495,7 +493,7 @@ var QR = {
 
     QR.openPost();
     const {com, thread} = QR.nodes;
-    if (!com.value) { thread.value = Get.threadFromNode(this); }
+    if (!com.value) thread.value = Get.threadFromNode(this);
 
     const wasOnlyQuotes = QR.selected.isOnlyQuotes();
 
@@ -508,7 +506,7 @@ var QR = {
     com.focus();
 
     // This allows us to determine if any text other than quotes has been typed.
-    if (wasOnlyQuotes) { QR.selected.quotedText = com.value; }
+    if (wasOnlyQuotes) QR.selected.quotedText = com.value;
 
     QR.selected.save(com);
     QR.selected.save(thread);
@@ -590,8 +588,8 @@ var QR = {
 
   setFile(e) {
     const {file, name, source} = e.detail;
-    if (name != null) { file.name   = name; }
-    if (source != null) { file.source = source; }
+    if (name != null) file.name = name;
+    if (source != null) file.source = source;
     QR.open();
     return QR.handleFiles([file]);
   },
@@ -621,8 +619,8 @@ var QR = {
     let file = null;
     let score = -1;
     for (var item of e.clipboardData.items) {
-      var file2;
-      if ((item.kind === 'file') && (file2 = item.getAsFile())) {
+      let file2 = item.getAsFile();
+      if ((item.kind === 'file') && file2) {
         var score2 = (2* +(file2.size <= QR.max_size)) + +(file2.type === 'image/png');
         if (score2 > score) {
           file = file2;
@@ -923,9 +921,9 @@ var QR = {
     // prevent errors
     if (threadID === 'new') {
       threadID = null;
-      if (!!g.BOARD.config.require_subject && !post.sub) {
+      if (g.BOARD.config.require_subject && !post.sub) {
         err = 'New threads require a subject.';
-      } else if (!!!g.BOARD.config.text_only && !post.file) {
+      } else if (!g.BOARD.config.text_only && !post.file) {
         err = 'No file selected.';
       }
     } else if (g.BOARD.threads.get(threadID).isClosed) {
@@ -937,11 +935,11 @@ var QR = {
     }
 
     if ((g.BOARD.ID === 'r9k') && !post.com?.match(/[a-z-]/i)) {
-      if (!err) { err = 'Original comment required.'; }
+      err ||= 'Original comment required.';
     }
 
     // if (QR.captcha.isEnabled && !((QR.captcha === Captcha.v2) && /\b_ct=/.test(d.cookie) && threadID) && !(err && !force)) {
-    if (QR.captcha.isEnabled && !(err && !force)) {
+    if (QR.captcha.isEnabled && (!err && force)) {
       captcha = QR.captcha.getOne(!!threadID);
       // if (QR.captcha === Captcha.v2) {
       //   if (!captcha) { captcha = Captcha.cache.request(!!threadID); }
@@ -968,17 +966,17 @@ var QR = {
 
     const formData = {
       MAX_FILE_SIZE: QR.max_size,
-      mode:     'regist',
-      pwd:      QR.persona.getPassword(),
-      resto:    threadID,
-      name:     (!QR.forcedAnon ? post.name : undefined),
-      email:    post.email,
-      sub:      (!QR.forcedAnon && !threadID ? post.sub : undefined),
-      com:      post.com,
-      upfile:   post.file,
+      mode:    'regist',
+      pwd:     QR.persona.getPassword(),
+      resto:   threadID,
+      name:    (!QR.forcedAnon ? post.name : undefined),
+      email:   post.email,
+      sub:     (!QR.forcedAnon && !threadID ? post.sub : undefined),
+      com:     post.com,
+      upfile:  post.file,
       filetag,
-      spoiler:  post.spoiler,
-      flag:     post.flag,
+      spoiler: post.spoiler,
+      flag:    post.flag,
     };
 
     const options = {
@@ -1075,7 +1073,7 @@ var QR = {
       err = `Error ${this.statusText} (${this.status})`;
     }
 
-    if (!connErr) { QR.captcha.setUsed?.(); }
+    if (!connErr) QR.captcha.setUsed?.();
     delete QR.currentCaptcha;
 
     if (err) {
@@ -1408,7 +1406,7 @@ var QR = {
     },
 
     save() {
-      const { changes } = QR.cooldown;
+      const {changes} = QR.cooldown;
       if (!Object.keys(changes).length) return;
       $.get('cooldowns', dict(), ({cooldowns}) => {
         for (var scope in QR.cooldown.changes) {
@@ -1497,7 +1495,7 @@ var QR = {
         }
       }
 
-      if (save) { QR.cooldown.save; }
+      if (save) QR.cooldown.save;
 
       if (nCooldowns) {
         clearTimeout(QR.cooldown.timeout);
@@ -1606,9 +1604,7 @@ var QR = {
       }
     },
 
-    edit() {
-      QR.oekaki.load(() => $.global('qrTegakiLoad'));
-    },
+    edit() { QR.oekaki.load(() => $.global('qrTegakiLoad')); },
 
     toggle() {
       QR.oekaki.load(() => QR.nodes.oekaki.hidden = !QR.nodes.oekaki.hidden);
@@ -1649,12 +1645,10 @@ var QR = {
         return;
       }
 
-      if (type === 'options') { type = 'email'; }
-      if (type === 'subject') { type = 'sub'; }
+      if (type === 'options') type = 'email';
+      if (type === 'subject') type = 'sub';
 
-      if (/always/i.test(item)) {
-        QR.persona.always[type] = val;
-      }
+      if (/always/i.test(item)) QR.persona.always[type] = val;
 
       if (!QR.persona.types[type].includes(val)) {
         QR.persona.types[type].push(val);
@@ -1666,9 +1660,7 @@ var QR = {
         var arr = QR.persona.types[type];
         var list = $(`#list-${type}`, QR.nodes.el);
         for (var val of arr) {
-          if (val) {
-            $.add(list, $.el('option', { textContent: val }));
-          }
+          if (val) $.add(list, $.el('option', { textContent: val }));
         }
       }
     },
@@ -1826,9 +1818,7 @@ class post {
     this.nodes.el.draggable = !lock;
   }
 
-  unlock() {
-    this.lock(false);
-  }
+  unlock() { this.lock(false); }
 
   select() {
     if (QR.selected) {
@@ -2085,7 +2075,7 @@ class post {
   readFile() {
     const isVideo = /^video\//.test(this.file.type);
     const el = $.el(isVideo ? 'video' : 'img');
-    if (isVideo && !el.canPlayType(this.file.type)) { return; }
+    if (isVideo && !el.canPlayType(this.file.type)) return;
 
     const event = isVideo ? 'loadeddata' : 'load';
     var onload = () => {
@@ -2156,7 +2146,7 @@ class post {
     // so we generate thumbnails `s` times bigger then expected
     // to avoid crappy resized quality.
     let s = 90 * 2 * window.devicePixelRatio;
-    if (this.file.type === 'image/gif') { s *= 3; } // let them animate
+    if (this.file.type === 'image/gif') s *= 3; // let them animate
     if (isVideo) {
       height = el.videoHeight;
       width = el.videoWidth;
@@ -2197,7 +2187,7 @@ class post {
   }
 
   rmFile() {
-    if (this.isLocked) { return; }
+    if (this.isLocked) return;
     delete this.file;
     delete this.filename;
     delete this.filesize;
@@ -2230,7 +2220,7 @@ class post {
   updateFilename() {
     const long = `${this.filename} (${this.filesize})`;
     this.nodes.el.title = long;
-    if (this !== QR.selected) { return; }
+    if (this !== QR.selected) return;
     QR.nodes.filename.title = long;
   }
 
@@ -2257,7 +2247,7 @@ class post {
     this.preventAutoPost();
     const reader = new FileReader();
     reader.onload = e => {
-      const { result } = e.target;
+      const {result} = e.target;
       this.setComment((this.com ? `${this.com}\n${result}` : result));
       delete this.pasting;
     };
@@ -2280,7 +2270,7 @@ class post {
 
   drop() {
     $.rmClass(this, 'over');
-    if (!this.draggable) { return; }
+    if (!this.draggable) return;
     const el = $('.drag', this.parentNode);
     const index = el => {
       for (let i = 0; i < el.parentNode.children.length; i++) {
@@ -2290,7 +2280,7 @@ class post {
     }
     const oldIndex = index(el);
     const newIndex = index(this);
-    if (QR.posts[oldIndex].isLocked || QR.posts[newIndex].isLocked) { return; }
+    if (QR.posts[oldIndex].isLocked || QR.posts[newIndex].isLocked) return;
     (oldIndex < newIndex ? $.after : $.before)(this, el);
     const post = QR.posts.splice(oldIndex, 1)[0];
     QR.posts.splice(newIndex, 0, post);

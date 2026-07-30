@@ -25,9 +25,7 @@ const CustomCSS = {
   },
 
   update() {
-    if (!this.style) {
-      return this.addStyle();
-    }
+    if (!this.style) return this.addStyle();
     return this.style.textContent = CSS.sub(Conf.usercss);
   }
 };

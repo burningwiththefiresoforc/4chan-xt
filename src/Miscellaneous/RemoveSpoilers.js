@@ -21,9 +21,7 @@ const RemoveSpoilers = {
       cb:   this.node
     });
 
-    if (g.VIEW === 'archive') {
-      $.ready(() => RemoveSpoilers.unspoiler($.id('arc-list')));
-    }
+    if (g.VIEW === 'archive') $.ready(() => RemoveSpoilers.unspoiler($.id('arc-list')));
   },
 
   node() {

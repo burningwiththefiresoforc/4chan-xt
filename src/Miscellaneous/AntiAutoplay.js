@@ -44,7 +44,7 @@ var AntiAutoplay = {
 
   processVideo(el, attr) {
     el[attr] = el[attr].replace(/\?autoplay=1&?/, '?').replace('&autoplay=1', '');
-    if (window.getComputedStyle(el).display === 'none') { el.style.display = 'block'; }
+    if (window.getComputedStyle(el).display === 'none') el.style.display = 'block';
     $.addClass(el, 'autoplay-removed');
   }
 };

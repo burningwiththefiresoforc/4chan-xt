@@ -33,17 +33,9 @@ var QuoteYou = {
 
     if (!['index', 'thread', 'archive'].includes(g.VIEW)) return;
 
-    if (Conf['Highlight Own Posts']) {
-      $.addClass(doc, 'highlight-own');
-    }
-
-    if (Conf['Highlight Posts Quoting You']) {
-      $.addClass(doc, 'highlight-you');
-    }
-
-    if (Conf['Comment Expansion']) {
-      ExpandComment.callbacks.push(this.node);
-    }
+    if (Conf['Highlight Own Posts']) $.addClass(doc, 'highlight-own');
+    if (Conf['Highlight Posts Quoting You']) $.addClass(doc, 'highlight-you');
+    if (Conf['Comment Expansion']) ExpandComment.callbacks.push(this.node);
 
     // \u00A0 is nbsp
     this.mark = $.el('span', {
@@ -117,7 +109,7 @@ var QuoteYou = {
       }
       for (var quotelink of Get.allQuotelinksLinkingTo(post)) {
         if (this.checked) {
-          if (Conf['Mark Quotes of You']) { $.add(quotelink, QuoteYou.mark.cloneNode(true)); }
+          if (Conf['Mark Quotes of You']) $.add(quotelink, QuoteYou.mark.cloneNode(true));
         } else {
           $.rm($('.qmark-you', quotelink));
         }
@@ -135,7 +127,7 @@ var QuoteYou = {
     seek(type) {
       let highlighted, post, result;
       const {highlight} = g.SITE.classes;
-      if (highlighted = $(`.${highlight}`)) { $.rmClass(highlighted, highlight); }
+      if (highlighted = $(`.${highlight}`)) $.rmClass(highlighted, highlight);
 
       if (!QuoteYou.lastRead || !doc.contains(QuoteYou.lastRead) || !$.hasClass(QuoteYou.lastRead, 'quotesYou')) {
         if (!(post = (QuoteYou.lastRead = $('.quotesYou')))) {
@@ -168,7 +160,7 @@ var QuoteYou = {
         if (post.isReply) {
           const sel = `${g.SITE.selectors.postContainer}${g.SITE.selectors.highlightable.reply}`;
           let node = post.nodes.root;
-          if (!node.matches(sel)) { node = $(sel, node); }
+          if (!node.matches(sel)) node = $(sel, node);
           $.addClass(node, g.SITE.classes.highlight);
         }
         return true;

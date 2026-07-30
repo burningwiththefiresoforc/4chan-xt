@@ -220,8 +220,8 @@ var Unread = {
     while (Unread.position) {
       var {ID, data} = Unread.position;
       var {bottom} = data.nodes;
-      if (!!bottom.getBoundingClientRect().height && // post has been hidden
-        (Header.getBottomOf(bottom) <= -1)) { break; }                      // post is completely read
+      if (bottom.getBoundingClientRect().height && // post has been hidden
+        (Header.getBottomOf(bottom) <= -1)) break; // post is completely read
       count++;
       Unread.posts.delete(ID);
       Unread.postsQuotingYou.delete(ID);

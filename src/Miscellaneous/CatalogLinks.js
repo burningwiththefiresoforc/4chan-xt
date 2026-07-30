@@ -75,9 +75,7 @@ const CatalogLinks = {
     for (const a of $$('a', this.nodes.comment)) {
       // let m = a.href.match(/^https?:\/\/(boards\.4chan(?:nel)?\.org\/[^\/]+)\/catalog(#s=.*)?/);
       let m = a.href.match(/^https?:\/\/(boards\.4chan\.org\/[^\/]+)\/catalog(#s=.*)?/);
-      if (m) {
-        a.href = `//${m[1]}/${m[2] || '#catalog'}`;
-      }
+      if (m) a.href = `//${m[1]}/${m[2] || '#catalog'}`;
     }
   },
 
@@ -107,11 +105,7 @@ const CatalogLinks = {
       if (!siteID || !boardID) {
         let VIEW;
         ({siteID, boardID, VIEW} = Site.parseURL(a));
-        if (
-          !siteID || !boardID ||
-          !['index', 'catalog'].includes(VIEW) ||
-          (!a.dataset.indexOptions && (a.href.replace(tail, '') !== (Get.url(VIEW, {siteID, boardID}) || '').replace(tail, '')))
-        ) { continue; }
+        if ( !siteID || !boardID || !['index', 'catalog'].includes(VIEW) || (!a.dataset.indexOptions && (a.href.replace(tail, '') !== (Get.url(VIEW, {siteID, boardID}) || '').replace(tail, '')))) continue;
         $.extend(a.dataset, {siteID, boardID});
       }
 
@@ -129,7 +123,7 @@ const CatalogLinks = {
   externalParse() {
     CatalogLinks.externalList = dict();
     for (const line of Conf.externalCatalogURLs.split('\n')) {
-      if (line[0] === '#') { continue; }
+      if (line[0] === '#') continue;
       const url = line.split(';')[0];
       const boards   = Filter.parseBoards(line.match(/;boards:([^;]+)/)?.[1] || '*');
       const excludes = Filter.parseBoards(line.match(/;exclude:([^;]+)/)?.[1]) || dict();
@@ -142,7 +136,7 @@ const CatalogLinks = {
   },
 
   external({siteID, boardID}) {
-    if (!CatalogLinks.externalList) { CatalogLinks.externalParse(); }
+    if (!CatalogLinks.externalList) CatalogLinks.externalParse();
     const external = (CatalogLinks.externalList[`${siteID}/${boardID}`] || CatalogLinks.externalList[`${siteID}/*`]);
     if (external) { return external.replace(/%board/g, boardID); } else { return undefined; }
   },

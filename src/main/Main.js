@@ -177,9 +177,7 @@ var Main = {
 
     flatten(null, Config);
 
-    for (var db of DataBoard.keys) {
-      Conf[db] = dict();
-    }
+    for (var db of DataBoard.keys) { Conf[db] = dict(); }
     Conf['customTitles'] = dict.clone({'4chan.org': {boards: {}}});
     Conf.boardConfig = {boards: dict()};
     Conf.archives = Redirect.archives;
@@ -297,7 +295,7 @@ var Main = {
     Main.jsEnabled = $.hasClass(doc, 'js-enabled');
 
     $.extend(g, Main.parseURL());
-    if (g.boardID) { g.BOARD = new Board(g.boardID); }
+    if (g.boardID) g.BOARD = new Board(g.boardID);
 
     if (!g.VIEW) {
       g.SITE.initAuxiliary?.();
@@ -314,9 +312,7 @@ var Main = {
             filename: pathname[pathname.length - 1]
           });
         } else if (video) {
-          if (Conf['Volume in New Tab']) {
-            Volume.setup(video);
-          }
+          if (Conf['Volume in New Tab']) Volume.setup(video);
           if (Conf['Loop in New Tab']) {
             video.loop = true;
             video.controls = true;
@@ -335,7 +331,7 @@ var Main = {
 
     // c.time 'All initializations'
     for (var [name, feature] of Main.features) {
-      if (g.SITE.disabledFeatures && g.SITE.disabledFeatures.includes(name)) { continue; }
+      if (g.SITE.disabledFeatures && g.SITE.disabledFeatures.includes(name)) continue;
       // c.time "#{name} initialization"
       try {
         feature.init();
@@ -364,7 +360,7 @@ var Main = {
     $.addClass(doc, `sw-${g.SITE.software}`);
     $.addClass(doc, g.VIEW === 'thread' ? 'thread-view' : g.VIEW);
     $.onExists(doc, '.ad-cnt, .adg-rects > .desktop', ad => $.onExists(ad, 'img, iframe', () => $.addClass(doc, 'ads-loaded')));
-    if (Conf['Autohiding Scrollbar']) { $.addClass(doc, 'autohiding-scrollbar'); }
+    if (Conf['Autohiding Scrollbar']) $.addClass(doc, 'autohiding-scrollbar');
     $.ready(() => {
       if ((d.body.clientHeight > doc.clientHeight) && ((window.innerWidth === doc.clientWidth) !== Conf['Autohiding Scrollbar'])) {
         Conf['Autohiding Scrollbar'] = !Conf['Autohiding Scrollbar'];
@@ -433,18 +429,14 @@ var Main = {
   background-color: rgba(${rgb.slice(0, 3).join(', ')}, ${0.5*(rgb[3] || 1)});
 }\
 `;
-      if ($.luma(rgb) < 100) {
-        css += '.watch-thread-link { --xt-watcher: #c8c8c8 }';
-      }
+      if ($.luma(rgb) < 100) css += '.watch-thread-link { --xt-watcher: #c8c8c8 }';
       Main.bgColorStyle.textContent = css;
       $.after($.id('fourchanx-css'), Main.bgColorStyle);
     };
 
     $.onExists(d.head, g.SITE.selectors.styleSheet, (el) => {
       mainStyleSheet = el;
-      if (g.SITE.software === 'yotsuba') {
-        styleSheets = $$('link[rel="alternate stylesheet"]', d.head);
-      }
+      if (g.SITE.software === 'yotsuba') styleSheets = $$('link[rel="alternate stylesheet"]', d.head);
       new MutationObserver(setStyle).observe(mainStyleSheet, {
         attributes: true,
         attributeFilter: ['href']
@@ -558,7 +550,7 @@ var Main = {
       thread.nodes.root = threadRoot;
       threads.push(thread);
       var postRoots = $$(g.SITE.selectors.postContainer, threadRoot);
-      if (g.SITE.isOPContainerThread) { postRoots.unshift(threadRoot); }
+      if (g.SITE.isOPContainerThread) postRoots.unshift(threadRoot);
       Main.parsePosts(postRoots, thread, posts, errors);
       Main.addPostsObserver.observe(threadRoot, {childList: true});
     }
@@ -609,18 +601,17 @@ var Main = {
     for (var record of records) {
       thread = Get.threadFromRoot(record.target);
       var postRoots = [];
-      for (var node of record.addedNodes) {
-        if (node.nodeType === Node.ELEMENT_NODE) {
-          if (node.matches(g.SITE.selectors.postContainer) || (node = $(g.SITE.selectors.postContainer, node))) {
-            postRoots.push(node);
-          }
+        for (const node of record.addedNodes) {
+          if (node.nodeType !== Node.ELEMENT_NODE) continue;
+
+          const root = node.matches(g.SITE.selectors.postContainer)
+            ? node : $(g.SITE.selectors.postContainer, node);
+
+          if (root) postRoots.push(root);
         }
-      }
       var n = posts.length;
       Main.parsePosts(postRoots, thread, posts, errors);
-      if ((posts.length > n) && !threads.includes(thread)) {
-        threads.push(thread);
-      }
+      if ((posts.length > n) && !threads.includes(thread)) threads.push(thread);
       var anyRemoved = false;
       for (var el of record.removedNodes) {
         if ((Get.postFromRoot(el)?.nodes.root === el) && !doc.contains(el)) {
@@ -628,11 +619,9 @@ var Main = {
           break;
         }
       }
-      if (anyRemoved && !threadsRM.includes(thread)) {
-        threadsRM.push(thread);
-      }
+      if (anyRemoved && !threadsRM.includes(thread)) threadsRM.push(thread);
     }
-    if (errors.length) { Main.handleErrors(errors); }
+    if (errors.length) Main.handleErrors(errors);
     Main.callbackNodesDB('Post', posts, () => {
       for (thread of threads) {
         $.event('PostsInserted', null, thread.nodes.root);
@@ -789,7 +778,7 @@ var Main = {
   reportLink(errors) {
     const data = errors[0];
     let title  = data.message;
-    if (errors.length > 1) { title += ` (+${errors.length - 1} other errors)`; }
+    if (errors.length > 1) title += ` (+${errors.length - 1} other errors)`;
     let details = '';
     const addDetails = (text) => {
       if (encodeURIComponent(title + details + text + '\n').length <= meta.newIssueMaxLength - meta.newIssue.replace(/%(title|details)/, '').length) {
@@ -807,13 +796,11 @@ User agent: ${navigator.userAgent}\
     if (platform === 'userscript') {
       const info = (typeof GM !== 'undefined' && GM?.info)
         || (typeof GM_info !== 'undefined' && GM_info) || null;
-      if (info) {
-        addDetails(`Userscript manager: ${info.scriptHandler} ${info.version}`);
-      }
+      if (info) addDetails(`Userscript manager: ${info.scriptHandler} ${info.version}`);
     }
     addDetails('\n' + data.error);
-    if (data.error.stack) { addDetails(data.error.stack.replace(data.error.toString(), '').trim()); }
-    if (data.html) { addDetails('\n`' + data.html + '`'); }
+    if (data.error.stack) addDetails(data.error.stack.replace(data.error.toString(), '').trim());
+    if (data.html) addDetails('\n`' + data.html + '`');
     details = details.replace(/file:\/{3}.+\//g, ''); // Remove local file paths
     const url = meta.newIssue.replace('%title', encodeURIComponent(title)).replace('%details', encodeURIComponent(details));
     return { innerHTML: `<span class="report-error"> [<a href="${url}" target="_blank">report</a>]</span>` };

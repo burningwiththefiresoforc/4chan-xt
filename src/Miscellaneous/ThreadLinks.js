@@ -25,9 +25,7 @@ var ThreadLinks = {
     ThreadLinks.process(this.nodes.reply);
   },
 
-  catalogNode() {
-    ThreadLinks.process(this.nodes.thumb.parentNode);
-  },
+  catalogNode() { ThreadLinks.process(this.nodes.thumb.parentNode); },
 
   process: (link) => link.target = '_blank',
 };

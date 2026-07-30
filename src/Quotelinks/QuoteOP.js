@@ -13,9 +13,7 @@ var QuoteOP = {
   init() {
     if (!['index', 'thread'].includes(g.VIEW) || !Conf['Mark OP Quotes']) return;
 
-    if (Conf['Comment Expansion']) {
-      ExpandComment.callbacks.push(this.node);
-    }
+    if (Conf['Comment Expansion']) ExpandComment.callbacks.push(this.node);
 
     // \u00A0 is nbsp
     this.mark = $.el('span', {

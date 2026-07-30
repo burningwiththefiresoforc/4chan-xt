@@ -192,7 +192,7 @@ var ThreadStats = {
     if (
          !ThreadStats.showPage
       || (ThreadStats.pageCountEl.textContent === '1')
-      || !!g.SITE.threadModTimeIgnoresSage
+      || g.SITE.threadModTimeIgnoresSage
       || (ThreadStats.thread.posts.get(ThreadStats.thread.lastPost).info.date <= ThreadStats.lastPageUpdate)
     ) return;
     clearTimeout(ThreadStats.timeout);

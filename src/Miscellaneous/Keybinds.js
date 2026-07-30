@@ -67,9 +67,7 @@ var Keybinds = {
     $.on(d, '4chanXInitFinished', init);
   },
 
-  sync(key, hotkey) {
-    return Conf[hotkey] = key;
-  },
+  sync(key, hotkey) { return Conf[hotkey] = key; },
 
   keydown(e) {
     let key, thread, threadRoot, catalog, notifications;
@@ -93,7 +91,7 @@ var Keybinds = {
     }[key];
     const {target} = e;
     if (['INPUT', 'TEXTAREA'].includes(target.nodeName)) {
-      if (!/(Esc|Alt|Ctrl|Meta|Shift\+\w{2,})/.test(key) || !!/^Alt\+(\d|Up|Down|Left|Right)$/.test(key)) return;
+      if (!/(Esc|Alt|Ctrl|Meta|Shift\+\w{2,})/.test(key) || /^Alt\+(\d|Up|Down|Left|Right)$/.test(key)) return;
     }
     if (['index', 'thread'].includes(g.VIEW)) {
       threadRoot = Nav.getThread();
@@ -272,9 +270,7 @@ var Keybinds = {
       }
     }
     if (mode && Index.enabledOn(g.BOARD)) {
-      location.href =
-        g.VIEW === 'index'
-          ? `#${mode}` : `/${g.BOARD}/#${mode}`;
+      location.href = g.VIEW === 'index' ? `#${mode}` : `/${g.BOARD}/#${mode}`;
     }
     if (key === Conf['Open catalog'] && (catalog = CatalogLinks.catalog())) {
       location.href = catalog;
@@ -341,21 +337,17 @@ var Keybinds = {
   keyCode(e) {
     function keyName(kc) {
       if (kc in KEY_NAMES) return KEY_NAMES[kc];
-      if ((48 <= kc && kc <= 57) || (65 <= kc && kc <= 90)) { // 0-9, A-Z
-        return String.fromCharCode(kc).toLowerCase();
-      }
-      if (96 <= kc && kc <= 105) { // numpad 0-9
-        return String.fromCharCode(kc - 48);
-      }
+      if ((48 <= kc && kc <= 57) || (65 <= kc && kc <= 90)) return String.fromCharCode(kc).toLowerCase(); // 0-9, A-Z
+      if (96 <= kc && kc <= 105) return String.fromCharCode(kc - 48); // numpad 0-9
       return null;
     }
 
     let key = keyName(e.keyCode);
     if (key) {
-      if (e.altKey) {   key = 'Alt+'   + key; }
-      if (e.ctrlKey) {  key = 'Ctrl+'  + key; }
-      if (e.metaKey) {  key = 'Meta+'  + key; }
-      if (e.shiftKey) { key = 'Shift+' + key; }
+      if (e.altKey) key = 'Alt+' + key;
+      if (e.ctrlKey) key = 'Ctrl+' + key;
+      if (e.metaKey) key = 'Meta+' + key;
+      if (e.shiftKey) key = 'Shift+' + key;
     }
     return key;
   },
@@ -368,7 +360,7 @@ var Keybinds = {
 
   qr(thread) {
     QR.open();
-    if (thread) { QR.quote.call(Keybinds.post(thread)); }
+    if (thread) QR.quote.call(Keybinds.post(thread));
     QR.nodes.com.focus();
   },
 
@@ -383,7 +375,7 @@ var Keybinds = {
         sjis: 'sjis_tags',
       };
       const supported = !!config[TAG_SUPPORT[tag]];
-      if (!supported) { new Notice('warning', `[${tag}] tags are not supported on /${g.BOARD}/.`, 20); }
+      if (!supported) new Notice('warning', `[${tag}] tags are not supported on /${g.BOARD}/.`, 20);
     });
 
     const {value} = ta;
@@ -433,7 +425,7 @@ var Keybinds = {
         const axis = delta === +1 ? 'following' : 'preceding';
         let next = $.x(`${axis}-sibling::${g.SITE.xpath.replyContainer}[not(@hidden) and not(child::div[@class='stub'])][1]`, root);
         if (!next) return;
-        if (!next.matches(replySelector)) { next = $(replySelector, next); }
+        if (!next.matches(replySelector)) next = $(replySelector, next);
         Header.scrollToIfNeeded(next, delta === +1);
         $.addClass(next, highlight);
         $.rmClass(postEl, highlight);
@@ -443,7 +435,7 @@ var Keybinds = {
     }
 
     const replies = $$(replySelector, thread);
-    if (delta === -1) { replies.reverse(); }
+    if (delta === -1) replies.reverse();
     for (var reply of replies) {
       if (((delta === +1) && (Header.getTopOf(reply) > 0)) || ((delta === -1) && (Header.getBottomOf(reply) > 0))) {
         $.addClass(reply, highlight);

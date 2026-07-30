@@ -255,18 +255,18 @@ $\
 
   parseDate(node) {
     let date = Date.parse(node.getAttribute('datetime')?.trim());
-    if (!isNaN(date)) { return new Date(date); }
+    if (!isNaN(date)) return new Date(date);
     date = Date.parse(node.textContent.trim() + ' UTC'); // e.g. onesixtwo.club
-    if (!isNaN(date)) { return new Date(date); }
+    if (!isNaN(date)) return new Date(date);
     return undefined;
   },
 
   parseFile(post, file) {
     let info, infoNode;
     const {text, link, thumb} = file;
-    if ($.x(`ancestor::${this.xpath.postContainer}[1]`, text) !== post.nodes.root) { return false; } // file belongs to a reply
-    if (!(infoNode = link.nextSibling?.textContent.includes('(') ? link.nextSibling : link.nextElementSibling)) { return false; }
-    if (!(info = infoNode.textContent.match(/\((.*,\s*)?([\d.]+ ?[KMG]?B).*\)/))) { return false; }
+    if ($.x(`ancestor::${this.xpath.postContainer}[1]`, text) !== post.nodes.root) return false; // file belongs to a reply
+    if (!(infoNode = link.nextSibling?.textContent.includes('(') ? link.nextSibling : link.nextElementSibling)) return false;
+    if (!(info = infoNode.textContent.match(/\((.*,\s*)?([\d.]+ ?[KMG]?B).*\)/))) return false;
     const nameNode = $('.postfilename', text);
     $.extend(file, {
       name:       nameNode ? (nameNode.title || nameNode.textContent) : link.pathname.match(/[^/]*$/)[0],

@@ -21,9 +21,7 @@ const ExpandComment = {
 
   node() {
     let a = $('.abbr > a:not([onclick])', this.nodes.comment);
-    if (a) {
-      $.on(a, 'click', ExpandComment.cb);
-    }
+    if (a) $.on(a, 'click', ExpandComment.cb);
   },
 
   callbacks: [],
@@ -62,9 +60,7 @@ const ExpandComment = {
 
     const {posts} = req.response;
     let spoilerRange = posts[0].custom_spoiler;
-    if (spoilerRange) {
-      g.SITE.Build.spoilerRange[g.BOARD] = spoilerRange;
-    }
+    if (spoilerRange) g.SITE.Build.spoilerRange[g.BOARD] = spoilerRange;
 
     const postObj = posts.find(p => p.no === post.ID);
     if (!postObj) {
@@ -82,7 +78,7 @@ const ExpandComment = {
     // Fix pathnames
     for (const quote of $$('.quotelink', clone)) {
       const href = quote.getAttribute('href');
-      if (!href || href[0] === '/') { continue; }
+      if (!href || href[0] === '/') continue;
 
       quote.href = href[0] === '#' ? `${threadBase}${href}` : `${boardBase}/${href}`;
     }

@@ -23,9 +23,9 @@ const PageContextFunctions = {
 
   disableNativeExtensionNoStorage: () => { Object.defineProperty(window, 'Config', { value: { disableAll: true } }) },
 
-  prettyPrint: ({ id }) => {
+  prettyPrint: ({id}) => {
     // @ts-ignore
-    window.prettyPrint?.((function () { }), document.getElementById(id).parentNode);
+    window.prettyPrint?.((() => {}), document.getElementById(id).parentNode);
   },
 
   exposeVersion: ({ buildDate, version }) => {

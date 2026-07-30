@@ -78,9 +78,9 @@ const Embedding = {
     if ($.x('ancestor::pre', link)) return;
     if (data) {
       data.post = post;
-      if (Conf.Embedding && (g.VIEW !== 'archive')) { Embedding.embed(data); }
+      if (Conf.Embedding && (g.VIEW !== 'archive')) Embedding.embed(data);
       if (Embedding.shouldFetchTitles()) Embedding.title(data);
-      if (Conf['Cover Preview'] && (g.VIEW !== 'archive')) { Embedding.preview(data); }
+      if (Conf['Cover Preview'] && (g.VIEW !== 'archive')) Embedding.preview(data);
     }
   },
 
@@ -174,10 +174,10 @@ const Embedding = {
   },
 
   flushTitles(service) {
-    let data;
     const {queue} = service;
     if (!queue?.length) return;
     service.queue = [];
+    let data;
     const cb = function() {
       for (data of queue) { Embedding.cb.title(this, data); }
     };

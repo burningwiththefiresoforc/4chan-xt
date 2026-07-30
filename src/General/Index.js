@@ -146,10 +146,10 @@ var Index = {
     $.on($('#hidden-toggle a', this.navLinks), 'click', this.cb.toggleHiddenThreads);
 
     // Drop-down menus and reverse sort toggle
-    this.selectRev   = $('#index-rev',  this.navLinks);
-    this.selectMode  = $('#index-mode', this.navLinks);
-    this.selectSort  = $('#index-sort', this.navLinks);
-    this.selectSize  = $('#index-size', this.navLinks);
+    this.selectRev  = $('#index-rev',  this.navLinks);
+    this.selectMode = $('#index-mode', this.navLinks);
+    this.selectSort = $('#index-sort', this.navLinks);
+    this.selectSize = $('#index-size', this.navLinks);
     $.on(this.selectRev,  'change', this.cb.sort);
     $.on(this.selectMode, 'change', this.cb.mode);
     $.on(this.selectSort, 'change', this.cb.sort);
@@ -191,7 +191,6 @@ var Index = {
     $.onExists(doc, 'title + *', () => d.title = d.title.replace(/\ -\ Page\ \d+/, ''));
 
     $.onExists(doc, '.board > .thread > .postContainer, .board + *', () => {
-      let el;
       g.SITE.Build.hat = $('.board > .thread > img:first-child');
       if (g.SITE.Build.hat) {
         g.BOARD.threads.forEach((thread) => {
@@ -214,6 +213,7 @@ var Index = {
       //   will not download them.
       // - Combine the two and you get a download canceller!
       //   Does not work on Firefox unfortunately. bugzil.la/939713
+      let el;
       try {
         d.implementation.createDocument(null, null, null).appendChild(board);
       } catch (error) {}
@@ -228,15 +228,14 @@ var Index = {
 
     PageReady.ready(() => {
       let pagelist = $('.pagelist');
-      if (pagelist) {
-        $.replace(pagelist, Index.pagelist);
-      }
+      if (pagelist) $.replace(pagelist, Index.pagelist);
       $.rmClass(doc, 'index-loading');
     });
   },
 
   scroll() {
-    if (Index.req || !Index.liveThreadData || (Conf['Index Mode'] !== 'infinite') || (window.scrollY <= (doc.scrollHeight - (300 + window.innerHeight)))) return;
+    if (Index.req || !Index.liveThreadData || (Conf['Index Mode'] !== 'infinite')
+      || (window.scrollY <= (doc.scrollHeight - (300 + window.innerHeight)))) return;
     Index.pageNum ??= Index.currentPage; // Avoid having to pushState to keep track of the current page
 
     const pageNum = ++Index.pageNum;
@@ -314,8 +313,8 @@ var Index = {
   },
 
   cycleSortType() {
-    let i;
     const types = Index.selectSort.options.filter(option => !option.disabled);
+    let i;
     for (i = 0; i < types.length; i++) {
       var type = types[i];
       if (type.selected) { break; }
@@ -361,7 +360,7 @@ var Index = {
 
     resort(e) {
       Index.changed.order = true;
-      if (!e?.detail?.deferred) { Index.pageLoad(false); }
+      if (!e?.detail?.deferred) Index.pageLoad(false);
     },
 
     perBoardSort() {
@@ -459,9 +458,7 @@ var Index = {
     },
 
     catalogReplies() {
-      if (Conf['Show Replies'] && $.hasClass(doc, 'catalog-hover-expand') && !this.catalogView.nodes.replies) {
-        return Index.buildCatalogReplies(this);
-      }
+      if (Conf['Show Replies'] && $.hasClass(doc, 'catalog-hover-expand') && !this.catalogView.nodes.replies) return Index.buildCatalogReplies(this);
     },
 
     hoverAdjust() {
@@ -581,7 +578,7 @@ var Index = {
       Index.currentSort = sort;
       Index.saveSort();
     }
-    if (['all pages', 'catalog'].includes(Conf['Index Mode'])) { page = 1; }
+    if (['all pages', 'catalog'].includes(Conf['Index Mode'])) page = 1;
     if ((page != null) && (page !== Index.currentPage)) {
       Index.changed.page = true;
       Index.currentPage = page;
@@ -606,16 +603,16 @@ var Index = {
   pageLoad(scroll=true) {
     if (!Index.liveThreadData) return;
     let {threads, order, search, mode, sort, page, hash} = Index.changed;
-    if (!threads) { threads = search; }
-    if (!order) { order = sort; }
-    if (threads || order) { Index.sort(); }
-    if (threads) { Index.buildPagelist(); }
-    if (search) { Index.setupSearch(); }
-    if (mode) { Index.setupMode(); }
-    if (sort) { Index.setupSort(); }
-    if (threads || mode || page || order) { Index.buildIndex(); }
-    if (threads || page) { Index.setPage(); }
-    if (scroll && !hash) { Index.scrollToIndex(); }
+    threads ||= search;
+    order ||= sort;
+    if (threads || order) Index.sort();
+    if (threads) Index.buildPagelist();
+    if (search) Index.setupSearch();
+    if (mode) Index.setupMode();
+    if (sort) Index.setupSort();
+    if (threads || mode || page || order) Index.buildIndex();
+    if (threads || page) Index.setPage();
+    if (scroll && !hash) Index.scrollToIndex();
     Index.changed = {};
   },
 
@@ -744,7 +741,7 @@ var Index = {
 
     $.rmClass(Index.button, 'spin');
     const {notice, nTimeout} = Index;
-    if (nTimeout) { clearTimeout(nTimeout); }
+    if (nTimeout) clearTimeout(nTimeout);
     delete Index.nTimeout;
     delete Index.req;
     delete Index.notice;
@@ -903,11 +900,9 @@ var Index = {
         });
       }
     }
-    if (errors) { Main.handleErrors(errors); }
+    if (errors) Main.handleErrors(errors);
 
-    if (withReplies) {
-      newPosts = newPosts.concat(Index.buildReplies(threads));
-    }
+    if (withReplies) newPosts = newPosts.concat(Index.buildReplies(threads));
 
     Main.callbackNodes('Thread', newThreads);
     Main.callbackNodes('Post',   newPosts);
@@ -935,7 +930,7 @@ var Index = {
           posts.push(new Post(node, thread, thread.board));
         } catch (err) {
           // Skip posts that we failed to parse.
-          if (!errors) { errors = []; }
+          errors ||= [];
           errors.push({
             message: `Parsing of Post No.${data.no} failed. Post will be skipped.`,
             error: err,
@@ -946,7 +941,7 @@ var Index = {
       $.add(thread.nodes.root, nodes);
     }
 
-    if (errors) { Main.handleErrors(errors); }
+    if (errors) Main.handleErrors(errors);
     return posts;
   },
 
@@ -969,7 +964,7 @@ var Index = {
     for (var thread of threads) {
       var {thumb} = thread.catalogView.nodes;
       var {width, height} = thumb.dataset;
-      if (!width) { continue; }
+      if (!width) continue;
       var ratio = size / Math.max(width, height);
       thumb.style.width  = (width  * ratio) + 'px';
       thumb.style.height = (height * ratio) + 'px';
@@ -983,7 +978,7 @@ var Index = {
 
     const replies = [];
     for (var data of lastReplies) {
-      if (Index.isHiddenReply(thread.ID, data)) { continue; }
+      if (Index.isHiddenReply(thread.ID, data)) continue;
       var reply = g.SITE.Build.catalogReply(thread, data);
       RelativeDates.update($('time', reply));
       $.on($('.catalog-reply-preview', reply), 'mouseover', QuotePreview.mouseover);
@@ -1033,9 +1028,7 @@ var Index = {
       Index.sortedThreadIDs.reverse();
     }
     let threadIDs = Index.querySearch(Index.search);
-    if (Index.search && threadIDs) {
-      Index.sortedThreadIDs = threadIDs;
-    }
+    if (Index.search && threadIDs) Index.sortedThreadIDs = threadIDs;
     // Sticky threads
     Index.sortOnTop(obj => obj.isSticky);
     // Highlighted threads
@@ -1178,12 +1171,12 @@ var Index = {
 
   searchMatch(obj, keywords) {
     const {info, file} = obj;
-    if (info.comment == null) { info.comment = g.SITE.Build.parseComment(info.commentHTML.innerHTML); }
+    info.comment ??= g.SITE.Build.parseComment(info.commentHTML.innerHTML);
     let text = [];
     for (var key of ['comment', 'subject', 'name', 'tripcode']) {
       if (key in info) { text.push(info[key]); }
     }
-    if (file) { text.push(file.name); }
+    if (file) text.push(file.name);
     text = text.join(' ').toLowerCase();
     for (var keyword of keywords) {
       if (-1 === text.indexOf(keyword)) return false;

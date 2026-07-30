@@ -23,7 +23,7 @@ const Report = {
   ready() {
     $.addStyle(CSS.report);
 
-    if (Conf['Archive Report']) { Report.archive(); }
+    if (Conf['Archive Report']) Report.archive();
 
     new MutationObserver(function() {
       Report.fit('iframe[src^="https://www.google.com/recaptcha/api2/frame"]');
@@ -40,7 +40,7 @@ const Report = {
     let el = $(selector, doc);
     if (!(el && (getComputedStyle(el).visibility !== 'hidden'))) return;
     const dy = (el.getBoundingClientRect().bottom - doc.clientHeight) + 8;
-    if (dy > 0) { window.resizeBy(0, dy); }
+    if (dy > 0) window.resizeBy(0, dy);
   },
 
   archive() {

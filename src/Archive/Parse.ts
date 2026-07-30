@@ -132,16 +132,16 @@ export const parseArchivePost = (data: RawArchivePost) => {
     file: null as File,
     extra: null as any,
   };
-  if (o.info.capcode) { delete o.info.uniqueID; }
-  if (data.media && !!+data.media.banned) {
+  if (o.info.capcode) delete o.info.uniqueID;
+  if (data.media && +data.media.banned) {
     o.fileDeleted = true;
   } else if (data.media?.media_filename) {
     let {thumb_link} = data.media;
     // Fix URLs missing origin
-    if (thumb_link?.[0] === '/') { thumb_link = url.split('/', 3).join('/') + thumb_link; }
-    if (!Redirect.securityCheck(thumb_link)) { thumb_link = ''; }
+    if (thumb_link?.[0] === '/') thumb_link = url.split('/', 3).join('/') + thumb_link;
+    if (!Redirect.securityCheck(thumb_link)) thumb_link = '';
     let media_link = Redirect.to('file', { boardID: o.boardID, filename: data.media.media_orig });
-    if (!Redirect.securityCheck(media_link)) { media_link = ''; }
+    if (!Redirect.securityCheck(media_link)) media_link = '';
     o.file = {
       name: data.media.media_filename,
       url: media_link ||
@@ -157,8 +157,8 @@ export const parseArchivePost = (data: RawArchivePost) => {
       twidth: data.media.preview_w,
       isSpoiler: data.media.spoiler === '1'
     };
-    if (!/\.pdf$/.test(o.file.url)) { o.file.dimensions = `${o.file.width}x${o.file.height}`; }
-    if ((o.boardID === 'f') && data.media.exif) { o.file.tag = JSON.parse(data.media.exif).Tag; }
+    if (!/\.pdf$/.test(o.file.url)) o.file.dimensions = `${o.file.width}x${o.file.height}`;
+    if ((o.boardID === 'f') && data.media.exif) o.file.tag = JSON.parse(data.media.exif).Tag;
   }
   o.extra = dict();
 
@@ -168,7 +168,7 @@ export const parseArchivePost = (data: RawArchivePost) => {
   const post = new Post(g.SITE.Build.post(o), thread, board);
   post.resurrect();
   post.markAsFromArchive();
-  if (post.file) { post.file.thumbURL = o.file.thumbURL; }
+  if (post.file) post.file.thumbURL = o.file.thumbURL;
   Main.callbackNodes('Post', [post]);
   return post;
 };

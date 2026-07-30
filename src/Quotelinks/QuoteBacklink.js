@@ -51,7 +51,7 @@ var QuoteBacklink = {
       className: this.isHidden ? 'filtered backlink' : 'backlink',
       textContent: Conf.backlink.replace(/%(?:id|%)/g, x => ({'%id': this.ID, '%%': '%'})[x])
     });
-    if (markYours) { $.add(a, QuoteYou.mark.cloneNode(true)); }
+    if (markYours) $.add(a, QuoteYou.mark.cloneNode(true));
     for (var quote of this.quotes) {
       let post = g.posts.get(quote);
       let containers = [QuoteBacklink.getContainer(quote)];
@@ -95,8 +95,7 @@ var QuoteBacklink = {
     }
   },
   getContainer(id) {
-    return this.containers[id] ||
-      (this.containers[id] = $.el('span', {className: 'container'}));
+    return this.containers[id] || (this.containers[id] = $.el('span', {className: 'container'}));
   }
 };
 export default QuoteBacklink;

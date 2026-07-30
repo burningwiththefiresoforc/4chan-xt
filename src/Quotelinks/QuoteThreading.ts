@@ -33,10 +33,7 @@ var QuoteThreading = {
     $.on(this.threadNewLink.firstElementChild, 'click', this.rethread);
     $.on(d, '4chanXInitFinished', () => { this.ready = true; });
 
-    Header.menu.addEntry(this.entry = {
-      el:    this.controls,
-      order: 99
-    });
+    Header.menu.addEntry(this.entry = { el: this.controls, order: 99 });
 
     Callbacks.Thread.push({
       name: 'Quote Threading',
@@ -53,9 +50,7 @@ var QuoteThreading = {
   children: dict(),
   inserted: dict(),
 
-  toggleThreading() {
-    this.setThreadingState(!Conf['Thread Quotes']);
-  },
+  toggleThreading() { this.setThreadingState(!Conf['Thread Quotes']); },
 
   setThreadingState(enabled) {
     this.input.checked = enabled;
@@ -93,7 +88,7 @@ var QuoteThreading = {
       if (parent) {
         if (!parent.isFetchedQuote && parent.isReply && (parent.ID < this.ID)) {
           parents.add(parent.ID);
-          if (!lastParent || (parent.ID > lastParent.ID)) { lastParent = parent; }
+          if (!lastParent || (parent.ID > lastParent.ID)) lastParent = parent;
         }
       }
     }
@@ -105,9 +100,7 @@ var QuoteThreading = {
       parents.delete(ancestor.ID);
     }
 
-    if (parents.size === 1) {
-      QuoteThreading.parent[this.fullID] = lastParent;
-    }
+    if (parents.size === 1) QuoteThreading.parent[this.fullID] = lastParent;
   },
 
   descendants(post) {
@@ -123,11 +116,10 @@ var QuoteThreading = {
 
   insert(post) {
     let parent, x;
-    if (!(
-      Conf['Thread Quotes'] &&
-      (parent = QuoteThreading.parent[post.fullID]) &&
-      !QuoteThreading.inserted[post.fullID]
-    )) return false;
+    if (!Conf['Thread Quotes'] ||
+      !(parent = QuoteThreading.parent[post.fullID]) ||
+      QuoteThreading.inserted[post.fullID]
+    ) return false;
 
     const descendants = QuoteThreading.descendants(post);
     if (!Unread.posts.has(parent.ID)) {

@@ -359,7 +359,7 @@ var ThreadWatcher = {
     const interval = Conf['Show Page'] || (ThreadWatcher.unreadEnabled && Conf['Show Unread Count']) ? 5 * MINUTE : 2 * HOUR;
     const now = Date.now();
     let middle = db.data.lastChecked || 0;
-    if ((now - interval >= middle || middle > now) && !d.hidden && !!d.hasFocus()) {
+    if ((now - interval >= middle || middle > now) && !d.hidden && d.hasFocus()) {
       ThreadWatcher.fetchAllStatus(interval);
     }
     return ThreadWatcher.timeout = setTimeout(ThreadWatcher.fetchAuto, interval);

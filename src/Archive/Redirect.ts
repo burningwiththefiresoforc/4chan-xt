@@ -36,10 +36,10 @@ const Redirect = {
     const archives = dict();
     for (const data of Conf.archives) {
       for (const key of ['boards', 'files']) {
-        if (!(data[key] instanceof Array)) { data[key] = []; }
+        if (!(data[key] instanceof Array)) data[key] = [];
       }
       const { uid, name, boards, files, software } = data;
-      if (!['fuuka', 'foolfuuka'].includes(software)) { continue; }
+      if (!['fuuka', 'foolfuuka'].includes(software)) continue;
       archives[JSON.stringify(uid ?? name)] = data;
       for (const boardID of boards) {
         if (!o.thread.has(boardID)) o.thread.set(boardID, data);
@@ -57,7 +57,7 @@ const Redirect = {
         let archive = archives[JSON.stringify(id)];
         if (archive && $.hasOwn(o, type)) {
           const boards = type === 'file' ? archive.files : archive.boards;
-          if (boards.includes(boardID)) { o[type].set(boardID, archive); }
+          if (boards.includes(boardID)) o[type].set(boardID, archive);
         }
       }
     }
@@ -73,7 +73,7 @@ const Redirect = {
     for (url of Conf.archiveLists.split('\n')) {
       if (url[0] !== '#') {
         url = url.trim();
-        if (url) { urls.push(url); }
+        if (url) urls.push(url);
       }
     }
 
@@ -82,7 +82,7 @@ const Redirect = {
     const load = i => (function() {
       if (this.status !== 200) { return fail(urls[i], 'fetching', (this.status ? `Error ${this.statusText} (${this.status})` : 'Connection Error')); }
       let {response} = this;
-      if (!(response instanceof Array)) { response = [response]; }
+      if (!(response instanceof Array)) response = [response];
       responses[i] = response;
       nloaded++;
       if (nloaded === urls.length) {
@@ -153,7 +153,7 @@ const Redirect = {
   thread(archive, {boardID, threadID, postID}) {
     // Keep the post number only if the location.hash was sent f.e.
     let path = threadID ? `${boardID}/thread/${threadID}` : `${boardID}/post/${postID}`;
-    if (archive.software === 'foolfuuka') { path += '/'; }
+    if (archive.software === 'foolfuuka') path += '/';
     if (threadID && postID) {
       path += archive.software === 'foolfuuka' ? `#${postID}` : `#p${postID}`;
     }
@@ -203,11 +203,9 @@ const Redirect = {
       value = value.replace(/[+/=]/g, c => ({'+': '-', '/': '_', '=': ''})[c]);
     }
     value = encodeURIComponent(value);
-    const path  = archive.software === 'foolfuuka'
-      ? `${boardID}/search/${type}/${value}/`
-      : type === 'image'
-      ? `${boardID}/image/${value}`
-      : `${boardID}/?task=search2&search_${type}=${value}`;
+    const path = archive.software === 'foolfuuka'
+      ? `${boardID}/search/${type}/${value}/` : type === 'image'
+      ? `${boardID}/image/${value}` : `${boardID}/?task=search2&search_${type}=${value}`;
     return `${Redirect.protocol(archive)}${archive.domain}/${path}`;
   },
 
@@ -225,7 +223,7 @@ const Redirect = {
   securityCheck: (url) => /^https:\/\//.test(url) || (location.protocol === 'http:') || Conf['Exempt Archives from Encryption'],
 
   navigate(dest, data, alternative) {
-    if (!Redirect.data) { Redirect.init(); }
+    if (!Redirect.data) Redirect.init();
     const url = Redirect.to(dest, data);
     if (url && (
       Redirect.securityCheck(url) ||

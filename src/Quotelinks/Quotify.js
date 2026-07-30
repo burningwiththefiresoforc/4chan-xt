@@ -113,7 +113,7 @@ var Quotify = {
       }
     }
 
-    if (!this.quotes.includes(quoteID)) { this.quotes.push(quoteID); }
+    if (!this.quotes.includes(quoteID)) this.quotes.push(quoteID);
 
     if (!a) {
       $.add(deadlink, Post.deadMark.cloneNode(true));
@@ -121,9 +121,7 @@ var Quotify = {
     }
 
     $.replace(deadlink, a);
-    if ($.hasClass(a, 'quotelink')) {
-      return this.nodes.quotelinks.push(a);
-    }
+    if ($.hasClass(a, 'quotelink')) return this.nodes.quotelinks.push(a);
   },
 
   fixDeadlink(deadlink) {
