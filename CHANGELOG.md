@@ -2,6 +2,11 @@
 
 4chan XT uses a different user script namespace than 4chan X, so to migrate you need to export settings from 4chan X, and import them in XT.
 
+### 2.30.2 (2026-08-04)
+
+- Fixed a post highlighting issue. Still not really sure when or why it happened but things seem to be functioning alright now.
+- Cleanup, little tweaks, consolidation.
+
 ### 2.30.1 (2026-07-23)
 
 - Fixed a bug with the previous tripcode patch that was causing it to not apply to posts upon thread load, but only new posts to a thread. Tripcodes now work with styling and as a separate element to the name.
@@ -9,7 +14,7 @@
 
 ### 2.30.0 (2026-07-22)
 
-- Google reverse image search now uses lens as the other kind was obsoleted. Your settings will be automatically converted if importing. If for some reason you don't have it but want it, put this in the sauce field: https://lens.google.com/uploadbyurl?url=%IMG
+- Google reverse image search now uses lens as the other kind was obsoleted. Uncomment or add this to the sauce field in your settings if you want it: https://lens.google.com/uploadbyurl?url=%IMG
 - Lots of cleanup to try and trim down filesize a little bit, improve execution speed, or just improve readability.
 
 ### 2.29.3 (2026-07-16)
