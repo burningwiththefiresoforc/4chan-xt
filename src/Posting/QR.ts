@@ -939,7 +939,7 @@ var QR = {
     }
 
     // if (QR.captcha.isEnabled && !((QR.captcha === Captcha.v2) && /\b_ct=/.test(d.cookie) && threadID) && !(err && !force)) {
-    if (QR.captcha.isEnabled && (!err && force)) {
+    if (QR.captcha.isEnabled && !(err && !force)) {
       captcha = QR.captcha.getOne(!!threadID);
       // if (QR.captcha === Captcha.v2) {
       //   if (!captcha) { captcha = Captcha.cache.request(!!threadID); }

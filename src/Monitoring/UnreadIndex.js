@@ -42,9 +42,7 @@ var UnreadIndex = {
       boardID: this.board.ID,
       threadID: this.ID
     }) || 0;
-    if (!indexEnabled) { // let onIndexRefresh handle JSON Index
-      return UnreadIndex.update(this);
-    }
+    if (!indexEnabled) return UnreadIndex.update(this); // let onIndexRefresh handle JSON Index
   },
 
   onIndexRefresh(e) {
@@ -76,9 +74,7 @@ var UnreadIndex = {
       }) || 0;
       if (lastReadPost !== UnreadIndex.lastReadPost[thread.fullID]) {
         UnreadIndex.lastReadPost[thread.fullID] = lastReadPost;
-        if (thread.nodes.root?.parentNode) {
-          UnreadIndex.update(thread);
-        }
+        if (thread.nodes.root?.parentNode) UnreadIndex.update(thread);
       }
     });
   },

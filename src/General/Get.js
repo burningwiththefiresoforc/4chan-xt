@@ -49,11 +49,11 @@ var Get = {
     let boardID, postID, threadID;
     if (link.dataset.postID) { // resurrected quote
       ({boardID, threadID, postID} = link.dataset);
-      if (!threadID) { threadID = 0; }
+      if (!threadID) threadID = 0;
     } else {
       const match = link.href.match(g.SITE.regexp.quotelink);
       [boardID, threadID, postID] = match.slice(1);
-      if (!postID) { postID = threadID; }
+      if (!postID) postID = threadID;
     }
     return {
       boardID,
@@ -73,16 +73,14 @@ var Get = {
     };
     // First: In every posts, if it did quote this post, get all their backlinks.
     posts.forEach((qPost) => {
-      if (qPost.quotes.includes(fullID)) {
-        return handleQuotes(qPost, 'quotelinks');
-      }
+      if (qPost.quotes.includes(fullID)) return handleQuotes(qPost, 'quotelinks');
     });
 
     // Second: If we have quote backlinks: in all posts this post quoted and their clones, get all of their backlinks.
     if (Conf['Quote Backlinks']) {
       for (var quote of post.quotes) {
         let qPost = posts.get(quote);
-        if (qPost) { handleQuotes(qPost, 'backlinks'); }
+        if (qPost) handleQuotes(qPost, 'backlinks');
       }
     }
 

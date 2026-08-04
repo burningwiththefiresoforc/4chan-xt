@@ -18,14 +18,12 @@ import Icon from '../Icons/icon';
  */
 var ThreadHiding = {
   init() {
-    if (!['index', 'catalog'].includes(g.VIEW) || (!Conf['Thread Hiding Buttons'] && !(Conf.Menu && Conf['Thread Hiding Link']) && !Conf['JSON Index'])) { return; }
+    if (!['index', 'catalog'].includes(g.VIEW) || (!Conf['Thread Hiding Buttons'] && !(Conf.Menu && Conf['Thread Hiding Link']) && !Conf['JSON Index'])) return;
     this.db = new DataBoard('hiddenThreads');
-    if (g.VIEW === 'catalog') { return this.catalogWatch(); }
+    if (g.VIEW === 'catalog') return this.catalogWatch();
     this.catalogSet(g.BOARD);
     $.on(d, 'IndexRefreshInternal', this.onIndexRefresh);
-    if (Conf['Thread Hiding Buttons']) {
-      $.addClass(doc, 'thread-hide');
-    }
+    if (Conf['Thread Hiding Buttons']) $.addClass(doc, 'thread-hide');
     Callbacks.Post.push({
       name: 'Thread Hiding',
       cb:   this.node
@@ -80,22 +78,16 @@ var ThreadHiding = {
   node() {
     if (this.isReply || this.isClone || this.isFetchedQuote) return;
 
-    if (Conf['Thread Hiding Buttons']) {
-      $.prepend(this.nodes.root, ThreadHiding.makeButton(this.thread, 'hide'));
-    }
+    if (Conf['Thread Hiding Buttons']) $.prepend(this.nodes.root, ThreadHiding.makeButton(this.thread, 'hide'));
 
     let data = ThreadHiding.db.get({boardID: this.board.ID, threadID: this.ID});
-    if (data) {
-      ThreadHiding.hide(this.thread, data.makeStub, 'Hidden manually');
-    }
+    if (data) ThreadHiding.hide(this.thread, data.makeStub, 'Hidden manually');
   },
 
   onIndexRefresh() {
     return g.BOARD.threads.forEach((thread) => {
       const {root} = thread.nodes;
-      if (thread.isHidden && thread.stub && !root.contains(thread.stub)) {
-        ThreadHiding.makeStub(thread, root);
-      }
+      if (thread.isHidden && thread.stub && !root.contains(thread.stub)) ThreadHiding.makeStub(thread, root);
     });
   },
 
@@ -117,9 +109,7 @@ var ThreadHiding = {
       const makeStub = UI.checkbox('Stubs', 'Make stub');
 
       Menu.menu.addEntry({ el: div, order: 20, open({thread, isReply}) {
-          if (isReply || thread.isHidden || (Conf['JSON Index'] && (Conf['Index Mode'] === 'catalog'))) {
-            return false;
-          }
+          if (isReply || thread.isHidden || (Conf['JSON Index'] && (Conf['Index Mode'] === 'catalog'))) return false;
           ThreadHiding.menu.thread = thread;
           return true;
         },
@@ -133,9 +123,7 @@ var ThreadHiding = {
       $.on(div, 'click', ThreadHiding.menu.show);
 
       Menu.menu.addEntry({ el: div, order: 20, open({thread, isReply}) {
-        if (isReply || !thread.isHidden || (Conf['JSON Index'] && (Conf['Index Mode'] === 'catalog'))) {
-            return false;
-          }
+        if (isReply || !thread.isHidden || (Conf['JSON Index'] && (Conf['Index Mode'] === 'catalog'))) return false;
           ThreadHiding.menu.thread = thread;
           return true;
         }
@@ -148,9 +136,7 @@ var ThreadHiding = {
       $.on(hideStubLink, 'click', ThreadHiding.menu.hideStub);
 
       Menu.menu.addEntry({ el: hideStubLink, order: 15, open({thread, isReply}) {
-          if (isReply || !thread.isHidden || (Conf['JSON Index'] && (Conf['Index Mode'] === 'catalog'))) {
-            return false;
-          }
+          if (isReply || !thread.isHidden || (Conf['JSON Index'] && (Conf['Index Mode'] === 'catalog'))) return false;
           return ThreadHiding.menu.thread = thread;
         }
       });
@@ -196,7 +182,7 @@ var ThreadHiding = {
   makeStub(thread, root, reason) {
     let summary, threadDivider;
     let numReplies = $$(g.SITE.selectors.replyOriginal, root).length;
-    if (summary = $(g.SITE.selectors.summary, root)) { numReplies += +summary.textContent.match(/\d+/); }
+    if (summary = $(g.SITE.selectors.summary, root)) numReplies += +summary.textContent.match(/\d+/);
 
     const a = ThreadHiding.makeButton(thread, 'show');
     const { nameBlock, subject } = thread.OP.info;
@@ -257,9 +243,7 @@ var ThreadHiding = {
   },
 
   toggle(thread) {
-    if (!(thread instanceof Thread)) {
-      thread = g.threads.get(this.dataset.fullID);
-    }
+    if (!(thread instanceof Thread)) thread = g.threads.get(this.dataset.fullID);
     if (thread.isHidden) {
       ThreadHiding.show(thread);
     } else {

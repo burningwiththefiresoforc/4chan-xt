@@ -13,9 +13,7 @@ var ThreadStats = {
   init() {
     if ((g.VIEW !== 'thread') || !Conf['Thread Stats']) return;
 
-    if (Conf['Page Count in Stats']) {
-      this[g.SITE.isPrunedByAge?.(g.BOARD) ? 'showPurgePos' : 'showPage'] = true;
-    }
+    if (Conf['Page Count in Stats']) this[g.SITE.isPrunedByAge?.(g.BOARD) ? 'showPurgePos' : 'showPage'] = true;
 
     const statsHTML = {innerHTML: "<span id=\"post-count\">?</span> / <span id=\"file-count\">?</span>"
       + ((Conf["IP Count in Stats"] && g.SITE.hasIPCount)
@@ -89,18 +87,14 @@ var ThreadStats = {
     $.extend(ThreadStats, {postCount, fileCount});
     ThreadStats.postIndex = ThreadStats.thread.posts.keys.length;
     ThreadStats.update();
-    if (ThreadStats.showPage && (ThreadStats.pageCountEl.textContent !== '1')) {
-      return ThreadStats.fetchPage();
-    }
+    if (ThreadStats.showPage && (ThreadStats.pageCountEl.textContent !== '1')) return ThreadStats.fetchPage();
   },
 
   onPostsInserted() {
     if (ThreadStats.thread.posts.keys.length <= ThreadStats.postIndex) return;
     ThreadStats.count();
     ThreadStats.update();
-    if (ThreadStats.showPage && (ThreadStats.pageCountEl.textContent !== '1')) {
-      ThreadStats.fetchPage();
-    }
+    if (ThreadStats.showPage && (ThreadStats.pageCountEl.textContent !== '1')) ThreadStats.fetchPage();
   },
 
   update() {
@@ -150,9 +144,7 @@ var ThreadStats = {
         let purgePos = 1;
         for (page of this.response) {
           for (thread of page.threads) {
-            if (thread.no < ThreadStats.thread.ID) {
-              purgePos++;
-            }
+            if (thread.no < ThreadStats.thread.ID) purgePos++;
           }
         }
         ThreadStats.pageCountEl.textContent = purgePos;
@@ -170,9 +162,7 @@ var ThreadStats = {
               ThreadStats.pageCountEl.textContent = pageNum + 1;
               const hasWarning = (i >= (nThreads - this.response[0].threads.length));
               ThreadStats.pageCountEl.classList.toggle('warning', hasWarning);
-              if (hasWarning && Conf['Purge Position']) {
-                ThreadStats.pageCountEl.textContent += ` (${nThreads - i - 1})`;
-              }
+              if (hasWarning && Conf['Purge Position']) ThreadStats.pageCountEl.textContent += ` (${nThreads - i - 1})`;
               ThreadStats.lastPageUpdate = new Date(thread.last_modified * SECOND);
               ThreadStats.retry();
               return;
@@ -189,8 +179,7 @@ var ThreadStats = {
   retry() {
     // If thread data is stale (modification date given < time of last post), try again.
     // Skip this on vichan sites due to sage posts not updating modification time in threads.json.
-    if (
-         !ThreadStats.showPage
+    if ( !ThreadStats.showPage
       || (ThreadStats.pageCountEl.textContent === '1')
       || g.SITE.threadModTimeIgnoresSage
       || (ThreadStats.thread.posts.get(ThreadStats.thread.lastPost).info.date <= ThreadStats.lastPageUpdate)

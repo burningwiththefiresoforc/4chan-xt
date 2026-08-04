@@ -20,7 +20,7 @@ export default class Callbacks {
   }
 
   push({name, cb}) {
-    if (!this[name]) { this.keys.push(name); }
+    if (!this[name]) this.keys.push(name);
     return this[name] = cb;
   }
 
@@ -41,7 +41,7 @@ export default class Callbacks {
       }
     }
 
-    if (errors) { Main.handleErrors(errors); }
+    if (errors) Main.handleErrors(errors);
   }
 }
 Callbacks.initClass();

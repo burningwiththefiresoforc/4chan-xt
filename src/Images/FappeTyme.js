@@ -26,7 +26,7 @@ const FappeTyme = {
         el.title = `${type} Tyme`;
 
         this.nodes[lc] = el.firstElementChild;
-        if (Conf[lc]) { this.set(lc, true); }
+        if (Conf[lc]) this.set(lc, true);
         $.on(this.nodes[lc], 'change', this.toggle.bind(this, lc));
 
         Header.menu.addEntry({ el, order: 97 });

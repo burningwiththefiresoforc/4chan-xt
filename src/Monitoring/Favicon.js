@@ -65,9 +65,7 @@ var Favicon = {
     Favicon.isSFW   = /ws\.ico$/.test(href);
     Favicon.default = href;
     Favicon.switch();
-    if (Favicon.status) {
-      Favicon.set(Favicon.status);
-    }
+    if (Favicon.status) Favicon.set(Favicon.status);
   },
 
   switch() {

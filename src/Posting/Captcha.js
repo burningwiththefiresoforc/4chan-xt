@@ -45,9 +45,7 @@ const Captcha = {
     },
 
     request(isReply) {
-      if (!this.submitCB) {
-        if ($.event('RequestCaptcha', { isReply })) return;
-      }
+      if (!this.submitCB && $.event('RequestCaptcha', {isReply})) return;
       return cb => {
         this.submitCB = cb;
         return this.updateCount();
@@ -104,7 +102,7 @@ const Captcha = {
         const now = Date.now();
         for (i = 0; i < this.captchas.length; i++) {
           var captcha = this.captchas[i];
-          if (captcha.timeout > now) { break; }
+          if (captcha.timeout > now) break;
         }
         if (i) {
           this.captchas = this.captchas.slice(i);
@@ -121,9 +119,7 @@ const Captcha = {
       this.updateCount();
     },
 
-    updateCount() {
-      $.event('CaptchaCount', this.captchas.length);
-    }
+    updateCount() { $.event('CaptchaCount', this.captchas.length); }
   },
   // replace: CaptchaReplace,
   t: CaptchaT,

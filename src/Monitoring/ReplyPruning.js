@@ -85,11 +85,8 @@ var ReplyPruning = {
 
     // If we're linked to a post that we would hide, don't hide the posts in the first place.
     let middle = this.posts.keys.indexOf(location.hash.slice(2));
-    if (
-      ReplyPruning.active &&
-      /^#p\d+$/.test(location.hash) &&
-      (1 <= middle && middle < 1 + Math.max(ReplyPruning.total - +Conf["Max Replies"], 0))
-    ) {
+    if (ReplyPruning.active && /^#p\d+$/.test(location.hash) &&
+      (1 <= middle && middle < 1 + Math.max(ReplyPruning.total - +Conf["Max Replies"], 0))) {
       ReplyPruning.active = (ReplyPruning.inputs.enabled.checked = false);
     }
 
@@ -107,7 +104,7 @@ var ReplyPruning = {
     if (e.detail[404]) return;
     for (var fullID of e.detail.newPosts) {
       ReplyPruning.total++;
-      if (g.posts.get(fullID).file) { ReplyPruning.totalFiles++; }
+      if (g.posts.get(fullID).file) ReplyPruning.totalFiles++;
     }
   },
 
@@ -129,7 +126,7 @@ var ReplyPruning = {
           while ((node = ReplyPruning.summary.nextSibling) && (node !== post.nodes.root)) { $.add(ReplyPruning.container, node); }
           $.add(ReplyPruning.container, post.nodes.root);
           ReplyPruning.hidden++;
-          if (post.file) { ReplyPruning.hiddenFiles++; }
+          if (post.file) ReplyPruning.hiddenFiles++;
         }
       }
 
@@ -141,7 +138,7 @@ var ReplyPruning = {
           while ((node = ReplyPruning.container.lastChild) && (node !== post.nodes.root)) { $.prepend(frag, node); }
           $.prepend(frag, post.nodes.root);
           ReplyPruning.hidden--;
-          if (post.file) { ReplyPruning.hiddenFiles--; }
+          if (post.file) ReplyPruning.hiddenFiles--;
         }
       }
       $.after(ReplyPruning.summary, frag);

@@ -47,7 +47,7 @@ const ImageLoader = {
   node() {
     if (this.isClone) return;
     for (const file of this.files) {
-      if (Conf['Replace WEBM'] && file.isVideo) { ImageLoader.replaceVideo(this, file); }
+      if (Conf['Replace WEBM'] && file.isVideo) ImageLoader.replaceVideo(this, file);
       ImageLoader.prefetch(this, file);
     }
   },
@@ -79,7 +79,7 @@ const ImageLoader = {
       type = 'WEBM';
     } else {
       type = url.match(/\.([^.]+)$/)?.[1].toUpperCase();
-      if (type === 'JPEG') { type = 'JPG'; }
+      if (type === 'JPEG') type = 'JPG';
     }
     const replace = Conf[`Replace ${type}`] && !/spoiler/.test(thumb.src || thumb.dataset.src);
     if (!replace && !ImageLoader.prefetchEnabled) return;
@@ -90,14 +90,12 @@ const ImageLoader = {
       for (clone of post.clones) { clone.file.thumb.preload = 'auto'; }
       thumb.preload = 'auto';
       // XXX Cloned video elements with poster in Firefox cause momentary display of image loading icon.
-      if ($.engine === 'gecko') {
-        $.on(thumb, 'loadeddata', function() { this.removeAttribute('poster'); });
-      }
+      if ($.engine === 'gecko') $.on(thumb, 'loadeddata', function() { this.removeAttribute('poster'); });
       return;
     }
 
     const el = $.el(isImage ? 'img' : 'video');
-    if (isVideo) { el.preload = 'auto'; }
+    if (isVideo) el.preload = 'auto';
     if (replace && isImage) {
       $.on(el, 'load', () => {
         for (clone of post.clones) { clone.file.thumb.src = url; }
@@ -116,9 +114,7 @@ const ImageLoader = {
   toggle() {
     ImageLoader.prefetchEnabled = !ImageLoader.prefetchEnabled;
     this.classList.toggle('disabled', !ImageLoader.prefetchEnabled);
-    if (ImageLoader.prefetchEnabled) {
-      g.posts.forEach(ImageLoader.prefetchAll);
-    }
+    if (ImageLoader.prefetchEnabled) g.posts.forEach(ImageLoader.prefetchAll);
   },
 
   playVideos() {

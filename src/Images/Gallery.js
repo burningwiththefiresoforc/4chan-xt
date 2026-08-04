@@ -99,7 +99,7 @@ const Gallery = {
     nodes.menu = new UI.Menu('gallery');
 
     $.on(nodes.frame, 'click', cb.blank);
-    if (Conf['Mouse Wheel Volume']) { $.on(nodes.frame, 'wheel', Volume.wheel); }
+    if (Conf['Mouse Wheel Volume']) $.on(nodes.frame, 'wheel', Volume.wheel);
     $.on(nodes.next,  'click', cb.click);
     $.on(nodes.name,  'click', ImageCommon.download);
 
@@ -132,22 +132,20 @@ const Gallery = {
     }
 
     $.on(d, 'keydown', cb.keybinds);
-    if (Conf.Keybinds) { $.off(d, 'keydown', Keybinds.keydown); }
+    if (Conf.Keybinds) $.off(d, 'keydown', Keybinds.keydown);
 
     $.on(window, 'resize', Gallery.cb.setHeight);
 
     for (const postThumb of $$(g.SITE.selectors.file.thumb)) {
       let post = Get.postFromNode(postThumb);
-      if (!post) { continue; }
+      if (!post) continue;
       for (const file of post.files) {
         if (file.thumb) {
           Gallery.generateThumb(post, file);
           // If no image to open is given, pick image we have scrolled to.
           if (!image && Gallery.fileIDs[`${post.fullID}.${file.index}`]) {
             const candidate = file.thumbLink;
-            if ((Header.getTopOf(candidate) + candidate.getBoundingClientRect().height) >= 0) {
-              image = candidate;
-            }
+            if ((Header.getTopOf(candidate) + candidate.getBoundingClientRect().height) >= 0) image = candidate;
           }
         }
       }
@@ -159,9 +157,9 @@ const Gallery = {
     nodes.thumbs.scrollTop = 0;
     nodes.current.parentElement.scrollTop = 0;
 
-    if (image) { thumb = $(`[href='${image.href}']`, nodes.thumbs); }
+    if (image) thumb = $(`[href='${image.href}']`, nodes.thumbs);
     thumb ||= Gallery.images[Gallery.images.length-1];
-    if (thumb) { Gallery.open(thumb); }
+    if (thumb) Gallery.open(thumb);
 
     doc.style.overflow = 'hidden';
     nodes.total.textContent = Gallery.images.length;
@@ -212,7 +210,7 @@ const Gallery = {
     const newID = +thumb.dataset.id;
 
     // Highlight, center selected thumbnail
-    if (el = Gallery.images[oldID]) { $.rmClass(el, 'gal-highlight'); }
+    if (el = Gallery.images[oldID]) $.rmClass(el, 'gal-highlight');
     $.addClass(thumb, 'gal-highlight');
     nodes.thumbs.scrollTop = (thumb.offsetTop + (thumb.offsetHeight/2)) - (nodes.thumbs.clientHeight/2);
 
@@ -234,7 +232,7 @@ const Gallery = {
     if (file.nodeName === 'VIDEO') {
       file.loop = true;
       Volume.setup(file);
-      if (Conf.Autoplay) { file.play(); }
+      if (Conf.Autoplay) file.play();
       if (Conf['Show Controls']) file.controls = true;
     }
 
@@ -257,9 +255,7 @@ const Gallery = {
       const sauces = [];
       for (const link of Sauce.links) {
         let node = Sauce.createSauceLink(link, post, post.files[+file.dataset.file]);
-        if (node) {
-          sauces.push($.tn(' '), node);
-        }
+        if (node) sauces.push($.tn(' '), node);
       }
       $.add(nodes.sauce, sauces);
     }
@@ -311,7 +307,7 @@ const Gallery = {
     Gallery.cleanupTimer();
     const {current} = Gallery.nodes;
     const isVideo = current.nodeName === 'VIDEO';
-    if (isVideo) { current.play(); }
+    if (isVideo) current.play();
     if ((isVideo ? current.readyState >= 4 : current.complete) || (current.nodeName === 'IFRAME')) {
       Gallery.startTimer();
     } else {
@@ -353,7 +349,7 @@ const Gallery = {
     },
 
     open(e) {
-      if (e) { e.preventDefault(); }
+      if (e) e.preventDefault();
       if (this) return Gallery.open(this);
     },
 
@@ -406,7 +402,7 @@ const Gallery = {
       if (!Gallery.slideshow) return;
       Gallery.cleanupTimer();
       const {current} = Gallery.nodes;
-      if (current.nodeName === 'VIDEO') { current.loop = true; }
+      if (current.nodeName === 'VIDEO') current.loop = true;
       $.rmClass(Gallery.nodes.buttons, 'gal-playing');
       return Gallery.slideshow = false;
     },
@@ -439,7 +435,7 @@ const Gallery = {
       doc.style.overflow = '';
 
       $.off(d, 'keydown', Gallery.cb.keybinds);
-      if (Conf.Keybinds) { $.on(d, 'keydown', Keybinds.keydown); }
+      if (Conf.Keybinds) $.on(d, 'keydown', Keybinds.keydown);
       $.off(window, 'resize', Gallery.cb.setHeight);
       clearTimeout(Gallery.timeoutID);
     },
@@ -499,10 +495,10 @@ const Gallery = {
     createSubEntry(name) {
       const label = UI.checkbox(name, name);
       const input = label.firstElementChild;
-      if (['Hide Thumbnails', 'Fit Width', 'Fit Height'].includes(name)) { $.on(input, 'change', Gallery.cb.setFitness); }
+      if (['Hide Thumbnails', 'Fit Width', 'Fit Height'].includes(name)) $.on(input, 'change', Gallery.cb.setFitness);
       $.event('change', null, input);
       $.on(input, 'change', $.cb.checked);
-      if (['Hide Thumbnails', 'Fit Width', 'Fit Height', 'Stretch to Fit'].includes(name)) { $.on(input, 'change', Gallery.cb.setHeight); }
+      if (['Hide Thumbnails', 'Fit Width', 'Fit Height', 'Stretch to Fit'].includes(name)) $.on(input, 'change', Gallery.cb.setHeight);
       return {el: label};
     },
 

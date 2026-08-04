@@ -11,7 +11,7 @@ export default class RandomAccessList {
 
   push(data) {
     let {ID} = data;
-    if (!ID) { ID = data.id; }
+    if (!ID) ID = data.id;
     if (this[ID]) return;
     const {last} = this;
     let item = {
@@ -72,9 +72,7 @@ export default class RandomAccessList {
     delete item.prev;
   }
 
-  shift() {
-    return this.rm(this.first.ID);
-  }
+  shift() { return this.rm(this.first.ID); }
 
   order() {
     let item = this.first;

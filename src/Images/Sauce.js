@@ -51,10 +51,8 @@ const Sauce = {
         parts[m[1]] = m[2];
       }
     }
-    if (!parts.text) { parts.text = parts.url.match(/(\w+)\.\w+\//)?.[1] || '?'; }
-    if ('boards' in parts) {
-      parts.boards = Filter.parseBoards(parts.boards);
-    }
+    if (!parts.text) parts.text = parts.url.match(/(\w+)\.\w+\//)?.[1] || '?';
+    if ('boards' in parts) parts.boards = Filter.parseBoards(parts.boards);
     if ('regexp' in parts) {
       try {
         let regexp = parts.regexp.match(/^\/(.*)\/(\w*)$/);
@@ -122,7 +120,7 @@ const Sauce = {
 
     a.href = parts.url;
     a.textContent = parts.text;
-    if (/^javascript:/i.test(parts.url)) { a.removeAttribute('target'); }
+    if (/^javascript:/i.test(parts.url)) a.removeAttribute('target');
     return a;
   },
 
@@ -140,7 +138,7 @@ const Sauce = {
     for (link of Sauce.links) {
       if (node = Sauce.createSauceLink(link, post, file)) {
         nodes.push($.tn(' '), node);
-        if (node.dataset.skip) { skipped.push([link, node]); }
+        if (node.dataset.skip) skipped.push([link, node]);
       }
     }
     $.add(file.text, nodes);
@@ -150,7 +148,7 @@ const Sauce = {
         if (file.text.dataset.md5) {
           for ([link, node] of skipped) {
             let node2 = Sauce.createSauceLink(link, post, file);
-            if (node2) { $.replace(node, node2); }
+            if (node2) $.replace(node, node2);
           }
           observer.disconnect();
         }

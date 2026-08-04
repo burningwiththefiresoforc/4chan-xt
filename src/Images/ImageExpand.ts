@@ -36,10 +36,7 @@ var ImageExpand = {
     this.videoControls = $.el('span', {className: 'video-controls'});
     $.extend(this.videoControls, {innerHTML: " <a href=\"javascript:;\" title=\"You can also contract the video by dragging it to the left.\">contract</a>"});
 
-    Callbacks.Post.push({
-      name: 'Image Expansion',
-      cb: this.node
-    });
+    Callbacks.Post.push({ name: 'Image Expansion', cb: this.node });
   },
 
   node(this: Post | PostClone) {
@@ -118,7 +115,7 @@ var ImageExpand = {
       return g.posts.forEach((post) => {
         for (post of [post, ...post.clones]) {
           var {file} = post;
-          if (!file || !file.isVideo || !file.isExpanded) { continue; }
+          if (!file || !file.isVideo || !file.isExpanded) continue;
 
           var video = file.fullImage;
           var visible = ($.hasAudio(video) && !video.muted) || Header.isNodeVisible(video);
@@ -150,11 +147,9 @@ var ImageExpand = {
     if (Conf['Advance on contract']) {
       let next = post.nodes.root;
       while ((next = $.x("following::div[contains(@class,'postContainer')][1]", next))) {
-        if (!$('.stub', next) && (next.offsetHeight !== 0)) { break; }
+        if (!$('.stub', next) && (next.offsetHeight !== 0)) break;
       }
-      if (next) {
-        Header.scrollTo(next);
-      }
+      if (next) Header.scrollTo(next);
     }
   },
 
@@ -244,7 +239,7 @@ var ImageExpand = {
     } else if (ImageCommon.cache?.dataset.fileID === `${post.fullID}.${file.index}`) {
       el = (file.fullImage = ImageCommon.popCache());
       $.on(el, 'error', ImageExpand.error);
-      if (Conf['Restart when Opened'] && (el.id !== 'ihover')) { ImageCommon.rewind(el); }
+      if (Conf['Restart when Opened'] && (el.id !== 'ihover')) ImageCommon.rewind(el);
       el.removeAttribute('id');
     } else {
       el = (file.fullImage = $.el((isVideo ? 'video' : 'img')));
@@ -373,14 +368,10 @@ var ImageExpand = {
     if (file.scrollIntoView) {
       delete file.scrollIntoView;
       const imageBottom = Math.min(doc.clientHeight - file.fullImage.getBoundingClientRect().bottom - 25, Header.getBottomOf(file.fullImage));
-      if (imageBottom < 0) {
-        window.scrollBy(0, Math.min(-imageBottom, Header.getTopOf(file.fullImage)));
-      }
+      if (imageBottom < 0) window.scrollBy(0, Math.min(-imageBottom, Header.getTopOf(file.fullImage)));
     }
 
-    if (file.isVideo) {
-      ImageExpand.setupVideo(post, Conf.Autoplay, Conf['Show Controls']);
-    }
+    if (file.isVideo) ImageExpand.setupVideo(post, Conf.Autoplay, Conf['Show Controls']);
   },
 
   setupVideo(post: Post, playing: boolean, controls: boolean) {

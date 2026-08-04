@@ -18,9 +18,7 @@ const Linkify = {
   init() {
     if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf.Linkify) return;
 
-    if (Conf['Comment Expansion']) {
-      ExpandComment.callbacks.push(this.node);
-    }
+    if (Conf['Comment Expansion']) ExpandComment.callbacks.push(this.node);
 
     const isFirefox = CSS.supports('-moz-appearance', 'none');
     doc.style.setProperty('--linkify-icon-top', isFirefox ? '-0.1em' : '0');
@@ -40,12 +38,12 @@ const Linkify = {
     for (link of $$('a', this.nodes.comment)) {
       if (g.SITE.isLinkified?.(link)) {
         $.addClass(link, 'linkify');
-        if (ImageHost.useFaster) { ImageHost.fixLinks([link]); }
+        if (ImageHost.useFaster) ImageHost.fixLinks([link]);
         Embedding.process(link, this);
       }
     }
     const links = Linkify.process(this.nodes.comment);
-    if (ImageHost.useFaster) { ImageHost.fixLinks(links); }
+    if (ImageHost.useFaster) ImageHost.fixLinks(links);
     for (link of links) { Embedding.process(link, this); }
   },
 
@@ -59,7 +57,7 @@ const Linkify = {
     while ((node = snapshot.snapshotItem(i++))) {
       let result;
       let {data} = node;
-      if (!data || (node.parentElement.nodeName === "A")) { continue; }
+      if (!data || (node.parentElement.nodeName === "A")) continue;
 
       while ((result = test.exec(data))) {
         const {index} = result;
@@ -82,10 +80,10 @@ const Linkify = {
               }
             }
 
-            if ((saved.parentElement.nodeName === "A") && !Linkify.regString.test(word)) { break; }
+            if ((saved.parentElement.nodeName === "A") && !Linkify.regString.test(word)) break;
 
-            endNode  = saved;
-            ({data}   = saved);
+            endNode = saved;
+            ({data} = saved);
 
             let end = space.exec(data);
             if (end) {
@@ -111,7 +109,7 @@ const Linkify = {
           // #endregion
         }
 
-        if (!test.lastIndex || (node !== endNode)) { break; }
+        if (!test.lastIndex || (node !== endNode)) break;
       }
     }
 
@@ -166,15 +164,11 @@ const Linkify = {
       text = text.slice(0, -i);
       while ((range.endOffset - i) < 0) { i--; }
 
-      if (i) {
-        range.setEnd(range.endContainer, range.endOffset - i);
-      }
+      if (i) range.setEnd(range.endContainer, range.endOffset - i);
     }
 
     // Make our link 'valid' if it is formatted incorrectly.
-    if (!/((mailto|magnet):|.+:\/\/)/.test(text)) {
-      text = ( /@/.test(text) ? 'mailto:' : 'http://') + text;
-    }
+    if (!/((mailto|magnet):|.+:\/\/)/.test(text)) text = ( /@/.test(text) ? 'mailto:' : 'http://') + text;
 
     // Decode percent-encoded characters in domain so that they behave consistently across browsers.
     if (encodedDomain = text.match(/^(https?:\/\/[^/]*%[0-9a-f]{2})(.*)$/i)) {

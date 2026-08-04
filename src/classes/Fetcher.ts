@@ -84,7 +84,7 @@ export default class Fetcher {
   insert(post) {
     // Stop here if the container has been removed while loading.
     if (!this.root.parentNode) return;
-    if (!this.quoter) { this.quoter = post; }
+    if (!this.quoter) this.quoter = post;
     const clone = post.addClone(this.quoter.context, ($.hasClass(this.root, 'dialog')));
     Main.callbackNodes('Post', [clone]);
 
@@ -97,9 +97,7 @@ export default class Fetcher {
     const quotes = [...clone.nodes.quotelinks, ...clone.nodes.backlinks];
     for (var quote of quotes) {
       var {boardID, postID} = Get.postDataFromLink(quote);
-      if ((postID === this.quoter.ID) && (boardID === this.quoter.board.ID)) {
-        $.addClass(quote, 'forwardlink');
-      }
+      if ((postID === this.quoter.ID) && (boardID === this.quoter.board.ID)) $.addClass(quote, 'forwardlink');
     }
 
     // Set up flag CSS for cross-board links to boards with flags
@@ -174,9 +172,7 @@ export default class Fetcher {
           for (var key in media) {
             // Image/thumbnail URLs loaded over HTTP can be modified in transit.
             // Require them to be from an HTTP host so that no referrer is sent to them from an HTTPS page.
-            if (/_link$/.test(key)) {
-              if (!$.getOwn(media, key)?.match(/^http:\/\//)) { delete media[key]; }
-            }
+            if (/_link$/.test(key) && !$.getOwn(media, key)?.match(/^http:\/\//)) delete media[key];
           }
         }
         return that.parseArchivedPost(this.response, url, archive);

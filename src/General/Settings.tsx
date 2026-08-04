@@ -83,11 +83,11 @@ var Settings = {
       });
       $.on(link, 'click', Settings.openSection.bind(section));
       links.push(link, $.tn(' | '));
-      if (section.title === openSection) { sectionToOpen = link; }
+      if (section.title === openSection) sectionToOpen = link;
     }
     links.pop();
     $.add($('.sections-list', dialog), links);
-    if (openSection !== 'none') { (sectionToOpen ? sectionToOpen : links[0]).click(); }
+    if (openSection !== 'none') (sectionToOpen ? sectionToOpen : links[0]).click();
 
     Icon.set($('.close', dialog), 'xmark');
     $.on($('.close', dialog), 'click', Settings.close);
@@ -116,18 +116,14 @@ var Settings = {
   sections: [],
 
   addSection(title, open) {
-    if (typeof title !== 'string') {
-      ({title, open} = title.detail);
-    }
+    if (typeof title !== 'string') ({title, open} = title.detail);
     const hyphenatedTitle = title.toLowerCase().replace(/\s+/g, '-');
     Settings.sections.push({title, hyphenatedTitle, open});
   },
 
   openSection() {
     let selected = $('.tab-selected', Settings.dialog);
-    if (selected) {
-      $.rmClass(selected, 'tab-selected');
-    }
+    if (selected) $.rmClass(selected, 'tab-selected');
     $.addClass($(`.tab-${this.hyphenatedTitle}`, Settings.dialog), 'tab-selected');
     const section = $('section', Settings.dialog);
     $.rmAll(section);
@@ -361,9 +357,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     a.click();
   },
 
-  import() {
-    $('input[type=file]', this.parentNode).click();
-  },
+  import() { $('input[type=file]', this.parentNode).click(); },
 
   onImport() {
     let file = this.files[0];
@@ -470,9 +464,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
   },
 
   loadSettings(data, cb) {
-    if (data.version !== g.VERSION) {
-      Settings.upgrade(data.Conf, data.version);
-    }
+    if (data.version !== g.VERSION) Settings.upgrade(data.Conf, data.version);
     $.clear((err) => {
       if (err) return cb(err);
       $.set(data.Conf, cb);
@@ -561,7 +553,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
             || ((input.nodeName === 'TEXTAREA') && !(name in Settings)))
           ? 'change' : 'input';
         $.on(input, event, $.cb[input.type === 'checkbox' ? 'checked' : 'value']);
-        if (name in Settings) { $.on(input, event, Settings[name]); }
+        if (name in Settings) $.on(input, event, Settings[name]);
       }
     }
 
@@ -635,7 +627,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
 
     const archBoards = dict();
     for (var {uid, name, boards, files, software} of Conf.archives) {
-      if (!['fuuka', 'foolfuuka'].includes(software)) { continue; }
+      if (!['fuuka', 'foolfuuka'].includes(software)) continue;
       for (boardID of boards) {
         o = archBoards[boardID] || (archBoards[boardID] = {
           thread: [],
@@ -650,7 +642,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           o.post.push(archive);
           o.threadJSON.push(archive);
         }
-        if (files.includes(boardID)) { o.file.push(archive); }
+        if (files.includes(boardID)) o.file.push(archive);
       }
     }
 
@@ -680,9 +672,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
 
     boardSelect.hidden = (table.hidden = false);
 
-    if (!(g.BOARD.ID in archBoards)) {
-      rows[0].hidden = false;
-    }
+    if (!(g.BOARD.ID in archBoards)) rows[0].hidden = false;
 
     $.add(boardSelect, boardOptions);
     $.add(tbody, rows);
@@ -694,7 +684,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         let select = $(`select[data-boardid='${boardID}'][data-type='${type}']`, tbody);
         if (select) {
           select.value = JSON.stringify(id);
-          if (!select.value) { select.value = select.firstChild.value; }
+          if (!select.value) select.value = select.firstChild.value;
         }
       }
     }
@@ -741,21 +731,13 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     });
   },
 
-  boardnav() {
-    Header.generateBoardList(this.value);
-  },
+  boardnav() { Header.generateBoardList(this.value); },
 
-  time() {
-    this.nextElementSibling.textContent = Time.format(new Date(), this.value);
-  },
+  time() { this.nextElementSibling.textContent = Time.format(new Date(), this.value); },
 
-  timeLocale() {
-    Settings.time.call($('[name=time]', Settings.dialog));
-  },
+  timeLocale() { Settings.time.call($('[name=time]', Settings.dialog)); },
 
-  backlink() {
-    this.nextElementSibling.textContent = this.value.replace(/%(?:id|%)/g, x => ({'%id': '123456789', '%%': '%'})[x]);
-  },
+  backlink() { this.nextElementSibling.textContent = this.value.replace(/%(?:id|%)/g, x => ({'%id': '123456789', '%%': '%'})[x]); },
 
   fileInfo() {
     const data = {
@@ -777,13 +759,13 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
 
   favicon() {
     Favicon.switch();
-    if ((g.VIEW === 'thread') && Conf['Unread Favicon']) { Unread.update(); }
+    if ((g.VIEW === 'thread') && Conf['Unread Favicon']) Unread.update();
     const img = this.nextElementSibling.children;
     const f = Favicon;
     const iterable = [f.SFW, f.unreadSFW, f.unreadSFWY, f.NSFW, f.unreadNSFW, f.unreadNSFWY, f.dead, f.unreadDead, f.unreadDeadY];
     for (let i = 0; i < iterable.length; i++) {
       var icon = iterable[i];
-      if (!img[i]) { $.add(this.nextElementSibling, $.el('img')); }
+      if (!img[i]) $.add(this.nextElementSibling, $.el('img'));
       img[i].src = icon;
     }
   },

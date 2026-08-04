@@ -37,7 +37,7 @@ export default class Notice {
     $.add(noticesRoot, this.el);
     this.el.clientHeight; // force reflow
     this.el.style.opacity = 1;
-    if (this.timeout) { this.timeoutId = setTimeout(this.close, this.timeout * SECOND); }
+    if (this.timeout) this.timeoutId = setTimeout(this.close, this.timeout * SECOND);
   }
 
   close() {

@@ -77,7 +77,7 @@ var Unread = {
   },
 
   ready() {
-    if (Conf['Remember Last Read Post'] && Conf['Scroll to Last Read Post']) { Unread.scroll(); }
+    if (Conf['Remember Last Read Post'] && Conf['Scroll to Last Read Post']) Unread.scroll();
     Unread.setLine(true);
     Unread.read();
     Unread.update();
@@ -146,7 +146,7 @@ var Unread = {
     for (let i = Unread.readCount, end = postIDs.length; i < end; i++) {
       var ID = +postIDs[i];
       if (!Unread.thread.posts.get(ID).isFetchedQuote) {
-        if (ID > Unread.lastReadPost) { break; }
+        if (ID > Unread.lastReadPost) break;
         Unread.posts.delete(ID);
         Unread.postsQuotingYou.delete(ID);
       }
@@ -210,9 +210,7 @@ var Unread = {
 
   read: debounce(100, function(e) {
     // Update the lastReadPost when hidden posts are added to the thread.
-    if (!Unread.posts.size && (Unread.readCount !== Unread.thread.posts.keys.length)) {
-      Unread.saveLastReadPost();
-    }
+    if (!Unread.posts.size && (Unread.readCount !== Unread.thread.posts.keys.length)) Unread.saveLastReadPost();
 
     if (d.hidden || !Unread.posts.size) return;
 
@@ -247,7 +245,7 @@ var Unread = {
     for (let i = Unread.readCount, end = postIDs.length; i < end; i++) {
     let ID = +postIDs[i];
       if (!Unread.thread.posts.get(ID).isFetchedQuote) {
-        if (Unread.posts.has(ID)) { break; }
+        if (Unread.posts.has(ID)) break;
         Unread.lastReadPost = ID;
       }
       Unread.readCount++;
@@ -267,7 +265,7 @@ var Unread = {
       if (Unread.linePosition = Unread.positionPrev()) {
         if (Unread.linePosition !== oldPosition) {
           let node = Unread.linePosition.data.nodes.bottom;
-          if (node.nextSibling?.tagName === 'BR') { node = node.nextSibling; }
+          if (node.nextSibling?.tagName === 'BR') node = node.nextSibling;
           $.after(node, Unread.hr);
         }
       } else {

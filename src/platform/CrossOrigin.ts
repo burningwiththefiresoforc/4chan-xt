@@ -85,7 +85,7 @@ var CrossOrigin = {
 
   file(url: string, cb: (result: File) => void) {
     return CrossOrigin.binary(url, (data, headers) => {
-      if (data == null) { return cb(null); }
+      if (data == null) return cb(null);
       let name = url.match(/([^\/?#]+)\/*(?:$|[?#])/)?.[1];
       const contentType        = headers.match(/Content-Type:\s*(.*)/i)?.[1];
       const contentDisposition = headers.match(/Content-Disposition:\s*(.*)/i)?.[1];
@@ -93,9 +93,7 @@ var CrossOrigin = {
       const match =
         contentDisposition?.match(/\bfilename\s*=\s*"((\\"|[^"])+)"/i)?.[1] ||
         contentType?.match(/\bname\s*=\s*"((\\"|[^"])+)"/i)?.[1];
-      if (match) {
-        name = match.replace(/\\"/g, '"');
-      }
+      if (match) name = match.replace(/\\"/g, '"');
       // if (/^text\/plain;\s*charset=x-user-defined$/i.test(mime)) {
       //   // In JS Blocker (Safari) content type comes back as 'text/plain; charset=x-user-defined'; guess from filename instead.
       //   mime = $.getOwn(QR.typeFromExtension, name.match(/[^.]*$/)[0].toLowerCase()) || 'application/octet-stream';
@@ -154,9 +152,7 @@ var CrossOrigin = {
     req.onloadend = onloadend;
 
     if (platform === 'userscript') {
-      if (window.GM?.xmlHttpRequest == null && window.GM_xmlhttpRequest == null) {
-        return $.ajax(url, options);
-      }
+      if (window.GM?.xmlHttpRequest == null && window.GM_xmlhttpRequest == null) return $.ajax(url, options);
 
       const gmOptions = {
         method: 'GET',
@@ -224,9 +220,7 @@ var CrossOrigin = {
     return new Promise((resolve) => CrossOrigin.ajax(url, { ...options, onloadend() { resolve(this); } }))
   },
 
-  cache(url, cb) {
-    return $.cache(url, cb, {ajax: CrossOrigin.ajax});
-  },
+  cache(url, cb) { return $.cache(url, cb, {ajax: CrossOrigin.ajax}); },
 
   cachePromise(url: string) : Promise<XMLHttpRequest> {
     return new Promise(resolve => {

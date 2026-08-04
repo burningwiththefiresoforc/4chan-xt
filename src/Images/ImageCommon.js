@@ -43,9 +43,7 @@ var ImageCommon = {
     return el;
   },
 
-  cacheError() {
-    if (ImageCommon.cache === this) { delete ImageCommon.cache; }
-  },
+  cacheError() { if (ImageCommon.cache === this) delete ImageCommon.cache; },
 
   decodeError(file, fileObj) {
     if (file.error?.code !== MediaError.MEDIA_ERR_DECODE) return false;
@@ -69,16 +67,16 @@ var ImageCommon = {
         filename: src[src.length - 1]
       });
     }
-    if (!url || !Redirect.securityCheck(url)) { url = null; }
+    if (!url || !Redirect.securityCheck(url)) url = null;
 
     if ((post.isDead || fileObj.isDead) && !ImageCommon.isFromArchive(file)) return cb(url);
 
     let timeoutID;
-    if (delay) { timeoutID = setTimeout((() => cb(url)), delay); }
+    if (delay) timeoutID = setTimeout((() => cb(url)), delay);
     if (post.isDead || fileObj.isDead) return;
     const redirect = () => {
       if (!ImageCommon.isFromArchive(file)) {
-        if (delay) { clearTimeout(timeoutID); }
+        if (delay) clearTimeout(timeoutID);
         return cb(url);
       }
     };
@@ -97,7 +95,7 @@ var ImageCommon = {
       }
       if (this.status !== 200) return redirect();
       for (postObj of this.response.posts) {
-        if (postObj.no === post.ID) { break; }
+        if (postObj.no === post.ID) break;
       }
       if (postObj.no !== post.ID) {
         post.kill();

@@ -113,7 +113,7 @@ var ThreadUpdater = {
     ThreadUpdater.fileIDs = [];
     this.posts.forEach((post) => {
       ThreadUpdater.postIDs.push(post.ID);
-      if (post.file) { ThreadUpdater.fileIDs.push(post.ID); }
+      if (post.file) ThreadUpdater.fileIDs.push(post.ID);
     });
 
     ThreadUpdater.cb.interval.call($.el('input', {value: Conf.Interval}));
@@ -161,7 +161,7 @@ var ThreadUpdater = {
 
     interval(e) {
       let val = parseInt(this.value, 10);
-      if (val < 1) { val = 1; }
+      if (val < 1) val = 1;
       ThreadUpdater.interval = (this.value = val);
       if (e) return $.cb.value.call(this);
     },
@@ -215,9 +215,7 @@ var ThreadUpdater = {
   },
 
   error(req) {
-    if (req.status === 304) {
-      ThreadUpdater.set('status', '');
-    }
+    if (req.status === 304) ThreadUpdater.set('status', '');
     ThreadUpdater.setInterval();
     if (!req.status) {
       ThreadUpdater.set('status', 'Connection Error', 'warning');
@@ -347,10 +345,10 @@ var ThreadUpdater = {
     for (var postObject of postObjects) {
       ID = postObject.no;
       index.push(ID);
-      if (postObject.fsize) { files.push(ID); }
+      if (postObject.fsize) files.push(ID);
 
       // Insert new posts, not older ones.
-      if (ID <= lastPost) { continue; }
+      if (ID <= lastPost) continue;
 
       // XXX Resurrect wrongly deleted posts.
       if ((post = thread.posts.get(ID)) && !post.isFetchedQuote) {
@@ -362,7 +360,7 @@ var ThreadUpdater = {
       var node = g.SITE.Build.postFromObject(postObject, board.ID);
       posts.push(new Post(node, thread, board));
       // Fetching your own posts after posting
-      if (ThreadUpdater.postID === ID) { delete ThreadUpdater.postID; }
+      if (ThreadUpdater.postID === ID) delete ThreadUpdater.postID;
     }
 
     // Check for deleted posts.
@@ -421,7 +419,7 @@ var ThreadUpdater = {
         if (Conf['Bottom Scroll']) {
           window.scrollTo(0, d.body.clientHeight);
         } else {
-          if (firstPost) { Header.scrollTo(firstPost); }
+          if (firstPost) Header.scrollTo(firstPost);
         }
       }
     }

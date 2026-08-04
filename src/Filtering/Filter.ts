@@ -205,9 +205,7 @@ var Filter = {
     boards = dict();
     let siteFilter = '';
     for (var boardID of boardsRaw.split(',')) {
-      if (boardID.includes(':')) {
-        [siteFilter, boardID] = boardID.split(':').slice(-2);
-      }
+      if (boardID.includes(':')) [siteFilter, boardID] = boardID.split(':').slice(-2);
       for (var siteID in g.sites) {
         var site = g.sites[siteID];
         if (siteID.slice(0, siteFilter.length) === siteFilter) {
@@ -272,10 +270,8 @@ var Filter = {
               }
             }
           }
-          if (filter.hl && !hl?.includes(filter.hl)) {
-            (hl || (hl = [])).push(filter.hl);
-          }
-          if (!top) { ({top} = filter); }
+          if (filter.hl && !hl?.includes(filter.hl)) (hl || (hl = [])).push(filter.hl);
+          if (!top) ({top} = filter);
           if (filter.noti) noti = true;
           if (filter.poster) poster = true;
           if (filter.replies) replies = true;
@@ -302,7 +298,7 @@ var Filter = {
     let reason: string;
     if (poster && this.info.uniqueID) {
       reason = `Hidden because it's the same poster as ${this.ID} (${this.filterResults.reasons})`;
-      const { uniqueID } = this.info;
+      const {uniqueID} = this.info;
       const newFilter: FilterObj = {
         regexp: uniqueID,
         boards: false,
@@ -406,9 +402,7 @@ var Filter = {
     if ((this.boardID !== g.BOARD.ID) || !Filter.catalogData[this.ID]) return;
     if (QuoteYou.db?.get({siteID: g.SITE.ID, boardID: this.boardID, threadID: this.ID, postID: this.ID})) return;
     const {hide, hl, top} = Filter.test(g.SITE.Build.parseJSON(Filter.catalogData[this.ID], this));
-    if (hide) {
-      this.nodes.root.hidden = true;
-    }
+    if (hide) this.nodes.root.hidden = true;
     if (hl) {
       this.highlights = hl;
       $.addClass(this.nodes.root, ...hl);

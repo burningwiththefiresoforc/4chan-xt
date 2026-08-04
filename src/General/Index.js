@@ -65,9 +65,7 @@ var Index = {
     });
 
     this.search = history.state?.searched || '';
-    if (history.state?.mode) {
-      Conf['Index Mode'] = history.state?.mode;
-    }
+    if (history.state?.mode) Conf['Index Mode'] = history.state?.mode;
     this.currentSort = history.state?.sort;
     if (!this.currentSort) {
       this.currentSort = typeof Conf['Index Sort'] === 'object'
@@ -131,7 +129,7 @@ var Index = {
     this.navLinks = $.el('div', {className: 'navLinks json-index'});
     $.extend(this.navLinks, {innerHTML: NavLinksPage});
     $('.cataloglink a', this.navLinks).href = CatalogLinks.catalog();
-    if (!BoardConfig.isArchived(g.BOARD.ID)) { $('.archlistlink', this.navLinks).hidden = true; }
+    if (!BoardConfig.isArchived(g.BOARD.ID)) $('.archlistlink', this.navLinks).hidden = true;
     $.on($('#index-last-refresh a', this.navLinks), 'click', this.cb.refreshFront);
 
     // Search field
@@ -194,18 +192,14 @@ var Index = {
       g.SITE.Build.hat = $('.board > .thread > img:first-child');
       if (g.SITE.Build.hat) {
         g.BOARD.threads.forEach((thread) => {
-          if (thread.nodes.root) {
-            return $.prepend(thread.nodes.root, g.SITE.Build.hat.cloneNode(false));
-          }
+          if (thread.nodes.root) return $.prepend(thread.nodes.root, g.SITE.Build.hat.cloneNode(false));
         });
         $.addClass(doc, 'hats-enabled');
         $.addStyle(`.catalog-thread::after {background-image: url(${g.SITE.Build.hat.src});}`);
       }
       const board = $('.board');
       $.replace(board, Index.root);
-      if (Index.loaded) {
-        $.event('PostsInserted', null, Index.root);
-      }
+      if (Index.loaded) $.event('PostsInserted', null, Index.root);
       // Hacks:
       // - When removing an element from the document during page load,
       //   its ancestors will still be correctly created inside of it.
@@ -271,7 +265,7 @@ var Index = {
           if (Conf['Index Mode'] !== 'catalog') return false;
           this.el.firstElementChild.textContent = thread.isHidden
             ? 'Unhide' : 'Hide';
-          if (this.cb) { $.off(this.el, 'click', this.cb); }
+          if (this.cb) $.off(this.el, 'click', this.cb);
           this.cb = () => {
             $.event('CloseMenu');
             Index.toggleHide(thread);
@@ -317,7 +311,7 @@ var Index = {
     let i;
     for (i = 0; i < types.length; i++) {
       var type = types[i];
-      if (type.selected) { break; }
+      if (type.selected) break;
     }
     types[(i + 1) % types.length].selected = true;
     $.event('change', null, Index.selectSort);
@@ -396,7 +390,7 @@ var Index = {
         $.addClass(Index.root, 'catalog-large');
         $.rmClass(Index.root,  'catalog-small');
       }
-      if (e) { Index.buildIndex(); }
+      if (e) Index.buildIndex();
     },
 
     replies() { Index.buildIndex(); },
@@ -524,7 +518,7 @@ var Index = {
         state.page = 1;
       } else if (sort = $.getOwn(Index.hashCommands.sort, command.replace(/-rev$/, ''))) {
         state.sort = sort;
-        if (/-rev$/.test(command)) { state.sort += '-rev'; }
+        if (/-rev$/.test(command)) state.sort += '-rev';
       } else if (/^s=/.test(command)) {
         state.search = decodeURIComponent(command.slice(2)).replace(/\+/g, ' ').trim();
       } else {
@@ -532,7 +526,7 @@ var Index = {
       }
     }
     hash = leftover.join('/');
-    if (hash) { state.hash = `#${hash}`; }
+    if (hash) state.hash = `#${hash}`;
     Index.pushState(state);
     return commands.length - leftover.length;
   },
@@ -583,9 +577,7 @@ var Index = {
       Index.changed.page = true;
       Index.currentPage = page;
     }
-    if (hash != null) {
-      return Index.changed.hash = true;
-    }
+    if (hash != null) return Index.changed.hash = true;
   },
 
   savePerBoard(key, value) {
@@ -687,13 +679,11 @@ var Index = {
     if (!Index.hideLabel) return;
     let hiddenCount = 0;
     for (var threadID of Index.liveThreadIDs) {
-      if (Index.isHidden(threadID)) {
-        hiddenCount++;
-      }
+      if (Index.isHidden(threadID)) hiddenCount++;
     }
     if (!hiddenCount) {
       Index.hideLabel.hidden = true;
-      if (Index.showHiddenThreads) { Index.cb.toggleHiddenThreads(); }
+      if (Index.showHiddenThreads) Index.cb.toggleHiddenThreads();
       return;
     }
     Index.hideLabel.hidden = false;
@@ -710,16 +700,14 @@ var Index = {
 
     if (Conf['Index Refresh Notifications']) {
       // Optional notification for manual refreshes
-      if (!Index.notice) { Index.notice = new Notice('info', 'Refreshing index...'); }
+      if (!Index.notice) Index.notice = new Notice('info', 'Refreshing index...');
       if (!Index.nTimeout) { Index.nTimeout = setTimeout(() => {
-          if (Index.notice) {
-            Index.notice.el.lastElementChild.textContent += ' (disable JSON Index if this takes too long)';
-          }
+          if (Index.notice) Index.notice.el.lastElementChild.textContent += ' (disable JSON Index if this takes too long)';
         }, 3 * SECOND);
       }
     } else {
       // Also display notice if Index Refresh is taking too long
-      if (!Index.nTimeout) { Index.nTimeout = setTimeout(() => Index.notice || (Index.notice = new Notice('info', 'Refreshing index... (disable JSON Index if this takes too long)')), 3 * SECOND); }
+      if (!Index.nTimeout) Index.nTimeout = setTimeout(() => Index.notice || (Index.notice = new Notice('info', 'Refreshing index... (disable JSON Index if this takes too long)')), 3 * SECOND);
     }
 
     // Hard refresh in case of incomplete page load.
@@ -822,9 +810,7 @@ var Index = {
         }
       }
     }
-    if (Index.liveThreadData[0]) {
-      g.SITE.Build.spoilerRange[g.BOARD.ID] = Index.liveThreadData[0].custom_spoiler;
-    }
+    if (Index.liveThreadData[0]) g.SITE.Build.spoilerRange[g.BOARD.ID] = Index.liveThreadData[0].custom_spoiler;
     g.BOARD.threads.forEach((thread) => {
       if (!Index.liveThreadIDs.includes(thread.ID)) return thread.collect();
     });
@@ -872,7 +858,7 @@ var Index = {
         }
         var lastPost = threadData.last_replies && threadData.last_replies.length
           ? threadData.last_replies[threadData.last_replies.length - 1].no : ID;
-        if (lastPost > thread.lastPost) { thread.lastPost = lastPost; }
+        if (lastPost > thread.lastPost) thread.lastPost = lastPost;
         thread.json = threadData;
         threads.push(thread);
 
@@ -887,12 +873,10 @@ var Index = {
           newPosts.push(OP);
         }
 
-        if (!isCatalog || !thread.nodes.root) {
-          g.SITE.Build.thread(thread, threadData, withReplies);
-        }
+        if (!isCatalog || !thread.nodes.root) g.SITE.Build.thread(thread, threadData, withReplies);
       } catch (err) {
         // Skip posts that we failed to parse.
-        if (!errors) { errors = []; }
+        if (!errors) errors = [];
         errors.push({
           message: `Parsing of Thread No.${thread} failed. Thread will be skipped.`,
           error: err,
@@ -1000,13 +984,11 @@ var Index = {
       case 'lastreply': case 'lastlong':
         var repliesAvailable = liveThreadData.some(thread => thread.last_replies?.length);
         var lastlong = (thread) => {
-          if (!repliesAvailable) {
-            return thread.last_modified;
-          }
+          if (!repliesAvailable) return thread.last_modified;
           const iterable = thread.last_replies || [];
           for (let i = iterable.length - 1; i >= 0; i--) {
             var r = iterable[i];
-            if (Index.isHiddenReply(thread.no, r)) { continue; }
+            if (Index.isHiddenReply(thread.no, r)) continue;
             if (sortType === 'lastreply') return r;
             var len = r.com ? g.SITE.Build.parseComment(r.com).replace(/[^a-z]/ig, '').length : 0;
             if (len >= Index.lastLongThresholds[+!!r.ext]) return r;
@@ -1024,9 +1006,7 @@ var Index = {
       case 'activity':   return [...liveThreadData].sort((a, b) => ((tmp_time-a.time)/(a.replies+1)) - ((tmp_time-b.time)/(b.replies+1))).map(post => post.no);
       case 'bump': default: return liveThreadIDs;
     } })();
-    if (/-rev$/.test(Index.currentSort)) {
-      Index.sortedThreadIDs.reverse();
-    }
+    if (/-rev$/.test(Index.currentSort)) Index.sortedThreadIDs.reverse();
     let threadIDs = Index.querySearch(Index.search);
     if (Index.search && threadIDs) Index.sortedThreadIDs = threadIDs;
     // Sticky threads
@@ -1034,7 +1014,7 @@ var Index = {
     // Highlighted threads
     Index.sortOnTop(obj => obj.isOnTop || (Conf['Pin Watched Threads'] && ThreadWatcher.isWatchedRaw(obj.boardID, obj.threadID)));
     // Non-hidden threads
-    if (Conf['Anchor Hidden Threads']) { Index.sortOnTop(obj => !Index.isHidden(obj.threadID)); }
+    if (Conf['Anchor Hidden Threads']) Index.sortOnTop(obj => !Index.isHidden(obj.threadID));
   },
 
   sortOnTop(match) {
@@ -1062,9 +1042,7 @@ var Index = {
     delete Index.pageNum;
     $.rmAll(Index.root);
     $.rmAll(Header.hover);
-    if (Index.loaded && Index.root.parentNode) {
-      $.event('PostsRemoved', null, Index.root);
-    }
+    if (Index.loaded && Index.root.parentNode) $.event('PostsRemoved', null, Index.root);
     if (Conf['Index Mode'] === 'catalog') {
       Index.buildCatalog(threadIDs);
     } else {
@@ -1085,9 +1063,7 @@ var Index = {
       nodes.push(thread.nodes.root, $.el('hr'));
     }
     $.add(Index.root, nodes);
-    if (Index.root.parentNode) {
-      $.event('PostsInserted', null, Index.root);
-    }
+    if (Index.root.parentNode) $.event('PostsInserted', null, Index.root);
     Index.loaded = true;
   },
 
@@ -1103,9 +1079,7 @@ var Index = {
       if (i < n) {
         return $.queueTask(fn);
       } else {
-        if (Index.root.parentNode) {
-          $.event('PostsInserted', null, Index.root);
-        }
+        if (Index.root.parentNode) $.event('PostsInserted', null, Index.root);
         return Index.loaded = true;
       }
     };
@@ -1174,7 +1148,7 @@ var Index = {
     info.comment ??= g.SITE.Build.parseComment(info.commentHTML.innerHTML);
     let text = [];
     for (var key of ['comment', 'subject', 'name', 'tripcode']) {
-      if (key in info) { text.push(info[key]); }
+      if (key in info) text.push(info[key]);
     }
     if (file) text.push(file.name);
     text = text.join(' ').toLowerCase();

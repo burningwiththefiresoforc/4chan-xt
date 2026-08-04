@@ -64,7 +64,7 @@ var PostHiding = {
       }
     }
 
-    if (!Conf['Reply Hiding Buttons']) { return; }
+    if (!Conf['Reply Hiding Buttons']) return;
 
     const button = PostHiding.makeButton(this, 'hide');
     const sa = g.SITE.selectors.sideArrows;
@@ -98,9 +98,7 @@ var PostHiding = {
         { el: UI.checkbox('replies', 'Hide replies', Conf['Recursive Hiding']) },
         { el: UI.checkbox('makeStub', 'Make stub', Conf.Stubs) },
       ];
-      if (g.BOARD.config.user_ids) {
-        hideOptions.push({ el: UI.checkbox('byId', 'By poster id', false) });
-      }
+      if (g.BOARD.config.user_ids) hideOptions.push({ el: UI.checkbox('byId', 'By poster id', false) });
 
       Menu.menu.addEntry({
         el: $.el('div', {
@@ -151,9 +149,7 @@ var PostHiding = {
         }),
         order: 20,
         open(post: Post) {
-          if (!post.isReply || post.isClone || !post.isHidden) {
-            return false;
-          }
+          if (!post.isReply || post.isClone || !post.isHidden) return false;
           const data = PostHiding.db.get({boardID: post.board.ID, threadID: post.thread.ID, postID: post.ID});
           if (!data) return false;
 
@@ -248,9 +244,7 @@ var PostHiding = {
       }
 
       const data = PostHiding.db.get({ boardID, threadID, postID })
-      if (data) {
-        PostHiding.saveHiddenState(post, !(thisPost && replies), !thisPost, data.makeStub, !replies, byId);
-      }
+      if (data) PostHiding.saveHiddenState(post, !(thisPost && replies), !thisPost, data.makeStub, !replies, byId);
       $.event('CloseMenu');
     },
 
@@ -348,9 +342,7 @@ var PostHiding = {
     $.add(post.nodes.stub, a);
 
     if (!Conf['Filter Reason'] && reasons) post.nodes.stub.title = reasons.join(' & ');
-    if (Conf.Menu) {
-      $.add(post.nodes.stub, Menu.makeButton(post));
-    }
+    if (Conf.Menu) $.add(post.nodes.stub, Menu.makeButton(post));
     $.prepend(post.nodes.root, post.nodes.stub);
   },
 

@@ -29,13 +29,11 @@ export default class Connection {
     if ((e.source !== this.targetWindow()) ||
       (e.origin !== this.origin) ||
       (typeof e.data !== 'string') ||
-      (e.data.slice(0, g.NAMESPACE.length) !== g.NAMESPACE)) { return; }
+      (e.data.slice(0, g.NAMESPACE.length) !== g.NAMESPACE)) return;
     const data = JSON.parse(e.data.slice(g.NAMESPACE.length));
     for (var type in data) {
       var value = data[type];
-      if ($.hasOwn(this.cb, type)) {
-        this.cb[type](value);
-      }
+      if ($.hasOwn(this.cb, type)) this.cb[type](value);
     }
   }
 }

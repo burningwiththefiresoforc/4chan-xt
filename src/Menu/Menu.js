@@ -42,10 +42,7 @@ var Menu = {
     }
     $.add(this.nodes.info, Menu.makeButton(this));
   },
-
-  catalogNode() {
-    $.after(this.nodes.icons, Menu.makeButton(this.thread.OP));
-  },
+catalogNode() { $.after(this.nodes.icons, Menu.makeButton(this.thread.OP)); },
 
   makeButton(post, button) {
     button ||= Menu.button.cloneNode(true);

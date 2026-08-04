@@ -42,9 +42,7 @@ const Embedding = {
     if (Embedding.shouldFetchTitles()) {
       $.on(d, '4chanXInitFinished PostsInserted', () => {
         for (const service of Object.values(Embedding.types)) {
-          if (service.title?.batchSize) {
-            Embedding.flushTitles(service.title);
-          }
+          if (service.title?.batchSize) Embedding.flushTitles(service.title);
         }
       });
     }
@@ -88,9 +86,7 @@ const Embedding = {
     const {href} = link;
     for (const type of Embedding.ordered_types) {
       let match = type.regExp.exec(href);
-      if (match) {
-        return {key: type.key, uid: match[1], options: match[2], link};
-      }
+      if (match) return {key: type.key, uid: match[1], options: match[2], link};
     }
   },
 
@@ -165,9 +161,7 @@ const Embedding = {
     $.addClass(link, key.toLowerCase());
     if (service.batchSize) {
       (service.queue || (service.queue = [])).push(data);
-      if (service.queue.length >= service.batchSize) {
-        return Embedding.flushTitles(service);
-      }
+      if (service.queue.length >= service.batchSize) return Embedding.flushTitles(service);
     } else {
       return CrossOrigin.cache(service.api(uid), (function() { return Embedding.cb.title(this, data); }));
     }
@@ -252,9 +246,7 @@ const Embedding = {
       const service = Embedding.types[key].title;
 
       let {status} = req;
-      if ([200, 304].includes(status) && service.status) {
-        status = service.status(req.response)[0];
-      }
+      if ([200, 304].includes(status) && service.status) status = service.status(req.response)[0];
 
       if (!status) return;
 
@@ -533,9 +525,7 @@ const Embedding = {
           m = a.dataset.uid.match(/(\w+)(?:\/(?:v\/)?(\d+))?/);
           url = `//player.twitch.tv/?${m[2] ? `video=v${m[2]}` : `channel=${m[1]}`}&autoplay=false&parent=${location.hostname}`;
           let time = a.dataset.href.match(/\bt=(\w+)/);
-          if (time) {
-            url += `&time=${time[1]}`;
-          }
+          if (time) url += `&time=${time[1]}`;
         }
         const el = $.el('iframe', {src: url});
         el.setAttribute("allowfullscreen", "true");

@@ -120,7 +120,7 @@ var Header = {
       }
       if (Header.bottomBoardList = $(g.SITE.selectors.boardListBottom)) {
         for (var a of $$('a', Header.bottomBoardList)) {
-          if ((a.hostname === location.hostname) && (a.pathname.split('/')[1] === g.BOARD.ID)) { a.className = 'current'; }
+          if ((a.hostname === location.hostname) && (a.pathname.split('/')[1] === g.BOARD.ID)) a.className = 'current';
         }
         CatalogLinks.setLinks(Header.bottomBoardList);
       }
@@ -175,7 +175,7 @@ var Header = {
     const fullBoardList = $('.boardList', Header.boardList);
     $.add(fullBoardList, nodes);
     for (var a of $$('a', fullBoardList)) {
-      if ((a.hostname === location.hostname) && (a.pathname.split('/')[1] === g.BOARD.ID)) { a.className = 'current'; }
+      if ((a.hostname === location.hostname) && (a.pathname.split('/')[1] === g.BOARD.ID)) a.className = 'current';
     }
     CatalogLinks.setLinks(fullBoardList);
   },
@@ -291,9 +291,7 @@ var Header = {
         title: BoardConfig.title(boardID)
       });
 
-      if (['catalog', 'archive'].includes(g.VIEW) && (urlV = Get.url(g.VIEW, {siteID: '4chan.org', boardID}))) {
-        a.href = urlV;
-      }
+      if (['catalog', 'archive'].includes(g.VIEW) && (urlV = Get.url(g.VIEW, {siteID: '4chan.org', boardID}))) a.href = urlV;
 
       if ((a.hostname === location.hostname) && (boardID === g.BOARD.ID)) {
         a.className = 'current';

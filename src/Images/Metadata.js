@@ -33,7 +33,7 @@ var Metadata = {
           $.extend(el, {innerHTML: "<a href=\"javascript:;\"></a>"});
           $.add(file.text, [$.tn(' '), el]);
         }
-        if (el.children.length === 1) { $.one(el.lastElementChild, 'mouseover focus', Metadata.load); }
+        if (el.children.length === 1) $.one(el.lastElementChild, 'mouseover focus', Metadata.load);
       }
     }
   },
@@ -47,10 +47,10 @@ var Metadata = {
       if (data) {
         const title = Metadata.parse(data);
         const output = $.el('span', {textContent: title || ''});
-        if (!title) { $.addClass(this.parentNode, 'not-found'); }
+        if (!title) $.addClass(this.parentNode, 'not-found');
         $.before(this, output);
         this.parentNode.tabIndex = 0;
-        if (d.activeElement === this) { this.parentNode.focus(); }
+        if (d.activeElement === this) this.parentNode.focus();
         return this.tabIndex = -1;
       } else {
         $.addClass(this.parentNode, 'error');

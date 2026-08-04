@@ -144,9 +144,7 @@ const Redirect = {
 
   protocol(archive) {
     let {protocol} = location;
-    if (!$.getOwn(archive, protocol.slice(0, -1))) {
-      protocol = protocol === 'https:' ? 'http:' : 'https:';
-    }
+    if (!$.getOwn(archive, protocol.slice(0, -1))) protocol = protocol === 'https:' ? 'http:' : 'https:';
     return `${protocol}//`;
   },
 
@@ -154,9 +152,7 @@ const Redirect = {
     // Keep the post number only if the location.hash was sent f.e.
     let path = threadID ? `${boardID}/thread/${threadID}` : `${boardID}/post/${postID}`;
     if (archive.software === 'foolfuuka') path += '/';
-    if (threadID && postID) {
-      path += archive.software === 'foolfuuka' ? `#${postID}` : `#p${postID}`;
-    }
+    if (threadID && postID) path += archive.software === 'foolfuuka' ? `#${postID}` : `#p${postID}`;
     return `${Redirect.protocol(archive)}${archive.domain}/${path}`;
   },
 

@@ -74,9 +74,7 @@ const Volume = {
     };
     for (const key in items) {
       const val = items[key];
-      if (Conf[key] === val) {
-        delete items[key];
-      }
+      if (Conf[key] === val) delete items[key];
     }
     $.set(items);
     $.extend(Conf, items);
@@ -90,7 +88,7 @@ const Volume = {
     if (g.SITE.noAudio?.(this.board)) return;
     for (const file of this.files) {
       if (file.isVideo) {
-        if (file.thumb) { $.on(file.thumb, 'wheel', Volume.wheel.bind(Header.hover)); }
+        if (file.thumb) $.on(file.thumb, 'wheel', Volume.wheel.bind(Header.hover));
         $.on(($('.file-info', file.text) || file.link), 'wheel', Volume.wheel.bind(file.thumbLink));
       }
     }
@@ -108,8 +106,8 @@ const Volume = {
     if (!el) return;
     if (el.muted || !$.hasAudio(el)) return;
     let volume = el.volume + 0.1;
-    if (e.deltaY < 0) { volume *= 1.1; }
-    if (e.deltaY > 0) { volume /= 1.1; }
+    if (e.deltaY < 0) volume *= 1.1;
+    if (e.deltaY > 0) volume /= 1.1;
     el.volume = $.minmax(volume - 0.1, 0, 1);
     e.preventDefault();
   }

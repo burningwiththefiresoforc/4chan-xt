@@ -76,9 +76,7 @@ var ImageHover = {
         Volume.setup(el);
         if (Conf.Autoplay) {
           el.play();
-          if (this.nodeName === 'VIDEO') {
-            this.currentTime = el.currentTime;
-          }
+          if (this.nodeName === 'VIDEO') this.currentTime = el.currentTime;
         }
       }
 

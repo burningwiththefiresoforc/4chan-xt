@@ -161,9 +161,7 @@ var DeleteLink = {
       } else {
         delete DeleteLink.cooldown.seconds[post.fullID];
         for (var fileOnly of [false, true]) {
-          if (DeleteLink.auto[+fileOnly][post.fullID]) {
-            DeleteLink.delete(post, fileOnly);
-          }
+          if (DeleteLink.auto[+fileOnly][post.fullID]) DeleteLink.delete(post, fileOnly);
         }
       }
     }

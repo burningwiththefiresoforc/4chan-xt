@@ -123,9 +123,7 @@ export default class Post {
       this.thread.OP = this;
       for (var key of ['isSticky', 'isClosed', 'isArchived']) {
         let selector = g.SITE.selectors.icons[key];
-        if (selector) {
-          this.thread[key] = !!$(selector, this.nodes.info);
-        }
+        if (selector) this.thread[key] = !!$(selector, this.nodes.info);
       }
       if (this.thread.isArchived) {
         this.thread.isClosed = true;
@@ -151,7 +149,7 @@ export default class Post {
     };
     g.SITE.parseInfo?.(this); // parses the tripcode
     if (this.info.tripcode && !this.nodes.tripcode) {
-      if (this.nodes.name) { this.nodes.name.textContent = this.info.name; }
+      if (this.nodes.name) this.nodes.name.textContent = this.info.name;
       const span = $.el('span', { className: 'postertrip', textContent: this.info.tripcode });
       this.nodes.name.insertAdjacentElement('afterend', span);
       span.insertAdjacentText('beforebegin', ' ');
@@ -161,8 +159,8 @@ export default class Post {
     this.info.nameBlock = Conf.Anonymize
       ? 'Anonymous' : `${this.info.name || ''} ${this.info.tripcode || ''}`.trim();
 
-    if (this.info.capcode) { this.info.nameBlock += ` ## ${this.info.capcode}`; }
-    if (this.info.uniqueID) { this.info.nameBlock += ` (ID: ${this.info.uniqueID})`; }
+    if (this.info.capcode) this.info.nameBlock += ` ## ${this.info.capcode}`;
+    if (this.info.uniqueID) this.info.nameBlock += ` (ID: ${this.info.uniqueID})`;
 
     this.parseComment();
     this.parseQuotes();
@@ -181,7 +179,7 @@ export default class Post {
       for (var clone of this.clones) { clone.origin = this; }
     }
 
-    if (!this.isFetchedQuote && (this.ID > this.thread.lastPost)) { this.thread.lastPost = this.ID; }
+    if (!this.isFetchedQuote && (this.ID > this.thread.lastPost)) this.thread.lastPost = this.ID;
 
     if (this.ID < this.thread.lastPost && g.VIEW === 'thread') {
       this.board.posts.insert(this.ID, this);
@@ -232,7 +230,7 @@ export default class Post {
       nodes[key] = $(selector, info);
     }
     g.SITE.parseNodes?.(this, nodes);
-    if (!nodes.uniqueIDRoot) { nodes.uniqueIDRoot = nodes.uniqueID; }
+    if (!nodes.uniqueIDRoot) nodes.uniqueIDRoot = nodes.uniqueID;
 
     return nodes as Node & Record<keyof Post['info'], HTMLElement>;
   }
@@ -261,7 +259,7 @@ export default class Post {
     //   Preceding and following new lines.
     //   Trailing spaces.
     const bq = this.nodes.commentClean.cloneNode(true);
-    if (!Conf['Remove Spoilers'] && !Conf['Reveal Spoilers']) { this.cleanSpoilers(bq); }
+    if (!Conf['Remove Spoilers'] && !Conf['Reveal Spoilers']) this.cleanSpoilers(bq);
     g.SITE.cleanCommentDisplay?.(bq);
     return this.nodesToText(bq).trim().replace(/\s+$/gm, '');
   }
@@ -330,9 +328,7 @@ export default class Post {
         this.files.push(file);
       }
     }
-    if (this.files.length) {
-      return this.file = this.files[0];
-    }
+    if (this.files.length) return this.file = this.files[0];
   }
 
   fileRoots() {
@@ -359,8 +355,8 @@ export default class Post {
       isImage: $.isImage(file.link.href),
       isVideo: $.isVideo(file.link.href)
     });
-    let size  = +file.size.match(/[\d.]+/)[0];
-    let unit  = ['B', 'KB', 'MB', 'GB'].indexOf(file.size.match(/\w+$/)[0]);
+    let size = +file.size.match(/[\d.]+/)[0];
+    let unit = ['B', 'KB', 'MB', 'GB'].indexOf(file.size.match(/\w+$/)[0]);
     while (unit-- > 0) { size *= 1024; }
     file.sizeInBytes = size;
 
@@ -440,9 +436,7 @@ export default class Post {
     }
 
     for (var quotelink of Get.allQuotelinksLinkingTo(this) as HTMLAnchorElement[]) {
-      if ($.hasClass(quotelink, 'deadlink')) {
-        $.rm($('.qmark-dead', quotelink));
-      }
+      if ($.hasClass(quotelink, 'deadlink')) $.rm($('.qmark-dead', quotelink));
       $.rmClass(quotelink, 'deadlink', 'from-archive-link');
     }
   }
@@ -525,7 +519,7 @@ export class PostClone extends Post {
     this.quotes = [...this.origin.quotes];
 
     this.files = [];
-    if (this.origin.files.length) { fileRoots = this.fileRoots(); }
+    if (this.origin.files.length) fileRoots = this.fileRoots();
     for (var originFile of this.origin.files) {
       // Copy values, point to relevant elements.
       file = { ...originFile };
@@ -535,9 +529,9 @@ export class PostClone extends Post {
         file[key] = $(selector, fileRoot);
       }
       file.thumbLink = file.thumb?.parentNode;
-      if (file.thumbLink) { file.fullImage = $('.full-image', file.thumbLink); }
+      if (file.thumbLink) file.fullImage = $('.full-image', file.thumbLink);
       file.videoControls = $('.video-controls', file.text);
-      if (file.videoThumb) { file.thumb.muted = true; }
+      if (file.videoThumb) file.thumb.muted = true;
       this.files.push(file);
     }
 
@@ -545,10 +539,10 @@ export class PostClone extends Post {
       this.file = this.files[0];
 
       // Contract thumbnails in quote preview
-      if (this.file.thumb && contractThumb) { ImageExpand.contract(this); }
+      if (this.file.thumb && contractThumb) ImageExpand.contract(this);
     }
 
-    if (this.origin.isDead) { this.isDead = true; }
+    if (this.origin.isDead) this.isDead = true;
     root.dataset.clone = this.origin.clones.push(this) - 1;
     return this;
   }

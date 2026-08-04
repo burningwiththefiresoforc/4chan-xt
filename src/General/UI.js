@@ -195,7 +195,7 @@ var Menu = (function() {
           }
           break;
         case 37: // Left
-          if (next = $.x('parent::*[contains(@class,"submenu")]/parent::*', entry)) { this.focus(next); }
+          if (next = $.x('parent::*[contains(@class,"submenu")]/parent::*', entry)) this.focus(next);
           break;
         default: return;
       }
@@ -391,9 +391,7 @@ const hoverstart = ({root, el, latestEvent, endEvents, height, width, cb, noRemo
   }).observe(el, {childList: true});
 
   $.on(root, endEvents,   o.hoverend);
-  if ($.x('ancestor::div[contains(@class,"inline")][1]', root)) {
-    $.on(d, 'keydown', o.hoverend);
-  }
+  if ($.x('ancestor::div[contains(@class,"inline")][1]', root)) $.on(d, 'keydown', o.hoverend);
   $.on(root, 'mousemove', o.hover);
 
   // Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=674955
@@ -414,9 +412,9 @@ export var hover = function (e) {
     : Math.max(0, Math.min(this.clientHeight - height, clientY - 120));
 
   let threshold = this.clientWidth / 2;
-  if (!this.isImage) { threshold = Math.max(threshold, this.clientWidth - 400); }
+  if (!this.isImage) threshold = Math.max(threshold, this.clientWidth - 400);
   let marginX = (clientX <= threshold ? clientX : this.clientWidth - clientX) + 45;
-  if (this.isImage) { marginX = Math.min(marginX, this.clientWidth - width); }
+  if (this.isImage) marginX = Math.min(marginX, this.clientWidth - width);
   marginX += 'px';
   const [left, right] = clientX <= threshold ? [marginX, ''] : ['', marginX];
 
@@ -428,7 +426,7 @@ export var hover = function (e) {
 
 export var hoverend = function (e) {
   if (((e.type === 'keydown') && (e.keyCode !== 13)) || (e.target.nodeName === "TEXTAREA")) return;
-  if (!this.noRemove) { $.rm(this.el); }
+  if (!this.noRemove) $.rm(this.el);
   $.off(this.root, this.endEvents, this.hoverend);
   $.off(d, 'keydown', this.hoverend);
   $.off(this.root, 'mousemove', this.hover);

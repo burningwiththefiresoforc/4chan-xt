@@ -31,7 +31,7 @@ const ImageHost = {
     const host = ImageHost.host();
     if (this.file && ImageHost.test(this.file.url.split('/')[2]) && !/\.swf$/.test(this.file.url)) {
       this.file.link.hostname = host;
-      if (this.file.thumbLink) { this.file.thumbLink.hostname = host; }
+      if (this.file.thumbLink) this.file.thumbLink.hostname = host;
       this.file.url = this.file.link.href;
     }
     ImageHost.fixLinks($$('a', this.nodes.comment));
@@ -41,7 +41,7 @@ const ImageHost = {
     for (const link of links) {
       if (ImageHost.test(link.hostname) && !/\.swf$/.test(link.pathname)) {
         const host = ImageHost.host();
-        if (link.hostname !== host) { link.hostname = host; }
+        if (link.hostname !== host) link.hostname = host;
       }
     }
   }

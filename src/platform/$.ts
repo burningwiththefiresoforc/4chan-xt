@@ -58,7 +58,8 @@ $.extend = (object, properties) => {
 $.hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 
 $.getOwn = (obj, key) => {
-  if (Object.prototype.hasOwnProperty.call(obj, key)) { return obj[key]; } else { return undefined; }
+  if (Object.prototype.hasOwnProperty.call(obj, key)) { return obj[key]; }
+  else { return undefined; }
 };
 
 $.ajax = (function() {
@@ -70,8 +71,8 @@ $.ajax = (function() {
   }
 
   return function (url, options={}) {
-    if (options.responseType == null) { options.responseType = 'json'; }
-    if (!options.type) { options.type = (options.form && 'post') || 'get'; }
+    if (options.responseType == null) options.responseType = 'json';
+    if (!options.type) options.type = (options.form && 'post') || 'get';
     // XXX https://forums.lanik.us/viewtopic.php?f=64&t=24173&p=78310
     // url = url.replace(/^((?:https?:)?\/\/(?:\w+\.)?(?:4chan(?:nel)?|4cdn)\.org)\/adv\//, '$1//adv/');
     url = url.replace(/^((?:https?:)?\/\/(?:\w+\.)?(?:4chan|4cdn)\.org)\/adv\//, '$1//adv/');
@@ -91,7 +92,7 @@ $.ajax = (function() {
       r.send(form);
     } catch (err) {
       // XXX Some content blockers in Firefox (e.g. Adblock Plus and NoScript) throw an exception instead of simulating a connection error.
-      if (err.result !== 0x805e0006) { throw err; }
+      if (err.result !== 0x805e0006) throw err;
       r.onloadend = onloadend;
       $.queueTask($.event, 'error',   null, r);
       $.queueTask($.event, 'loadend', null, r);
@@ -108,9 +109,7 @@ $.whenModified = function(url, bucket, cb, options={}) {
   let t = $.lastModified[bucket]?.[url];
   const {timeout, ajax} = options;
   const headers = dict();
-  if (t != null) {
-    headers['If-Modified-Since'] = t;
-  }
+  if (t != null) headers['If-Modified-Since'] = t;
   const r = (ajax || $.ajax)(url, {
     onloadend() {
       ($.lastModified[bucket] || ($.lastModified[bucket] = dict()))[url] = this.getResponseHeader('Last-Modified');
@@ -136,9 +135,7 @@ $.whenModified = function(url, bucket, cb, options={}) {
       return req;
     }
     const onloadend = function() {
-      if (!this.status) {
-        delete reqs[url];
-      }
+      if (!this.status) delete reqs[url];
       for (cb of this.callbacks) {
         (cb => $.queueTask(() => cb.call(this, {isCached: false})))(cb);
       }
@@ -150,9 +147,7 @@ $.whenModified = function(url, bucket, cb, options={}) {
   };
   return $.cleanCache = function(testf) {
     for (var url in reqs) {
-      if (testf(url)) {
-        delete reqs[url];
-      }
+      if (testf(url)) delete reqs[url];
     }
   };
 })();
@@ -197,7 +192,7 @@ $.onExists = (root, selector, cb) => {
 
 $.addStyle = (css, id, test='head') => {
   const style = $.el('style', {textContent: css});
-  if (id != null) { style.id = id; }
+  if (id != null) style.id = id;
   $.onExists(doc, test, () => $.add(d.head, style));
   return style;
 };
@@ -218,12 +213,12 @@ $.addCSP = (policy) => {
 };
 
 $.x = (path, root) => {
-  if (!root) { root = d.body; }
+  if (!root) root = d.body;
   return d.evaluate(path, root, null, 8, null).singleNodeValue;
 };
 
 $.X = (path, root) => {
-  if (!root) { root = d.body; }
+  if (!root) root = d.body;
   return d.evaluate(path, root, null, 7, null);
 };
 
@@ -265,9 +260,7 @@ $.el = function <K extends keyof HTMLElementTagNameMap>(
 };
 
 $.nodes = (nodes) => {
-  if (!(nodes instanceof Array)) {
-    return nodes;
-  }
+  if (!(nodes instanceof Array)) return nodes;
   const frag = $.frag();
   for (var node of nodes) {
     frag.appendChild(node);
@@ -355,9 +348,7 @@ $.debounce = function(wait, fn) {
   return function() {
     args = arguments;
     that = this;
-    if (lastCall < (Date.now() - wait)) {
-      return exec();
-    }
+    if (lastCall < (Date.now() - wait)) return exec();
     // stop current reset
     clearTimeout(timeout);
     // after wait, let next invocation execute immediately
@@ -405,7 +396,7 @@ $.global = async function(fn: string, data?: Record<string, string>) {
     if (doc) {
       const script = $.el('script',
         {textContent: `(${PageContextFunctions[fn]})(document.currentScript.dataset);`});
-      if (data) { $.extend(script.dataset, data); }
+      if (data) $.extend(script.dataset, data);
       $.add((d.head || doc), script);
       $.rm(script);
       return script.dataset;
@@ -448,7 +439,7 @@ $.hasAudio = video =>
 $.luma = rgb => (rgb[0] * 0.299) + (rgb[1] * 0.587) + (rgb[2] * 0.114);
 
 $.unescape = function(text) {
-  if (text == null) { return text; }
+  if (text == null) return text;
   return text.replace(/<[^>]*>/g, '').replace(/&(amp|#039|quot|lt|gt|#44);/g, c => ({'&amp;': '&', '&#039;': "'", '&quot;': '"', '&lt;': '<', '&gt;': '>', '&#44;': ','})[c]);
 };
 
@@ -456,15 +447,15 @@ $.isImage = url => /\.(jpe?g|jfif|png|gif|bmp|webp|avif|jxl)$/i.test(url);
 $.isVideo = url => /\.(webm|mp4|ogv)$/i.test(url);
 
 $.engine = (function() {
-  if (/Edge\//.test(navigator.userAgent)) { return 'edge'; }
-  if (/Chrome\//.test(navigator.userAgent)) { return 'blink'; }
-  if (/WebKit\//.test(navigator.userAgent)) { return 'webkit'; }
-  if (/Gecko\/|Goanna/.test(navigator.userAgent)) { return 'gecko'; } // Goanna = Pale Moon 26+
+  if (/Edge\//.test(navigator.userAgent)) return 'edge';
+  if (/Chrome\//.test(navigator.userAgent)) return 'blink';
+  if (/WebKit\//.test(navigator.userAgent)) return 'webkit';
+  if (/Gecko\/|Goanna/.test(navigator.userAgent)) return 'gecko'; // Goanna = Pale Moon 26+
 })();
 
 $.hasStorage = (function() {
   try {
-    if (localStorage.getItem(g.NAMESPACE + 'hasStorage') === 'true') { return true; }
+    if (localStorage.getItem(g.NAMESPACE + 'hasStorage') === 'true') return true;
     localStorage.setItem(g.NAMESPACE + 'hasStorage', 'true');
     return localStorage.getItem(g.NAMESPACE + 'hasStorage') === 'true';
   } catch (error) {
@@ -491,11 +482,7 @@ $.oneItemSugar = fn => (function(key, val, cb) {
 
 $.syncing = dict();
 
-$.securityCheck = function(data) {
-  if (location.protocol !== 'https:') {
-    return delete data['Redirect to HTTPS'];
-  }
-};
+$.securityCheck = (data) => { if (location.protocol !== 'https:') delete data['Redirect to HTTPS']; };
 
 if (platform === 'crx') {
   // https://developer.chrome.com/extensions/storage.html
@@ -520,9 +507,7 @@ if (platform === 'crx') {
 
   $.crxWorking = function() {
     try {
-      if (chrome.runtime.getManifest()) {
-        return true;
-      }
+      if (chrome.runtime.getManifest()) return true;
     } catch (error) {}
     if (!$.crxWarningShown) {
       const msg = $.el('div',
@@ -535,20 +520,16 @@ if (platform === 'crx') {
   };
 
   $.get = $.oneItemSugar(function(data, cb) {
-    if (!$.crxWorking()) { return; }
+    if (!$.crxWorking()) return;
     const results = {};
     const get = function(area) {
       let keys = Object.keys(data);
       // XXX slow performance in Firefox
-      if (($.engine === 'gecko') && (area === 'sync') && (keys.length > 3)) {
-        keys = null;
-      }
+      if (($.engine === 'gecko') && (area === 'sync') && (keys.length > 3)) keys = null;
       return chrome.storage[area].get(keys, function(result) {
         let key;
         result = dict.clone(result);
-        if (chrome.runtime.lastError) {
-          c.error(chrome.runtime.lastError.message);
-        }
+        if (chrome.runtime.lastError) c.error(chrome.runtime.lastError.message);
         if (keys === null) {
           const result2 = dict();
           for (key in result) { var val = result[key]; if ($.hasOwn(data, key)) { result2[key] = val; } }
@@ -579,10 +560,8 @@ if (platform === 'crx') {
     unescape(encodeURIComponent(JSON.stringify(key))).length + unescape(encodeURIComponent(JSON.stringify(value))).length > chrome.storage.sync.QUOTA_BYTES_PER_ITEM;
 
     $.delete = function(keys) {
-      if (!$.crxWorking()) { return; }
-      if (typeof keys === 'string') {
-        keys = [keys];
-      }
+      if (!$.crxWorking()) return;
+      if (typeof keys === 'string') keys = [keys];
       for (var key of keys) {
         delete items.local[key];
         delete items.sync[key];
@@ -595,10 +574,9 @@ if (platform === 'crx') {
     var setArea = function(area, cb) {
       const data = dict();
       $.extend(data, items[area]);
-      if (!Object.keys(data).length || (timeout[area] > Date.now())) { return; }
+      if (!Object.keys(data).length || (timeout[area] > Date.now())) return;
       return chrome.storage[area].set(data, function() {
-        let err;
-        let key;
+        let err, key;
         if (err = chrome.runtime.lastError) {
           c.error(err.message);
           setTimeout(setArea, MINUTE, area);
@@ -630,17 +608,15 @@ if (platform === 'crx') {
     });
 
     return $.clear = function(cb) {
-      if (!$.crxWorking()) { return; }
+      if (!$.crxWorking()) return;
       items.local = dict();
       items.sync =  dict();
       let count = 2;
       let err   = null;
       const done  = function() {
-        if (chrome.runtime.lastError) {
-          c.error(chrome.runtime.lastError.message);
-        }
-        if (err == null) { err = chrome.runtime.lastError; }
-        if (!--count) { return cb?.(err); }
+        if (chrome.runtime.lastError) c.error(chrome.runtime.lastError.message);
+        if (err == null) err = chrome.runtime.lastError;
+        if (!--count) return cb?.(err);
       };
       chrome.storage.local.clear(done);
       return chrome.storage.sync.clear(done);
@@ -658,9 +634,7 @@ if (platform === 'crx') {
     $.on($.syncChannel, 'message', e => {
       for (const key in e.data) {
         const cb = $.syncing[key];
-        if (cb) {
-          cb(dict.json(JSON.stringify(e.data[key])), key);
-        }
+        if (cb) cb(dict.json(JSON.stringify(e.data[key])), key);
       }
     });
 
@@ -670,9 +644,7 @@ if (platform === 'crx') {
 
     $.delete = function(keys, cb) {
       let key;
-      if (!(keys instanceof Array)) {
-        keys = [keys];
-      }
+      if (!(keys instanceof Array)) keys = [keys];
       Promise.all(keys.map(key => GM.deleteValue(g.NAMESPACE + key))).then(function() {
         const items = dict();
         for (key of keys) items[key] = undefined;
@@ -686,9 +658,7 @@ if (platform === 'crx') {
       return Promise.all(keys.map((key) => GM.getValue(g.NAMESPACE + key))).then(function(values) {
         for (let i = 0; i < values.length; i++) {
           var val = values[i];
-          if (val) {
-            items[keys[i]] = dict.json(val);
-          }
+          if (val) items[keys[i]] = dict.json(val);
         }
         return cb(items);
       });
@@ -726,25 +696,25 @@ if (platform === 'crx') {
         GM_setValue(key, val);
         if (key in $.syncing) {
           $.oldValue[key]   = val;
-          if ($.hasStorage) { return localStorage.setItem(key, val); } // for `storage` events
+          if ($.hasStorage) return localStorage.setItem(key, val); // for `storage` events
         }
       };
       $.deleteValue = function(key) {
         GM_deleteValue(key);
         if (key in $.syncing) {
           delete $.oldValue[key];
-          if ($.hasStorage) { return localStorage.removeItem(key); } // for `storage` events
+          if ($.hasStorage) return localStorage.removeItem(key); // for `storage` events
         }
       };
-      if (!$.hasStorage) { $.cantSync = true; }
+      if (!$.hasStorage) $.cantSync = true;
     } else if ($.hasStorage) {
       $.oldValue = dict();
       $.setValue = function(key, val) {
-        if (key in $.syncing) { $.oldValue[key]   = val; }
+        if (key in $.syncing) $.oldValue[key]   = val;
         return localStorage.setItem(key, val);
       };
       $.deleteValue = function(key) {
-        if (key in $.syncing) { delete $.oldValue[key]; }
+        if (key in $.syncing) delete $.oldValue[key];
         return localStorage.removeItem(key);
       };
     } else {
@@ -756,7 +726,7 @@ if (platform === 'crx') {
     if (typeof GM_addValueChangeListener !== 'undefined' && GM_addValueChangeListener !== null) {
       $.sync = (key, cb) => $.syncing[key] = GM_addValueChangeListener(g.NAMESPACE + key, function(key2, oldValue, newValue, remote) {
         if (remote) {
-          if (newValue !== undefined) { newValue = dict.json(newValue); }
+          if (newValue !== undefined) newValue = dict.json(newValue);
           return cb(newValue, key);
         }
       });
@@ -771,13 +741,13 @@ if (platform === 'crx') {
       (function() {
         const onChange = function({key, newValue}) {
           let cb;
-          if (!(cb = $.syncing[key])) { return; }
+          if (!(cb = $.syncing[key])) return;
           if (newValue != null) {
-            if (newValue === $.oldValue[key]) { return; }
+            if (newValue === $.oldValue[key]) return;
             $.oldValue[key] = newValue;
             return cb(dict.json(newValue), key.slice(g.NAMESPACE.length));
           } else {
-            if ($.oldValue[key] == null) { return; }
+            if ($.oldValue[key] == null) return;
             delete $.oldValue[key];
             return cb(undefined, key.slice(g.NAMESPACE.length));
           }
@@ -798,9 +768,7 @@ if (platform === 'crx') {
     }
 
     $.delete = function(keys) {
-      if (!(keys instanceof Array)) {
-        keys = [keys];
-      }
+      if (!(keys instanceof Array)) keys = [keys];
       for (var key of keys) {
         $.deleteValue(g.NAMESPACE + key);
       }
@@ -816,9 +784,7 @@ if (platform === 'crx') {
             items[key] = dict.json(val2);
           } catch (err) {
             // XXX https://github.com/ccd0/4chan-x/issues/2218
-            if (!/^(?:undefined)*$/.test(val2)) {
-              throw err;
-            }
+            if (!/^(?:undefined)*$/.test(val2)) throw err;
           }
         }
       }

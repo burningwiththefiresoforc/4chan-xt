@@ -91,7 +91,7 @@ export default class DataBoard {
       this.changes = [];
       this.data.version = (this.data.version || 0) + 1;
       return $.set(this.key, this.data, () => {
-        if (needSync) { this.sync?.(); }
+        if (needSync) this.sync?.();
         return cb?.();
       });
     });
@@ -109,7 +109,7 @@ export default class DataBoard {
   }
 
   delete({siteID, boardID, threadID, postID}, cb) {
-    if (!siteID) { siteID = g.SITE.ID; }
+    if (!siteID) siteID = g.SITE.ID;
     if (!this.data[siteID]) return;
     this.save(() => {
       if (postID) {
@@ -143,7 +143,7 @@ export default class DataBoard {
   }
 
   setUnsafe({ siteID, boardID, threadID, postID, val }: PostInfo & { val?: any }) {
-    if (!siteID) { siteID = g.SITE.ID; }
+    if (!siteID) siteID = g.SITE.ID;
     if (!this.data[siteID]) this.data[siteID] = { boards: dict() };
     const boards = this.data[siteID].boards;
     if (postID !== undefined) {
@@ -242,7 +242,7 @@ export default class DataBoard {
       for (var page of response1) {
         for (var thread of page.threads) {
           ID = thread.no;
-          if (ID in board) { threads[ID] = board[ID]; }
+          if (ID in board) threads[ID] = board[ID];
         }
       }
     }

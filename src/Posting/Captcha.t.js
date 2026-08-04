@@ -62,17 +62,11 @@ const CaptchaT = {
       }
     }
     let el = $('#t-msg, #t-task');
-    if (!response['t-response'] && !(el && /Verification not required/i.test(el.textContent))) {
-      response = null;
-    }
+    if (!response['t-response'] && !(el && /Verification not required/i.test(el.textContent))) response = null;
     return response;
   },
 
-  setUsed() {
-    if (this.isEnabled && this.nodes.container) {
-      $.global('TCaptchaClearChallenge');
-    }
-  },
+  setUsed() { if (this.isEnabled && this.nodes.container) $.global('TCaptchaClearChallenge'); },
 
   occupied() { return !!this.nodes.container; }
 };
