@@ -16,6 +16,8 @@ Please send pull requests if you think you can optimize or improve the function 
 
 [CONTRIBUTE](https://github.com/burningwiththefiresoforc/4chan-xt/blob/project-XT/CONTRIBUTING.md)
 
+[Violentmonkey](https://github.com/violentmonkey/violentmonkey) or [Greasemonkey](https://github.com/greasemonkey/greasemonkey) are highly recommended over Tampermonkey as [Tampermonkey is closed source and collects a huge amount of telemetry](https://github.com/Tampermonkey/tampermonkey/issues/1515).
+
 Credit to
 
 [no1d](https://github.com/no1d) -- [Soundpost on hover](https://github.com/TuxedoTako/4chan-xt/pull/204)
