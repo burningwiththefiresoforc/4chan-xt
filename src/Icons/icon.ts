@@ -35,12 +35,12 @@ import { svgPathData as arrowUpLongSvg, width as arrowUpLongW, height as arrowUp
 import { svgPathData as arrowDownLongSvg, width as arrowDownLongW, height as arrowDownLongH } from "@fas/faArrowDownLong";
 
 //linkification
-import { body as peerBody, width as peerW, height as peerH } from './Assets/linkify.peertube.svg'; // svgregpo.com
-import { body as streamBody, width as streamW, height as streamH } from './Assets/linkify.streamable.svg'; // streamable.com
-import { body as bitchBody, width as bitchW, height as bitchH } from './Assets/linkify.bitchute.svg'; // github.com/jerryjappinen/lateralnord-svg
-import { body as clypBody, width as clypW, height as clypH } from './Assets/linkify.clyp.svg'; // svgrepo.com
-import { body as pbBody, width as pbW, height as pbH } from './Assets/linkify.pastebin.svg'; // thesvg.org
-import { body as twitchBody, width as twitchW, height as twitchH } from './Assets/linkify.twitchtv.svg'; // vectorlogo.zone
+import { body as peerBody, width as peerW, height as peerH } from './Assets/linkify.peertube.svg';
+import { body as streamBody, width as streamW, height as streamH } from './Assets/linkify.streamable.svg';
+import { body as bitchBody, width as bitchW, height as bitchH } from './Assets/linkify.bitchute.svg';
+import { body as clypBody, width as clypW, height as clypH } from './Assets/linkify.clyp.svg';
+import { body as pbBody, width as pbW, height as pbH } from './Assets/linkify.pastebin.svg';
+import { body as twitchBody, width as twitchW, height as twitchH } from './Assets/linkify.twitchtv.svg';
 import { svgPathData as vidlSvg, width as vidlW, height as vidlH } from '@fas/faPlay';
 import { svgPathData as vocaSvg, width as vocaW, height as vocaH } from '@fas/faMicrophone';
 import { svgPathData as imgSvg, width as imgW, height as imgH } from "@fas/faFileImage";

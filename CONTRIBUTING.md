@@ -1,6 +1,6 @@
 ## Reporting bugs
 
-Bug reports and feature requests for 4chan XT are tracked at **https://github.com/TuxedoTako/4chan-xt/issues?q=is%3Aopen+sort%3Aupdated-desc**.
+Bug reports and feature requests for 4chan XT are tracked [here](https://github.com/burningwiththefiresoforc/4chan-xt/issues?q=is%3Aopen+sort%3Aupdated-desc).
 
 You can submit a bug report / feature request via your Github account.
 
@@ -8,7 +8,7 @@ If you're reporting a bug, the more detail you can give, the better. If I can't 
 
 1. Include precise steps to reproduce the problem, with the expected and actual results.
 2. Make sure your browser, 4chan X, and userscript manager (e.g. Greasemonkey, ViolentMoney, or Tampermonkey) are up to date. **Include the versions you're using in bug reports.**
-3. Open your console with Shift+Control+J (⇧⌘J on OS X Firefox, ⌘⌥J on OS X Chromium), and **look for error messages**, especially ones that occur at the same time as the bug. Include these in your bug report. If you're using Firefox, be sure to check the browser console (Shift+Control+J), not just the web console (Shift+Control+K) as errors may not show up in the latter. Messages about "Content Security Policy" are expected and can be ignored.
+3. Open your console with F12 or Shift+Control+J (⇧⌘J on OS X Firefox, ⌘⌥J on OS X Chromium), and **look for error messages**, especially ones that occur at the same time as the bug. Include these in your bug report. If you're using Firefox, be sure to check the browser console (Shift+Control+J), not just the web console (Shift+Control+K) as errors may not show up in the latter. Messages about "Content Security Policy" are expected and can be ignored.
 4. If other people (including me) aren't having your problem, **test whether it happens in a fresh profile**. Here are instructions for [Firefox](https://support.mozilla.org/en-US/kb/profile-manager-create-and-remove-firefox-profiles) and [Chromium](https://developer.chrome.com/devtools/docs/clean-testing-environment).
 5. **Please mention any other extensions / scripts you are using.** To check if a bug is due to a conflict with another extension, temporarily disable any other extensions and userscripts. If the bug goes away, turn them back on one by one until you find the one causing the problem.
 6. To test if the bug occurs under the default settings or only with specific settings, back up your settings and reset them using the **Export** and **Reset Settings** links in the settings panel. If the bug only occurs under specific settings, upload your exported settings to a site like https://paste.installgentoo.com/, and link to it in your bug report. If your settings contains sensitive information (e.g. personas), edit the text file manually.
@@ -42,10 +42,10 @@ If you're reporting a bug, the more detail you can give, the better. If I can't 
 - Commit your changes: `git commit -a`
 - Open a pull request on GitHub.
 
-Pull requests to archive.json should be sent upstream: https://github.com/4chenz/archives.json
+Pull requests to archive.json should be sent [upstream](https://github.com/4chenz/archives.json).
 4chan XT updates from there automatically.
 
 ### More info
 
-Further documentation is available at the wiki for the original 4chan X: https://github.com/ccd0/4chan-x/wiki/Developer-Documentation.
+Further documentation is available at the [wiki](https://github.com/ccd0/4chan-x/wiki) for the original 4chan X.
 At the moment 4chan XT doesn't have its own wiki yet.

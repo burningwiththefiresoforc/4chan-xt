@@ -1,5 +1,38 @@
 Please send pull requests if you think you can optimize or improve the function of this script. It's got like 15 years of legacy and a conversion from Coffeescript to Typescript. I'm going to make the primary focus of this script INCREMENTAL optimization and modernization. Conversion to TS was also never completed. Right now the source is a maze of circular dependencies and little documentation.
 
+[LICENSE](https://github.com/burningwiththefiresoforc/4chan-xt/blob/project-XT/LICENSE)
+
+[CHANGELOG](https://github.com/burningwiththefiresoforc/4chan-xt/blob/project-XT/CHANGELOG.md)
+
+[INSTALL](https://github.com/burningwiththefiresoforc/4chan-xt/raw/refs/heads/project-XT/builds/4chan-XT.user.js)
+
+[INSTALL (minified, recommended)](https://github.com/burningwiththefiresoforc/4chan-xt/raw/refs/heads/project-XT/builds/4chan-XT.min.user.js)
+
+[BUG REPORT](https://github.com/burningwiththefiresoforc/4chan-xt/issues)
+
+[4CHAN-XT FAQ](https://github.com/TuxedoTako/4chan-xt/wiki/Frequently-Asked-Questions)
+
+[4CHAN-X FAQ](https://github.com/ccd0/4chan-x/wiki/Frequently-Asked-Questions)
+
+[CONTRIBUTE](https://github.com/burningwiththefiresoforc/4chan-xt/blob/project-XT/CONTRIBUTING.md)
+
+Credit to
+
+[no1d](https://github.com/no1d) -- [Soundpost on hover](https://github.com/TuxedoTako/4chan-xt/pull/204)
+
+[Yurei TZK](https://github.com/yureitzk) -- [Image rotation controls](https://github.com/TuxedoTako/4chan-xt/pull/198)
+
+[Audrey Drake](https://github.com/RalphORama) -- [Gallery image dimensions](https://github.com/ccd0/4chan-x/pull/3391) (Originally for 4chan-X)
+
+[Nick S. B.](https://github.com/nick-s-b) -- I stole their [desuarchive fix](https://github.com/nick-s-b/4chan-xt/commit/dfb3e1d751f6d2e8d7f9593fc30782f7734ba49d)
+
+[Kalle Leskinen](https://github.com/KalleLeskinen) -- Created the [desuarchive fix](https://github.com/nick-s-b/4chan-xt/pull/6)
+
+[figamin](https://github.com/figamin) -- I stole their [WEBM controls fix](https://github.com/figamin/Allchan-XT-Plus/commit/3c7f078c9d012afffc000517dc76c3f16d6463e5)
+
+[RyanHx](https://github.com/RyanHx) -- Created the [WEBM controls fix](https://github.com/figamin/Allchan-XT-Plus/pull/1)
+
+
 ### TODO
 
 <details>

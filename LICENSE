@@ -2,12 +2,12 @@
 * 4chan XT
 *
 * Licensed under the MIT license.
-* https://github.com/TuxedoTako/4chan-xt/blob/project-XT/LICENSE
+* https://github.com/burningwiththefiresoforc/4chan-xt/blob/project-XT/LICENSE
 *
 * 4chan X Copyright © 2009-2023 ccd0
 * https://github.com/ccd0/4chan-x
 * Appchan X Copyright © 2013-2016 Zixaphir <zixaphirmoxphar@gmail.com>
-* http://zixaphir.github.io/appchan-x/ 
+* http://zixaphir.github.io/appchan-x/
 * 4chan x Copyright © 2009-2011 James Campos <james.r.campos@gmail.com>
 * https://github.com/aeosynth/4chan-x
 * 4chan x Copyright © 2012-2014 Nicolas Stepien <stepien.nicolas@gmail.com>
@@ -17,7 +17,9 @@
 * 4chan x Copyright © 2012-2013 ihavenoface
 * http://ihavenoface.github.io/4chan-x/
 * 4chan SS Copyright © 2011-2013 Ahodesuka
-* https://github.com/ahodesuka/4chan-Style-Script/ 
+* https://github.com/ahodesuka/4chan-Style-Script/
+* 4chan-XT Copyright © 2023-2026 TuxedoTako
+* https://github.com/TuxedoTako/4chan-xt
 *
 * Permission is hereby granted, free of charge, to any person
 * obtaining a copy of this software and associated documentation
@@ -63,6 +65,14 @@
 * AppleBloom
 * detharonil
 * TuxedoTako
+* no1d
+* yureitzk
+* RalphORama
+* KalleLeskinen
+* RyanHx
+* figamin
+* nick-s-b
+* burningwiththefiresoforc
 *
 * All the people who've taken the time to write bug reports.
 *
@@ -72,6 +82,8 @@
 /*
 * Contains data from external sources:
 *
+* This fork contains LLM generated code.
+*
 * src/Monitoring/ThreadUpdater/beep.wav from http://freesound.org/people/pierrecartoons1979/sounds/90112/
 *   cc-by-nc-3.0
 *
@@ -79,4 +91,13 @@
 *   license: CC BY 4.0 (https://fontawesome.com/license/free#icons)
 *
 * Icons used to identify various websites are property of the respective websites.
+* Sources for several of the SVG icons:
+*
+* https://www.svgrepo.com/svg/306545/peertube
+* https://raw.githubusercontent.com/jerryjappinen/lateralnord-svg/refs/heads/master/Bitchute.svg
+* https://www.svgrepo.com/svg/330172/clyp
+* https://thesvg.org/icon/pastebin?variant=mono
+* https://www.vectorlogo.zone/logos/twitch/
+* https://streamable.com/
+*
 */
