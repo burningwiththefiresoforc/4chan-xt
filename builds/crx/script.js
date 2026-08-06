@@ -65,6 +65,7 @@
 * AppleBloom
 * detharonil
 * TuxedoTako
+* 4chenz
 * no1d
 * yureitzk
 * RalphORama
@@ -106,8 +107,8 @@
   'use strict';
 
   var version = {
-    "version": "2.30.2",
-    "date": "2026-08-04T09:09:09Z"
+    "version": "2.30.3",
+    "date": "2026-08-06T09:09:09Z"
   }
   ;
 
@@ -15672,7 +15673,6 @@ svg.icon {
           }
       },
       process(node) {
-          let length;
           const test = /[^\s"]+/g;
           const space = /[\s"]/;
           const snapshot = $.X('.//br|.//text()', node);
@@ -15687,8 +15687,10 @@ svg.icon {
                   const { index } = result;
                   let endNode = node;
                   let word = result[0];
+                  let length = index + word.length;
+                  const isMagnet = /^magnet:/i.test(word);
                   // End of node, not necessarily end of space-delimited string
-                  if ((length = index + word.length) === data.length) {
+                  if (length === data.length) {
                       let saved;
                       test.lastIndex = 0;
                       while (saved = snapshot.snapshotItem(i++)) {
@@ -15696,8 +15698,7 @@ svg.icon {
                               let part1 = word.match(/(https?:\/\/)?([a-z\d-]+\.)*[a-z\d-]+$/i);
                               let part2 = snapshot.snapshotItem(i)?.data?.match(/^(\.[a-z\d-]+)*\//i);
                               if (part1 && part2 && ((part1[0] + part2[0]).search(Linkify.regString) === 0)) {
-                                  // link deliberately split
-                                  continue;
+                                  continue; // link deliberately split
                               }
                               else {
                                   break;
@@ -15709,8 +15710,18 @@ svg.icon {
                           ({ data } = saved);
                           let end = space.exec(data);
                           if (end) {
-                              // Set our snapshot and regex to start on this node at this position when the loop resumes
                               word += data.slice(0, end.index);
+                              if (isMagnet && /(?:\?|&)[a-z]{2}=[^&]*$/i.test(word)) {
+                                  const amp = data.indexOf('&', end.index);
+                                  if (amp !== -1) {
+                                      const tail = /^[^\s"]*/.exec(data.slice(amp))[0];
+                                      word += data.slice(end.index, amp + tail.length);
+                                      length = amp + tail.length;
+                                      test.lastIndex = length;
+                                      continue;
+                                  }
+                              }
+                              // Set our snapshot and regex to start on this node at this position when the loop resumes
                               test.lastIndex = (length = end.index);
                               i--;
                               break;
@@ -15802,10 +15813,22 @@ svg.icon {
           };
           const isMagnet = /magnet:/.test(text);
           if (isMagnet) {
-              const dn = new URL(text);
-              props.text = dn.searchParams.get('dn')
-                  ? "[Magnet]" + dn.searchParams.get('dn')
-                  : "[Magnet]" + text;
+              let dnText = null;
+              const dnMatch = text.match(/[?&]dn=([^&]+)/i);
+              if (dnMatch) {
+                  // Clean linebreaks and extra spaces from the raw match
+                  const rawDn = dnMatch[1].replace(/[\r\n]+/g, ' ').trim();
+                  try {
+                      dnText = decodeURIComponent(rawDn);
+                  }
+                  catch {
+                      dnText = rawDn;
+                  }
+                  // Encode dn for href so spaces/newlines don't break the browser link
+                  text = text.replace(dnMatch[0], dnMatch[0].charAt(0) + 'dn=' + encodeURIComponent(dnText));
+              }
+              props.href = text;
+              props.text = dnText ? "[MAGNET] " + dnText : text;
           }
           const a = $.el('a', props);
           // Insert the range into the anchor, the anchor into the range's DOM location, and destroy the range.

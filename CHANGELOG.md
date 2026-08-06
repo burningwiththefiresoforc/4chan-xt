@@ -2,6 +2,10 @@
 
 4chan XT uses a different user script namespace than 4chan X, so to migrate you need to export settings from 4chan X, and import them in XT.
 
+### 2.30.3 (2026-08-06)
+
+- Magnets are now parsed and replaced with their titles if they have them. A side effect of this is that they work better with linkification now.
+
 ### 2.30.2 (2026-08-04)
 
 - Fixed a post highlighting issue. Still not really sure when or why it happened but things seem to be functioning alright now.

@@ -32,6 +32,18 @@ Credit to
 
 [figamin](https://github.com/figamin) && [RyanHx](https://github.com/RyanHx) -- I stole their [WEBM controls fix](https://github.com/figamin/Allchan-XT-Plus/pull/1)
 
+Other features and fixes:
+
+- Icons for embed links are now SVG rather than PNG, making them styleable.
+
+- Tripcodes are a separate element again
+
+- Modernized loopvid and twitframe
+
+- Linkification for magnets works a little better now
+
+- Several other little bugfixes
+
 ### TODO
 
 <details>
