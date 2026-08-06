@@ -45,9 +45,7 @@ const FappeTyme = {
       }
     }
 
-    if (Conf['Werk Tyme']) {
-      $.sync('werk', this.set.bind(this, 'werk'));
-    }
+    if (Conf['Werk Tyme']) $.sync('werk', this.set.bind(this, 'werk'));
 
     Callbacks.Post.push({
       name: 'Fappe Tyme',

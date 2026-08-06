@@ -71,9 +71,7 @@ var DeleteLink = {
 
   linkText(fileOnly) {
     let text = fileOnly ? 'File' : 'Post';
-    if (DeleteLink.auto[+fileOnly][DeleteLink.post.fullID]) {
-      text = `Deleting ${text.toLowerCase()}...`;
-    }
+    if (DeleteLink.auto[+fileOnly][DeleteLink.post.fullID]) text = `Deleting ${text.toLowerCase()}...`;
     return text;
   },
 

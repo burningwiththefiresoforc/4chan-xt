@@ -32,9 +32,7 @@ var CopyTextLink = {
     });
     $.add(d.body, el);
     el.select();
-    try {
-      d.execCommand('copy');
-    } catch (error) {}
+    try { d.execCommand('copy'); } catch (error) {}
     $.rm(el);
   }
 };

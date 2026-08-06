@@ -85,9 +85,7 @@ const Redirect = {
       if (!(response instanceof Array)) response = [response];
       responses[i] = response;
       nloaded++;
-      if (nloaded === urls.length) {
-        return Redirect.parse(responses, cb);
-      }
+      if (nloaded === urls.length) return Redirect.parse(responses, cb);
     });
 
     if (urls.length) {
@@ -177,10 +175,8 @@ const Redirect = {
     }
     if (archive.name.endsWith('arch.b4k.co') || archive.name.endsWith('Desuarchive' || archive.name.endsWith('palanq.win'))) {
       const [timeStamp, ext] = filename.split('.');
-      if (timeStamp.length > 13) {
-        // remove last 3 digits
-        filename = `${timeStamp.slice(0,-3)}.${ext}`;
-      }
+      // remove last 3 digits
+      if (timeStamp.length > 13) filename = `${timeStamp.slice(0,-3)}.${ext}`;
     }
     return `${Redirect.protocol(archive)}${archive.domain}/${boardID}/full_image/${filename}`;
   },

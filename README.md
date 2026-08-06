@@ -26,14 +26,11 @@ Credit to
 
 [Audrey Drake](https://github.com/RalphORama) -- [Gallery image dimensions](https://github.com/ccd0/4chan-x/pull/3391) (Originally for 4chan-X)
 
-[Nick S. B.](https://github.com/nick-s-b) -- I stole their [desuarchive fix](https://github.com/nick-s-b/4chan-xt/commit/dfb3e1d751f6d2e8d7f9593fc30782f7734ba49d)
+[4chenz](https://github.com/4chenz) -- [Magnet link parsing](https://github.com/ccd0/4chan-x/pull/3303) (Originally for 4chan-X)
 
-[Kalle Leskinen](https://github.com/KalleLeskinen) -- Created the [desuarchive fix](https://github.com/nick-s-b/4chan-xt/pull/6)
+[Nick S. B.](https://github.com/nick-s-b) && [Kalle Leskinen](https://github.com/KalleLeskinen) -- I stole their [desuarchive fix](https://github.com/nick-s-b/4chan-xt/pull/6)
 
-[figamin](https://github.com/figamin) -- I stole their [WEBM controls fix](https://github.com/figamin/Allchan-XT-Plus/commit/3c7f078c9d012afffc000517dc76c3f16d6463e5)
-
-[RyanHx](https://github.com/RyanHx) -- Created the [WEBM controls fix](https://github.com/figamin/Allchan-XT-Plus/pull/1)
-
+[figamin](https://github.com/figamin) && [RyanHx](https://github.com/RyanHx) -- I stole their [WEBM controls fix](https://github.com/figamin/Allchan-XT-Plus/pull/1)
 
 ### TODO
 

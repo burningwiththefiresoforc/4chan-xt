@@ -92,9 +92,7 @@ var ImageHover = {
         el.style.maxHeight = `${height}px`;
       }
 
-      if (Conf['Enable sound posts'] && Conf['Allow Sound']) {
-        Sound.setupSoundpost(el, file);
-      }
+      if (Conf['Enable sound posts'] && Conf['Allow Sound']) Sound.setupSoundpost(el, file);
 
       UI.hover({
         root: this,

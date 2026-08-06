@@ -95,13 +95,13 @@ var ImageExpand = {
       };
 
       if (ImageExpand.on = $.hasClass(ImageExpand.EAI, 'expand-all-shortcut')) {
-        ImageExpand.EAI.className   = 'contract-all-shortcut';
-        ImageExpand.EAI.title       = 'Contract All Images';
+        ImageExpand.EAI.className = 'contract-all-shortcut';
+        ImageExpand.EAI.title     = 'Contract All Images';
         Icon.set(ImageExpand.EAI, 'shrink', 'Contract All Images');
         func = ImageExpand.expand;
       } else {
-        ImageExpand.EAI.className   = 'expand-all-shortcut';
-        ImageExpand.EAI.title       = 'Expand All Images';
+        ImageExpand.EAI.className = 'expand-all-shortcut';
+        ImageExpand.EAI.title     = 'Expand All Images';
         Icon.set(ImageExpand.EAI, 'expand', 'Expand All Images');
         func = ImageExpand.contract;
       }
@@ -183,10 +183,8 @@ var ImageExpand = {
         // For images not above us that would be moved above us, scroll to the thumbnail.
         Header.scrollToIfNeeded(post.nodes.root);
       }
-      if (window.scrollX > 0) {
         // If we have scrolled right viewing an expanded image, return to the left.
-        window.scrollBy(-window.scrollX, 0);
-      }
+      if (window.scrollX > 0) window.scrollBy(-window.scrollX, 0);
     }
 
     $.off(el, 'error', ImageExpand.error);
@@ -198,7 +196,7 @@ var ImageExpand = {
         $.off(el, eventName, cb);
       }
     }
-    if (Conf['Restart when Opened']) { ImageCommon.rewind(file.thumb); }
+    if (Conf['Restart when Opened']) ImageCommon.rewind(file.thumb);
     delete file.fullImage;
     $.queueTask(() => {
       // XXX Work around Chrome/Chromium not firing mouseover on the thumbnail.
@@ -275,9 +273,7 @@ var ImageExpand = {
       $.on(el, 'loadedmetadata', () => ImageExpand.completeExpand(post));
     }
 
-    if (Conf['Enable sound posts'] && Conf['Allow Sound']) {
-        Sound.setupSoundpost(el, file);
-    }
+    if (Conf['Enable sound posts'] && Conf['Allow Sound']) Sound.setupSoundpost(el, file);
 
     if (Conf['Image Media Controls']) {
      const controls = $.el('div', MediaControls());
@@ -360,9 +356,7 @@ var ImageExpand = {
     delete file.isExpanding;
 
     // Scroll to keep our place in the thread when images are expanded above us.
-    if (doc.contains(post.nodes.root) && (bottom <= 0)) {
-      window.scrollBy(0, ((scrollY - window.scrollY) + d.body.clientHeight) - oldHeight);
-    }
+    if (doc.contains(post.nodes.root) && (bottom <= 0)) window.scrollBy(0, ((scrollY - window.scrollY) + d.body.clientHeight) - oldHeight);
 
     // Scroll to display full image.
     if (file.scrollIntoView) {
@@ -408,9 +402,7 @@ var ImageExpand = {
       var cb = ImageExpand.videoCB[eventName];
       $.on(post.file.fullImage, eventName, cb);
     }
-    if (post.file.videoControls) {
-      $.on(post.file.videoControls.firstElementChild, 'click', () => ImageExpand.toggle(post));
-    }
+    if (post.file.videoControls) $.on(post.file.videoControls.firstElementChild, 'click', () => ImageExpand.toggle(post));
   },
 
   error() {
@@ -456,9 +448,7 @@ var ImageExpand = {
       const label = UI.checkbox(name, name);
       label.title = desc;
       const input = label.firstElementChild;
-      if (['Fit width', 'Fit height'].includes(name)) {
-        $.on(input, 'change', ImageExpand.cb.setFitness);
-      }
+      if (['Fit width', 'Fit height'].includes(name)) $.on(input, 'change', ImageExpand.cb.setFitness);
       $.event('change', null, input);
       $.on(input, 'change', $.cb.checked);
       return {el: label};

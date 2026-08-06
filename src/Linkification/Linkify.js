@@ -48,9 +48,8 @@ const Linkify = {
   },
 
   process(node) {
-    let length;
-    const test     = /[^\s"]+/g;
-    const space    = /[\s"]/;
+    const test = /[^\s"]+/g;
+    const space = /[\s"]/;
     const snapshot = $.X('.//br|.//text()', node);
     let i = 0;
     const links = [];
@@ -58,65 +57,66 @@ const Linkify = {
       let result;
       let {data} = node;
       if (!data || (node.parentElement.nodeName === "A")) continue;
+        while ((result = test.exec(data))) {
+          const { index } = result;
+          let endNode = node;
+          let word = result[0];
+          let length = index + word.length;
+          const isMagnet = /^magnet:/i.test(word);
 
-      while ((result = test.exec(data))) {
-        const {index} = result;
-        let endNode = node;
-        let word    = result[0];
-        // End of node, not necessarily end of space-delimited string
-        if ((length = index + word.length) === data.length) {
-          let saved;
-          test.lastIndex = 0;
+          // End of node, not necessarily end of space-delimited string
+          if (length === data.length) {
+           let saved;
+           test.lastIndex = 0;
+           while (saved = snapshot.snapshotItem(i++)) {
+             if ((saved.nodeName === 'BR') || ((saved.parentElement.nodeName === 'P') && !saved.previousSibling)) {
+               let part1 = word.match(/(https?:\/\/)?([a-z\d-]+\.)*[a-z\d-]+$/i);
+               let part2 = snapshot.snapshotItem(i)?.data?.match(/^(\.[a-z\d-]+)*\//i);
+               if (part1 && part2 && ((part1[0] + part2[0]).search(Linkify.regString) === 0)) {
+                 continue; // link deliberately split
+               } else {
+                 break;
+               }
+             }
+             if ((saved.parentElement.nodeName === "A") && !Linkify.regString.test(word)) break;
+             endNode = saved;
+             ({data} = saved);
+             let end = space.exec(data);
 
-          while (saved = snapshot.snapshotItem(i++)) {
-            if ((saved.nodeName === 'BR') || ((saved.parentElement.nodeName === 'P') && !saved.previousSibling)) {
-              let part1 = word.match(/(https?:\/\/)?([a-z\d-]+\.)*[a-z\d-]+$/i);
-              let part2 = snapshot.snapshotItem(i)?.data?.match(/^(\.[a-z\d-]+)*\//i);
-              if ( part1 && part2 && ((part1[0] + part2[0]).search(Linkify.regString) === 0)) {
-                // link deliberately split
-                continue;
-              } else {
+             if (end) {
+               word += data.slice(0, end.index);
+
+               if (isMagnet && /(?:\?|&)[a-z]{2}=[^&]*$/i.test(word)) {
+                 const amp = data.indexOf('&', end.index);
+                 if (amp !== -1) {
+                   const tail = /^[^\s"]*/.exec(data.slice(amp))[0];
+                   word += data.slice(end.index, amp + tail.length);
+                   length = amp + tail.length;
+                   test.lastIndex = length;
+                   continue;
+                  }
+                }
+                // Set our snapshot and regex to start on this node at this position when the loop resumes
+                test.lastIndex = (length = end.index);
+                i--;
                 break;
+              } else {
+                ({length} = data);
+                word += data;
               }
             }
-
-            if ((saved.parentElement.nodeName === "A") && !Linkify.regString.test(word)) break;
-
-            endNode = saved;
-            ({data} = saved);
-
-            let end = space.exec(data);
-            if (end) {
-              // Set our snapshot and regex to start on this node at this position when the loop resumes
-              word += data.slice(0, end.index);
-              test.lastIndex = (length = end.index);
-              i--;
-              break;
-            } else {
-              ({length} = data);
-              word    += data;
-            }
           }
-        }
-
-        if (Linkify.regString.test(word)) {
-          links.push(Linkify.makeRange(node, endNode, index, length));
-
-          // #region tests_enabled
-          if (links.length) {
-            Test.assert(() => word === links[links.length - 1]?.toString());
+          if (Linkify.regString.test(word)) {
+            links.push(Linkify.makeRange(node, endNode, index, length));
+            // #region tests_enabled
+            if (links.length) Test.assert(() => word === links[links.length - 1]?.toString());
+            // #endregion
           }
-          // #endregion
+          if (!test.lastIndex || (node !== endNode)) break;
         }
-
-        if (!test.lastIndex || (node !== endNode)) break;
       }
-    }
-
     i = links.length;
-    while (i--) {
-      links[i] = Linkify.makeLink(links[i]);
-    }
+    while (i--) { links[i] = Linkify.makeLink(links[i]); }
     return links;
   },
 
@@ -150,13 +150,13 @@ const Linkify = {
       text = text.slice(i);
       while ((range.startOffset + i) >= range.startContainer.data.length) { i--; }
 
-      if (i) { range.setStart(range.startContainer, range.startOffset + i); }
+      if (i) range.setStart(range.startContainer, range.startOffset + i);
     }
 
     // Clean end of range
     i = 0;
     while (/[)\]}>.,]/.test(t = text.charAt(text.length - (1 + i)))) {
-      if (!/[.,]/.test(t) && !((text.match(/[()\[\]{}<>]/g)).length % 2)) { break; }
+      if (!/[.,]/.test(t) && !((text.match(/[()\[\]{}<>]/g)).length % 2)) break;
       i++;
     }
 
@@ -177,17 +177,42 @@ const Linkify = {
       }) + encodedDomain[2];
     }
 
-    const a = $.el('a', {
+    const props = {
       className: 'linkify',
       rel:       'noreferrer noopener',
       target:    '_blank',
-      href:      text
-    });
+      href:      text,
+    };
+
+    const isMagnet = /magnet:/.test(text);
+    if (isMagnet) {
+      let dnText = null;
+      const dnMatch = text.match(/[?&]dn=([^&]+)/i);
+
+      if (dnMatch) {
+        // Clean linebreaks and extra spaces from the raw match
+        const rawDn = dnMatch[1].replace(/[\r\n]+/g, ' ').trim();
+
+        try {
+          dnText = decodeURIComponent(rawDn);
+        } catch {
+          dnText = rawDn;
+        }
+
+        // Encode dn for href so spaces/newlines don't break the browser link
+        text = text.replace(dnMatch[0], dnMatch[0].charAt(0) + 'dn=' + encodeURIComponent(dnText));
+      }
+
+      props.href = text;
+      props.text = dnText ? "[MAGNET] " + dnText : text;
+    }
+
+    const a = $.el('a', props);
 
     // Insert the range into the anchor, the anchor into the range's DOM location, and destroy the range.
-    $.add(a, range.extractContents());
+    const contents = range.extractContents();
+    if (!isMagnet) $.add(a, contents);
     range.insertNode(a);
-
     return a;
   }
 };

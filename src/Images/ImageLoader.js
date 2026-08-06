@@ -21,14 +21,10 @@ const ImageLoader = {
     });
 
     $.on(d, 'PostsInserted', () => {
-      if (ImageLoader.prefetchEnabled || replace) {
-        g.posts.forEach(ImageLoader.prefetchAll);
-      }
+      if (ImageLoader.prefetchEnabled || replace) g.posts.forEach(ImageLoader.prefetchAll);
     });
 
-    if (Conf['Replace WEBM']) {
-      $.on(d, 'scroll visibilitychange 4chanXInitFinished PostsInserted', this.playVideos);
-    }
+    if (Conf['Replace WEBM']) $.on(d, 'scroll visibilitychange 4chanXInitFinished PostsInserted', this.playVideos);
 
     if (!Conf['Image Prefetching'] || !['index', 'thread'].includes(g.VIEW)) return;
 

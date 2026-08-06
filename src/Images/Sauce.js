@@ -103,7 +103,7 @@ const Sauce = {
         }
 
         if ((key === 'url') && !['%', 'semi'].includes(parameter)) {
-          if (/^javascript:/i.test(parts.url)) { type = JSON.stringify(type); }
+          if (/^javascript:/i.test(parts.url)) type = JSON.stringify(type);
           type = encodeURIComponent(type);
         }
         return type;
@@ -166,9 +166,7 @@ const Sauce = {
       if (['gif', 'jpg', 'jpeg', 'png'].includes(ext)) { return file.url; } else { return file.thumbURL; }
     },
     hMD5: (post, file) => {
-      if (file.MD5) {
-        return Array.from(atob(file.MD5), c => c.charCodeAt(0).toString(16).padStart(2,'0')).join('');
-      }
+      if (file.MD5) return Array.from(atob(file.MD5), c => c.charCodeAt(0).toString(16).padStart(2,'0')).join('');
     },
     board: (post) => post.board.ID,
     name: (post, file) => file.name,

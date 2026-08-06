@@ -75,12 +75,12 @@
 * 4chan XT
 *
 * Licensed under the MIT license.
-* https://github.com/TuxedoTako/4chan-xt/blob/project-XT/LICENSE
+* https://github.com/burningwiththefiresoforc/4chan-xt/blob/project-XT/LICENSE
 *
 * 4chan X Copyright © 2009-2023 ccd0
 * https://github.com/ccd0/4chan-x
 * Appchan X Copyright © 2013-2016 Zixaphir <zixaphirmoxphar@gmail.com>
-* http://zixaphir.github.io/appchan-x/ 
+* http://zixaphir.github.io/appchan-x/
 * 4chan x Copyright © 2009-2011 James Campos <james.r.campos@gmail.com>
 * https://github.com/aeosynth/4chan-x
 * 4chan x Copyright © 2012-2014 Nicolas Stepien <stepien.nicolas@gmail.com>
@@ -90,7 +90,9 @@
 * 4chan x Copyright © 2012-2013 ihavenoface
 * http://ihavenoface.github.io/4chan-x/
 * 4chan SS Copyright © 2011-2013 Ahodesuka
-* https://github.com/ahodesuka/4chan-Style-Script/ 
+* https://github.com/ahodesuka/4chan-Style-Script/
+* 4chan-XT Copyright © 2023-2026 TuxedoTako
+* https://github.com/TuxedoTako/4chan-xt
 *
 * Permission is hereby granted, free of charge, to any person
 * obtaining a copy of this software and associated documentation
@@ -136,6 +138,14 @@
 * AppleBloom
 * detharonil
 * TuxedoTako
+* no1d
+* yureitzk
+* RalphORama
+* KalleLeskinen
+* RyanHx
+* figamin
+* nick-s-b
+* burningwiththefiresoforc
 *
 * All the people who've taken the time to write bug reports.
 *
@@ -145,6 +155,8 @@
 /*
 * Contains data from external sources:
 *
+* This fork contains LLM generated code.
+*
 * src/Monitoring/ThreadUpdater/beep.wav from http://freesound.org/people/pierrecartoons1979/sounds/90112/
 *   cc-by-nc-3.0
 *
@@ -152,6 +164,15 @@
 *   license: CC BY 4.0 (https://fontawesome.com/license/free#icons)
 *
 * Icons used to identify various websites are property of the respective websites.
+* Sources for several of the SVG icons:
+*
+* https://www.svgrepo.com/svg/306545/peertube
+* https://raw.githubusercontent.com/jerryjappinen/lateralnord-svg/refs/heads/master/Bitchute.svg
+* https://www.svgrepo.com/svg/330172/clyp
+* https://thesvg.org/icon/pastebin?variant=mono
+* https://www.vectorlogo.zone/logos/twitch/
+* https://streamable.com/
+*
 */
 
 (function () {
@@ -1799,9 +1820,8 @@
           response = [response];
         responses[i] = response;
         nloaded++;
-        if (nloaded === urls.length) {
+        if (nloaded === urls.length)
           return Redirect.parse(responses, cb);
-        }
       });
       if (urls.length) {
         for (let i = 0; i < urls.length; i++) {
@@ -1886,10 +1906,9 @@
       }
       if (archive.name.endsWith('arch.b4k.co') || archive.name.endsWith('Desuarchive')) {
         const [timeStamp, ext] = filename.split('.');
-        if (timeStamp.length > 13) {
-          // remove last 3 digits
+        // remove last 3 digits
+        if (timeStamp.length > 13)
           filename = `${timeStamp.slice(0, -3)}.${ext}`;
-        }
       }
       return `${Redirect.protocol(archive)}${archive.domain}/${boardID}/full_image/${filename}`;
     },
@@ -13337,9 +13356,8 @@ svg.icon {
             let nrRestored = 0;
             const archivePosts = this.response[g.threadID.toString()].posts;
             for (const [postID, raw] of Object.entries(archivePosts)) {
-              if (RestoreDeletedFromArchive.insert(raw)[1]) {
+              if (RestoreDeletedFromArchive.insert(raw)[1])
                 ++nrRestored;
-              }
             }
             let msg;
             if (nrRestored === 0) {
@@ -15126,9 +15144,8 @@ svg.icon {
                   Header.addShortcut(lc, indicator, 410);
               }
           }
-          if (Conf['Werk Tyme']) {
+          if (Conf['Werk Tyme'])
               $.sync('werk', this.set.bind(this, 'werk'));
-          }
           Callbacks.Post.push({
               name: 'Fappe Tyme',
               cb: this.node
@@ -15277,9 +15294,8 @@ svg.icon {
                       }
                   }
                   if ((key === 'url') && !['%', 'semi'].includes(parameter)) {
-                      if (/^javascript:/i.test(parts.url)) {
+                      if (/^javascript:/i.test(parts.url))
                           type = JSON.stringify(type);
-                      }
                       type = encodeURIComponent(type);
                   }
                   return type;
@@ -15345,9 +15361,8 @@ svg.icon {
               }
           },
           hMD5: (post, file) => {
-              if (file.MD5) {
+              if (file.MD5)
                   return Array.from(atob(file.MD5), c => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
-              }
           },
           board: (post) => post.board.ID,
           name: (post, file) => file.name,
@@ -15949,16 +15964,14 @@ svg.icon {
               while ((range.startOffset + i) >= range.startContainer.data.length) {
                   i--;
               }
-              if (i) {
+              if (i)
                   range.setStart(range.startContainer, range.startOffset + i);
-              }
           }
           // Clean end of range
           i = 0;
           while (/[)\]}>.,]/.test(t = text.charAt(text.length - (1 + i)))) {
-              if (!/[.,]/.test(t) && !((text.match(/[()\[\]{}<>]/g)).length % 2)) {
+              if (!/[.,]/.test(t) && !((text.match(/[()\[\]{}<>]/g)).length % 2))
                   break;
-              }
               i++;
           }
           if (i) {
@@ -15983,14 +15996,24 @@ svg.icon {
                   }
               }) + encodedDomain[2];
           }
-          const a = $.el('a', {
+          const props = {
               className: 'linkify',
               rel: 'noreferrer noopener',
               target: '_blank',
-              href: text
-          });
+              href: text,
+          };
+          const isMagnet = /magnet:/.test(text);
+          if (isMagnet) {
+              const dn = new URL(text);
+              props.text = dn.searchParams.get('dn')
+                  ? "[Magnet]" + dn.searchParams.get('dn')
+                  : "[Magnet]" + text;
+          }
+          const a = $.el('a', props);
           // Insert the range into the anchor, the anchor into the range's DOM location, and destroy the range.
-          $.add(a, range.extractContents());
+          const contents = range.extractContents();
+          if (!isMagnet)
+              $.add(a, contents);
           range.insertNode(a);
           return a;
       }
@@ -16313,9 +16336,8 @@ svg.icon {
         items = (post.nodes.embedlinks = $$('.embedder', post.nodes.comment));
         while ((el = items[i++])) {
           $.on(el, 'click', Embedding.cb.click);
-          if ($.hasClass(el, 'embedded')) {
+          if ($.hasClass(el, 'embedded'))
             Embedding.cb.toggle.call(el);
-          }
         }
       }
       if (Conf['Cover Preview']) {
@@ -16323,9 +16345,8 @@ svg.icon {
         items = $$('.linkify', post.nodes.comment);
         while ((el = items[i++])) {
           let data = Embedding.services(el);
-          if (data) {
+          if (data)
             Embedding.preview(data);
-          }
         }
         return;
       }
@@ -21587,10 +21608,9 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           // For images not above us that would be moved above us, scroll to the thumbnail.
           Header.scrollToIfNeeded(post.nodes.root);
         }
-        if (window.scrollX > 0) {
-          // If we have scrolled right viewing an expanded image, return to the left.
+        // If we have scrolled right viewing an expanded image, return to the left.
+        if (window.scrollX > 0)
           window.scrollBy(-window.scrollX, 0);
-        }
       }
       $.off(el, 'error', ImageExpand.error);
       ImageCommon.pushCache(el);
@@ -21601,9 +21621,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           $.off(el, eventName, cb);
         }
       }
-      if (Conf['Restart when Opened']) {
+      if (Conf['Restart when Opened'])
         ImageCommon.rewind(file.thumb);
-      }
       delete file.fullImage;
       $.queueTask(() => {
         // XXX Work around Chrome/Chromium not firing mouseover on the thumbnail.
@@ -21672,9 +21691,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       } else {
         $.on(el, 'loadedmetadata', () => ImageExpand.completeExpand(post));
       }
-      if (Conf['Enable sound posts'] && Conf['Allow Sound']) {
+      if (Conf['Enable sound posts'] && Conf['Allow Sound'])
         Sound.setupSoundpost(el, file);
-      }
       if (Conf['Image Media Controls']) {
         const controls = $.el('div', MediaControls());
         const [y, x] = Conf.imageMediaControlsPosition.split('-');
@@ -21746,9 +21764,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       file.isExpanded = true;
       delete file.isExpanding;
       // Scroll to keep our place in the thread when images are expanded above us.
-      if (doc.contains(post.nodes.root) && (bottom <= 0)) {
+      if (doc.contains(post.nodes.root) && (bottom <= 0))
         window.scrollBy(0, ((scrollY - window.scrollY) + d.body.clientHeight) - oldHeight);
-      }
       // Scroll to display full image.
       if (file.scrollIntoView) {
         delete file.scrollIntoView;
@@ -21797,9 +21814,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         var cb = ImageExpand.videoCB[eventName];
         $.on(post.file.fullImage, eventName, cb);
       }
-      if (post.file.videoControls) {
+      if (post.file.videoControls)
         $.on(post.file.videoControls.firstElementChild, 'click', () => ImageExpand.toggle(post));
-      }
     },
     error() {
       const post = Get.postFromNode(this);
@@ -21844,9 +21860,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         const label = UI.checkbox(name, name);
         label.title = desc;
         const input = label.firstElementChild;
-        if (['Fit width', 'Fit height'].includes(name)) {
+        if (['Fit width', 'Fit height'].includes(name))
           $.on(input, 'change', ImageExpand.cb.setFitness);
-        }
         $.event('change', null, input);
         $.on(input, 'change', $.cb.checked);
         return { el: label };
@@ -22361,9 +22376,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           el.style.maxWidth = `${width}px`;
           el.style.maxHeight = `${height}px`;
         }
-        if (Conf['Enable sound posts'] && Conf['Allow Sound']) {
+        if (Conf['Enable sound posts'] && Conf['Allow Sound'])
           Sound.setupSoundpost(el, file);
-        }
         UI.hover({
           root: this,
           el,
@@ -22417,13 +22431,11 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               cb: this.node
           });
           $.on(d, 'PostsInserted', () => {
-              if (ImageLoader.prefetchEnabled || replace) {
+              if (ImageLoader.prefetchEnabled || replace)
                   g.posts.forEach(ImageLoader.prefetchAll);
-              }
           });
-          if (Conf['Replace WEBM']) {
+          if (Conf['Replace WEBM'])
               $.on(d, 'scroll visibilitychange 4chanXInitFinished PostsInserted', this.playVideos);
-          }
           if (!Conf['Image Prefetching'] || !['index', 'thread'].includes(g.VIEW))
               return;
           const el = $.el('a', {
@@ -22719,9 +22731,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       },
       linkText(fileOnly) {
           let text = fileOnly ? 'File' : 'Post';
-          if (DeleteLink.auto[+fileOnly][DeleteLink.post.fullID]) {
+          if (DeleteLink.auto[+fileOnly][DeleteLink.post.fullID])
               text = `Deleting ${text.toLowerCase()}...`;
-          }
           return text;
       },
       toggle() {
@@ -24530,8 +24541,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
                               boardID: g.BOARD.ID,
                               threadID: g.THREADID,
                               postID: +location.hash.match(/\d+/)
-                          } // post number or 0
-                          , `/${g.BOARD}/`);
+                          }, `/${g.BOARD}/`); // post number or 0
                       }
                   });
               }
@@ -24574,9 +24584,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               Main.addPostsObserver = new MutationObserver(Main.addPosts);
               Main.addThreadsObserver.observe(board, { childList: true });
               Main.parseThreads($$(s.thread, board), threads, posts, errors);
-              if (errors.length) {
+              if (errors.length)
                   Main.handleErrors(errors);
-              }
               if (g.VIEW === 'thread') {
                   if (g.threadArchived) {
                       threads[0].isArchived = true;
@@ -24644,9 +24653,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           const threadRoots = [];
           for (var record of records) {
               for (var node of record.addedNodes) {
-                  if ((node.nodeType === Node.ELEMENT_NODE) && node.matches(g.SITE.selectors.thread)) {
+                  if ((node.nodeType === Node.ELEMENT_NODE) && node.matches(g.SITE.selectors.thread))
                       threadRoots.push(node);
-                  }
               }
           }
           if (!threadRoots.length)
@@ -24655,9 +24663,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           const posts = [];
           const errors = [];
           Main.parseThreads(threadRoots, threads, posts, errors);
-          if (errors.length) {
+          if (errors.length)
               Main.handleErrors(errors);
-          }
           Main.callbackNodes('Thread', threads);
           Main.callbackNodesDB('Post', posts, () => $.event('PostsInserted', null, records[0].target));
       },
@@ -24712,9 +24719,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               Main.addCatalogThreadsObserver = new MutationObserver(Main.addCatalogThreads);
               Main.addCatalogThreadsObserver.observe(board, { childList: true });
               Main.parseCatalogThreads($$(s.thread, board), threads, errors);
-              if (errors.length) {
+              if (errors.length)
                   Main.handleErrors(errors);
-              }
               Main.callbackNodes('CatalogThreadNative', threads);
           }
           Main.expectInitFinished = true;
@@ -24743,9 +24749,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           const threadRoots = [];
           for (var record of records) {
               for (var node of record.addedNodes) {
-                  if ((node.nodeType === Node.ELEMENT_NODE) && node.matches(g.SITE.selectors.catalog.thread)) {
+                  if ((node.nodeType === Node.ELEMENT_NODE) && node.matches(g.SITE.selectors.catalog.thread))
                       threadRoots.push(node);
-                  }
               }
           }
           if (!threadRoots.length)
@@ -24753,9 +24758,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           const threads = [];
           const errors = [];
           Main.parseCatalogThreads(threadRoots, threads, errors);
-          if (errors.length) {
+          if (errors.length)
               Main.handleErrors(errors);
-          }
           Main.callbackNodes('CatalogThreadNative', threads);
       },
       callbackNodes(klass, nodes) {

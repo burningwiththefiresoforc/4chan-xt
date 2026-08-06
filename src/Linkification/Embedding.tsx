@@ -56,7 +56,7 @@ const Embedding = {
       items = (post.nodes.embedlinks = $$('.embedder', post.nodes.comment));
       while ((el = items[i++])) {
         $.on(el, 'click', Embedding.cb.click);
-        if ($.hasClass(el, 'embedded')) { Embedding.cb.toggle.call(el); }
+        if ($.hasClass(el, 'embedded')) Embedding.cb.toggle.call(el);
       }
     }
     if (Conf['Cover Preview']) {
@@ -64,7 +64,7 @@ const Embedding = {
       items = $$('.linkify', post.nodes.comment);
       while ((el = items[i++])) {
         let data = Embedding.services(el);
-        if (data) { Embedding.preview(data); }
+        if (data) Embedding.preview(data);
       }
       return;
     }

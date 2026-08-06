@@ -461,8 +461,7 @@ var Main = {
               boardID:  g.BOARD.ID,
               threadID: g.THREADID,
               postID:   +location.hash.match(/\d+/)
-            } // post number or 0
-            , `/${g.BOARD}/`);
+            }, `/${g.BOARD}/`); // post number or 0
           }
         });
       }
@@ -500,16 +499,14 @@ var Main = {
       const posts   = [];
       const errors  = [];
 
-      try {
-        g.SITE.preParsingFixes?.(board);
-      } catch (error) {}
+      try { g.SITE.preParsingFixes?.(board); } catch (error) {}
 
       Main.addThreadsObserver = new MutationObserver(Main.addThreads);
       Main.addPostsObserver   = new MutationObserver(Main.addPosts);
       Main.addThreadsObserver.observe(board, {childList: true});
 
       Main.parseThreads($$(s.thread, board), threads, posts, errors);
-      if (errors.length) { Main.handleErrors(errors); }
+      if (errors.length) Main.handleErrors(errors);
 
       if (g.VIEW === 'thread') {
         if (g.threadArchived) {
@@ -577,9 +574,7 @@ var Main = {
     const threadRoots = [];
     for (var record of records) {
       for (var node of record.addedNodes) {
-        if ((node.nodeType === Node.ELEMENT_NODE) && node.matches(g.SITE.selectors.thread)) {
-          threadRoots.push(node);
-        }
+        if ((node.nodeType === Node.ELEMENT_NODE) && node.matches(g.SITE.selectors.thread)) threadRoots.push(node);
       }
     }
     if (!threadRoots.length) return;
@@ -587,7 +582,7 @@ var Main = {
     const posts   = [];
     const errors  = [];
     Main.parseThreads(threadRoots, threads, posts, errors);
-    if (errors.length) { Main.handleErrors(errors); }
+    if (errors.length) Main.handleErrors(errors);
     Main.callbackNodes('Thread', threads);
     Main.callbackNodesDB('Post', posts, () => $.event('PostsInserted', null, records[0].target));
   },
@@ -643,7 +638,7 @@ var Main = {
       Main.addCatalogThreadsObserver.observe(board, {childList: true});
 
       Main.parseCatalogThreads($$(s.thread, board), threads, errors);
-      if (errors.length) { Main.handleErrors(errors); }
+      if (errors.length) Main.handleErrors(errors);
 
       Main.callbackNodes('CatalogThreadNative', threads);
     }
@@ -675,16 +670,14 @@ var Main = {
     const threadRoots = [];
     for (var record of records) {
       for (var node of record.addedNodes) {
-        if ((node.nodeType === Node.ELEMENT_NODE) && node.matches(g.SITE.selectors.catalog.thread)) {
-          threadRoots.push(node);
-        }
+        if ((node.nodeType === Node.ELEMENT_NODE) && node.matches(g.SITE.selectors.catalog.thread)) threadRoots.push(node);
       }
     }
     if (!threadRoots.length) return;
     const threads = [];
     const errors  = [];
     Main.parseCatalogThreads(threadRoots, threads, errors);
-    if (errors.length) { Main.handleErrors(errors); }
+    if (errors.length) Main.handleErrors(errors);
     Main.callbackNodes('CatalogThreadNative', threads);
   },
 

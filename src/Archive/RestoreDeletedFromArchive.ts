@@ -33,9 +33,7 @@ const RestoreDeletedFromArchive = {
         let nrRestored = 0;
         const archivePosts = this.response[g.threadID.toString()].posts as Record<string, RawArchivePost>;
         for (const [postID, raw] of Object.entries(archivePosts)) {
-          if (RestoreDeletedFromArchive.insert(raw)[1]) {
-            ++nrRestored;
-          }
+          if (RestoreDeletedFromArchive.insert(raw)[1]) ++nrRestored;
         }
 
         let msg: string;
