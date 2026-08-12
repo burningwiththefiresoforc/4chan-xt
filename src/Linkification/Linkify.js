@@ -188,21 +188,19 @@ const Linkify = {
     if (isMagnet) {
       let dnText = null;
       const dnMatch = text.match(/[?&]dn=([^&]+)/i);
-
       if (dnMatch) {
         // Clean linebreaks and extra spaces from the raw match
-        const rawDn = dnMatch[1].replace(/[\r\n]+/g, ' ').trim();
+        let rawDn = dnMatch[1].replace(/[\r\n]+/g, ' ').trim();
+        rawDn = rawDn.replace(/\+/g, ' ');
 
         try {
           dnText = decodeURIComponent(rawDn);
         } catch {
           dnText = rawDn;
         }
-
         // Encode dn for href so spaces/newlines don't break the browser link
         text = text.replace(dnMatch[0], dnMatch[0].charAt(0) + 'dn=' + encodeURIComponent(dnText));
       }
-
       props.href = text;
       props.text = dnText ? "[MAGNET] " + dnText : text;
     }
