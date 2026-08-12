@@ -107,8 +107,8 @@
   'use strict';
 
   var version = {
-    "version": "2.30.3",
-    "date": "2026-08-06T09:09:09Z"
+    "version": "2.30.4",
+    "date": "2026-08-12T09:09:09Z"
   }
   ;
 
@@ -15817,7 +15817,8 @@ svg.icon {
               const dnMatch = text.match(/[?&]dn=([^&]+)/i);
               if (dnMatch) {
                   // Clean linebreaks and extra spaces from the raw match
-                  const rawDn = dnMatch[1].replace(/[\r\n]+/g, ' ').trim();
+                  let rawDn = dnMatch[1].replace(/[\r\n]+/g, ' ').trim();
+                  rawDn = rawDn.replace(/\+/g, ' ');
                   try {
                       dnText = decodeURIComponent(rawDn);
                   }
