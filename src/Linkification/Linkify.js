@@ -187,6 +187,7 @@ const Linkify = {
     const isMagnet = /magnet:/.test(text);
     if (isMagnet) {
       let dnText = null;
+      const originalText = text;
       const dnMatch = text.match(/[?&]dn=([^&]+)/i);
       if (dnMatch) {
         // Clean linebreaks and extra spaces from the raw match
@@ -201,8 +202,13 @@ const Linkify = {
         // Encode dn for href so spaces/newlines don't break the browser link
         text = text.replace(dnMatch[0], dnMatch[0].charAt(0) + 'dn=' + encodeURIComponent(dnText));
       }
-      props.href = text;
+      props.href = originalText;
       props.text = dnText ? "[MAGNET] " + dnText : text;
+      try {
+        props.title = decodeURIComponent(text.replace(/\+/g, ' '));
+      } catch {
+        props.title = text;
+      }
     }
 
     const a = $.el('a', props);
