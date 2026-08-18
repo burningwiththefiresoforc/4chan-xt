@@ -185,7 +185,7 @@ const Linkify = {
     };
 
     const isMagnet = /magnet:/.test(text);
-    if (isMagnet) {
+    if (isMagnet && Conf['Magnet Titles']) {
       let dnText = null;
       const originalText = text;
       const dnMatch = text.match(/[?&]dn=([^&]+)/i);
@@ -215,7 +215,7 @@ const Linkify = {
 
     // Insert the range into the anchor, the anchor into the range's DOM location, and destroy the range.
     const contents = range.extractContents();
-    if (!isMagnet) $.add(a, contents);
+    if (!isMagnet || !Conf['Magnet Titles']) $.add(a, contents);
     range.insertNode(a);
     return a;
   }

@@ -163,6 +163,11 @@ const Config = {
           'Speed up performance for boards that have many embeds (e.g /vt/) if turned off',
         2
       ],
+      'Magnet Titles': [
+        true,
+        'Replace magnet links with their actual titles when present.'
+        1
+      ],
       'Cover Preview': [
         true,
         'Show preview of supported links on hover.',
