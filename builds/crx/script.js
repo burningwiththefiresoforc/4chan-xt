@@ -73,6 +73,7 @@
 * RyanHx
 * figamin
 * nick-s-b
+* duanemoody
 * burningwiththefiresoforc
 *
 * All the people who've taken the time to write bug reports.
@@ -107,8 +108,8 @@
   'use strict';
 
   var version = {
-    "version": "2.30.4",
-    "date": "2026-08-12T09:09:09Z"
+    "version": "2.31.0",
+    "date": "2026-08-18T09:09:09Z"
   }
   ;
 
@@ -2602,6 +2603,11 @@ div.boardTitle {
                       'Speed up performance for boards that have many embeds (e.g /vt/) if turned off',
                   2
               ],
+              'Magnet Titles': [
+                  true,
+                  'Replace magnet links with their actual titles when present.',
+                  1
+              ],
               'Cover Preview': [
                   true,
                   'Show preview of supported links on hover.',
@@ -3627,26 +3633,18 @@ current-archive-text:"Archive"]
       }
   };
 
-  // \u00A0 is non breaking space
-  const separator = '\u00A0|\u00A0';
   const settingsHtml = h("div", { id: "fourchanx-settings", class: "dialog" },
     h("nav", null,
       h("div", { class: "sections-list" }),
       h("p", { class: "imp-exp-result warning" }),
       h("div", { class: "credits" },
         h("a", { href: "javascript:;", class: "export" }, "Export"),
-        separator,
         h("a", { href: "javascript:;", class: "import" }, "Import"),
-        separator,
         h("a", { href: "javascript:;", class: "reset" }, "Reset Settings"),
-        separator,
         h("input", { type: "file", hidden: true, accept: ".json,application/json" }),
         h("a", { href: meta.page, target: "_blank" }, meta.name),
-        separator,
         h("a", { href: meta.changelog, target: "_blank" }, g.VERSION),
-        separator,
         h("a", { href: meta.issues, target: "_blank" }, "Issues"),
-        separator,
         h("a", { href: "javascript:;", class: "close", title: "Close" }, "\u2715"))),
     h("div", { class: "section-container" },
       h("section", null)));
@@ -4820,13 +4818,37 @@ audio.controls-added {
 }
 .sections-list {
   flex: 1;
+  border-bottom: 1px solid #ccc;
 }
 .export, .import, .reset {
   cursor: pointer;
   text-decoration: none !important;
 }
+div.sections-list a {
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  border-bottom: none;
+  padding: 0 3px;
+  margin-right: -1px;
+  text-decoration: none !important;
+}
+div.credits a {
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  padding: 0 3px;
+  margin-right: -1px;
+  text-decoration: none !important;
+}
 .tab-selected {
   font-weight: 700;
+  color:#000 !important;
+  background-color:#ccc;
 }
 .section-sauce ul,
 .section-advanced ul {
@@ -15812,8 +15834,9 @@ svg.icon {
               href: text,
           };
           const isMagnet = /magnet:/.test(text);
-          if (isMagnet) {
+          if (isMagnet && Conf['Magnet Titles']) {
               let dnText = null;
+              const originalText = text;
               const dnMatch = text.match(/[?&]dn=([^&]+)/i);
               if (dnMatch) {
                   // Clean linebreaks and extra spaces from the raw match
@@ -15828,13 +15851,19 @@ svg.icon {
                   // Encode dn for href so spaces/newlines don't break the browser link
                   text = text.replace(dnMatch[0], dnMatch[0].charAt(0) + 'dn=' + encodeURIComponent(dnText));
               }
-              props.href = text;
+              props.href = originalText;
               props.text = dnText ? "[MAGNET] " + dnText : text;
+              try {
+                  props.title = decodeURIComponent(text.replace(/\+/g, ' '));
+              }
+              catch {
+                  props.title = text;
+              }
           }
           const a = $.el('a', props);
           // Insert the range into the anchor, the anchor into the range's DOM location, and destroy the range.
           const contents = range.extractContents();
-          if (!isMagnet)
+          if (!isMagnet || !Conf['Magnet Titles'])
               $.add(a, contents);
           range.insertNode(a);
           return a;
@@ -19250,11 +19279,10 @@ $\
           href: 'javascript:;'
         });
         $.on(link, 'click', Settings.openSection.bind(section));
-        links.push(link, $.tn(' | '));
+        links.push(link);
         if (section.title === openSection)
           sectionToOpen = link;
       }
-      links.pop();
       $.add($('.sections-list', dialog), links);
       if (openSection !== 'none')
         (sectionToOpen ? sectionToOpen : links[0]).click();

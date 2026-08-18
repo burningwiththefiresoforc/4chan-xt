@@ -2,6 +2,12 @@
 
 4chan XT uses a different user script namespace than 4chan X, so to migrate you need to export settings from 4chan X, and import them in XT.
 
+### 2.31.0 (2026-08-18)
+
+- Added config option for magnet titles.
+- Magnet titles now reveal the full link as a tooltip.
+- Settings menu is tab-ified now, a little bit easier on the eyes.
+
 ### 2.30.4 (2026-08-12)
 
 - Slight tweak to magnet parsing. "Your+Magnet+Title" -> "Your Magnet Title" unless it's double encoded or something.

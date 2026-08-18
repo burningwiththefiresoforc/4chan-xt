@@ -28,6 +28,8 @@ Credit to
 
 [4chenz](https://github.com/4chenz) -- [Magnet link parsing](https://github.com/ccd0/4chan-x/pull/3303) (Originally for 4chan-X)
 
+[Duane Moody](https://github.com/duanemoody) -- [Settings tabs](https://github.com/ccd0/4chan-x/pull/2867) (Originally for 4chan-X)
+
 [Nick S. B.](https://github.com/nick-s-b) && [Kalle Leskinen](https://github.com/KalleLeskinen) -- I stole their [desuarchive fix](https://github.com/nick-s-b/4chan-xt/pull/6)
 
 [figamin](https://github.com/figamin) && [RyanHx](https://github.com/RyanHx) -- I stole their [WEBM controls fix](https://github.com/figamin/Allchan-XT-Plus/pull/1)
