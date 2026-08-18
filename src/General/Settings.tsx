@@ -82,10 +82,9 @@ var Settings = {
         href: 'javascript:;'
       });
       $.on(link, 'click', Settings.openSection.bind(section));
-      links.push(link, $.tn(' | '));
+      links.push(link);
       if (section.title === openSection) sectionToOpen = link;
     }
-    links.pop();
     $.add($('.sections-list', dialog), links);
     if (openSection !== 'none') (sectionToOpen ? sectionToOpen : links[0]).click();
 

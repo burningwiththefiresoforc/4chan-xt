@@ -506,6 +506,17 @@ div.sections-list a {
   margin-right: -1px;
   text-decoration: none !important;
 }
+div.credits a {
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  padding: 0 3px;
+  margin-right: -1px;
+  text-decoration: none !important;
+}
 .tab-selected {
   font-weight: 700;
   color:#000 !important;
