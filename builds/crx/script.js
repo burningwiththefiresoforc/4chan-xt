@@ -108,8 +108,8 @@
   'use strict';
 
   var version = {
-    "version": "2.31.0",
-    "date": "2026-08-18T09:09:09Z"
+    "version": "2.31.1",
+    "date": "2026-08-19T09:09:09Z"
   }
   ;
 
@@ -1698,12 +1698,8 @@
     file(archive, { boardID, filename }) {
       if (!filename)
         return '';
-      if (boardID === 'f') {
-        filename = encodeURIComponent($.unescape(decodeURIComponent(filename)));
-      } else {
-        if (/[sm]\.jpg$/.test(filename))
-          return '';
-      }
+      if (/[sm]\.jpg$/.test(filename))
+        return '';
       if (archive.name.endsWith('arch.b4k.co') || archive.name.endsWith('Desuarchive')) {
         const [timeStamp, ext] = filename.split('.');
         // remove last 3 digits
@@ -2049,8 +2045,6 @@
         title: type,
         className: `${typeLC}Icon retina`
       });
-      if (g.BOARD.ID === 'f')
-        icon.style.cssText = 'height: 18px; width: 18px;';
       const root = (type !== 'Sticky') && this.isSticky
         ? $('.stickyIcon', this.OP.nodes.info)
         : $('.page-num', this.OP.nodes.info) || this.OP.nodes.quote;
@@ -2568,10 +2562,6 @@ div.boardTitle {
               'Disable Native Extension': [
                   true,
                   `${meta.name} is NOT designed to work with the native extension.`
-              ],
-              'Enable Native Flash Embedding': [
-                  true,
-                  'Activate the native extension\'s Flash embedding if the native extension is disabled.'
               ],
               'Export History': [
                   true,
@@ -3255,7 +3245,6 @@ https://trace.moe/?auto&url=%IMG;text:wait
 #//saucenao.com/search.php?url=%IMG
 
 # "View Same" in archives:
-http://eye.swfchan.com/search/?q=%name;types:swf
 #https://desuarchive.org/_/search/image/%sMD5/
 #https://archive.4plebs.org/_/search/image/%sMD5/
 
@@ -4026,7 +4015,6 @@ current-archive-text:"Archive"]
           });
       },
       suggestions: ['i.4cdn.org', 'is2.4chan.org'],
-      flashHost: () => 'i.4cdn.org',
       thumbHost: () => 'i.4cdn.org',
       host: () => Conf.fourchanImageHost.trim() || 'i.4cdn.org',
       test: (hostname) => (hostname === 'i.4cdn.org') || ImageHost.regex.test(hostname),
@@ -4036,7 +4024,7 @@ current-archive-text:"Archive"]
           if (this.isClone)
               return;
           const host = ImageHost.host();
-          if (this.file && ImageHost.test(this.file.url.split('/')[2]) && !/\.swf$/.test(this.file.url)) {
+          if (this.file && ImageHost.test(this.file.url.split('/')[2])) {
               this.file.link.hostname = host;
               if (this.file.thumbLink)
                   this.file.thumbLink.hostname = host;
@@ -4046,7 +4034,7 @@ current-archive-text:"Archive"]
       },
       fixLinks(links) {
           for (const link of links) {
-              if (ImageHost.test(link.hostname) && !/\.swf$/.test(link.pathname)) {
+              if (ImageHost.test(link.hostname)) {
                   const host = ImageHost.host();
                   if (link.hostname !== host)
                       link.hostname = host;
@@ -5796,7 +5784,6 @@ $site$thread[hidden] + hr {
   content: "Anonymous";
   font-size: 10pt;
 }
-:root.sw-yotsuba.anonymize .flashListing .name::before,
 :root.sw-yotsuba.anonymize .post-last > .post-author:not([class*=capcode])::before {
   font-size: 9pt;
 }
@@ -8192,15 +8179,14 @@ svg.icon {
     hasFocus: false,
     req: undefined,
     selected: undefined,
-    mimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'application/vnd.adobe.flash.movie', 'application/x-shockwave-flash', 'video/webm', 'video/mp4'],
-    validExtension: /\.(jpe?g|png|gif|pdf|swf|webm|mp4)$/i,
+    mimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'video/webm', 'video/mp4'],
+    validExtension: /\.(jpe?g|png|gif|pdf|webm|mp4)$/i,
     typeFromExtension: {
       'jpg': 'image/jpeg',
       'jpeg': 'image/jpeg',
       'png': 'image/png',
       'gif': 'image/gif',
       'pdf': 'application/pdf',
-      'swf': 'application/vnd.adobe.flash.movie',
       'webm': 'video/webm',
       'mp4': 'video/mp4'
     },
@@ -8209,8 +8195,6 @@ svg.icon {
       'image/png': 'png',
       'image/gif': 'gif',
       'application/pdf': 'pdf',
-      'application/vnd.adobe.flash.movie': 'swf',
-      'application/x-shockwave-flash': 'swf',
       'video/webm': 'webm',
       'video/mp4': 'mp4'
     },
@@ -8793,7 +8777,6 @@ svg.icon {
       setNode('customCooldown', '#custom-cooldown-button');
       setNode('dumpButton', '#dump-button');
       setNode('status', '[type=submit]');
-      setNode('flashTag', '[name=filetag]');
       setNode('fileInput', '[type=file]');
       setNode('splitPost', '#split-post');
       const { config } = g.BOARD;
@@ -8937,9 +8920,6 @@ svg.icon {
       post.forceSave();
       let threadID = post.thread;
       const thread = g.BOARD.threads.get(threadID);
-      if ((g.BOARD.ID === 'f') && (threadID === 'new')) {
-        filetag = QR.nodes.flashTag.value;
-      }
       // prevent errors
       if (threadID === 'new') {
         threadID = null;
@@ -9944,7 +9924,7 @@ svg.icon {
         this.originalName = file.name;
         this.file = await this.validateFile(file);
         this.originalName = file.name;
-        if (Conf['Randomize Filename'] && (g.BOARD.ID !== 'f') && (!this.file.name.toLowerCase().includes('[sound='))) {
+        if (Conf['Randomize Filename'] && !this.file.name.toLowerCase().includes('[sound=')) {
           this.randomizeName(false);
         } else {
           this.filename = this.file.name;
@@ -12275,8 +12255,7 @@ svg.icon {
                   var index, modified, replies;
                   ({ page, index, modified, replies } = threads[threadID]);
                   if (Conf['Show Page']) {
-                      var lastPage = g.sites[siteID].isPrunedByAge?.({ siteID, boardID }) ?
-                          threadID === oldest : index >= (nThreads - pageLength);
+                      const lastPage = index >= (nThreads - pageLength);
                       ThreadWatcher.update(siteID, boardID, threadID, { page, lastPage });
                   }
                   if (ThreadWatcher.unreadEnabled && Conf['Show Unread Count']) {
@@ -12808,10 +12787,7 @@ svg.icon {
         media_link = '';
       o.file = {
         name: data.media.media_filename,
-        url: media_link ||
-          (o.boardID === 'f'
-            ? `${location.protocol}//${ImageHost.flashHost()}/${o.boardID}/${encodeURIComponent(E(data.media.media_filename))}`
-            : `${location.protocol}//${ImageHost.host()}/${o.boardID}/${data.media.media_orig}`),
+        url: media_link || `${location.protocol}//${ImageHost.host()}/${o.boardID}/${data.media.media_orig}`,
         height: data.media.media_h,
         width: data.media.media_w,
         MD5: data.media.media_hash,
@@ -12823,8 +12799,6 @@ svg.icon {
       };
       if (!/\.pdf$/.test(o.file.url))
         o.file.dimensions = `${o.file.width}x${o.file.height}`;
-      if ((o.boardID === 'f') && data.media.exif)
-        o.file.tag = JSON.parse(data.media.exif).Tag;
     }
     o.extra = dict();
     const board = g.boards[o.boardID] || new Board(o.boardID);
@@ -13535,9 +13509,7 @@ svg.icon {
   var Index = {
       showHiddenThreads: false,
       changed: {},
-      enabledOn({ siteID, boardID }) {
-          return Conf['JSON Index'] && (g.sites[siteID].software === 'yotsuba') && (boardID !== 'f');
-      },
+      enabledOn: ({ siteID }) => Conf['JSON Index'] && g.sites[siteID].software === 'yotsuba',
       init() {
           let input, inputs, name;
           if (g.VIEW !== 'index')
@@ -15123,10 +15095,6 @@ svg.icon {
               });
           }
           let a = Sauce.link.cloneNode(false);
-          if (g.SITE.areMD5sDeferred?.(post.board) && missing.length && !missing.filter(x => !/^.?MD5$/.test(x)).length) {
-              a.dataset.skip = '1';
-              return a;
-          }
           if (missing.length)
               return null;
           a.href = parts.url;
@@ -17452,29 +17420,27 @@ svg.icon {
               hasAction = true;
           }
           if (g.VIEW === 'index') {
-              if (!g.SITE.isOnePage?.(g.BOARD)) {
-                  if (key === Conf['Next page']) {
-                      if (indexEnabled) {
-                          if (!['paged', 'infinite'].includes(Conf['Index Mode']))
-                              return;
-                          $('.next button', Index.pagelist).click();
-                      }
-                      else {
-                          $(g.SITE.selectors.nav.next)?.click();
-                      }
-                      hasAction = true;
+              if (key === Conf['Next page']) {
+                  if (indexEnabled) {
+                      if (!['paged', 'infinite'].includes(Conf['Index Mode']))
+                          return;
+                      $('.next button', Index.pagelist).click();
                   }
-                  if (key === Conf['Previous page']) {
-                      if (indexEnabled) {
-                          if (!['paged', 'infinite'].includes(Conf['Index Mode']))
-                              return;
-                          $('.prev button', Index.pagelist).click();
-                      }
-                      else {
-                          $(g.SITE.selectors.nav.prev)?.click();
-                      }
-                      hasAction = true;
+                  else {
+                      $(g.SITE.selectors.nav.next)?.click();
                   }
+                  hasAction = true;
+              }
+              if (key === Conf['Previous page']) {
+                  if (indexEnabled) {
+                      if (!['paged', 'infinite'].includes(Conf['Index Mode']))
+                          return;
+                      $('.prev button', Index.pagelist).click();
+                  }
+                  else {
+                      $(g.SITE.selectors.nav.prev)?.click();
+                  }
+                  hasAction = true;
               }
               if (key === Conf['Search form']) {
                   var searchInput = indexEnabled
@@ -18161,10 +18127,10 @@ svg.icon {
         capcode));
     }
     const nameBlockContent = email ? [' ', h("a", { href: `mailto:${email}`, class: "useremail" }, ...nameHtml)] : nameHtml;
-    if (!(boardID === "f" && !o.isReply || capcodeDescription))
-      nameBlockContent.push(' ');
     if (capcodeDescription) {
       nameBlockContent.push(h("img", { src: `${staticPath}${capcodeLC}icon${gifIcon}`, alt: `${capcode} Icon`, title: `This user is ${capcodeDescription}.`, class: "identityIcon retina" }));
+    } else {
+      nameBlockContent.push(' ');
     }
     if (uniqueID && !capcode) {
       nameBlockContent.push(h("span", { class: `posteruid id_${uniqueID}` },
@@ -18183,20 +18149,12 @@ svg.icon {
     if (o.isSticky) {
       const src = `${staticPath}sticky${gifIcon}`;
       postNumContent.push(' ');
-      if (boardID === "f") {
-        postNumContent.push(h("img", { src: src, alt: "Sticky", title: "Sticky", style: "height: 18px; width: 18px;" }));
-      } else {
-        postNumContent.push(h("img", { src: src, alt: "Sticky", title: "Sticky", class: "stickyIcon retina" }));
-      }
+      postNumContent.push(h("img", { src: src, alt: "Sticky", title: "Sticky", class: "stickyIcon retina" }));
     }
     if (o.isClosed && !o.isArchived) {
       postNumContent.push(' ');
       const src = `${staticPath}closed${gifIcon}`;
-      if (boardID === "f") {
-        postNumContent.push(h("img", { src: src, alt: "Closed", title: "Closed", style: "height: 18px; width: 18px;" }));
-      } else {
-        postNumContent.push(h("img", { src: src, alt: "Closed", title: "Closed", class: "closedIcon retina" }));
-      }
+      postNumContent.push(h("img", { src: src, alt: "Closed", title: "Closed", class: "closedIcon retina" }));
     }
     if (o.isArchived) {
       postNumContent.push(' ', h("img", { src: `${staticPath}archived${gifIcon}`, alt: "Archived", title: "Archived", class: "archivedIcon retina" }));
@@ -18211,7 +18169,7 @@ svg.icon {
     return h("div", { class: "postInfo desktop", id: `pi${ID}` },
       h("input", { type: "checkbox", name: ID, value: "delete" }),
       ' ',
-      ...((!o.isReply || boardID === "f" || subject) ? [h("span", { class: "subject" }, subject), ' '] : []),
+      ...((!o.isReply || subject) ? [h("span", { class: "subject" }, subject), ' '] : []),
       h("span", { class: `nameBlock${capcode ? ` capcode${capcode}` : ''}` }, ...nameBlockContent),
       ' ',
       h("span", { class: "dateTime", "data-utc": dateUTC }, dateText),
@@ -18222,24 +18180,11 @@ svg.icon {
   function generateFileHtml(file, ID, boardID, fileURL, shortFilename, fileThumb, o, staticPath, gifIcon) {
     if (file) {
       const fileContent = [];
-      if (boardID === "f") {
-        fileContent.push(h("div", { class: "fileInfo", "data-md5": file.MD5 },
-          h("span", { class: "fileText", id: `fT${ID}` },
-            'File: ',
-            h("a", { "data-width": file.width, "data-height": file.height, href: fileURL, target: "_blank" }, file.name),
-            "-(",
-            file.size,
-            ", ",
-            file.dimensions,
-            file.tag ? ', ' + file.tag : '',
-            ")")));
-      } else {
-        fileContent.push(h("div", { class: "fileText", id: `fT${ID}`, title: file.isSpoiler ? file.name : null },
-          'File: ',
-          h("a", { title: file.name === shortFilename || file.isSpoiler ? null : file.name, href: fileURL, target: "_blank" }, file.isSpoiler ? 'Spoiler Image' : shortFilename),
-          ` (${file.size}, ${file.dimensions || "PDF"})`), h("a", { class: `fileThumb${file.isSpoiler ? ' imgspoiler' : ''}`, href: fileURL, target: "_blank", "data-m": file.hasDownscale ? '' : null },
-          h("img", { src: fileThumb, alt: file.size, "data-md5": file.MD5, style: `height: ${file.isSpoiler ? '100' : file.theight}px; width: ${file.isSpoiler ? '100' : file.twidth}px;`, loading: "lazy" })));
-      }
+      fileContent.push(h("div", { class: "fileText", id: `fT${ID}`, title: file.isSpoiler ? file.name : null },
+        'File: ',
+        h("a", { title: file.name === shortFilename || file.isSpoiler ? null : file.name, href: fileURL, target: "_blank" }, file.isSpoiler ? 'Spoiler Image' : shortFilename),
+        ` (${file.size}, ${file.dimensions || "PDF"})`), h("a", { class: `fileThumb${file.isSpoiler ? ' imgspoiler' : ''}`, href: fileURL, target: "_blank", "data-m": file.hasDownscale ? '' : null },
+        h("img", { src: fileThumb, alt: file.size, "data-md5": file.MD5, style: `height: ${file.isSpoiler ? '100' : file.theight}px; width: ${file.isSpoiler ? '100' : file.twidth}px;`, loading: "lazy" })));
       return h("div", { class: "file", id: `f${ID}` }, ...fileContent);
     } else if (o.fileDeleted) {
       return h("div", { class: "file", id: `f${ID}` },
@@ -18280,17 +18225,11 @@ svg.icon {
       threadsListJSON: ({ boardID }) => `${cdnOrigin()}/${boardID}/threads.json`,
       catalogJSON: ({ boardID }) => `${cdnOrigin()}/${boardID}/catalog.json`,
       thumb: ({ boardID }, filename) => `${location.protocol}//${ImageHost.thumbHost()}/${boardID}/${filename}`,
-      catalog: ({ boardID }) => boardID === 'f' ? undefined : `${boardOrigin()}/${boardID}/catalog`,
+      catalog: ({ boardID }) => `${boardOrigin()}/${boardID}/catalog`,
       archive: ({ boardID }) => BoardConfig.isArchived(boardID) ? `${boardOrigin()}/${boardID}/archive` : undefined,
       archiveListJSON: ({ boardID }) => BoardConfig.isArchived(boardID) ? `${cdnOrigin()}/${boardID}/archive.json` : '',
-      file: ({ boardID }, filename) => {
-        const hostname = boardID === 'f' ? ImageHost.flashHost() : ImageHost.host();
-        return `${location.protocol}//${hostname}/${boardID}/${filename}`;
-      },
+      file: ({ boardID }, filename) => `${location.protocol}//${ImageHost.host()}/${boardID}/${filename}`,
     },
-    isPrunedByAge: ({ boardID }) => boardID === 'f',
-    areMD5sDeferred: ({ boardID }) => boardID === 'f',
-    isOnePage: ({ boardID }) => boardID === 'f',
     noAudio: ({ boardID }) => BoardConfig.noAudio(boardID),
     selectors: {
       board: '.board',
@@ -18437,27 +18376,6 @@ svg.icon {
       thread.fileLimit = /\bimagelimit *= *1\b/.test(scriptData);
       let m = scriptData.match(/\bunique_ips *= *(\d+)\b/);
       thread.ipCount = m ? +m[1] : undefined;
-      if ((g.BOARD.ID === 'f') && thread.OP.file) {
-        const { file } = thread.OP;
-        return $.ajax(this.urls.threadJSON({ boardID: 'f', threadID: thread.ID }), {
-          timeout: MINUTE,
-          onloadend() {
-            if (this.response) {
-              return file.text.dataset.md5 = (file.MD5 = this.response.posts[0].md5);
-            }
-          }
-        });
-      }
-    },
-    parseNodes(post, nodes) {
-      // Add CSS classes to sticky/closed icons on /f/ to match other boards.
-      if (post.boardID !== 'f')
-        return;
-      for (const type of ['Sticky', 'Closed']) {
-        const icon = $(`img[alt=${type}]`, nodes.info);
-        if (icon)
-          $.addClass(icon, `${type.toLowerCase()}Icon`, 'retina');
-      }
     },
     parseInfo(post) {
       if (post.info.tripcode == null && /!/.test(post.info.name)) {
@@ -18647,9 +18565,7 @@ svg.icon {
       },
       parseJSONFile(data, { siteID, boardID }) {
         const site = g.sites[siteID];
-        const filename = (site.software === 'yotsuba') && (boardID === 'f')
-          ? `${encodeURIComponent(data.filename)}${data.ext}`
-          : `${data.tim}${data.ext}`;
+        const filename = `${data.tim}${data.ext}`;
         const o = {
           name: ($.unescape(data.filename)) + data.ext,
           url: site.urls.file({ siteID, boardID }, filename),
@@ -22782,10 +22698,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           if (Conf['Custom Board Titles'])
               this.db = new DataBoard('customTitles', null, true);
           $.asap((() => d.body), () => $.asap((() => $('hr')), Banner.ready));
-          // Let 4chan's JS load the banner if enabled; otherwise, load it ourselves.
-          if (g.BOARD.ID !== 'f') {
-              PageReady.ready(() => $.queueTask(Banner.load));
-          }
+          PageReady.ready(() => $.queueTask(Banner.load));
       },
       ready() {
           const banner = $(".boardBanner");
@@ -22887,24 +22800,6 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               else {
                   Banner.db.delete({ boardID: g.BOARD.ID, threadID: className });
               }
-          }
-      }
-  };
-
-  const Flash = {
-      init() {
-          if ((g.BOARD.ID === 'f') && Conf['Enable Native Flash Embedding']) {
-              $.ready(Flash.initReady);
-          }
-      },
-      initReady() {
-          if ($.hasStorage) {
-              $.global('initFlash');
-          }
-          else {
-              if (g.VIEW === 'thread')
-                  $.global('setThreadId');
-              $.global('initFlashNoStorage');
           }
       }
   };
@@ -23426,16 +23321,15 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           if ((g.VIEW !== 'thread') || !Conf['Thread Stats'])
               return;
           if (Conf['Page Count in Stats'])
-              this[g.SITE.isPrunedByAge?.(g.BOARD) ? 'showPurgePos' : 'showPage'] = true;
+              this.showPage = true;
           const statsHTML = { innerHTML: "<span id=\"post-count\">?</span> / <span id=\"file-count\">?</span>"
                   + ((Conf["IP Count in Stats"] && g.SITE.hasIPCount)
                       ? " / <span id=\"ip-count\">?</span>" : "")
                   + ((Conf["Page Count in Stats"])
                       ? " / <span id=\"page-count\">?</span>" : "") };
           let statsTitle = 'Posts / Files';
-          if (Conf['IP Count in Stats'] && g.SITE.hasIPCount) {
+          if (Conf['IP Count in Stats'] && g.SITE.hasIPCount)
               statsTitle += ' / IPs';
-          }
           if (Conf['Page Count in Stats']) {
               if (this.showPurgePos) {
                   statsTitle += ' / Purge Position';
@@ -24794,7 +24688,6 @@ User agent: ${navigator.userAgent}\
           ['Keybinds', Keybinds],
           ['Banner', Banner],
           ['Announcements', PSA],
-          ['Flash Features', Flash],
           ['Reply Pruning', ReplyPruning],
           ['Mod Contact Links', ModContact],
           ['Restore deleted posts from archive', RestoreDeletedFromArchive],

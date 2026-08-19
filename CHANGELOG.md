@@ -2,6 +2,11 @@
 
 4chan XT uses a different user script namespace than 4chan X, so to migrate you need to export settings from 4chan X, and import them in XT.
 
+
+### 2.31.1 (2026-08-19)
+
+- Dropped support for flash.
+
 ### 2.31.0 (2026-08-18)
 
 - Added config option for magnet titles.
