@@ -149,9 +149,7 @@ var QR = {
     Header.addShortcut('qr', sc, 540);
 
     window.addEventListener('message', event => {
-      if (event.data?.twister?.error) {
-        QR.error($.el('div', { innerHTML: event.data.twister.error }));
-      }
+      if (event.data?.twister?.error) QR.error($.el('div', { innerHTML: event.data.twister.error }));
     });
   },
 
@@ -449,12 +447,8 @@ var QR = {
         var insideCode, node;
         range = sel.getRangeAt(i);
         // Trim range to be fully inside post
-        if (range.compareBoundaryPoints(Range.START_TO_START, postRange) < 0) {
-          range.setStartBefore(root);
-        }
-        if (range.compareBoundaryPoints(Range.END_TO_END, postRange) > 0) {
-          range.setEndAfter(root);
-        }
+        if (range.compareBoundaryPoints(Range.START_TO_START, postRange) < 0) range.setStartBefore(root);
+        if (range.compareBoundaryPoints(Range.END_TO_END, postRange) > 0) range.setEndAfter(root);
 
         if (!range.toString().trim()) continue;
 
@@ -480,7 +474,7 @@ var QR = {
           $.replace(node, $.tn(node.dataset.original));
         }
         for (node of $$('.embedder', frag)) {
-          if (node.previousSibling?.nodeValue === ' ') { $.rm(node.previousSibling); }
+          if (node.previousSibling?.nodeValue === ' ') $.rm(node.previousSibling);
           $.rm(node);
         }
         text += `>${frag.textContent.trim()}\n`;
@@ -675,9 +669,7 @@ var QR = {
       post = QR.selected;
     } else {
       post = QR.posts[QR.posts.length - 1];
-      if (isText ? post.com || post.pasting : post.file) {
-        post = new QR.post();
-      }
+      if (isText ? post.com || post.pasting : post.file) post = new QR.post();
     }
     return post[isText ? 'pasteText' : 'setFile'](file);
   },
@@ -926,9 +918,7 @@ var QR = {
       err = 'Max limit of image replies has been reached.';
     }
 
-    if ((g.BOARD.ID === 'r9k') && !post.com?.match(/[a-z-]/i)) {
-      err ||= 'Original comment required.';
-    }
+    if ((g.BOARD.ID === 'r9k') && !post.com?.match(/[a-z-]/i)) err ||= 'Original comment required.';
 
     // if (QR.captcha.isEnabled && !((QR.captcha === Captcha.v2) && /\b_ct=/.test(d.cookie) && threadID) && !(err && !force)) {
     if (QR.captcha.isEnabled && !(err && !force)) {
@@ -1152,9 +1142,7 @@ var QR = {
     }
 
     QR.cleanNotifications();
-    if (Conf['Posting Success Notifications']) {
-      QR.notifications.push(new Notice('success', h1.textContent, 5));
-    }
+    if (Conf['Posting Success Notifications']) QR.notifications.push(new Notice('success', h1.textContent, 5));
 
     QR.cooldown.add(threadID, postID);
 
@@ -1302,9 +1290,7 @@ var QR = {
       QR.cooldown.maxDelay = 0;
       for (var type in QR.cooldown.delays) {
         var delay = QR.cooldown.delays[type];
-        if (!['thread', 'thread_global'].includes(type)) {
-          QR.cooldown.maxDelay = Math.max(QR.cooldown.maxDelay, delay);
-        }
+        if (!['thread', 'thread_global'].includes(type)) QR.cooldown.maxDelay = Math.max(QR.cooldown.maxDelay, delay);
       }
 
       QR.cooldown.isSetup = true;
@@ -1328,7 +1314,7 @@ var QR = {
       const start = Date.now();
       const boardID = g.BOARD.ID;
       QR.cooldown.set(boardID, start, { threadID, postID });
-      if (threadID === postID) { QR.cooldown.set('global', start, { boardID, threadID, postID }); }
+      if (threadID === postID) QR.cooldown.set('global', start, { boardID, threadID, postID });
       QR.cooldown.save();
       QR.cooldown.start();
     },
@@ -1354,9 +1340,7 @@ var QR = {
       const cooldowns = (QR.cooldown.data[post.board.ID] || (QR.cooldown.data[post.board.ID] = dict()));
       for (var id in cooldowns) {
         let cooldown = cooldowns[id];
-        if ((cooldown.delay == null) && (cooldown.threadID === post.thread.ID) && (cooldown.postID === post.ID)) {
-          QR.cooldown.set(post.board.ID, id, null);
-        }
+        if ((cooldown.delay == null) && (cooldown.threadID === post.thread.ID) && (cooldown.postID === post.ID)) QR.cooldown.set(post.board.ID, id, null);
       }
       QR.cooldown.save();
     },
@@ -1477,9 +1461,7 @@ var QR = {
               seconds = Math.max(seconds, QR.cooldown.delays[type + suffix] - elapsed);
 
               // If additional cooldown is enabled, add the configured seconds to the count.
-              if (QR.cooldown.customCooldown) {
-                seconds = Math.max(seconds, parseInt(Conf.customCooldown, 10) - elapsed);
-              }
+              if (QR.cooldown.customCooldown) seconds = Math.max(seconds, parseInt(Conf.customCooldown, 10) - elapsed);
             }
           }
 
@@ -1531,9 +1513,9 @@ var QR = {
       },
 
       editFile() {
-        const { post } = QR.oekaki.menu;
+        const {post} = QR.oekaki.menu;
         QR.quote.call(post.nodes.post);
-        const { isVideo } = post.file;
+        const {isVideo} = post.file;
         const currentTime = post.file.fullImage?.currentTime || 0;
         return CrossOrigin.file(post.file.url, (blob) => {
           if (!blob) {
@@ -1642,9 +1624,7 @@ var QR = {
 
       if (/always/i.test(item)) QR.persona.always[type] = val;
 
-      if (!QR.persona.types[type].includes(val)) {
-        QR.persona.types[type].push(val);
-      }
+      if (!QR.persona.types[type].includes(val)) QR.persona.types[type].push(val);
     },
 
     load() {
@@ -1735,7 +1715,7 @@ class post {
     $.on(this.nodes.rm, 'click', e => { e.stopPropagation(); this.rm(); });
     $.on(this.nodes.spoiler, 'change', e => {
       this.spoiler = e.target.checked;
-      if (this === QR.selected) { QR.nodes.spoiler.checked = this.spoiler; }
+      if (this === QR.selected) QR.nodes.spoiler.checked = this.spoiler;
       return this.preventAutoPost();
     });
     for (var label of $$('label', el)) {
@@ -1773,7 +1753,7 @@ class post {
       }
       if (QR.selected === this) this.load();
     }); // load persona
-    if (select) { this.select(); }
+    if (select) this.select();
     this.unlock();
     QR.captcha.moreNeeded();
   }
@@ -1895,16 +1875,12 @@ class post {
 
   setComment(com) {
     this.com = com || null;
-    if (this === QR.selected) {
-      QR.nodes.com.value = this.com;
-    }
+    if (this === QR.selected) QR.nodes.com.value = this.com;
     return this.updateComment();
   }
 
   updateComment() {
-    if (this === QR.selected) {
-      QR.characterCount();
-    }
+    if (this === QR.selected) QR.characterCount();
     this.nodes.span.textContent = this.com;
     QR.captcha.moreNeeded();
   }
@@ -1917,9 +1893,7 @@ class post {
     e.stopPropagation();
     for (let i = QR.posts.length - 1; i >= 0; i--) {
       const post = QR.posts[i];
-      if (post.errors?.some(error => doc.contains(error))) {
-        post.rm();
-      }
+      if (post.errors?.some(error => doc.contains(error))) post.rm();
     }
   }
 
@@ -1949,9 +1923,7 @@ class post {
   dismissErrors(test = () => true) {
     if (this.errors) {
       for (var error of this.errors) {
-        if (doc.contains(error) && test(error)) {
-          error.parentNode.previousElementSibling.click();
-        }
+        if (doc.contains(error) && test(error)) error.parentNode.previousElementSibling.click();
       }
     }
   }
@@ -2098,12 +2070,8 @@ class post {
       ({ height, width } = el);
       this.nodes.el.dataset.height = height;
       this.nodes.el.dataset.width = width;
-      if ((height > QR.max_height) || (width > QR.max_width)) {
-        this.fileError(`Image too large (image: ${height}x${width}px, max: ${QR.max_height}x${QR.max_width}px)`);
-      }
-      if ((height < QR.min_height) || (width < QR.min_width)) {
-        this.fileError(`Image too small (image: ${height}x${width}px, min: ${QR.min_height}x${QR.min_width}px)`);
-      }
+      if ((height > QR.max_height) || (width > QR.max_width)) this.fileError(`Image too large (image: ${height}x${width}px, max: ${QR.max_height}x${QR.max_width}px)`);
+      if ((height < QR.min_height) || (width < QR.min_width)) this.fileError(`Image too small (image: ${height}x${width}px, min: ${QR.min_height}x${QR.min_width}px)`);
     } else {
       const { videoHeight, videoWidth, duration } = el;
       this.nodes.el.dataset.height = videoHeight;
@@ -2111,20 +2079,14 @@ class post {
       this.nodes.el.dataset.duration = duration;
       const max_height = Math.min(QR.max_height, QR.max_height_video);
       const max_width = Math.min(QR.max_width, QR.max_width_video);
-      if ((videoHeight > max_height) || (videoWidth > max_width)) {
-        this.fileError(`Video too large (video: ${videoHeight}x${videoWidth}px, max: ${max_height}x${max_width}px)`);
-      }
-      if ((videoHeight < QR.min_height) || (videoWidth < QR.min_width)) {
-        this.fileError(`Video too small (video: ${videoHeight}x${videoWidth}px, min: ${QR.min_height}x${QR.min_width}px)`);
-      }
+      if ((videoHeight > max_height) || (videoWidth > max_width)) this.fileError(`Video too large (video: ${videoHeight}x${videoWidth}px, max: ${max_height}x${max_width}px)`);
+      if ((videoHeight < QR.min_height) || (videoWidth < QR.min_width)) this.fileError(`Video too small (video: ${videoHeight}x${videoWidth}px, min: ${QR.min_height}x${QR.min_width}px)`);
       if (!isFinite(duration)) {
         this.fileError('Video lacks duration metadata (try remuxing)');
       } else if (duration > QR.max_duration_video) {
         this.fileError(`Video too long (video: ${duration}s, max: ${QR.max_duration_video}s)`);
       }
-      if (BoardConfig.noAudio(g.BOARD.ID) && $.hasAudio(el)) {
-        this.fileError('Audio not allowed');
-      }
+      if (BoardConfig.noAudio(g.BOARD.ID) && $.hasAudio(el)) this.fileError('Audio not allowed');
     }
   }
 
@@ -2203,10 +2165,8 @@ class post {
 
   saveFilename() {
     this.file.newName = (this.filename || '').replace(/[/\\]/g, '-');
-    if (!QR.validExtension.test(this.filename)) {
-      // 4chan will truncate the filename if it has no extension.
-      this.file.newName += `.${$.getOwn(QR.extensionFromType, this.file.type) || 'jpg'}`;
-    }
+    // 4chan will truncate the filename if it has no extension.
+    if (!QR.validExtension.test(this.filename)) this.file.newName += `.${$.getOwn(QR.extensionFromType, this.file.type) || 'jpg'}`;
   }
 
   updateFilename() {

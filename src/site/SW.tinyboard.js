@@ -204,9 +204,7 @@ $\
             o.files.push(file);
           }
         }
-        if (o.files.length) {
-          o.file = o.files[0];
-        }
+        if (o.files.length) o.file = o.files[0];
       }
       return o;
     },
@@ -226,9 +224,7 @@ $\
   preParsingFixes(board) {
     // fixes effects of unclosed link in announcement
     let broken = $('a > input[name="board"]', board);
-    if (broken) {
-      return $.before(broken.parentNode, broken);
-    }
+    if (broken) return $.before(broken.parentNode, broken);
   },
 
   parseNodes(post, nodes) {

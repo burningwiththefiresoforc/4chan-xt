@@ -13,9 +13,7 @@ const PostRedirect = {
       this.event = e;
       this.delays = 0;
       $.queueTask(() => {
-        if ((e === this.event) && (this.delays === 0)) {
-          return location.href = e.detail.redirect;
-        }
+        if ((e === this.event) && (this.delays === 0)) return location.href = e.detail.redirect;
       });
     });
   },
@@ -29,9 +27,7 @@ const PostRedirect = {
     return () => {
       if (e !== this.event) return;
       this.delays--;
-      if (this.delays === 0) {
-        return location.href = e.detail.redirect;
-      }
+      if (this.delays === 0) return location.href = e.detail.redirect;
     };
   }
 };

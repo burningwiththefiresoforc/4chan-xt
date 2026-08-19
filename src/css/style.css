@@ -490,37 +490,31 @@ audio.controls-added {
 }
 .sections-list {
   flex: 1;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid var(--sc-textColor, var(--xt-border, #ccc));
 }
 .export, .import, .reset {
   cursor: pointer;
   text-decoration: none !important;
 }
-div.sections-list a {
+div.sections-list a,
+div.credits a {
   display: inline-block;
-  border: 1px solid #ccc;
-  border-top-left-radius: 6px;
-  border-top-right-radius: 6px;
-  border-bottom: none;
+  border: 1px solid var(--sc-textColor, var(--xt-border, #ccc));
   padding: 0 3px;
   margin-right: -1px;
   text-decoration: none !important;
 }
+div.sections-list a {
+  border-radius: 6px 6px 0 0;
+  border-bottom: none;
+}
 div.credits a {
-  display: inline-block;
-  border: 1px solid #ccc;
-  border-top-left-radius: 6px;
-  border-top-right-radius: 6px;
-  border-bottom-left-radius: 6px;
-  border-bottom-right-radius: 6px;
-  padding: 0 3px;
-  margin-right: -1px;
-  text-decoration: none !important;
+  border-radius: 6px;
 }
 .tab-selected {
   font-weight: 700;
-  color:#000 !important;
-  background-color:#ccc;
+  color: var(--sc-bgColor, var(--xt-background, Canvas)) !important;
+  background-color: var(--sc-textColor, var(--xt-header-link, CanvasText)) !important;
 }
 .section-sauce ul,
 .section-advanced ul {

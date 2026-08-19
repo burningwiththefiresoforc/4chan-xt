@@ -67,7 +67,8 @@ var Index = {
     this.currentSort = history.state?.sort;
     if (!this.currentSort) {
       this.currentSort = typeof Conf['Index Sort'] === 'object'
-        ? Conf['Index Sort'][g.BOARD.ID] || 'bump' : Conf['Index Sort']; }
+        ? Conf['Index Sort'][g.BOARD.ID] || 'bump' : Conf['Index Sort'];
+    }
     this.currentPage = this.getCurrentPage();
     this.processHash();
 

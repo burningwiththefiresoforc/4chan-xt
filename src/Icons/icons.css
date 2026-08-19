@@ -63,7 +63,7 @@ svg.icon {
   width: 14px;
 }
 .linkify.pastebin .linkify-icon svg {
-  fill: blue;
+  color: var(--sc-textColor, var(--xt-header-dialog-fg, inherit));
 }
 .linkify.bitchute .linkify-icon svg {
   color: red;

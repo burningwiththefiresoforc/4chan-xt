@@ -207,9 +207,7 @@ const SWYotsuba = {
   },
 
   parseInfo(post) {
-    if (post.info.tripcode == null && /!/.test(post.info.name)) {
-      [, post.info.name, post.info.tripcode] = post.info.name.match(/(.*?) ?(!.*)/);
-    }
+    if (post.info.tripcode == null && /!/.test(post.info.name)) [, post.info.name, post.info.tripcode] = post.info.name.match(/(.*?) ?(!.*)/);
   },
 
   parseDate: (node) => new Date(node.dataset.utc * 1000),
@@ -529,9 +527,7 @@ const SWYotsuba = {
       for (var quote of $$('.quotelink', container)) {
         var href = quote.getAttribute('href');
         if (href[0] === '#') {
-          if (!this.sameThread(boardID, threadID)) {
-            quote.href = this.threadURL(boardID, threadID) + href;
-          }
+          if (!this.sameThread(boardID, threadID)) quote.href = this.threadURL(boardID, threadID) + href;
         } else {
           let match = quote.href.match(SWYotsuba.regexp.quotelink);
           if (match && (this.sameThread(match[1], match[2]))) {
@@ -569,7 +565,7 @@ const SWYotsuba = {
           id: `t${data.no}`
         }));
       }
-      if (this.hat) { $.add(root, this.hat.cloneNode(false)); }
+      if (this.hat) $.add(root, this.hat.cloneNode(false));
       $.add(root, thread.OP.nodes.root);
       if (data.omitted_posts || (!withReplies && data.replies)) {
         const [posts, files] = withReplies
@@ -590,10 +586,8 @@ const SWYotsuba = {
       if (data.spoiler && !Conf['Reveal Spoiler Thumbnails']) {
         src = `${staticPath}spoiler`;
         let spoilerRange = this.spoilerRange[thread.board];
-        if (spoilerRange) {
           // Randomize the spoiler image.
-          src += (`-${thread.board}`) + Math.floor(1 + (spoilerRange * Math.random()));
-        }
+        if (spoilerRange) src += (`-${thread.board}`) + Math.floor(1 + (spoilerRange * Math.random()));
         src += '.png';
         imgClass = 'spoiler-file';
         cssText = "--tn-w: 100; --tn-h: 100;";
@@ -618,9 +612,7 @@ const SWYotsuba = {
       $.before(thread.OP.nodes.info, [...container.childNodes]);
 
       for (var br of $$('br', thread.OP.nodes.comment)) {
-        if (br.previousSibling && (br.previousSibling.nodeName === 'BR')) {
-          $.addClass(br, 'extra-linebreak');
-        }
+        if (br.previousSibling && (br.previousSibling.nodeName === 'BR')) $.addClass(br, 'extra-linebreak');
       }
 
       const root = $.el('div', {
@@ -636,9 +628,7 @@ const SWYotsuba = {
 
     catalogReply(thread, data) {
       let excerpt = '';
-      if (data.com) {
-        excerpt = this.parseCommentDisplay(data.com).replace(/>>\d+/g, '').trim().replace(/\n+/g, ' // ');
-      }
+      if (data.com) excerpt = this.parseCommentDisplay(data.com).replace(/>>\d+/g, '').trim().replace(/\n+/g, ' // ');
       if (data.ext) excerpt ||= `${$.unescape(data.filename)}${data.ext}`;
       if (data.com) excerpt ||= $.unescape(data.com.replace(/<br\b[^<]*>/gi, ' // '));
       if (!excerpt) excerpt = '\xA0';

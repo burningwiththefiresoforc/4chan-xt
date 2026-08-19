@@ -113,9 +113,7 @@ const Captcha = {
 
     count() {
       clearTimeout(this.timer);
-      if (this.captchas.length) {
-        this.timer = setTimeout(this.clear.bind(this), this.captchas[0].timeout - Date.now());
-      }
+      if (this.captchas.length) this.timer = setTimeout(this.clear.bind(this), this.captchas[0].timeout - Date.now());
       this.updateCount();
     },
 
