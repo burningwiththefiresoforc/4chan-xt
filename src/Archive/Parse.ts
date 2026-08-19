@@ -144,10 +144,7 @@ export const parseArchivePost = (data: RawArchivePost) => {
     if (!Redirect.securityCheck(media_link)) media_link = '';
     o.file = {
       name: data.media.media_filename,
-      url: media_link ||
-        (o.boardID === 'f'
-          ? `${location.protocol}//${ImageHost.flashHost()}/${o.boardID}/${encodeURIComponent(E(data.media.media_filename))}`
-          : `${location.protocol}//${ImageHost.host()}/${o.boardID}/${data.media.media_orig}`),
+      url: media_link || `${location.protocol}//${ImageHost.host()}/${o.boardID}/${data.media.media_orig}`,
       height: data.media.media_h,
       width: data.media.media_w,
       MD5: data.media.media_hash,
@@ -158,7 +155,6 @@ export const parseArchivePost = (data: RawArchivePost) => {
       isSpoiler: data.media.spoiler === '1'
     };
     if (!/\.pdf$/.test(o.file.url)) o.file.dimensions = `${o.file.width}x${o.file.height}`;
-    if ((o.boardID === 'f') && data.media.exif) o.file.tag = JSON.parse(data.media.exif).Tag;
   }
   o.extra = dict();
 

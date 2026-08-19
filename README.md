@@ -50,8 +50,8 @@ Other features and fixes:
 
 <details>
 
-- [ ] Add text replacement to filtering system
 - [ ] Clean up circular dependencies
+- [ ] Flash is no longer supported
 
 </details>
 

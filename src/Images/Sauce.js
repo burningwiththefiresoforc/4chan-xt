@@ -111,11 +111,6 @@ const Sauce = {
     }
 
     let a = Sauce.link.cloneNode(false);
-    if (g.SITE.areMD5sDeferred?.(post.board) && missing.length && !missing.filter(x => !/^.?MD5$/.test(x)).length) {
-      a.dataset.skip = '1';
-      return a;
-    }
-
     if (missing.length) return null;
 
     a.href = parts.url;

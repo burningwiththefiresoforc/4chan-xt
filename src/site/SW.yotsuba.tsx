@@ -38,18 +38,12 @@ const SWYotsuba = {
     threadsListJSON: ({boardID}) => `${cdnOrigin()}/${boardID}/threads.json`,
     catalogJSON: ({boardID}) => `${cdnOrigin()}/${boardID}/catalog.json`,
     thumb: ({boardID}, filename) => `${location.protocol}//${ImageHost.thumbHost()}/${boardID}/${filename}`,
-    catalog: ({boardID}) => boardID === 'f' ? undefined : `${boardOrigin(boardID)}/${boardID}/catalog`,
+    catalog: ({boardID}) => `${boardOrigin(boardID)}/${boardID}/catalog`,
     archive: ({boardID}) => BoardConfig.isArchived(boardID) ? `${boardOrigin(boardID)}/${boardID}/archive` : undefined,
     archiveListJSON: ({boardID}) => BoardConfig.isArchived(boardID) ? `${cdnOrigin()}/${boardID}/archive.json` : '',
-    file: ({boardID}, filename) => {
-      const hostname = boardID === 'f' ? ImageHost.flashHost() : ImageHost.host();
-      return `${location.protocol}//${hostname}/${boardID}/${filename}`;
-    },
+    file: ({boardID}, filename) => `${location.protocol}//${ImageHost.host()}/${boardID}/${filename}`,
   },
 
-  isPrunedByAge: ({boardID}) => boardID === 'f',
-  areMD5sDeferred: ({boardID}) => boardID === 'f',
-  isOnePage: ({boardID}) => boardID === 'f',
   noAudio: ({boardID}) => BoardConfig.noAudio(boardID),
 
   selectors: {
@@ -210,27 +204,6 @@ const SWYotsuba = {
     thread.fileLimit = /\bimagelimit *= *1\b/.test(scriptData);
     let m = scriptData.match(/\bunique_ips *= *(\d+)\b/);
     thread.ipCount   = m ? +m[1] : undefined;
-
-    if ((g.BOARD.ID === 'f') && thread.OP.file) {
-      const {file} = thread.OP;
-      return $.ajax(this.urls.threadJSON({boardID: 'f', threadID: thread.ID}), {
-        timeout: MINUTE,
-        onloadend() {
-          if (this.response) {
-            return file.text.dataset.md5 = (file.MD5 = this.response.posts[0].md5);
-          }
-        }
-      });
-    }
-  },
-
-  parseNodes(post, nodes) {
-    // Add CSS classes to sticky/closed icons on /f/ to match other boards.
-    if (post.boardID !== 'f') return;
-    for (const type of ['Sticky', 'Closed']) {
-      const icon = $(`img[alt=${type}]`, nodes.info);
-      if (icon) $.addClass(icon, `${type.toLowerCase()}Icon`, 'retina');
-    }
   },
 
   parseInfo(post) {
@@ -433,9 +406,7 @@ const SWYotsuba = {
 
     parseJSONFile(data, { siteID, boardID }) {
       const site = g.sites[siteID];
-      const filename = (site.software === 'yotsuba') && (boardID === 'f')
-        ? `${encodeURIComponent(data.filename)}${data.ext}`
-        : `${data.tim}${data.ext}`;
+      const filename = `${data.tim}${data.ext}`;
       const o = {
         name: ($.unescape(data.filename)) + data.ext,
         url: site.urls.file({ siteID, boardID }, filename),

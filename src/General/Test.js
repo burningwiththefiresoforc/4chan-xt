@@ -148,16 +148,17 @@ const Test = {
             c.log(y.outerHTML);
           }
 
-          for (var key in Config.filter) {
-            if ((!key === 'General') && !((key === 'MD5') && (post.board.ID === 'f'))) {
-              var val1 = Filter.values(key, obj);
-              var val2 = Filter.values(key, post2);
-              if ((val1.length !== val2.length) || !val1.every((x, i) => x === val2[i])) {
-                fail = true;
-                c.log(`${post.fullID} has filter bug in ${key}`);
-                c.log(val1);
-                c.log(val2);
-              }
+          for (const key in Config.filter) {
+            if (key === 'General') continue;
+
+            const val1 = Filter.values(key, obj);
+            const val2 = Filter.values(key, post2);
+
+            if (val1.length !== val2.length || !val1.every((x, i) => x === val2[i])) {
+              fail = true;
+              c.log(`${post.fullID} has filter bug in ${key}`);
+              c.log(val1);
+              c.log(val2);
             }
           }
 

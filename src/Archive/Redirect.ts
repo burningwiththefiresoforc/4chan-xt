@@ -168,11 +168,7 @@ const Redirect = {
 
   file(archive, {boardID, filename}) {
     if (!filename) return '';
-    if (boardID === 'f') {
-      filename = encodeURIComponent($.unescape(decodeURIComponent(filename)));
-    } else {
-      if (/[sm]\.jpg$/.test(filename)) return '';
-    }
+    if (/[sm]\.jpg$/.test(filename)) return '';
     if (archive.name.endsWith('arch.b4k.co') || archive.name.endsWith('Desuarchive' || archive.name.endsWith('palanq.win'))) {
       const [timeStamp, ext] = filename.split('.');
       // remove last 3 digits

@@ -12,8 +12,7 @@ var ThreadStats = {
 
   init() {
     if ((g.VIEW !== 'thread') || !Conf['Thread Stats']) return;
-
-    if (Conf['Page Count in Stats']) this[g.SITE.isPrunedByAge?.(g.BOARD) ? 'showPurgePos' : 'showPage'] = true;
+    if (Conf['Page Count in Stats']) this.showPage = true;
 
     const statsHTML = {innerHTML: "<span id=\"post-count\">?</span> / <span id=\"file-count\">?</span>"
       + ((Conf["IP Count in Stats"] && g.SITE.hasIPCount)
@@ -21,7 +20,7 @@ var ThreadStats = {
       + ((Conf["Page Count in Stats"])
         ? " / <span id=\"page-count\">?</span>" : "")};
     let statsTitle = 'Posts / Files';
-    if (Conf['IP Count in Stats'] && g.SITE.hasIPCount) { statsTitle += ' / IPs'; }
+    if (Conf['IP Count in Stats'] && g.SITE.hasIPCount) statsTitle += ' / IPs';
     if (Conf['Page Count in Stats']) {
       if (this.showPurgePos) {
         statsTitle += ' / Purge Position';

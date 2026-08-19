@@ -38,7 +38,6 @@ import CustomCSS from "../Miscellaneous/CustomCSS";
 import ExpandComment from "../Miscellaneous/ExpandComment";
 import ExpandThread from "../Miscellaneous/ExpandThread";
 import FileInfo from "../Miscellaneous/FileInfo";
-import Flash from "../Miscellaneous/Flash";
 import Fourchan from "../Miscellaneous/Fourchan";
 import IDColor from "../Miscellaneous/IDColor";
 import IDHighlight from "../Miscellaneous/IDHighlight";
@@ -880,7 +879,6 @@ User agent: ${navigator.userAgent}\
     ['Keybinds',                  Keybinds],
     ['Banner',                    Banner],
     ['Announcements',             PSA],
-    ['Flash Features',            Flash],
     ['Reply Pruning',             ReplyPruning],
     ['Mod Contact Links',         ModContact],
     ['Restore deleted posts from archive', RestoreDeletedFromArchive],

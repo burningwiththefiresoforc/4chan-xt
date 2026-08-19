@@ -83,7 +83,6 @@ var QR = {
     customCooldown: HTMLAnchorElement,
     dumpButton: HTMLAnchorElement,
     status: HTMLInputElement,
-    flashTag: HTMLSelectElement,
     fileInput: HTMLInputElement,
     flag?: HTMLSelectElement,
     preview?: HTMLDivElement;
@@ -95,9 +94,9 @@ var QR = {
   req: undefined as (XMLHttpRequest & { isUploadFinished: boolean, progress: string }) | undefined,
   selected: undefined as post,
 
-  mimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'application/vnd.adobe.flash.movie', 'application/x-shockwave-flash', 'video/webm', 'video/mp4'],
+  mimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'video/webm', 'video/mp4'],
 
-  validExtension: /\.(jpe?g|png|gif|pdf|swf|webm|mp4)$/i,
+  validExtension: /\.(jpe?g|png|gif|pdf|webm|mp4)$/i,
 
   typeFromExtension: {
     'jpg':  'image/jpeg',
@@ -105,7 +104,6 @@ var QR = {
     'png':  'image/png',
     'gif':  'image/gif',
     'pdf':  'application/pdf',
-    'swf':  'application/vnd.adobe.flash.movie',
     'webm': 'video/webm',
     'mp4': 'video/mp4'
   },
@@ -115,8 +113,6 @@ var QR = {
     'image/png': 'png',
     'image/gif': 'gif',
     'application/pdf': 'pdf',
-    'application/vnd.adobe.flash.movie': 'swf',
-    'application/x-shockwave-flash': 'swf',
     'video/webm': 'webm',
     'video/mp4': 'mp4'
   },
@@ -752,7 +748,6 @@ var QR = {
     setNode('customCooldown', '#custom-cooldown-button');
     setNode('dumpButton',     '#dump-button');
     setNode('status',         '[type=submit]');
-    setNode('flashTag',       '[name=filetag]');
     setNode('fileInput',      '[type=file]');
     setNode('splitPost',      '#split-post')
 
@@ -914,9 +909,6 @@ var QR = {
     post.forceSave();
     let threadID = post.thread;
     const thread = g.BOARD.threads.get(threadID);
-    if ((g.BOARD.ID === 'f') && (threadID === 'new')) {
-      filetag = QR.nodes.flashTag.value;
-    }
 
     // prevent errors
     if (threadID === 'new') {
@@ -2030,7 +2022,7 @@ class post {
 
       this.file = await this.validateFile(file);
       this.originalName = file.name;
-      if (Conf['Randomize Filename'] && (g.BOARD.ID !== 'f') && (!this.file.name.toLowerCase().includes('[sound='))) {
+      if (Conf['Randomize Filename']  && !this.file.name.toLowerCase().includes('[sound=')) {
         this.randomizeName(false);
       } else {
         this.filename = this.file.name;

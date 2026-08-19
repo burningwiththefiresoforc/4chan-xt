@@ -1468,7 +1468,6 @@ $site$thread[hidden] + hr {
   content: "Anonymous";
   font-size: 10pt;
 }
-:root.sw-yotsuba.anonymize .flashListing .name::before,
 :root.sw-yotsuba.anonymize .post-last > .post-author:not([class*=capcode])::before {
   font-size: 9pt;
 }

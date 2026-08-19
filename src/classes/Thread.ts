@@ -107,7 +107,6 @@ export default class Thread {
       title: type,
       className: `${typeLC}Icon retina`
     });
-    if (g.BOARD.ID === 'f') icon.style.cssText = 'height: 18px; width: 18px;';
 
     const root = (type !== 'Sticky') && this.isSticky
       ? $('.stickyIcon', this.OP.nodes.info)

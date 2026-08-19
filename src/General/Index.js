@@ -39,9 +39,7 @@ var Index = {
   showHiddenThreads: false,
   changed: {},
 
-  enabledOn({siteID, boardID}) {
-    return Conf['JSON Index'] && (g.sites[siteID].software === 'yotsuba') && (boardID !== 'f');
-  },
+  enabledOn: ({siteID}) => Conf['JSON Index'] && g.sites[siteID].software === 'yotsuba',
 
   init() {
     let input, inputs, name;

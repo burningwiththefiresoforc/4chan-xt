@@ -18,7 +18,6 @@ const ImageHost = {
 
   suggestions: ['i.4cdn.org', 'is2.4chan.org'],
 
-  flashHost: () => 'i.4cdn.org',
   thumbHost: () => 'i.4cdn.org',
   host: () => Conf.fourchanImageHost.trim() || 'i.4cdn.org',
   test: (hostname) => (hostname === 'i.4cdn.org') || ImageHost.regex.test(hostname),
@@ -29,7 +28,7 @@ const ImageHost = {
   node() {
     if (this.isClone) return;
     const host = ImageHost.host();
-    if (this.file && ImageHost.test(this.file.url.split('/')[2]) && !/\.swf$/.test(this.file.url)) {
+    if (this.file && ImageHost.test(this.file.url.split('/')[2])) {
       this.file.link.hostname = host;
       if (this.file.thumbLink) this.file.thumbLink.hostname = host;
       this.file.url = this.file.link.href;
@@ -39,7 +38,7 @@ const ImageHost = {
 
   fixLinks(links) {
     for (const link of links) {
-      if (ImageHost.test(link.hostname) && !/\.swf$/.test(link.pathname)) {
+      if (ImageHost.test(link.hostname)) {
         const host = ImageHost.host();
         if (link.hostname !== host) link.hostname = host;
       }

@@ -447,8 +447,7 @@ var ThreadWatcher = {
         var index, modified, replies;
         ({page, index, modified, replies} = threads[threadID]);
         if (Conf['Show Page']) {
-          var lastPage = g.sites[siteID].isPrunedByAge?.({siteID, boardID}) ?
-            threadID === oldest : index >= (nThreads - pageLength);
+          const lastPage = index >= (nThreads - pageLength);
           ThreadWatcher.update(siteID, boardID, threadID, {page, lastPage});
         }
         if (ThreadWatcher.unreadEnabled && Conf['Show Unread Count']) {

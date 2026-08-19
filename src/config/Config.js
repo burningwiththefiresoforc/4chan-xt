@@ -128,10 +128,6 @@ const Config = {
         true,
         `${meta.name} is NOT designed to work with the native extension.`
       ],
-      'Enable Native Flash Embedding': [
-        true,
-        'Activate the native extension\'s Flash embedding if the native extension is disabled.'
-      ],
       'Export History': [
         true,
         'Export last read, your posts, etc. when exporting the setting'
@@ -840,7 +836,6 @@ https://trace.moe/?auto&url=%IMG;text:wait
 #//saucenao.com/search.php?url=%IMG
 
 # "View Same" in archives:
-http://eye.swfchan.com/search/?q=%name;types:swf
 #https://desuarchive.org/_/search/image/%sMD5/
 #https://archive.4plebs.org/_/search/image/%sMD5/
 

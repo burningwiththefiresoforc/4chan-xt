@@ -18,7 +18,6 @@ export default function generatePostInfoHtml(
 
   const nameBlockContent: (EscapedHtml | string)[] =
     email ? [' ', <a href={`mailto:${email}`} class="useremail">{...nameHtml}</a>] : nameHtml;
-  if (!(boardID === "f" && !o.isReply || capcodeDescription)) nameBlockContent.push(' ');
   if (capcodeDescription) {
     nameBlockContent.push(
       <img
@@ -28,6 +27,8 @@ export default function generatePostInfoHtml(
         class="identityIcon retina"
       />
     );
+  } else { 
+    nameBlockContent.push(' ');
   }
   if (uniqueID && !capcode) {
     nameBlockContent.push(
@@ -47,20 +48,12 @@ export default function generatePostInfoHtml(
   if (o.isSticky) {
     const src = `${staticPath}sticky${gifIcon}`;
     postNumContent.push(' ');
-    if (boardID === "f") {
-      postNumContent.push(<img src={src} alt="Sticky" title="Sticky" style="height: 18px; width: 18px;" />);
-    } else {
-      postNumContent.push(<img src={src} alt="Sticky" title="Sticky" class="stickyIcon retina" />)
-    }
+    postNumContent.push(<img src={src} alt="Sticky" title="Sticky" class="stickyIcon retina" />)
   }
   if (o.isClosed && !o.isArchived) {
     postNumContent.push(' ');
     const src = `${staticPath}closed${gifIcon}`
-    if (boardID === "f") {
-      postNumContent.push(<img src={src} alt="Closed" title="Closed" style="height: 18px; width: 18px;" />)
-    } else {
-      postNumContent.push(<img src={src} alt="Closed" title="Closed" class="closedIcon retina" />)
-    }
+    postNumContent.push(<img src={src} alt="Closed" title="Closed" class="closedIcon retina" />)
   }
   if (o.isArchived) {
     postNumContent.push(
@@ -78,7 +71,7 @@ export default function generatePostInfoHtml(
   return <div class="postInfo desktop" id={`pi${ID}`}>
     <input type="checkbox" name={ID} value="delete" />
     {' '}
-    {...((!o.isReply || boardID === "f" || subject) ? [<span class="subject">{subject}</span>, ' '] : [])}
+    {...((!o.isReply || subject) ? [<span class="subject">{subject}</span>, ' '] : [])}
     <span class={`nameBlock${capcode ? ` capcode${capcode}` : ''}`}>
       {...nameBlockContent}
     </span>

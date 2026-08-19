@@ -234,25 +234,23 @@ var Keybinds = {
       hasAction = true;
     }
     if (g.VIEW === 'index') {
-      if (!g.SITE.isOnePage?.(g.BOARD)) {
-        if (key === Conf['Next page']) {
-          if (indexEnabled) {
-            if (!['paged', 'infinite'].includes(Conf['Index Mode'])) return;
-            $('.next button', Index.pagelist).click();
-          } else {
-            $(g.SITE.selectors.nav.next)?.click();
-          }
-          hasAction = true;
+      if (key === Conf['Next page']) {
+        if (indexEnabled) {
+          if (!['paged', 'infinite'].includes(Conf['Index Mode'])) return;
+          $('.next button', Index.pagelist).click();
+        } else {
+          $(g.SITE.selectors.nav.next)?.click();
         }
-        if (key === Conf['Previous page']) {
-          if (indexEnabled) {
-            if (!['paged', 'infinite'].includes(Conf['Index Mode'])) return;
-            $('.prev button', Index.pagelist).click();
-          } else {
-            $(g.SITE.selectors.nav.prev)?.click();
-          }
-          hasAction = true;
+        hasAction = true;
+      }
+      if (key === Conf['Previous page']) {
+        if (indexEnabled) {
+          if (!['paged', 'infinite'].includes(Conf['Index Mode'])) return;
+          $('.prev button', Index.pagelist).click();
+        } else {
+          $(g.SITE.selectors.nav.prev)?.click();
         }
+        hasAction = true;
       }
       if (key === Conf['Search form']) {
         var searchInput = indexEnabled
