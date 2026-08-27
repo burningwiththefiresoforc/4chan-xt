@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         4chan XT
-// @version      2.31.1
+// @version      2.31.2
 // @minGMVer     4.00
 // @minFFVer     115
 // @namespace    4chan-XT
@@ -181,8 +181,8 @@
   'use strict';
 
   var version = {
-    "version": "2.31.1",
-    "date": "2026-08-19T09:09:09Z"
+    "version": "2.31.2",
+    "date": "2026-08-26T09:09:09Z"
   }
   ;
 
@@ -1296,7 +1296,7 @@
 
   const width$3 = 16;
   const height$3 = 16;
-  const body$3 = "<path d=\"M6.567 15.91c-1.469-.334-2.404-.76-3.464-1.561C1.75 13.322.649 11.669.207 9.991c-.276-1.035-.276-2.988 0-4.007.342-1.235.801-2.137 1.628-3.155C2.769 1.677 4.43.625 5.983.208 6.576.05 6.901.016 7.986.016c1.47 0 2.212.15 3.34.676.642.3 1.669.943 1.669 1.052 0 .033-.634.568-1.41 1.185L10.182 4.065l-.493-.217c-.409-.192-.651-.234-1.419-.267-1.628-.067-2.354.208-3.456 1.318-.568.568-.76.826-.96 1.294-.242.559-.25.634-.259 1.87l-.008 1.293-1.269 1.036c-.692.576-1.252 1.051-1.235 1.068.017.017.752-.158 1.636-.392l1.611-.434.534.543c.927.926 1.711 1.235 3.164 1.235 1.377 0 2.087-.284 3.072-1.244.651-.634 1.094-1.402 1.252-2.195l.11-.518 1.66-.442c.919-.242 1.72-.442 1.778-.442.067 0 .1.184.1.668 0 2.112-1.152 4.508-2.813 5.86-.985.885-1.786 1.302-3.064 1.661-.75.209-2.796.301-3.455.15z\" fill=\"#FF00FF\"/>\n";
+  const body$3 = "\n  <path d=\"M6.567 15.91c-1.469-.334-2.404-.76-3.464-1.561C1.75 13.322.649 11.669.207 9.991c-.276-1.035-.276-2.988 0-4.007.342-1.235.801-2.137 1.628-3.155C2.769 1.677 4.43.625 5.983.208 6.576.05 6.901.016 7.986.016c1.47 0 2.212.15 3.34.676.642.3 1.669.943 1.669 1.052 0 .033-.634.568-1.41 1.185L10.182 4.065l-.493-.217c-.409-.192-.651-.234-1.419-.267-1.628-.067-2.354.208-3.456 1.318-.568.568-.76.826-.96 1.294-.242.559-.25.634-.259 1.87l-.008 1.293-1.269 1.036c-.692.576-1.252 1.051-1.235 1.068.017.017.752-.158 1.636-.392l1.611-.434.534.543c.927.926 1.711 1.235 3.164 1.235 1.377 0 2.087-.284 3.072-1.244.651-.634 1.094-1.402 1.252-2.195l.11-.518 1.66-.442c.919-.242 1.72-.442 1.778-.442.067 0 .1.184.1.668 0 2.112-1.152 4.508-2.813 5.86-.985.885-1.786 1.302-3.064 1.661-.75.209-2.796.301-3.455.15z\"/>\n\n";
 
   const width$2 = 24;
   const height$2 = 24;
@@ -5008,37 +5008,31 @@ audio.controls-added {
 }
 .sections-list {
   flex: 1;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid var(--sc-textColor, var(--xt-border, #ccc));
 }
 .export, .import, .reset {
   cursor: pointer;
   text-decoration: none !important;
 }
-div.sections-list a {
+div.sections-list a,
+div.credits a {
   display: inline-block;
-  border: 1px solid #ccc;
-  border-top-left-radius: 6px;
-  border-top-right-radius: 6px;
-  border-bottom: none;
+  border: 1px solid var(--sc-textColor, var(--xt-border, #ccc));
   padding: 0 3px;
   margin-right: -1px;
   text-decoration: none !important;
 }
+div.sections-list a {
+  border-radius: 6px 6px 0 0;
+  border-bottom: none;
+}
 div.credits a {
-  display: inline-block;
-  border: 1px solid #ccc;
-  border-top-left-radius: 6px;
-  border-top-right-radius: 6px;
-  border-bottom-left-radius: 6px;
-  border-bottom-right-radius: 6px;
-  padding: 0 3px;
-  margin-right: -1px;
-  text-decoration: none !important;
+  border-radius: 6px;
 }
 .tab-selected {
   font-weight: 700;
-  color:#000 !important;
-  background-color:#ccc;
+  color: var(--sc-bgColor, var(--xt-background, Canvas)) !important;
+  background-color: var(--sc-textColor, var(--xt-header-link, CanvasText)) !important;
 }
 .section-sauce ul,
 .section-advanced ul {
@@ -7102,7 +7096,7 @@ svg.icon {
   width: 14px;
 }
 .linkify.pastebin .linkify-icon svg {
-  fill: blue;
+  color: var(--sc-textColor, var(--xt-header-dialog-fg, inherit));
 }
 .linkify.bitchute .linkify-icon svg {
   color: red;
@@ -8428,9 +8422,8 @@ svg.icon {
       });
       Header.addShortcut('qr', sc, 540);
       window.addEventListener('message', event => {
-        if (event.data?.twister?.error) {
+        if (event.data?.twister?.error)
           QR.error($.el('div', { innerHTML: event.data.twister.error }));
-        }
       });
     },
     initReady() {
@@ -8693,12 +8686,10 @@ svg.icon {
           var insideCode, node;
           range = sel.getRangeAt(i);
           // Trim range to be fully inside post
-          if (range.compareBoundaryPoints(Range.START_TO_START, postRange) < 0) {
+          if (range.compareBoundaryPoints(Range.START_TO_START, postRange) < 0)
             range.setStartBefore(root);
-          }
-          if (range.compareBoundaryPoints(Range.END_TO_END, postRange) > 0) {
+          if (range.compareBoundaryPoints(Range.END_TO_END, postRange) > 0)
             range.setEndAfter(root);
-          }
           if (!range.toString().trim())
             continue;
           var frag = range.cloneContents();
@@ -8724,9 +8715,8 @@ svg.icon {
             $.replace(node, $.tn(node.dataset.original));
           }
           for (node of $$('.embedder', frag)) {
-            if (node.previousSibling?.nodeValue === ' ') {
+            if (node.previousSibling?.nodeValue === ' ')
               $.rm(node.previousSibling);
-            }
             $.rm(node);
           }
           text += `>${frag.textContent.trim()}\n`;
@@ -8908,9 +8898,8 @@ svg.icon {
         post = QR.selected;
       } else {
         post = QR.posts[QR.posts.length - 1];
-        if (isText ? post.com || post.pasting : post.file) {
+        if (isText ? post.com || post.pasting : post.file)
           post = new QR.post();
-        }
       }
       return post[isText ? 'pasteText' : 'setFile'](file);
     },
@@ -9137,9 +9126,8 @@ svg.icon {
       } else if (post.file && thread.fileLimit) {
         err = 'Max limit of image replies has been reached.';
       }
-      if ((g.BOARD.ID === 'r9k') && !post.com?.match(/[a-z-]/i)) {
+      if ((g.BOARD.ID === 'r9k') && !post.com?.match(/[a-z-]/i))
         err || (err = 'Original comment required.');
-      }
       // if (QR.captcha.isEnabled && !((QR.captcha === Captcha.v2) && /\b_ct=/.test(d.cookie) && threadID) && !(err && !force)) {
       if (QR.captcha.isEnabled && !(err && !force)) {
         captcha = QR.captcha.getOne(!!threadID);
@@ -9345,9 +9333,8 @@ svg.icon {
         QR.close();
       }
       QR.cleanNotifications();
-      if (Conf['Posting Success Notifications']) {
+      if (Conf['Posting Success Notifications'])
         QR.notifications.push(new Notice('success', h1.textContent, 5));
-      }
       QR.cooldown.add(threadID, postID);
       const URL = threadID === postID
         // new thread
@@ -9476,9 +9463,8 @@ svg.icon {
         QR.cooldown.maxDelay = 0;
         for (var type in QR.cooldown.delays) {
           var delay = QR.cooldown.delays[type];
-          if (!['thread', 'thread_global'].includes(type)) {
+          if (!['thread', 'thread_global'].includes(type))
             QR.cooldown.maxDelay = Math.max(QR.cooldown.maxDelay, delay);
-          }
         }
         QR.cooldown.isSetup = true;
         QR.cooldown.start();
@@ -9500,9 +9486,8 @@ svg.icon {
         const start = Date.now();
         const boardID = g.BOARD.ID;
         QR.cooldown.set(boardID, start, { threadID, postID });
-        if (threadID === postID) {
+        if (threadID === postID)
           QR.cooldown.set('global', start, { boardID, threadID, postID });
-        }
         QR.cooldown.save();
         QR.cooldown.start();
       },
@@ -9528,9 +9513,8 @@ svg.icon {
         const cooldowns = (QR.cooldown.data[post.board.ID] || (QR.cooldown.data[post.board.ID] = dict()));
         for (var id in cooldowns) {
           let cooldown = cooldowns[id];
-          if ((cooldown.delay == null) && (cooldown.threadID === post.thread.ID) && (cooldown.postID === post.ID)) {
+          if ((cooldown.delay == null) && (cooldown.threadID === post.thread.ID) && (cooldown.postID === post.ID))
             QR.cooldown.set(post.board.ID, id, null);
-          }
         }
         QR.cooldown.save();
       },
@@ -9641,9 +9625,8 @@ svg.icon {
                 var suffix = scope === 'global' ? '_global' : '';
                 seconds = Math.max(seconds, QR.cooldown.delays[type + suffix] - elapsed);
                 // If additional cooldown is enabled, add the configured seconds to the count.
-                if (QR.cooldown.customCooldown) {
+                if (QR.cooldown.customCooldown)
                   seconds = Math.max(seconds, parseInt(Conf.customCooldown, 10) - elapsed);
-                }
               }
             }
             nCooldowns += Object.keys(cooldowns).length;
@@ -9793,9 +9776,8 @@ svg.icon {
           type = 'sub';
         if (/always/i.test(item))
           QR.persona.always[type] = val;
-        if (!QR.persona.types[type].includes(val)) {
+        if (!QR.persona.types[type].includes(val))
           QR.persona.types[type].push(val);
-        }
       },
       load() {
         for (var type in QR.persona.types) {
@@ -9857,9 +9839,8 @@ svg.icon {
       $.on(this.nodes.rm, 'click', e => { e.stopPropagation(); this.rm(); });
       $.on(this.nodes.spoiler, 'change', e => {
         this.spoiler = e.target.checked;
-        if (this === QR.selected) {
+        if (this === QR.selected)
           QR.nodes.spoiler.checked = this.spoiler;
-        }
         return this.preventAutoPost();
       });
       for (var label of $$('label', el)) {
@@ -9892,9 +9873,8 @@ svg.icon {
         if (QR.selected === this)
           this.load();
       }); // load persona
-      if (select) {
+      if (select)
         this.select();
-      }
       this.unlock();
       QR.captcha.moreNeeded();
     }
@@ -10014,15 +9994,13 @@ svg.icon {
     }
     setComment(com) {
       this.com = com || null;
-      if (this === QR.selected) {
+      if (this === QR.selected)
         QR.nodes.com.value = this.com;
-      }
       return this.updateComment();
     }
     updateComment() {
-      if (this === QR.selected) {
+      if (this === QR.selected)
         QR.characterCount();
-      }
       this.nodes.span.textContent = this.com;
       QR.captcha.moreNeeded();
     }
@@ -10033,9 +10011,8 @@ svg.icon {
       e.stopPropagation();
       for (let i = QR.posts.length - 1; i >= 0; i--) {
         const post = QR.posts[i];
-        if (post.errors?.some(error => doc.contains(error))) {
+        if (post.errors?.some(error => doc.contains(error)))
           post.rm();
-        }
       }
     }
     error(className, message, link) {
@@ -10064,9 +10041,8 @@ svg.icon {
     dismissErrors(test = () => true) {
       if (this.errors) {
         for (var error of this.errors) {
-          if (doc.contains(error) && test(error)) {
+          if (doc.contains(error) && test(error))
             error.parentNode.previousElementSibling.click();
-          }
         }
       }
     }
@@ -10200,12 +10176,10 @@ svg.icon {
         ({ height, width } = el);
         this.nodes.el.dataset.height = height;
         this.nodes.el.dataset.width = width;
-        if ((height > QR.max_height) || (width > QR.max_width)) {
+        if ((height > QR.max_height) || (width > QR.max_width))
           this.fileError(`Image too large (image: ${height}x${width}px, max: ${QR.max_height}x${QR.max_width}px)`);
-        }
-        if ((height < QR.min_height) || (width < QR.min_width)) {
+        if ((height < QR.min_height) || (width < QR.min_width))
           this.fileError(`Image too small (image: ${height}x${width}px, min: ${QR.min_height}x${QR.min_width}px)`);
-        }
       } else {
         const { videoHeight, videoWidth, duration } = el;
         this.nodes.el.dataset.height = videoHeight;
@@ -10213,20 +10187,17 @@ svg.icon {
         this.nodes.el.dataset.duration = duration;
         const max_height = Math.min(QR.max_height, QR.max_height_video);
         const max_width = Math.min(QR.max_width, QR.max_width_video);
-        if ((videoHeight > max_height) || (videoWidth > max_width)) {
+        if ((videoHeight > max_height) || (videoWidth > max_width))
           this.fileError(`Video too large (video: ${videoHeight}x${videoWidth}px, max: ${max_height}x${max_width}px)`);
-        }
-        if ((videoHeight < QR.min_height) || (videoWidth < QR.min_width)) {
+        if ((videoHeight < QR.min_height) || (videoWidth < QR.min_width))
           this.fileError(`Video too small (video: ${videoHeight}x${videoWidth}px, min: ${QR.min_height}x${QR.min_width}px)`);
-        }
         if (!isFinite(duration)) {
           this.fileError('Video lacks duration metadata (try remuxing)');
         } else if (duration > QR.max_duration_video) {
           this.fileError(`Video too long (video: ${duration}s, max: ${QR.max_duration_video}s)`);
         }
-        if (BoardConfig.noAudio(g.BOARD.ID) && $.hasAudio(el)) {
+        if (BoardConfig.noAudio(g.BOARD.ID) && $.hasAudio(el))
           this.fileError('Audio not allowed');
-        }
       }
     }
     setThumbnail(el) {
@@ -10300,10 +10271,9 @@ svg.icon {
     }
     saveFilename() {
       this.file.newName = (this.filename || '').replace(/[/\\]/g, '-');
-      if (!QR.validExtension.test(this.filename)) {
-        // 4chan will truncate the filename if it has no extension.
+      // 4chan will truncate the filename if it has no extension.
+      if (!QR.validExtension.test(this.filename))
         this.file.newName += `.${$.getOwn(QR.extensionFromType, this.file.type) || 'jpg'}`;
-      }
     }
     updateFilename() {
       const long = `${this.filename} (${this.filesize})`;
@@ -11002,9 +10972,8 @@ svg.icon {
               this.event = e;
               this.delays = 0;
               $.queueTask(() => {
-                  if ((e === this.event) && (this.delays === 0)) {
+                  if ((e === this.event) && (this.delays === 0))
                       return location.href = e.detail.redirect;
-                  }
               });
           });
       },
@@ -11018,9 +10987,8 @@ svg.icon {
               if (e !== this.event)
                   return;
               this.delays--;
-              if (this.delays === 0) {
+              if (this.delays === 0)
                   return location.href = e.detail.redirect;
-              }
           };
       }
   };
@@ -17934,9 +17902,8 @@ svg.icon {
           },
           count() {
               clearTimeout(this.timer);
-              if (this.captchas.length) {
+              if (this.captchas.length)
                   this.timer = setTimeout(this.clear.bind(this), this.captchas[0].timeout - Date.now());
-              }
               this.updateCount();
           },
           updateCount() { $.event('CaptchaCount', this.captchas.length); }
@@ -18580,9 +18547,8 @@ svg.icon {
       thread.ipCount = m ? +m[1] : undefined;
     },
     parseInfo(post) {
-      if (post.info.tripcode == null && /!/.test(post.info.name)) {
+      if (post.info.tripcode == null && /!/.test(post.info.name))
         [, post.info.name, post.info.tripcode] = post.info.name.match(/(.*?) ?(!.*)/);
-      }
     },
     parseDate: (node) => new Date(node.dataset.utc * 1000),
     parseFile(post, file) {
@@ -18866,9 +18832,8 @@ svg.icon {
         for (var quote of $$('.quotelink', container)) {
           var href = quote.getAttribute('href');
           if (href[0] === '#') {
-            if (!this.sameThread(boardID, threadID)) {
+            if (!this.sameThread(boardID, threadID))
               quote.href = this.threadURL(boardID, threadID) + href;
-            }
           } else {
             let match = quote.href.match(SWYotsuba.regexp.quotelink);
             if (match && (this.sameThread(match[1], match[2]))) {
@@ -18904,9 +18869,8 @@ svg.icon {
             id: `t${data.no}`
           }));
         }
-        if (this.hat) {
+        if (this.hat)
           $.add(root, this.hat.cloneNode(false));
-        }
         $.add(root, thread.OP.nodes.root);
         if (data.omitted_posts || (!withReplies && data.replies)) {
           const [posts, files] = withReplies
@@ -18925,10 +18889,9 @@ svg.icon {
         if (data.spoiler && !Conf['Reveal Spoiler Thumbnails']) {
           src = `${staticPath}spoiler`;
           let spoilerRange = this.spoilerRange[thread.board];
-          if (spoilerRange) {
-            // Randomize the spoiler image.
+          // Randomize the spoiler image.
+          if (spoilerRange)
             src += (`-${thread.board}`) + Math.floor(1 + (spoilerRange * Math.random()));
-          }
           src += '.png';
           imgClass = 'spoiler-file';
           cssText = "--tn-w: 100; --tn-h: 100;";
@@ -18948,9 +18911,8 @@ svg.icon {
         const container = $.el('div', generateCatalogThreadHtml(thread, src, imgClass, data, postCount, fileCount, pageCount, staticPath, gifIcon));
         $.before(thread.OP.nodes.info, [...container.childNodes]);
         for (var br of $$('br', thread.OP.nodes.comment)) {
-          if (br.previousSibling && (br.previousSibling.nodeName === 'BR')) {
+          if (br.previousSibling && (br.previousSibling.nodeName === 'BR'))
             $.addClass(br, 'extra-linebreak');
-          }
         }
         const root = $.el('div', {
           className: 'thread catalog-thread',
@@ -18965,9 +18927,8 @@ svg.icon {
       },
       catalogReply(thread, data) {
         let excerpt = '';
-        if (data.com) {
+        if (data.com)
           excerpt = this.parseCommentDisplay(data.com).replace(/>>\d+/g, '').trim().replace(/\n+/g, ' // ');
-        }
         if (data.ext)
           excerpt || (excerpt = `${$.unescape(data.filename)}${data.ext}`);
         if (data.com)
@@ -19171,9 +19132,8 @@ $\
                           o.files.push(file);
                       }
                   }
-                  if (o.files.length) {
+                  if (o.files.length)
                       o.file = o.files[0];
-                  }
               }
               return o;
           },
@@ -19189,9 +19149,8 @@ $\
       preParsingFixes(board) {
           // fixes effects of unclosed link in announcement
           let broken = $('a > input[name="board"]', board);
-          if (broken) {
+          if (broken)
               return $.before(broken.parentNode, broken);
-          }
       },
       parseNodes(post, nodes) {
           // Add vichan's span.poster_id around the ID if not already present.
@@ -20667,13 +20626,11 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       set(hostname) {
           for (var ID in Conf.siteProperties) {
               var properties = Conf.siteProperties[ID];
-              if (properties.canonical) {
+              if (properties.canonical)
                   continue;
-              }
               var { software } = properties;
-              if (!software || !$.hasOwn(SW, software)) {
+              if (!software || !$.hasOwn(SW, software))
                   continue;
-              }
               let site = Object.create(SW[software]);
               g.sites[ID] = site;
               $.extend(site, { ID, siteID: ID, properties, software });
