@@ -108,8 +108,8 @@
   'use strict';
 
   var version = {
-    "version": "2.31.2",
-    "date": "2026-08-26T09:09:09Z"
+    "version": "2.31.3",
+    "date": "2026-09-02T09:09:09Z"
   }
   ;
 
@@ -1696,9 +1696,7 @@
       return url;
     },
     file(archive, { boardID, filename }) {
-      if (!filename)
-        return '';
-      if (/[sm]\.jpg$/.test(filename))
+      if (!filename || /[sm]\.jpg$/.test(filename))
         return '';
       if (archive.name.endsWith('arch.b4k.co') || archive.name.endsWith('Desuarchive')) {
         const [timeStamp, ext] = filename.split('.');
@@ -15330,6 +15328,18 @@ svg.icon {
           if (Conf['Image Resolution'] && (post = g.posts.get(file.dataset.post)) && post.file.dimensions) {
               const [w, h] = post.file.dimensions.split('x');
               nodes.dimensions.innerText = `${w} x ${h} px`;
+          }
+          // Download button
+          if (nodes.download)
+              $.rm(nodes.download);
+          delete nodes.download;
+          if (Conf['File Info Formatting'] && (post = g.posts.get(file.dataset.post))) {
+              const srcButton = $('.file-info .download-button', post.file.text);
+              if (srcButton && srcButton.href === thumb.href) {
+                  nodes.download = srcButton.cloneNode(true);
+                  $.on(nodes.download, 'click', ImageCommon.download);
+                  $.add(nodes.buttons, nodes.download);
+              }
           }
           // Set sauce links
           $.rmAll(nodes.sauce);

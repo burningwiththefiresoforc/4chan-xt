@@ -2,6 +2,10 @@
 
 4chan XT uses a different user script namespace than 4chan X, so to migrate you need to export settings from 4chan X, and import them in XT.
 
+### 2.31.3 (2026-09-02)
+
+- Added download button in Gallery mode.
+
 ### 2.31.2 (2026-08-26)
 
 - Improved tab styling for the settings menu. Unfortunately due to oddities with Oneechan's design, I found difficulty supporting its colors for the tabs so they just fall back to a default, those will probably require custom styling.
