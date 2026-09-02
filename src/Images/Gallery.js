@@ -249,6 +249,18 @@ const Gallery = {
       nodes.dimensions.innerText = `${w} x ${h} px`;
     }
 
+    // Download button
+    if (nodes.download) $.rm(nodes.download);
+    delete nodes.download;
+    if (Conf['File Info Formatting'] && (post = g.posts.get(file.dataset.post))) {
+      const srcButton = $('.file-info .download-button', post.file.text);
+      if (srcButton && srcButton.href === thumb.href) {
+        nodes.download = srcButton.cloneNode(true);
+        $.on(nodes.download, 'click', ImageCommon.download);
+        $.add(nodes.buttons, nodes.download);
+      }
+    }
+
     // Set sauce links
     $.rmAll(nodes.sauce);
     if (Conf.Sauce && Sauce.links && (post = g.posts.get(file.dataset.post))) {

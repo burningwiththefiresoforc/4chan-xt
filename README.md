@@ -20,6 +20,8 @@ Please send pull requests if you think you can optimize or improve the function 
 
 If you're looking for more styling options, I personally use [Stylechan](https://github.com/3nly/StyleChan), an actively maintained fork of [Oneechan](https://github.com/KevinParnell/OneeChan).
 
+[This](https://pastebin.com/raw/AdvyhQ5G) is the captcha formatter that I prefer to use. I am not the original dev but I am responsible for all versions after [1.0](https://pastebin.com/kBrAWU7D) except 1.2.6. To prevent scope creep, I will not be adding it to this codebase, especially since scripts interacting with the captcha are liable to be obsoleted relatively quickly on 4chan.
+
 Credit to
 
 [no1d](https://github.com/no1d) -- [Soundpost on hover](https://github.com/TuxedoTako/4chan-xt/pull/204)
