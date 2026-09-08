@@ -168,8 +168,12 @@ var CrossOrigin = {
               try {
                 response = JSON.parse(xhr.responseText);
               } catch (error) {
-                console.error(error);
-                console.error(xhr);
+                if ([200, 304].includes(xhr.status)) {
+                  console.error(error);
+                  console.error(xhr);
+                } else {
+                  console.debug(xhr);
+                }
                 response = null; // don't leak the raw text through as if it were valid JSON
                 parseFailed = true;
               }

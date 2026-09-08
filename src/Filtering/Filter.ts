@@ -270,7 +270,13 @@ var Filter = {
               }
             }
           }
-          if (filter.hl && !hl?.includes(filter.hl)) (hl || (hl = [])).push(filter.hl);
+          if (filter.hl) {
+            if (!hl?.includes(filter.hl)) (hl || (hl = [])).push(filter.hl);
+            if (Conf['Always Show Highlighted Threads']) {
+              hide = false
+              hideable = false
+            }
+          }
           if (!top) ({top} = filter);
           if (filter.noti) noti = true;
           if (filter.poster) poster = true;
@@ -340,6 +346,7 @@ var Filter = {
       }
     }
     if (hl) {
+      this.thread.isHighlighted = true;
       this.highlights = hl;
       $.addClass(this.nodes.root, ...hl);
       if (this.isReply) {

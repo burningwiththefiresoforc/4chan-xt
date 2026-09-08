@@ -19,6 +19,7 @@ export default class Thread {
   declare posts: SimpleDict<Post>;
   declare isDead: boolean;
   declare isHidden: boolean;
+  declare isHighlighted: boolean;
   declare isSticky: boolean;
   declare isClosed: boolean;
   declare isArchived: boolean;

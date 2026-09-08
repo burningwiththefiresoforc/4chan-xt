@@ -18,7 +18,7 @@ import Icon from '../Icons/icon';
  */
 var ThreadHiding = {
   init() {
-    if (!['index', 'catalog'].includes(g.VIEW) || (!Conf['Thread Hiding Buttons'] && !(Conf.Menu && Conf['Thread Hiding Link']) && !Conf['JSON Index'])) return;
+    if (!['index', 'catalog'].includes(g.VIEW) || (!Conf['Thread Hiding Buttons'] && !(Conf.Menu && Conf['Thread Hiding Link']) && !Conf['JSON Index']) ) return;
     this.db = new DataBoard('hiddenThreads');
     if (g.VIEW === 'catalog') return this.catalogWatch();
     this.catalogSet(g.BOARD);
@@ -143,6 +143,7 @@ var ThreadHiding = {
     },
 
     hide() {
+      if (thread.isHighlighted && Conf['Always Show Highlighted Threads']) return;
       const makeStub = $('input', this.parentNode).checked;
       const {thread} = ThreadHiding.menu;
       ThreadHiding.hide(thread, makeStub, 'Hidden manually');

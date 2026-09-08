@@ -297,33 +297,6 @@ $.event = (event, detail, root: EventTarget = d) => {
   root.dispatchEvent(new CustomEvent(event, {bubbles: true, cancelable: true, detail}));
 };
 
-// if (platform === 'userscript') {
-//   // XXX Make $.event work in Pale Moon with GM 3.x (no cloneInto function).
-//   (function() {
-//     if (!/PaleMoon\//.test(navigator.userAgent) || (+GM_info?.version?.split('.')[0] < 2) || (typeof cloneInto !== 'undefined')) { return; }
-//
-//     try {
-//       return new CustomEvent('x', {detail: {}});
-//     } catch (err) {
-//       const unsafeConstructors = {
-//         Object: unsafeWindow.Object,
-//         Array:  unsafeWindow.Array
-//       };
-//       var clone = function(obj) {
-//         let constructor;
-//         if ((obj != null) && (typeof obj === 'object') && (constructor = unsafeConstructors[obj.constructor.name])) {
-//           const obj2 = new constructor();
-//           for (var key in obj) { var val = obj[key]; obj2[key] = clone(val); }
-//           return obj2;
-//         } else {
-//           return obj;
-//         }
-//       };
-//       return $.event = (event, detail, root=d) => root.dispatchEvent(new CustomEvent(event, {bubbles: true, cancelable: true, detail: clone(detail)}));
-//     }
-//   })();
-// }
-
 $.modifiedClick = e => e.shiftKey || e.altKey || e.ctrlKey || e.metaKey || (e.button !== 0);
 
 if (!globalThis.chrome?.extension) {

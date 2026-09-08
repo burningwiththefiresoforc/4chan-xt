@@ -20,7 +20,7 @@ Please send pull requests if you think you can optimize or improve the function 
 
 If you're looking for more styling options, I personally use [Stylechan](https://github.com/3nly/StyleChan), an actively maintained fork of [Oneechan](https://github.com/KevinParnell/OneeChan).
 
-[This](https://pastebin.com/raw/AdvyhQ5G) is the captcha formatter that I prefer to use. I am not the original dev but I am responsible for all versions after [1.0](https://pastebin.com/kBrAWU7D) except 1.2.6. To prevent scope creep, I will not be adding it to this codebase, especially since scripts interacting with the captcha are liable to be obsoleted relatively quickly on 4chan.
+[This](https://pastebin.com/raw/AdvyhQ5G) is the captcha formatter that I prefer to use. I am not the original author, but I am responsible for all versions after [1.0](https://pastebin.com/kBrAWU7D) except 1.2.6. To prevent scope creep, I will not be adding it to this codebase, especially since scripts interacting with the captcha are liable to be obsoleted relatively quickly on 4chan.
 
 Credit to
 
@@ -34,9 +34,15 @@ Credit to
 
 [Duane Moody](https://github.com/duanemoody) -- [Settings tabs](https://github.com/ccd0/4chan-x/pull/2867) (Originally for 4chan-X)
 
+[Squawks](https://github.com/Squawks) -- [Highlighting Overrides Hiding Option](https://github.com/ccd0/4chan-x/pull/3284) (Originally for 4chan-X)
+
 [Nick S. B.](https://github.com/nick-s-b) && [Kalle Leskinen](https://github.com/KalleLeskinen) -- I stole their [desuarchive fix](https://github.com/nick-s-b/4chan-xt/pull/6)
 
 [figamin](https://github.com/figamin) && [RyanHx](https://github.com/RyanHx) -- I stole their [WEBM controls fix](https://github.com/figamin/Allchan-XT-Plus/pull/1)
+
+4chan X/XT was previously developed by [TuxedoTako](https://github.com/TuxedoTako), [ccd0](https://github.com/ccd0/4chan-x), [aeosynth](https://github.com/aeosynth/4chan-x), [Mayhem](https://github.com/MayhemYDG/4chan-x), [ihavenoface](https://github.com/ihavenoface/4chan-x), [Zixaphir](https://github.com/zixaphir/appchan-x), [Seaweed](https://github.com/seaweedchan/4chan-x), and [Spittie](https://github.com/Spittie/4chan-x), with contributions from many others.
+
+Thanks to all.
 
 Other features and fixes:
 
@@ -48,6 +54,8 @@ Other features and fixes:
 
 - Linkification for magnets works a little better now
 
+- Gallery download button
+
 - Several other little bugfixes
 
 ### TODO
@@ -55,7 +63,6 @@ Other features and fixes:
 <details>
 
 - [ ] Clean up circular dependencies
-- [ ] Flash is no longer supported
 
 </details>
 
