@@ -40,6 +40,8 @@ Credit to
 
 [figamin](https://github.com/figamin) && [RyanHx](https://github.com/RyanHx) -- I stole their [WEBM controls fix](https://github.com/figamin/Allchan-XT-Plus/pull/1)
 
+[Kody](https://github.com/mkody) -- Owner of [tf.rita.moe](https://tf.rita.moe/)
+
 4chan X/XT was previously developed by [TuxedoTako](https://github.com/TuxedoTako), [ccd0](https://github.com/ccd0/4chan-x), [aeosynth](https://github.com/aeosynth/4chan-x), [Mayhem](https://github.com/MayhemYDG/4chan-x), [ihavenoface](https://github.com/ihavenoface/4chan-x), [Zixaphir](https://github.com/zixaphir/appchan-x), [Seaweed](https://github.com/seaweedchan/4chan-x), and [Spittie](https://github.com/Spittie/4chan-x), with contributions from many others.
 
 Thanks to all.
