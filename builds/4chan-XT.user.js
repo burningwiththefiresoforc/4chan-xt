@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         4chan XT
-// @version      2.31.3
+// @version      2.32.0
 // @minGMVer     4.00
 // @minFFVer     115
 // @namespace    4chan-XT
@@ -181,8 +181,8 @@
   'use strict';
 
   var version = {
-    "version": "2.31.3",
-    "date": "2026-09-02T09:09:09Z"
+    "version": "2.32.0",
+    "date": "2026-09-07T09:09:09Z"
   }
   ;
 
@@ -792,32 +792,6 @@
     }
     root.dispatchEvent(new CustomEvent(event, { bubbles: true, cancelable: true, detail }));
   };
-  //
-  //   // XXX Make $.event work in Pale Moon with GM 3.x (no cloneInto function).
-  //   (function() {
-  //     if (!/PaleMoon\//.test(navigator.userAgent) || (+GM_info?.version?.split('.')[0] < 2) || (typeof cloneInto !== 'undefined')) { return; }
-  //
-  //     try {
-  //       return new CustomEvent('x', {detail: {}});
-  //     } catch (err) {
-  //       const unsafeConstructors = {
-  //         Object: unsafeWindow.Object,
-  //         Array:  unsafeWindow.Array
-  //       };
-  //       var clone = function(obj) {
-  //         let constructor;
-  //         if ((obj != null) && (typeof obj === 'object') && (constructor = unsafeConstructors[obj.constructor.name])) {
-  //           const obj2 = new constructor();
-  //           for (var key in obj) { var val = obj[key]; obj2[key] = clone(val); }
-  //           return obj2;
-  //         } else {
-  //           return obj;
-  //         }
-  //       };
-  //       return $.event = (event, detail, root=d) => root.dispatchEvent(new CustomEvent(event, {bubbles: true, cancelable: true, detail: clone(detail)}));
-  //     }
-  //   })();
-  //
   $.modifiedClick = e => e.shiftKey || e.altKey || e.ctrlKey || e.metaKey || (e.button !== 0);
   if (!globalThis.chrome?.extension) {
     $.open = (GM?.openInTab != null)
@@ -1618,8 +1592,12 @@
                 try {
                   response = JSON.parse(xhr.responseText);
                 } catch (error) {
-                  console.error(error);
-                  console.error(xhr);
+                  if ([200, 304].includes(xhr.status)) {
+                    console.error(error);
+                    console.error(xhr);
+                  } else {
+                    console.debug(xhr);
+                  }
                   response = null; // don't leak the raw text through as if it were valid JSON
                   parseFailed = true;
                 }
@@ -2864,6 +2842,10 @@ div.boardTitle {
               'Reply Hiding Buttons': [
                   true,
                   'Add buttons to hide single replies.'
+              ],
+              'Always Show Highlighted Threads': [
+                  false,
+                  'Make thread highlighting override hiding.'
               ],
               'Stubs': [
                   true,
@@ -14922,6 +14904,8 @@ svg.icon {
               });
           },
           hide() {
+              if (thread.isHighlighted && Conf['Always Show Highlighted Threads'])
+                  return;
               const makeStub = $('input', this.parentNode).checked;
               const { thread } = ThreadHiding.menu;
               ThreadHiding.hide(thread, makeStub, 'Hidden manually');
@@ -20257,8 +20241,14 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
                 }
               }
             }
-            if (filter.hl && !hl?.includes(filter.hl))
-              (hl || (hl = [])).push(filter.hl);
+            if (filter.hl) {
+              if (!hl?.includes(filter.hl))
+                (hl || (hl = [])).push(filter.hl);
+              if (Conf['Always Show Highlighted Threads']) {
+                hide = false;
+                hideable = false;
+              }
+            }
             if (!top)
               ({ top } = filter);
             if (filter.noti)
@@ -20324,6 +20314,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         }
       }
       if (hl) {
+        this.thread.isHighlighted = true;
         this.highlights = hl;
         $.addClass(this.nodes.root, ...hl);
         if (this.isReply) {

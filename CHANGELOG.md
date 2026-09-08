@@ -2,6 +2,10 @@
 
 4chan XT uses a different user script namespace than 4chan X, so to migrate you need to export settings from 4chan X, and import them in XT.
 
+### 2.32.0 (2026-09-07)
+
+- Added option to make highlighting override hiding in filters.
+
 ### 2.31.3 (2026-09-02)
 
 - Added download button in Gallery mode.

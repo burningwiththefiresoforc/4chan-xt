@@ -108,8 +108,8 @@
   'use strict';
 
   var version = {
-    "version": "2.31.3",
-    "date": "2026-09-02T09:09:09Z"
+    "version": "2.32.0",
+    "date": "2026-09-07T09:09:09Z"
   }
   ;
 
@@ -719,8 +719,6 @@
     }
     root.dispatchEvent(new CustomEvent(event, { bubbles: true, cancelable: true, detail }));
   };
-  //
-
   $.modifiedClick = e => e.shiftKey || e.altKey || e.ctrlKey || e.metaKey || (e.button !== 0);
   if (!globalThis.chrome?.extension) {
     $.open = (GM?.openInTab != null)
@@ -2662,6 +2660,10 @@ div.boardTitle {
               'Reply Hiding Buttons': [
                   true,
                   'Add buttons to hide single replies.'
+              ],
+              'Always Show Highlighted Threads': [
+                  false,
+                  'Make thread highlighting override hiding.'
               ],
               'Stubs': [
                   true,
@@ -14720,6 +14722,8 @@ svg.icon {
               });
           },
           hide() {
+              if (thread.isHighlighted && Conf['Always Show Highlighted Threads'])
+                  return;
               const makeStub = $('input', this.parentNode).checked;
               const { thread } = ThreadHiding.menu;
               ThreadHiding.hide(thread, makeStub, 'Hidden manually');
@@ -20055,8 +20059,14 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
                 }
               }
             }
-            if (filter.hl && !hl?.includes(filter.hl))
-              (hl || (hl = [])).push(filter.hl);
+            if (filter.hl) {
+              if (!hl?.includes(filter.hl))
+                (hl || (hl = [])).push(filter.hl);
+              if (Conf['Always Show Highlighted Threads']) {
+                hide = false;
+                hideable = false;
+              }
+            }
             if (!top)
               ({ top } = filter);
             if (filter.noti)
@@ -20122,6 +20132,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         }
       }
       if (hl) {
+        this.thread.isHighlighted = true;
         this.highlights = hl;
         $.addClass(this.nodes.root, ...hl);
         if (this.isReply) {

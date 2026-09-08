@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         4chan XT
-// @version      2.31.3
+// @version      2.32.0
 // @minGMVer     4.00
 // @minFFVer     115
 // @namespace    4chan-XT
