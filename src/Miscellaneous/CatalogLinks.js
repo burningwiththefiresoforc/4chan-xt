@@ -1,5 +1,4 @@
 import Callbacks from "../classes/Callbacks";
-import Filter from "../Filtering/Filter";
 import $ from "../platform/$";
 import $$ from "../platform/$$";
 import meta from '../../package.json';
@@ -10,6 +9,7 @@ import { g, Conf } from "../globals/globals";
 import UI from "../General/UI";
 import Get from "../General/Get";
 import { dict } from "../platform/helpers";
+import { parseBoards } from "../Filtering/parseBoards";
 
 /*
  * decaffeinate suggestions:
@@ -120,13 +120,14 @@ const CatalogLinks = {
     }
   },
 
+
   externalParse() {
     CatalogLinks.externalList = dict();
     for (const line of Conf.externalCatalogURLs.split('\n')) {
       if (line[0] === '#') continue;
       const url = line.split(';')[0];
-      const boards   = Filter.parseBoards(line.match(/;boards:([^;]+)/)?.[1] || '*');
-      const excludes = Filter.parseBoards(line.match(/;exclude:([^;]+)/)?.[1]) || dict();
+      const boards   = parseBoards(line.match(/;boards:([^;]+)/)?.[1] || '*');
+      const excludes = parseBoards(line.match(/;exclude:([^;]+)/)?.[1]) || dict();
       for (const board in boards) {
         if (!excludes[board] && !excludes[board.split('/')[0] + '/*']) {
           CatalogLinks.externalList[board] = url;

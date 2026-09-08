@@ -14,6 +14,7 @@ import PostHiding from "./PostHiding";
 import ThreadHiding from "./ThreadHiding";
 import Post from "../classes/Post";
 import Recursive from "./Recursive";
+import { parseBoards } from "./parseBoards";
 
 /*
  * decaffeinate suggestions:
@@ -112,10 +113,10 @@ var Filter = {
         if (options) {
 
           // List of the boards this filter applies to.
-          boards = this.parseBoards(options.match(/(?:^|;)\s*boards:([^;]+)/)?.[1]);
+          boards = parseBoards(options.match(/(?:^|;)\s*boards:([^;]+)/)?.[1]);
 
           // Boards to exclude from an otherwise global rule.
-          excludes = this.parseBoards(options.match(/(?:^|;)\s*exclude:([^;]+)/)?.[1]);
+          excludes = parseBoards(options.match(/(?:^|;)\s*exclude:([^;]+)/)?.[1]);
 
           // Filter OPs along with their threads or replies only.
           const op = options.match(/(?:^|;)\s*op:(no|only)/)?.[1] || '';
@@ -195,35 +196,6 @@ var Filter = {
       });
     }
   },
-
-  // Parse comma-separated list of boards.
-  // Sites can be specified by a beginning part of the site domain followed by a colon.
-  parseBoards(boardsRaw: string) {
-    if (!boardsRaw) return false;
-    let boards = Filter.parseBoardsMemo[boardsRaw];
-    if (boards) return boards;
-    boards = dict();
-    let siteFilter = '';
-    for (var boardID of boardsRaw.split(',')) {
-      if (boardID.includes(':')) [siteFilter, boardID] = boardID.split(':').slice(-2);
-      for (var siteID in g.sites) {
-        var site = g.sites[siteID];
-        if (siteID.slice(0, siteFilter.length) === siteFilter) {
-          if (['nsfw', 'sfw'].includes(boardID)) {
-            for (var boardID2 of site.sfwBoards?.(boardID === 'sfw') || []) {
-              boards[`${siteID}/${boardID2}`] = true;
-            }
-          } else {
-            boards[`${siteID}/${encodeURIComponent(boardID)}`] = true;
-          }
-        }
-      }
-    }
-    Filter.parseBoardsMemo[boardsRaw] = boards;
-    return boards;
-  },
-
-  parseBoardsMemo: dict(),
 
   test(post: Post, hideable = true): FilterResults {
     if (post.filterResults) return post.filterResults;
