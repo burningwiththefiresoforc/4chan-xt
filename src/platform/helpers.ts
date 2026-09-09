@@ -29,6 +29,18 @@ export const debounce = (wait: number, fn: Function, leading = true) => {
   };
 };
 
+export function ready(fn) {
+  if (document.readyState !== 'loading') {
+    queueMicrotask(fn);
+    return;
+  }
+  const cb = () => {
+    document.removeEventListener('DOMContentLoaded', cb);
+    fn();
+  };
+  document.addEventListener('DOMContentLoaded', cb);
+}
+
 export const dict = () => Object.create(null);
 
 dict.clone = function (obj) {

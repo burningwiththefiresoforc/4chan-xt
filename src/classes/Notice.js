@@ -1,9 +1,9 @@
 import { d } from "../globals/globals";
-import $ from "../platform/$";
-import { SECOND } from "../platform/helpers";
+import { ready, SECOND } from "../platform/helpers";
 import Icon from '../Icons/icon';
 
-export const noticesRoot = $.el('div', { id: 'notifications' });
+export const noticesRoot = document.createElement('div');
+noticesRoot.id = 'notifications';
 
 export default class Notice {
   constructor(type, content, timeout, onclose) {
@@ -11,18 +11,20 @@ export default class Notice {
     this.close = this.close.bind(this);
     this.timeout = timeout;
     this.onclose = onclose;
-    this.el = $.el('div', {
-      innerHTML: `<a href="javascript:;" class="close" title="Close">${Icon.get('xmark')}</a><div class="message"></div>`
-    });
+
+    this.el = document.createElement('div');
+    this.el.innerHTML = `<a href="javascript:;" class="close" title="Close">${Icon.get('xmark')}</a><div class="message"></div>`;
     this.el.style.opacity = 0;
     this.setType(type);
-    $.on(this.el.firstElementChild, 'click', this.close);
-    if (typeof content === 'string') {
-      content = $.tn(content);
-    }
-    $.add(this.el.lastElementChild, content);
 
-    $.ready(this.add);
+    this.el.firstElementChild.addEventListener('click', this.close);
+
+    if (typeof content === 'string') {
+      content = document.createTextNode(content);
+    }
+    this.el.lastElementChild.appendChild(content);
+
+    ready(this.add);
   }
 
   setType(type) { this.el.className = `notification ${type}`; }
@@ -30,11 +32,11 @@ export default class Notice {
   add() {
     if (this.closed) return;
     if (d.hidden) {
-      $.on(d, 'visibilitychange', this.add);
+      d.addEventListener('visibilitychange', this.add);
       return;
     }
-    $.off(d, 'visibilitychange', this.add);
-    $.add(noticesRoot, this.el);
+    d.removeEventListener('visibilitychange', this.add);
+    noticesRoot.appendChild(this.el);
     this.el.clientHeight; // force reflow
     this.el.style.opacity = 1;
     if (this.timeout) this.timeoutId = setTimeout(this.close, this.timeout * SECOND);
@@ -43,8 +45,8 @@ export default class Notice {
   close() {
     if (this.timeoutId) clearTimeout(this.timeoutId);
     this.closed = true;
-    $.off(d, 'visibilitychange', this.add);
-    $.rm(this.el);
+    d.removeEventListener('visibilitychange', this.add);
+    this.el.remove();
     this.onclose?.();
   }
 
