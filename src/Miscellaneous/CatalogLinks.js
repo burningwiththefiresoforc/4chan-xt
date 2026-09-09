@@ -2,12 +2,12 @@ import Callbacks from "../classes/Callbacks";
 import $ from "../platform/$";
 import $$ from "../platform/$$";
 import meta from '../../package.json';
-import Index from "../General/Index";
-import Site from "../site/Site";
 import { g, Conf } from "../globals/globals";
 import Get from "../General/Get";
 import { dict } from "../platform/helpers";
 import { parseBoards } from "../Filtering/parseBoards";
+import { indexEnabledOn } from "../site/IndexEnabled";
+import { parseURL } from "./ResolveURL";
 
 /*
  * decaffeinate suggestions:
@@ -132,7 +132,7 @@ const CatalogLinks = {
     let external, nativeCatalog;
     if (Conf['External Catalog'] && (external = CatalogLinks.external(board))) {
       return external;
-    } else if (Index.enabledOn(board) && Conf[`Use ${meta.name} Catalog`]) {
+    } else if (indexEnabledOn(board) && Conf[`Use ${meta.name} Catalog`]) {
       return CatalogLinks.jsonIndex(board, '#catalog');
     } else if (nativeCatalog = Get.url('catalog', board)) {
       return nativeCatalog;
@@ -141,7 +141,7 @@ const CatalogLinks = {
     }
   },
 
-  index: (board=g.BOARD) => Index.enabledOn(board)
+  index: (board=g.BOARD) => indexEnabledOn(board)
     ? CatalogLinks.jsonIndex(board, '#index') : Get.url('index', board);
 
 };
