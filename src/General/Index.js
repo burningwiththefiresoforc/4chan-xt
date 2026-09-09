@@ -27,7 +27,6 @@ import Header from './Header';
 import UI from './UI';
 import Menu from '../Menu/Menu';
 import { setIndexEnabled } from "./State"
-
 import NavLinksPage from './Index/NavLinks.html';
 import PageList from './Index/PageList.html';
 import BoardConfig from './BoardConfig';
