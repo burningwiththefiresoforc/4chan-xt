@@ -100,7 +100,7 @@ var Menu = (function() {
 
       this.setPosition();
 
-      firstEntry = $('.entry', menu);
+      let firstEntry = $('.entry', menu);
       // We've removed flexbox, so we don't use order anymore.
       // while prevEntry = @findNextEntry entry, -1
       //   entry = prevEntry

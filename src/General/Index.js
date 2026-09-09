@@ -27,19 +27,17 @@ import Header from './Header';
 import UI from './UI';
 import Menu from '../Menu/Menu';
 import { setIndexEnabled } from "./State"
-
 import NavLinksPage from './Index/NavLinks.html';
 import PageList from './Index/PageList.html';
 import BoardConfig from './BoardConfig';
 import Get from './Get';
 import { dict, SECOND } from '../platform/helpers';
 import Icon from '../Icons/icon';
+import { indexEnabledOn } from "../site/IndexEnabled";
 
 var Index = {
   showHiddenThreads: false,
   changed: {},
-
-  enabledOn: ({siteID}) => Conf['JSON Index'] && g.sites[siteID].software === 'yotsuba',
 
   init() {
     let input, inputs, name;
@@ -49,7 +47,7 @@ var Index = {
     $.one(d, '4chanXInitFinished', this.cb.initFinished);
     $.on(d, 'PostsInserted', this.cb.postsInserted);
 
-    if (!this.enabledOn(g.BOARD)) return;
+    if (!indexEnabledOn(g.BOARD)) return;
 
     setIndexEnabled(true);
 
@@ -251,7 +249,7 @@ var Index = {
 
   menu: {
     init() {
-      if ((g.VIEW !== 'index') || !Conf.Menu || !Conf['Thread Hiding Link'] || !Index.enabledOn(g.BOARD)) return;
+      if ((g.VIEW !== 'index') || !Conf.Menu || !Conf['Thread Hiding Link'] || !indexEnabledOn(g.BOARD)) return;
 
       Menu.menu.addEntry({
         el: $.el('a', {

@@ -24,6 +24,8 @@ import QuoteYou from "../Quotelinks/QuoteYou";
 import CatalogLinks from "./CatalogLinks";
 import ExpandThread from "./ExpandThread";
 import Nav from "./Nav";
+import { indexEnabledOn } from "../site/IndexEnabled";
+
 
 /*
  * decaffeinate suggestions:
@@ -267,7 +269,7 @@ var Keybinds = {
         hasAction = true;
       }
     }
-    if (mode && Index.enabledOn(g.BOARD)) {
+    if (mode && indexEnabledOn(g.BOARD)) {
       location.href = g.VIEW === 'index' ? `#${mode}` : `/${g.BOARD}/#${mode}`;
     }
     if (key === Conf['Open catalog'] && (catalog = CatalogLinks.catalog())) {
