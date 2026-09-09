@@ -1,8 +1,8 @@
 import { Conf, doc, g } from "../globals/globals";
-import Main from "../main/Main";
 import $ from "../platform/$";
 import { dict } from "../platform/helpers";
 import SW from "./SW";
+import { resolve } from "../Miscellaneous/ResolveURL";
 
 /*
  * decaffeinate suggestions:
@@ -18,7 +18,7 @@ var Site = {
 
   init(cb) {
     $.extend(Conf.siteProperties, Site.defaultProperties);
-    let hostname = Site.resolve();
+    let hostname = resolve();
     if (hostname && $.hasOwn(SW, Conf.siteProperties[hostname].software)) {
       this.set(hostname);
       cb();
@@ -46,23 +46,6 @@ var Site = {
         }
       }
     });
-  },
-
-  resolve(url=location) {
-    let {hostname} = url;
-    while (hostname && !$.hasOwn(Conf.siteProperties, hostname)) {
-      hostname = hostname.replace(/^[^.]*\.?/, '');
-    }
-    if (hostname) {
-      let canonical = Conf.siteProperties[hostname].canonical;
-      if (canonical) hostname = canonical;
-    }
-    return hostname;
-  },
-
-  parseURL(url) {
-    const siteID = Site.resolve(url);
-    return Main.parseURL(g.sites[siteID], url);
   },
 
   set(hostname) {

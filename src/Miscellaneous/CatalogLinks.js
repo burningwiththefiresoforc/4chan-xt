@@ -82,7 +82,7 @@ const CatalogLinks = {
       let {siteID, boardID} = a.dataset;
       if (!siteID || !boardID) {
         let VIEW;
-        ({siteID, boardID, VIEW} = Site.parseURL(a));
+        ({siteID, boardID, VIEW} = parseURL(a));
         if ( !siteID || !boardID || !['index', 'catalog'].includes(VIEW) || (!a.dataset.indexOptions && (a.href.replace(tail, '') !== (Get.url(VIEW, {siteID, boardID}) || '').replace(tail, '')))) continue;
         $.extend(a.dataset, {siteID, boardID});
       }
