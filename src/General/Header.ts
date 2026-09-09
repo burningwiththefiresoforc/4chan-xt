@@ -48,6 +48,15 @@ var Header = {
       href: 'javascript:;'
     });
 
+    let catalogLinksToggler;
+    if (Conf['Catalog Links']) {
+      catalogLinksToggler = UI.checkbox('Header catalog links', 'Catalog Links');
+      catalogLinksToggler.id = 'toggleCatalog';
+      this.catalogLinksToggler = catalogLinksToggler;
+      $.on($('input', catalogLinksToggler), 'change', this.toggleCatalogLinks);
+      $.sync('Header catalog links', this.updateCatalogLinks);
+    }
+
     this.barFixedToggler     = barFixedToggler.firstElementChild;
     this.scrollHeaderToggler = scrollHeaderToggler.firstElementChild;
     this.barPositionToggler  = barPositionToggler.firstElementChild;
@@ -97,7 +106,8 @@ var Header = {
           {el: footerToggler},
           {el: shortcutToggler},
           {el: customNavToggler},
-          {el: editCustomNav}
+          {el: editCustomNav},
+          ...(catalogLinksToggler ? [{el: catalogLinksToggler}] : [])
       ]});
 
     $.on(d, 'CreateNotification', this.createNotification);
@@ -345,6 +355,23 @@ var Header = {
     }
 
     return a;
+  },
+
+  toggleCatalogLinks() {
+    $.event('CloseMenu');
+    const useCatalog = this.checked;
+    $.set('Header catalog links', useCatalog);
+    CatalogLinks.set(useCatalog);
+    Header.updateCatalogLinks(useCatalog);
+  },
+
+  updateCatalogLinks(useCatalog) {
+    if (Header.catalogLinksToggler) {
+      Header.catalogLinksToggler.title = `Turn catalog links ${useCatalog ? 'off' : 'on'}.`;
+      $('input', Header.catalogLinksToggler).checked = useCatalog;
+    }
+    CatalogLinks.setLinks(Header.boardList);
+    CatalogLinks.setLinks(Header.bottomBoardList);
   },
 
   applyToggle(condition, ...targets) {

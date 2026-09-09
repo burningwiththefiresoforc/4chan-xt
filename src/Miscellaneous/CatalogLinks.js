@@ -4,9 +4,7 @@ import $$ from "../platform/$$";
 import meta from '../../package.json';
 import Index from "../General/Index";
 import Site from "../site/Site";
-import Header from "../General/Header";
 import { g, Conf } from "../globals/globals";
-import UI from "../General/UI";
 import Get from "../General/Get";
 import { dict } from "../platform/helpers";
 import { parseBoards } from "../Filtering/parseBoards";
@@ -60,15 +58,7 @@ const CatalogLinks = {
       });
     }
 
-    if (this.enabled = Conf['Catalog Links']) {
-      let el = UI.checkbox('Header catalog links', 'Catalog Links');
-      CatalogLinks.el = el;
-      el.id = 'toggleCatalog';
-      const input = $('input', el);
-      $.on(input, 'change', this.toggle);
-      $.sync('Header catalog links', CatalogLinks.set);
-      Header.menu.addEntry({ el, order: 95 });
-    }
+    this.enabled = Conf['Catalog Links'])
   },
 
   node() {
@@ -79,19 +69,7 @@ const CatalogLinks = {
     }
   },
 
-  toggle() {
-    $.event('CloseMenu');
-    $.set('Header catalog links', this.checked);
-    CatalogLinks.set(this.checked);
-  },
-
-  set(useCatalog) {
-    Conf['Header catalog links'] = useCatalog;
-    CatalogLinks.setLinks(Header.boardList);
-    CatalogLinks.setLinks(Header.bottomBoardList);
-    CatalogLinks.el.title = `Turn catalog links ${useCatalog ? 'off' : 'on'}.`;
-    return $('input', CatalogLinks.el).checked = useCatalog;
-  },
+  set(useCatalog) { Conf['Header catalog links'] = useCatalog; },
 
   // Also called by Header when board lists are loaded / generated.
   setLinks(list) {

@@ -1,4 +1,3 @@
-// Filtering/parseBoards.js
 import { g } from "../globals/globals";
 import { dict } from "../platform/helpers";
 
