@@ -525,11 +525,12 @@ var Header = {
     Header.setCustomNav(this.checked);
   },
 
-  editCustomNav() {
+  async editCustomNav() {
+    const { default: Settings } = await import('./Settings');
     Settings.open('Advanced');
     const settings = $.id('fourchanx-settings');
     $('[name=boardnav]', settings).focus();
-  },
+  }
 
   scrollTo(root: HTMLElement, down = false, needed = false) {
     let height, x;
