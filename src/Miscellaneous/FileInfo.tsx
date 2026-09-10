@@ -6,7 +6,7 @@ import Icon from "../Icons/icon";
 import ImageCommon from "../Images/ImageCommon";
 import $ from "../platform/$";
 import $$ from "../platform/$$";
-import SW from "../site/SW";
+import { shortFilename } from "../site/shortFilename";
 
 /*
  * decaffeinate suggestions:
@@ -83,7 +83,7 @@ var FileInfo = {
     L() { return <a href={this.file.url} target="_blank">{FileInfo.formatters.N.call(this)}</a> },
     n() {
       const fullname  = this.file.name;
-      const shortname = SW.yotsuba.Build.shortFilename(this.file.name, this.isReply);
+      const shortname = shortFilename(this.file.name); //passing this.isReply appears to be obsolete
       if (fullname === shortname) {
         return { innerHTML: E(fullname), [isEscaped]: true };
       } else {

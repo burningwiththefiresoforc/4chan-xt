@@ -8,12 +8,12 @@ import ImageHost from "../Images/ImageHost";
 import { g, Conf, d, doc } from "../globals/globals";
 import BoardConfig from "../General/BoardConfig";
 import CSS from "../css/CSS";
-
 import generatePostInfoHtml from './SW.yotsuba.Build/PostInfoHtml';
 import generateFileHtml from "./SW.yotsuba.Build/FileHtml";
 import generateCatalogThreadHtml from "./SW.yotsuba.Build/CatalogThreadHtml";
 import h, { type EscapedHtml, hFragment, isEscaped } from "../globals/jsx";
 import { dict, MINUTE } from "../platform/helpers";
+import { shortFilename } from "./shortFilename";
 
 /*
  * decaffeinate suggestions:
@@ -315,14 +315,7 @@ const SWYotsuba = {
     gifIcon: window.devicePixelRatio >= 2 ? '@2x.gif' : '.gif',
     spoilerRange: Object.create(null),
 
-    shortFilename(filename) {
-      const ext = filename.match(/\.?[^\.]*$/)[0];
-      if ((filename.length - ext.length) > 30) {
-        return `${filename.match(/(?:[\uD800-\uDBFF][\uDC00-\uDFFF]|[^]){0,25}/)[0]}(...)${ext}`;
-      } else {
-        return filename;
-      }
-    },
+    shortFilename,
 
     spoilerThumb(boardID) {
       let spoilerRange = this.spoilerRange[boardID];
