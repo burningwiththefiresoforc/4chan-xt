@@ -9,7 +9,7 @@ import Redirect from '../Archive/Redirect';
 import Config from '../config/Config';
 import ImageHost from '../Images/ImageHost';
 import CustomCSS from '../Miscellaneous/CustomCSS';
-import FileInfo from '../Miscellaneous/FileInfo';
+import FileInfoFormat from "../Miscellaneous/FileInfoFormat";
 import Keybinds from '../Miscellaneous/Keybinds';
 import Time from '../Miscellaneous/Time';
 import Favicon from '../Monitoring/Favicon';
@@ -753,7 +753,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         tag: 'Loop'
       }
     };
-    FileInfo.format(this.value, data, this.nextElementSibling);
+    FileInfoFormat.format(this.value, data, this.nextElementSibling);
   },
 
   favicon() {
