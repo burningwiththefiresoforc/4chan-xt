@@ -7,7 +7,6 @@ import $ from "../platform/$";
 import $$ from "../platform/$$";
 import BoardConfig from "./BoardConfig";
 import Get from "./Get";
-import Settings from "./Settings";
 import UI from "./UI";
 import meta from '../../package.json';
 import Icon from "../Icons/icon";
