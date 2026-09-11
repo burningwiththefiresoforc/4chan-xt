@@ -31,7 +31,7 @@ const CatalogLinks = {
         for (const link of $$(selector)) {
           switch (link.pathname.replace(/\/+/g, '/')) {
             case `/${g.BOARD}/`:
-              if (Conf['JSON Index']) { link.textContent = 'Index'; }
+              if (Conf['JSON Index']) link.textContent = 'Index';
               link.href = CatalogLinks.index();
               break;
             case `/${g.BOARD}/catalog`:
@@ -58,12 +58,11 @@ const CatalogLinks = {
       });
     }
 
-    this.enabled = Conf['Catalog Links'])
+    this.enabled = Conf['Catalog Links']);
   },
 
   node() {
     for (const a of $$('a', this.nodes.comment)) {
-      // let m = a.href.match(/^https?:\/\/(boards\.4chan(?:nel)?\.org\/[^\/]+)\/catalog(#s=.*)?/);
       let m = a.href.match(/^https?:\/\/(boards\.4chan\.org\/[^\/]+)\/catalog(#s=.*)?/);
       if (m) a.href = `//${m[1]}/${m[2] || '#catalog'}`;
     }

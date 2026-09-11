@@ -462,7 +462,7 @@ var Filter = {
       ta.setSelectionRange(tl, tl);
       ta.focus();
     });
-  }
+  },
 
   quickFilterMD5() {
     const post: Post = this instanceof Post ? this : Get.postFromNode(this);

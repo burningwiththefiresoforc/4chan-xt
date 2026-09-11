@@ -161,7 +161,7 @@ const Config = {
       ],
       'Magnet Titles': [
         true,
-        'Replace magnet links with their actual titles when present.'
+        'Replace magnet links with their actual titles when present.',
         1
       ],
       'Cover Preview': [
@@ -233,7 +233,7 @@ const Config = {
         'Add buttons to hide single replies.'
       ],
       'Always Show Highlighted Threads': [
-        false
+        false,
         'Make thread highlighting override hiding.'
       ],
       'Stubs': [
