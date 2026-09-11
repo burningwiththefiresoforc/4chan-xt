@@ -8,7 +8,6 @@ import $ from "../platform/$";
 import { debounce, SECOND } from "../platform/helpers";
 import QuoteYou from "../Quotelinks/QuoteYou";
 import Favicon from "./Favicon";
-import ThreadWatcher from "./ThreadWatcher";
 
 /*
  * decaffeinate suggestions:
@@ -300,7 +299,7 @@ var Unread = {
     }
   },
 
-  saveThreadWatcherCount: debounce(2 * SECOND, function() {
+  saveThreadWatcherCount: debounce(2 * SECOND, async function() {
     $.forceSync('Remember Last Read Post');
     if (Conf['Remember Last Read Post'] && (!Unread.thread.isDead || Unread.thread.isArchived)) {
       const quotingYou = !Conf['Require OP Quote Link'] && QuoteYou.isYou(Unread.thread.OP) ? Unread.posts : Unread.postsQuotingYou;
@@ -316,6 +315,7 @@ var Unread = {
           }
         }
       }
+      const { default: ThreadWatcher } = await import('./ThreadWatcher');
       ThreadWatcher.update(g.SITE.ID, Unread.thread.board.ID, Unread.thread.ID, {
         last: Unread.thread.lastPost,
         isDead: Unread.thread.isDead,
