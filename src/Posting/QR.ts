@@ -1610,7 +1610,7 @@ var QR = {
       item = item.replace(match, '');
 
       const boards = item.match(/boards:([^;]+)/i)?.[1].toLowerCase() || 'global';
-      let needle: string = g.BOARD.ID, !boards.split(',').includes(needle);
+      const needle = !boards.split(',').includes(g.BOARD.ID);
       if ((boards !== 'global') && needle) return;
 
 

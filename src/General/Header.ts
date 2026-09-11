@@ -529,7 +529,7 @@ var Header = {
     Settings.open('Advanced');
     const settings = $.id('fourchanx-settings');
     $('[name=boardnav]', settings).focus();
-  }
+  },
 
   scrollTo(root: HTMLElement, down = false, needed = false) {
     let height, x;
