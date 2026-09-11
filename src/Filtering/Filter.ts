@@ -2,7 +2,6 @@ import Callbacks from "../classes/Callbacks";
 import Notice from "../classes/Notice";
 import Config from "../config/Config";
 import Get from "../General/Get";
-import Settings from "../General/Settings";
 import { g, Conf, doc } from "../globals/globals";
 import Menu from "../Menu/Menu";
 import Unread from "../Monitoring/Unread";
@@ -450,8 +449,9 @@ var Filter = {
     });
   },
 
-  showFilters(type) {
+  async showFilters(type) {
     // Open the settings and display & focus the relevant filter textarea.
+    const { default: Settings } = await import('../General/Settings'); // adjust path
     Settings.open('Filter');
     const section = $('.section-container');
     const select = $('select[name=filter]', section);
@@ -462,7 +462,7 @@ var Filter = {
       ta.setSelectionRange(tl, tl);
       ta.focus();
     });
-  },
+  }
 
   quickFilterMD5() {
     const post: Post = this instanceof Post ? this : Get.postFromNode(this);
