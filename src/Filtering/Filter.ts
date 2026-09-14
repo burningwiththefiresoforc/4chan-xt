@@ -451,7 +451,7 @@ var Filter = {
 
   async showFilters(type) {
     // Open the settings and display & focus the relevant filter textarea.
-    const { default: Settings } = await import('../General/Settings'); // adjust path
+    const { default: Settings } = await import('../General/Settings');
     Settings.open('Filter');
     const section = $('.section-container');
     const select = $('select[name=filter]', section);
