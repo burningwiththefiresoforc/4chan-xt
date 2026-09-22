@@ -1,4 +1,3 @@
-import Beep from './ThreadUpdater/beep.wav';
 import $ from "../platform/$";
 import Callbacks from '../classes/Callbacks';
 import Notice from '../classes/Notice';
@@ -29,7 +28,7 @@ var ThreadUpdater = {
     // XXX Sometimes the loading stalls in Firefox, esp. when opening in private browsing window followed by normal window.
     // Don't let it keep the loading icon on indefinitely.
     this.audio = $.el('audio');
-    if ($.engine !== 'gecko') { this.audio.src = this.beep; }
+    if ($.engine !== 'gecko') this.audio.src = this.beep;
     $.on(this.audio, 'error', () => {
       new Notice('error', this.audio.error.message || 'Error when trying to play thread updater beep.', 15);
     });
@@ -124,8 +123,7 @@ var ThreadUpdater = {
     ThreadUpdater.setInterval();
   },
 
-  // http://freesound.org/people/pierrecartoons1979/sounds/90112/ cc-by-nc-3.0
-  beep: `data:audio/wav;base64,${Beep}`,
+  beep: `https://s.4cdn.org/media/beep.ogg`,
 
   playBeep(repeatIfPlaying = true) {
     const { audio } = ThreadUpdater as { audio: HTMLAudioElement };
