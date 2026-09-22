@@ -3502,7 +3502,6 @@ current-archive-text:"Archive"]
       backlink: '>>%id',
       pastedname: 'file',
       fileInfo: '%l %d (%p%s, %r%g)',
-      favicon: 'ferongr',
       usercss: userCss,
       hotkeys: {
           // QR & Options
@@ -3795,7 +3794,6 @@ current-archive-text:"Archive"]
       fxtMaxReplies: 5,
       beepSource: '',
       beepVolume: 1,
-      favicon: '',
   };
 
   const PageReady = {
@@ -6734,14 +6732,14 @@ current-archive-text:"Archive"]
   var empty = 'R0lGODlhEAAQAPD/AAAAANvb2yH5BAUAAAIALAAAAAAQABAAAAIslI+pq+D9DAgUoFnPrDLkHnxYJgFReTLqyqSpJn5w/HXx101ApyeWdfixGAUAOw==';
 
   // Only one bundled icon set now — everything else is user-supplied via Conf.
-  const KEY_MAP = {
-      'unread-dead': 'unreadDead',
-      'unread-dead-y': 'unreadDeadY',
-      'unread-sfw': 'unreadSFW',
-      'unread-sfw-y': 'unreadSFWY',
-      'unread-nsfw': 'unreadNSFW',
-      'unread-nsfw-y': 'unreadNSFWY',
-  };
+  const FIELDS = [
+      { key: 'favicon-unread-dead', prop: 'unreadDead' },
+      { key: 'favicon-unread-dead-y', prop: 'unreadDeadY' },
+      { key: 'favicon-unread-sfw', prop: 'unreadSFW' },
+      { key: 'favicon-unread-sfw-y', prop: 'unreadSFWY' },
+      { key: 'favicon-unread-nsfw', prop: 'unreadNSFW' },
+      { key: 'favicon-unread-nsfw-y', prop: 'unreadNSFWY' },
+  ];
   const presets = {
       Original: {
           unreadDead: Original_unreadDead,
@@ -6760,6 +6758,7 @@ current-archive-text:"Archive"]
       }
       return `data:image/png;base64,${value}`;
   }
+  // Hosts allowed for remote icons. Edit this list as needed.
   const ALLOWED_HOSTS = [
       'i.imgur.com',
       'imgur.com',
@@ -6775,49 +6774,27 @@ current-archive-text:"Archive"]
           return false;
       }
   }
-  function parseSettings(raw) {
-      const icons = {};
-      const errors = [];
-      (raw || '').split('\n').forEach((line, i) => {
-          const lineNum = i + 1;
-          const trimmed = line.trim();
-          if (!trimmed || trimmed.startsWith('#'))
-              return;
-          const sep = trimmed.indexOf(':');
-          if (sep === -1) {
-              errors.push(`Line ${lineNum}: expected "key: value".`);
-              return;
-          }
-          const key = trimmed.slice(0, sep).trim().toLowerCase();
-          const value = trimmed.slice(sep + 1).trim();
-          if (!(key in KEY_MAP)) {
-              errors.push(`Line ${lineNum}: unknown option "${key}".`);
-              return;
-          }
-          if (!value) {
-              errors.push(`Line ${lineNum}: "${key}" has no value.`);
-              return;
-          }
-          if (URL_RE.test(value)) {
-              if (!checkHost(value)) {
-                  let host;
-                  try {
-                      host = new URL(value, location.href).hostname;
-                  }
-                  catch (e) {
-                      host = value;
-                  }
-                  errors.push(`Line ${lineNum}: "${host}" is not a whitelisted host.`);
-                  return;
+  function validateIcon(value) {
+      if (!value)
+          return { src: null, error: null };
+      if (URL_RE.test(value)) {
+          if (!checkHost(value)) {
+              let host;
+              try {
+                  host = new URL(value, location.href).hostname;
               }
+              catch (e) {
+                  host = value;
+              }
+              return { src: null, error: `"${host}" is not a whitelisted host.` };
           }
-          else if (!DATA_RE.test(value) && !B64_RE.test(value)) {
-              errors.push(`Line ${lineNum}: "${key}" isn't a URL, data URI, or base64 string.`);
-              return;
-          }
-          icons[key] = value;
-      });
-      return { icons, errors };
+          return { src: value, error: null };
+      }
+      if (DATA_RE.test(value))
+          return { src: value, error: null };
+      if (B64_RE.test(value))
+          return { src: `data:image/png;base64,${value}`, error: null };
+      return { src: null, error: `Not a URL, data URI, or base64 string.` };
   }
   var Favicon = {
       init() {
@@ -6841,14 +6818,10 @@ current-archive-text:"Archive"]
               Favicon.set(Favicon.status);
       },
       switch() {
-          const { icons: overrides } = parseSettings(Conf.favicon);
           const f = Favicon;
-          for (const settingKey in KEY_MAP) {
-              const prop = KEY_MAP[settingKey];
-              const custom = overrides[settingKey];
-              f[prop] = custom
-                  ? resolveIconSrc(custom)
-                  : (presets.Original[prop] ? resolveIconSrc(presets.Original[prop]) : null);
+          for (const { key, prop } of FIELDS) {
+              const { src } = validateIcon(Conf[key]);
+              f[prop] = src || resolveIconSrc(presets.Original[prop]);
           }
           f.update();
       },
@@ -6867,9 +6840,8 @@ current-archive-text:"Archive"]
       dead: `data:image/gif;base64,${dead}`,
       logo: `data:image/png;base64,${empty}`,
   };
-  // Exposed for the settings menu (see Settings.favicon).
-  Favicon.keys = Object.keys(KEY_MAP);
-  Favicon.parseSettings = parseSettings;
+  Favicon.fields = FIELDS;
+  Favicon.validateIcon = validateIcon;
   Favicon.resolveIconSrc = resolveIconSrc;
   Favicon.allowedHosts = ALLOWED_HOSTS;
 
@@ -11857,11 +11829,49 @@ current-archive-text:"Archive"]
 
 <fieldset>
   <legend>Unread Favicon <span class="warning" data-feature="Unread Favicon">is disabled.</span></legend>
-  <span class="favicon-preview"></span>
-  <label>
-    Favicon URL. Can be a base64 URI starting with <code>data:</code>. Leave empty for the default.
-    <input type="string" hidden name="favicon" class="field" spellcheck="false"/>
-  </label>
+  <table class="favicon-table">
+    <tbody>
+      <tr>
+        <td><img class="favicon-preview-icon"></td>
+        <td><label for="favicon-unread-dead">unread-dead</label></td>
+        <td><input type="text" id="favicon-unread-dead" name="favicon-unread-dead" class="field" spellcheck="false"></td>
+        <td class="favicon-error"></td>
+      </tr>
+      <tr>
+        <td><img class="favicon-preview-icon"></td>
+        <td><label for="favicon-unread-dead-y">unread-dead-y</label></td>
+        <td><input type="text" id="favicon-unread-dead-y" name="favicon-unread-dead-y" class="field" spellcheck="false"></td>
+        <td class="favicon-error"></td>
+      </tr>
+      <tr>
+        <td><img class="favicon-preview-icon"></td>
+        <td><label for="favicon-unread-sfw">unread-sfw</label></td>
+        <td><input type="text" id="favicon-unread-sfw" name="favicon-unread-sfw" class="field" spellcheck="false"></td>
+        <td class="favicon-error"></td>
+      </tr>
+      <tr>
+        <td><img class="favicon-preview-icon"></td>
+        <td><label for="favicon-unread-sfw-y">unread-sfw-y</label></td>
+        <td><input type="text" id="favicon-unread-sfw-y" name="favicon-unread-sfw-y" class="field" spellcheck="false"></td>
+        <td class="favicon-error"></td>
+      </tr>
+      <tr>
+        <td><img class="favicon-preview-icon"></td>
+        <td><label for="favicon-unread-nsfw">unread-nsfw</label></td>
+        <td><input type="text" id="favicon-unread-nsfw" name="favicon-unread-nsfw" class="field" spellcheck="false"></td>
+        <td class="favicon-error"></td>
+      </tr>
+      <tr>
+        <td><img class="favicon-preview-icon"></td>
+        <td><label for="favicon-unread-nsfw-y">unread-nsfw-y</label></td>
+        <td><input type="text" id="favicon-unread-nsfw-y" name="favicon-unread-nsfw-y" class="field" spellcheck="false"></td>
+        <td class="favicon-error"></td>
+      </tr>
+    </tbody>
+  </table>
+  <p>
+    Accepted formats: a URL from a whitelisted host, a data URI (<code>data:image/png;base64,...</code>), or bare base64.
+  </p>
 </fieldset>
 
 <fieldset>
@@ -20867,6 +20877,9 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         $(`tbody > .${this.value}`, table).hidden = false;
       });
       $.on(updateArchives, 'click', () => Redirect.update(() => Settings.addArchiveTable(section)));
+      for (const { key } of Favicon.fields) {
+        Settings[key] = Settings.favicon;
+      }
       $.on(inputs.beepVolume, 'change', () => { ThreadUpdater.playBeep(false); });
       $.on(inputs.beepSource, 'change', () => { ThreadUpdater.playBeep(false); });
     },
@@ -20998,28 +21011,13 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     },
     favicon() {
       Favicon.switch();
-      const { errors } = Favicon.parseSettings(this.value);
-      const preview = this.previousElementSibling;
-      const img = preview.children;
-      const f = Favicon;
-      const iterable = [f.unreadDead, f.unreadDeadY, f.unreadSFW, f.unreadSFWY, f.unreadNSFW, f.unreadNSFWY];
-      for (let i = 0; i < iterable.length; i++) {
-        if (!img[i])
-          $.add(preview, $.el('img'));
-        img[i].src = iterable[i];
-      }
-      let errBox = preview.querySelector('.favicon-preview-errors');
-      if (errors.length) {
-        if (!errBox) {
-          errBox = $.el('ul', { className: 'favicon-preview-errors' });
-          $.add(preview, errBox);
-        }
-        $.rmAll(errBox);
-        for (const message of errors)
-          $.add(errBox, $.el('li', { textContent: message }));
-      } else if (errBox) {
-        $.rm(errBox);
-      }
+      const row = this.closest('tr');
+      const img = row.querySelector('.favicon-preview-icon');
+      const err = row.querySelector('.favicon-error');
+      const { error } = Favicon.validateIcon(this.value);
+      const field = Favicon.fields.find(f => f.key === this.name);
+      img.src = Favicon[field.prop] || '';
+      err.textContent = error || '';
     },
     setTimeLocale(e) {
       const input = e.target;
