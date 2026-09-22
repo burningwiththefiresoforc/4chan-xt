@@ -1223,8 +1223,13 @@ current-archive-text:"Archive"]
 
   beepSource: '',
   beepVolume: 1,
-  
-  
+
+  'favicon-unread-dead': '',
+  'favicon-unread-dead-y': '',
+  'favicon-unread-sfw': '',
+  'favicon-unread-sfw-y': '',
+  'favicon-unread-nsfw': '',
+  'favicon-unread-nsfw-y': ''
 
 };
 export default Config;
