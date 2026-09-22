@@ -1216,8 +1216,6 @@ current-archive-text:"Archive"]
 
   knownBanners: banners.join(','),
 
-  passMessageClosed: false,
-
   'PSAseen': [[]],
 
   XEmbedder: 'fxt',
