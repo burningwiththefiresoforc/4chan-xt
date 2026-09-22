@@ -3606,7 +3606,6 @@ current-archive-text:"Archive"]
       fourchanImageHost: 'i.4cdn.org',
       hiddenPSAList: [{}],
       knownBanners: banners.join(','),
-      passMessageClosed: false,
       'PSAseen': [[]],
       XEmbedder: 'fxt',
       fxtLang: '',
@@ -3614,6 +3613,7 @@ current-archive-text:"Archive"]
       fxtMaxReplies: 5,
       beepSource: '',
       beepVolume: 1,
+      favicon: '',
   };
 
   const PageReady = {
@@ -6535,54 +6535,6 @@ current-archive-text:"Archive"]
       }
   };
 
-  var ferongr_unreadDead = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAFVBMVEX///9zBQC/AADpDAP/gID/q6voCwJJTwpOAAAAAXRSTlMAQObYZgAAAFNJREFUeNptjQUCQCEIQ4XJ7n9ji/hpvj2D9tNIPoAicgdKt/4CYMHKgGfVTdurusm39Rl53x1jzZxPmNm8irmJelH9CKRACF2dvsWb1Ws7pvHaJi3gAk+U2XRGAAAAAElFTkSuQmCC';
-
-  var ferongr_unreadDeadY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAxElEQVR42q2TAQYCURCG//dWKQWyUICEAJQIoFN0kC6w6DaLjhCgI3SFOsVkX35+z06vaPhN+r/5mTcWf6vHJBr1E0PjNAClQJmhYU1j1rapK1BkFHhOqyQFZJh+//AVb+VQFk6uP4RSs+wL9OkSl1GwTURS9xteeQHdIAvAzR32VphBA3B3h/Mz8f91XRtrFZDv75+K3lZWmIfsEfVUXsB5GGwMJB2iE8D7smvAXt5gGeB/D9rVO1awXYQtgnNGguzfei/okTkjgCMZiwAAAABJRU5ErkJggg==';
-
-  var ferongr_unreadSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAFVBMVEX///8AcH4AtswA2PJ55fKi6fIA1/FtpPADAAAAAXRSTlMAQObYZgAAAFNJREFUeNptjQUCQCEIQ4XJ7n9ji/hpvj2D9tNIPoAicgdKt/4CYMHKgGfVTdurusm39Rl53x1jzZxPmNm8irmJelH9CKRACF2dvsWb1Ws7pvHaJi3gAk+U2XRGAAAAAElFTkSuQmCC';
-
-  var ferongr_unreadSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAv0lEQVR42mOgHrj+8T8Mk6IGIVFQB8MIBYTVICQqn376v+jlJxCNpoCwGoTpNz4BMZoChGaoPC7N286AMIYiNMNh6nAYgulHwvLIivDGxKJt/xn0TcAYzMYFcBkA0ggDQN5xXJpxe0FQGNmA67g0Y0QTTFxIWRVhgKIq1HDMeMYdC/qmCAMkpFFdiIgqPAZUdf5n4OCEYHt3HAZsOwOjMQ0ws0H2Au78gEyjyIXE/2cwNP/PICmLGY3ICmE0sXIAYT+TvkUROOYAAAAASUVORK5CYII=';
-
-  var ferongr_unreadNSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAFVBMVEX///8oeQBJ3ABV/wHM/7Lu/+ZU/gAqUP3dAAAAAXRSTlMAQObYZgAAAFNJREFUeNptjQUCQCEIQ4XJ7n9ji/hpvj2D9tNIPoAicgdKt/4CYMHKgGfVTdurusm39Rl53x1jzZxPmNm8irmJelH9CKRACF2dvsWb1Ws7pvHaJi3gAk+U2XRGAAAAAElFTkSuQmCC';
-
-  var ferongr_unreadNSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAw0lEQVR42mOgGgj5x/AfhklQg5DQqIRjhALCahASZ/5v+v/u/zMQjaqAsBqEgtD/jCCMogBJM0weu2bPO2CMoQjNcJg6bIbg8CNheYQifDFhf4Dhv5A5BIPYBKMTXRykEQaA3OM4NOP2ApsQigHXcWnGiCaYuIKGNNwAXnU0F+KLKpickAXCBRxSCBeipwOcBhhMZPjPzAXBYi44DPC8A6cxDBB1RLiAWwVPfkCmkeXkohn+C1sx/OeUxhqNCIUwmlg5ABb/Y7V8eEcdAAAAAElFTkSuQmCC';
-
-  var xat_unreadDead = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAG1BMVEX+AACLkZFub2yfaF3zZGIAAAD/AAD/iYr/zs8IPcF6AAAABXRSTlMAeprJ7xzg6IEAAABUSURBVHjaYiAGAOocCwMAgRCKUh/cf2L1Ot8FHQBYPhhAst0d+pGU5jGbbEfEJ6vnIz5QepCoRTxPhKncHLWkOBi1KZhOY+tmo+M7IklQAt+pYucFkFsDARa59ZMAAAAASUVORK5CYII=';
-
-  var xat_unreadDeadY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAPFBMVEUAAACEgoBva2ilamDxcG7IaWYgFBNOSEf//f0PDQwBAAA7LCwAAAD/AAD+hIX+m5z+zc5HAADPAAAGAADl032uAAAADHRSTlMAzNv0/vz+6v3+7ALrmfyXAAAAZUlEQVR42oxNxQHAIAzE9ZLa/rNW0V9xTsWfAUBKpaQE8P6JCPoe76Mhxkx/AjOoIffgZWGUDKG04WVdF+ucnwAXQnwBqYulAfhCtwrU2htAB7TGfhwVuKdSXSEg8F4J+RoWrwIAQKkGZfFYhZ4AAAAASUVORK5CYII=';
-
-  var xat_unreadSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAIVBMVEUAAACRjop4dXVpZ2tdcI9dfKdisfMAAAAumMN9xv+s2/+PADT2AAAAB3RSTlMAepGdv83v3HIc4QAAAFdJREFUeNqNTYUBAyEMjF/C/vu27244p/RlAGBRFQYw/DMT5m7DY0Eidv9E1XhPGajWClMGqUf375BwvQbEZovJADDmUDBd1E6A+xbopupw0YgQ5uti/AEjcAQde9z08gAAAABJRU5ErkJggg==';
-
-  var xat_unreadSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAMFBMVEUAAACAgYVlc4ljsu4AAAAAAAAAAAAumMODyP6b1P6e1f/g8v89msgSIiwNFxwbPU3tQYj5AAAABnRSTlMAxej+9VTmD9ciAAAAY0lEQVR42ozNUQ4DIQiEYRmbH6xde//bdkMsiW/Li/LFGduTAcwkMyB3d0f35KWk92N3IvASIMY72B1N6jHmHJ9r6YBrzpVg2pECspS1ob69IxQg8YU/kFAvGo08XvzGisWrAAQRBA+DRjP7AAAAAElFTkSuQmCC';
-
-  var xat_unreadNSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAHlBMVEUfJSCRi5Frbm9dn19082KR/30AAABmzDOq/5vZ/9Gt/vt2AAAABnRSTlMAe5rJ7/4vxEp4AAAAU0lEQVR42mIgBgDqHAsDCGIQgKGB7j/wy7mmggug9kOBya4q/MekbJ6Ik11kUpsHyO5k6SHmkT1GZ7i9OdaSxaGsTVF5GrtudnRQmE1CJhBW8cAXuLsDUS249XUAAAAASUVORK5CYII=';
-
-  var xat_unreadNSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAM1BMVEUAAACBj39tfm1qj2RepFlu2VQAAQAAAAAAAABmyzOX/oSr/pus/pzk/98PGgtatC4CBAI1ENblAAAACHRSTlMA09/p9v77ig0SBcQAAABkSURBVHjajE2FDQAhDKSWXIvuv+y7EX2c0/RnACDeBgE4/u4OUZXj8SBm098RAX+QbUQugSsjsVrkWrO1xhPQam0nIJflBghn6KO4azcAL6CKPsYNbJP5VSSkdRD3sHGwY/EqAIxSBSCMVsKoAAAAAElFTkSuQmCC';
-
-  var Mayhem_unreadDead = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABFklEQVR42p2SAYf0MBCGo/3UqlqVpqn1qarYOGtV63Dc//9fdzPrUbm4wIVHat73HZOkRlYjtEIvWPZOuAj/4EIt9bSvLIIXFiEIq3DD2IHVGlrA69GM0+JXssZx3Oq6VuMEi9ZSj2bImv9UTnQ553Y1SaOo3795NCuYWTgKhjfv/bOgHWTzCYoNihN44Z6er3iEZGmGrLlyw1HYGW3DMMOd2oEnkrka3tPxNA+Mz7wBtQ3PQqZNGwThHJVArKrqkR7BWvuux0obdIzz47Josmsgr3M/N7KmF9bCU330ff9Z0FayxgrhDw0C2VeX5TSxY9qGYTgK2kLWtLxnQDjYo7BCzLRARrOm4TIcf9bMPlFTpkxzZJpvFGg1bzaJAWwAAAAASUVORK5CYII=';
-
-  var Mayhem_unreadDeadY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABRklEQVR42oWSgWb0QBDHx+UTn4iKzSanKiKiEedEomg0r5AHKAV9pDxSXqDVAlB9lHT+/J3BxS0/O2bnNze3G9EVKpGSKI57rPxX/hHEsa2hEwoPcqVUaqVS7lkYE8dcxZoSDs/EI7mZlWVZFwQBCo+kRM7WwKErD8xcwPLe9yjSRg3iazVwFSmUYaegzfP8vHM20LUT3GiwM0GuPG527fwFu+DQlTvecKP0HK1jQUEQvyvf5I0OXIkUz6c5UT5fafBlfv2DTmQb1MplVDZpDofDCX+hbVs7/o9tEHMce1kMpXfOPSFumWP+Fw5dSZRq56mekyR5QTyaBuM4bnDoilPqWw0WzUVkWRZ+ieqyS4kiirZBl6bpgHg2E8zzvMGhKxHfs6Y0cG+UijTruiL3OU0T9lc4dCXkZXh+WQX3I3OesT3zdMI/nyk9ocCqsEIAAAAASUVORK5CYII=';
-
-  var Mayhem_unreadSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA/ElEQVR42p3RgWbEQBSF4Ytaa4yKiI2IGDEStSIS0EftA/XB2hP+rnEZ6PIZO/eckWRMv5sEaaRljXKXN9wlukyga1EekiTLLAPBiJa9mUyiE8U6yT/FT/+fhHokebpMpmvjtbF/fb8Q2CRjq2RGsUnOSuDjUpmddP0T1A+oPcFDlvL9Kq/g5wtde5dBVjl4tJ3AhIW9k8wqA10L0hlfmuDmD2BvJ5PohPKALId7hRVbsX9ILg+IMvireoXF73P4QNcamStX9XmpzGa61kr+xwGZrjWS/kLlykfbK7NE1wL3mRmcrKvMWN0s0wliN4nSySgTay8dejfr6Nx+ARmXRvbmqvoaAAAAAElFTkSuQmCC';
-
-  var Mayhem_unreadSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABP0lEQVR42oWTRVJEMRiEg8OrcXd3nw16hVnirLgAd3krroOs0S1ylUf/U50ilbFUfdHuP66QtoEDQiDC0gd2wabAus/SOFMvBxKgCKqgDNIU+kiEfWVqivT4gIqBqmcktDsUJYnUO5amSq/KSsfg/lmjBT1QJb0FmixQeTBeIGgJC8bG9NorWB3AXkEC1D0jLdqCNV6nVwV4wg0w4tIGFOQF1m/BJ7mhJ6B4nzF90jT35gT4MGZ/pccxA1TByNpCg/RarZa5/G8zgA+k7auicKSD7iQLZoBfenyKz7K84KoOBKk75f93dHh46ImHXhUB1VUBMmd33trWzhTXdfkS4WWUog5gljzQgdT9/WNPp8lk4omHXuXwPqs0jVk2QJk0Hh8fpe/t5OREykt6HP2dfTzVLMizTIIYSVpjMXq2/wDfYUr8wN0YOAAAAABJRU5ErkJggg==';
-
-  var Mayhem_unreadNSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA/ElEQVR42p3RAWfEMBjG8RdTJ2Kq6qqqoqIxp6o17Bvt0+47bU/570QI3PETl/d5om1Mv0actNKxernJG27ii4yja17uEiTKIiNBj469hUyg48V6ib/ZT/8fhAYEeRSZSNema+P75/OJwCYRWyUzic1yVgIfl8rspFs+Qf2A2hPcZc3fr/IK5Xyla+8ySpKDR9sJzFjZO8kkGemak9740gS38gD2djKBjssPiHIUr5CwZfuHxPwAL2N5Vc+wlPscPtK1VpbKVX1dKrOFrnUSXzgg0rVWwn8oX/loe2UW6JrjPiODkzXJglTMIh0n1oiXXiaZWQfpMRSznk7zB4RaQX4rJ6lsAAAAAElFTkSuQmCC';
-
-  var Mayhem_unreadNSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABP0lEQVR4AYWS0UqFQBCGhziImNRBRImDmUgiIaF0kWSP4AMEXXXTE/QiPpL3UdR19Crb/PAvLEtyFj5mmfn/cdxd0RUokbJXEsZYCZUd4D72NBG8wkKmlEqtVMoFhTFJmKuoKelBTVIkjbNE5IainJTIeZqaXjkg8fp+Z7GCjiLQbWgOihTKsCFowUZtoNef4HgDf4JMuTbe8n/Br8NDr5zxhBul52i3FBQE+xflmzzTA69ESmpPmubunwZfztc/6IncBrXSe7/QkK5tW3f8H7dBjHH8q6Kwt033V6Hb4JeeWPgsq42rugfYZ92psWscRwMPvZIo9bEGD2+F2YUnBizLwpeoXnYpbQM34kAB9peP58aueZ4NPPRKxPusaRoYG6UizbquyH1O04T4RA+8EvAwUr6sgjFnDuReLaUn+ANygUa7+9SCWgAAAABJRU5ErkJggg==';
-
-  var fourChanJS_unreadDead = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAD1BMVEUBAAAAAAD/AABnZ2f///8nFk05AAAAAXRSTlMAQObYZgAAAEFJREFUeNqNjgEKACAMAjvX/98cAkkxgmSgO8Bt/Ai4ApJ6KKhzF3OiEMDASrGB/QWgPEHsUpN+Ng9xAETMYhDrWmeHAMcmvycWAAAAAElFTkSuQmCC';
-
-  var fourChanJS_unreadDeadY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAD1BMVEUAAAAAAAD/AABmZmYA/wBD99DBAAAAAXRSTlMAQObYZgAAAERJREFUeNpiIAYA6pwDDApiGAig/yW9/5m/YEdXbGDSh2nwWlTVXpq+3+UcFcEApHhg8gtoWshTOrK/zUEuUBIzfhJ7/meHAMdsgg3zAAAAAElFTkSuQmCC';
-
-  var fourChanJS_unreadSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAD1BMVEUBAAAAAAAul8NnZ2f////82iC9AAAAAXRSTlMAQObYZgAAAEFJREFUeNqNjgEKACAMAjvX/98cAkkxgmSgO8Bt/Ai4ApJ6KKhzF3OiEMDASrGB/QWgPEHsUpN+Ng9xAETMYhDrWmeHAMcmvycWAAAAAElFTkSuQmCC';
-
-  var fourChanJS_unreadSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAD1BMVEUAAAAAAAAul8NnZ2f/AAD7B+mqAAAAAXRSTlMAQObYZgAAAERJREFUeNpiIAYA6pwDDApiGAig/yW9/5m/YEdXbGDSh2nwWlTVXpq+3+UcFcEApHhg8gtoWshTOrK/zUEuUBIzfhJ7/meHAMdsgg3zAAAAAElFTkSuQmCC';
-
-  var fourChanJS_unreadNSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAElBMVEUBAAAAAABmzDNlyjJnZ2f///+6o7dfAAAAAXRSTlMAQObYZgAAAERJREFUeF6NjkEKADEIA51o///lJZfQxUsHITogWi8AvwZJuxmYa25xDooBLEwOWFTYAsYVhdorLZt9Ng9xCUTCUCQ2H3F4ANrZ2WNiAAAAAElFTkSuQmCC';
-
-  var fourChanJS_unreadNSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAD1BMVEUAAAAAAABmzDNmZmb/AAC8/wCMAAAAAXRSTlMAQObYZgAAAERJREFUeNpiIAYA6pwDDApiGAig/yW9/5m/YEdXbGDSh2nwWlTVXpq+3+UcFcEApHhg8gtoWshTOrK/zUEuUBIzfhJ7/meHAMdsgg3zAAAAAElFTkSuQmCC';
-
   var Original_unreadDead = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAADFBMVEX/////AAD///8AAABBZmS3AAAAAXRSTlMAQObYZgAAAEJJREFUeNp1jQEKwEAIwzT9/58Hk3ATbgVoG6jWRcAKJPkG0t23sLpA4tZjwPGRoOxOsHt0yH77AzIgbkLQXlEcewCo8AFNs8H5UAAAAABJRU5ErkJggg==';
 
   var Original_unreadDeadY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAhElEQVR42q1RwQnAMAjMu5M4guAKXa4j5dUROo5tipSDcrFChUONd0di2m/hEGVOHDyIPufgwAFASDkpoSzmBrkJ2UMyR9LsJ3rvrqo3Rt1YMIMhhNnOxLMnoMFBxHyJAr2IOBFzA8U+6pLBdmEJTA0aMVjpDd6Loks0s5HZNwYx8tfZCZ0kll7ORffZAAAAAElFTkSuQmCC';
@@ -6595,22 +6547,96 @@ current-archive-text:"Archive"]
 
   var Original_unreadNSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAALVBMVEUAAAAAAAAAAAAAAAAECAIQIAgWLAsePA8oKCg4ODg6dB07OztmzDPBwcH///+rsf3XAAAAA3RSTlMAx9dmesIgAAAAV0lEQVR42m2PgQqAIAxErVll6fv/zw3arRQUwLsHe2Np8oAhYGZ9wGqtszD2ACIx+8lkb6U0LXZQYFHXCKzqLt3gVHewg9GDK+cA9oID4gZcepvWkvi/ByUyBjCqN1XpAAAAAElFTkSuQmCC';
 
-  var Metro_unreadDead = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEUAAAC/AABrZQDiAAAAAXRSTlMAQObYZgAAABJJREFUCB1jZGBgrMNAQEEc4gCSfAX5bRw/NQAAAABJRU5ErkJggg==';
-
-  var Metro_unreadDeadY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAJFBMVEUAAAAAAAAAAAC/AAD///8dAAApAABsAAAHAAA4AACQAAAsAABMCpCvAAAAA3RSTlMAPse+s4iwAAAAMklEQVQI12NggAFmY2MDECaNAQZCilAzVJyg5oS4GqAxUtygjIp2KGOKJ5SxepcB3BUAcdYRqxAtgFoAAAAASUVORK5CYII=';
-
-  var Metro_unreadSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEUAAAAA1/GhpCidAAAAAXRSTlMAQObYZgAAABJJREFUCB1jZGBgrMNAQEEc4gCSfAX5bRw/NQAAAABJRU5ErkJggg==';
-
-  var Metro_unreadSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAJFBMVEUAAAAAAAAAAAAA1/H///8AISUALzQAeokACAkAQEcAorYAMTcE9WFNAAAAA3RSTlMAPse+s4iwAAAAMklEQVQI12NggAFmY2MDECaNAQZCilAzVJyg5oS4GqAxUtygjIp2KGOKJ5SxepcB3BUAcdYRqxAtgFoAAAAASUVORK5CYII=';
-
-  var Metro_unreadNSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEUAAABV/wErM5hwAAAAAXRSTlMAQObYZgAAABJJREFUCB1jZGBgrMNAQEEc4gCSfAX5bRw/NQAAAABJRU5ErkJggg==';
-
-  var Metro_unreadNSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAJFBMVEUAAAAAAAAAAABV/wH///8NKAASOAAwkQADCgAZTABAwQATOwC5e3VGAAAAA3RSTlMAPse+s4iwAAAAMklEQVQI12NggAFmY2MDECaNAQZCilAzVJyg5oS4GqAxUtygjIp2KGOKJ5SxepcB3BUAcdYRqxAtgFoAAAAASUVORK5CYII=';
-
   var dead = 'R0lGODlhEAAQAKECAAAAAP8AAP///////yH5BAEKAAIALAAAAAAQABAAAAIslI+pq+D9DAgUoFnPrDLkHnxYJgFReTLqyqSpJn5w/HXx101ApyeWdfixGAUAOw==';
 
   var empty = 'R0lGODlhEAAQAPD/AAAAANvb2yH5BAUAAAIALAAAAAAQABAAAAIslI+pq+D9DAgUoFnPrDLkHnxYJgFReTLqyqSpJn5w/HXx101ApyeWdfixGAUAOw==';
 
+  // Only one bundled icon set now — everything else is user-supplied via Conf.
+  const KEY_MAP = {
+      'unread-dead': 'unreadDead',
+      'unread-dead-y': 'unreadDeadY',
+      'unread-sfw': 'unreadSFW',
+      'unread-sfw-y': 'unreadSFWY',
+      'unread-nsfw': 'unreadNSFW',
+      'unread-nsfw-y': 'unreadNSFWY',
+  };
+  const presets = {
+      Original: {
+          unreadDead: Original_unreadDead,
+          unreadDeadY: Original_unreadDeadY,
+          unreadSFW: Original_unreadSFW,
+          unreadSFWY: Original_unreadSFWY,
+          unreadNSFW: Original_unreadNSFW,
+          unreadNSFWY: Original_unreadNSFWY,
+      },
+  };
+  function resolveIconSrc(value) {
+      if (!value)
+          return null;
+      if (/^(https?:)?\/\//.test(value) || /^data:/.test(value)) {
+          return value;
+      }
+      return `data:image/png;base64,${value}`;
+  }
+  const ALLOWED_HOSTS = [
+      'i.imgur.com',
+      'imgur.com',
+  ];
+  const URL_RE = /^(https?:)?\/\//i;
+  const DATA_RE = /^data:image\/[a-z0-9.+-]+;base64,/i;
+  const B64_RE = /^[A-Za-z0-9+/]+=*$/;
+  function checkHost(url) {
+      try {
+          return ALLOWED_HOSTS.includes(new URL(url, location.href).hostname);
+      }
+      catch (e) {
+          return false;
+      }
+  }
+  function parseSettings(raw) {
+      const icons = {};
+      const errors = [];
+      (raw || '').split('\n').forEach((line, i) => {
+          const lineNum = i + 1;
+          const trimmed = line.trim();
+          if (!trimmed || trimmed.startsWith('#'))
+              return;
+          const sep = trimmed.indexOf(':');
+          if (sep === -1) {
+              errors.push(`Line ${lineNum}: expected "key: value".`);
+              return;
+          }
+          const key = trimmed.slice(0, sep).trim().toLowerCase();
+          const value = trimmed.slice(sep + 1).trim();
+          if (!(key in KEY_MAP)) {
+              errors.push(`Line ${lineNum}: unknown option "${key}".`);
+              return;
+          }
+          if (!value) {
+              errors.push(`Line ${lineNum}: "${key}" has no value.`);
+              return;
+          }
+          if (URL_RE.test(value)) {
+              if (!checkHost(value)) {
+                  let host;
+                  try {
+                      host = new URL(value, location.href).hostname;
+                  }
+                  catch (e) {
+                      host = value;
+                  }
+                  errors.push(`Line ${lineNum}: "${host}" is not a whitelisted host.`);
+                  return;
+              }
+          }
+          else if (!DATA_RE.test(value) && !B64_RE.test(value)) {
+              errors.push(`Line ${lineNum}: "${key}" isn't a URL, data URI, or base64 string.`);
+              return;
+          }
+          icons[key] = value;
+      });
+      return { icons, errors };
+  }
   var Favicon = {
       init() {
           $.asap((() => d.head && (Favicon.el = $('link[rel="shortcut icon"]', d.head))), Favicon.initAsap);
@@ -6633,64 +6659,15 @@ current-archive-text:"Archive"]
               Favicon.set(Favicon.status);
       },
       switch() {
-          let items = {
-              ferongr: [
-                  ferongr_unreadDead,
-                  ferongr_unreadDeadY,
-                  ferongr_unreadSFW,
-                  ferongr_unreadSFWY,
-                  ferongr_unreadNSFW,
-                  ferongr_unreadNSFWY,
-              ],
-              'xat-': [
-                  xat_unreadDead,
-                  xat_unreadDeadY,
-                  xat_unreadSFW,
-                  xat_unreadSFWY,
-                  xat_unreadNSFW,
-                  xat_unreadNSFWY,
-              ],
-              Mayhem: [
-                  Mayhem_unreadDead,
-                  Mayhem_unreadDeadY,
-                  Mayhem_unreadSFW,
-                  Mayhem_unreadSFWY,
-                  Mayhem_unreadNSFW,
-                  Mayhem_unreadNSFWY,
-              ],
-              '4chanJS': [
-                  fourChanJS_unreadDead,
-                  fourChanJS_unreadDeadY,
-                  fourChanJS_unreadSFW,
-                  fourChanJS_unreadSFWY,
-                  fourChanJS_unreadNSFW,
-                  fourChanJS_unreadNSFWY,
-              ],
-              Original: [
-                  Original_unreadDead,
-                  Original_unreadDeadY,
-                  Original_unreadSFW,
-                  Original_unreadSFWY,
-                  Original_unreadNSFW,
-                  Original_unreadNSFWY,
-              ],
-              'Metro': [
-                  Metro_unreadDead,
-                  Metro_unreadDeadY,
-                  Metro_unreadSFW,
-                  Metro_unreadSFWY,
-                  Metro_unreadNSFW,
-                  Metro_unreadNSFWY,
-              ]
-          };
-          items = $.getOwn(items, Conf.favicon);
+          const { icons: overrides } = parseSettings(Conf.favicon);
           const f = Favicon;
-          const t = 'data:image/png;base64,';
-          let i = 0;
-          while (items[i]) {
-              items[i] = t + items[i++];
+          for (const settingKey in KEY_MAP) {
+              const prop = KEY_MAP[settingKey];
+              const custom = overrides[settingKey];
+              f[prop] = custom
+                  ? resolveIconSrc(custom)
+                  : (presets.Original[prop] ? resolveIconSrc(presets.Original[prop]) : null);
           }
-          [f.unreadDead, f.unreadDeadY, f.unreadSFW, f.unreadSFWY, f.unreadNSFW, f.unreadNSFWY] = items;
           f.update();
       },
       update() {
@@ -6708,6 +6685,11 @@ current-archive-text:"Archive"]
       dead: `data:image/gif;base64,${dead}`,
       logo: `data:image/png;base64,${empty}`,
   };
+  // Exposed for the settings menu (see Settings.favicon).
+  Favicon.keys = Object.keys(KEY_MAP);
+  Favicon.parseSettings = parseSettings;
+  Favicon.resolveIconSrc = resolveIconSrc;
+  Favicon.allowedHosts = ALLOWED_HOSTS;
 
   var Unread = {
       init() {
@@ -11693,15 +11675,11 @@ current-archive-text:"Archive"]
 
 <fieldset>
   <legend>Unread Favicon <span class="warning" data-feature="Unread Favicon">is disabled.</span></legend>
-  <select name="favicon">
-    <option value="ferongr">ferongr</option>
-    <option value="xat-">xat-</option>
-    <option value="4chanJS">4chanJS</option>
-    <option value="Mayhem">Mayhem</option>
-    <option value="Original">Original</option>
-    <option value="Metro">Metro</option>
-  </select>
   <span class="favicon-preview"></span>
+  <label>
+    Favicon URL. Can be a base64 URI starting with <code>data:</code>. Leave empty for the default.
+    <input type="string" hidden name="favicon" class="field" spellcheck="false"/>
+  </label>
 </fieldset>
 
 <fieldset>
@@ -11714,7 +11692,6 @@ current-archive-text:"Archive"]
       <option value="bottom-right">Bottom right</option>
     </select>
   </label>
-  <span class="favicon-preview"></span>
 </fieldset>
 
 <fieldset>
@@ -20670,9 +20647,8 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           input = inputs[key];
           input[input.type === 'checkbox' ? 'checked' : 'value'] = val;
           input.hidden = false; // XXX prevent Firefox from adding initialization to undo queue
-          if (key in Settings) {
+          if (key in Settings)
             Settings[key].call(input);
-          }
         }
       });
       const listImageHost = $.id('list-fourchanImageHost');
@@ -20840,25 +20816,28 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     },
     favicon() {
       Favicon.switch();
-      if ((g.VIEW === 'thread') && Conf['Unread Favicon'])
-        Unread.update();
-      const img = this.nextElementSibling.children;
+      const { errors } = Favicon.parseSettings(this.value);
+      const preview = this.previousElementSibling;
+      const img = preview.children;
       const f = Favicon;
-      const iterable = [f.SFW, f.unreadSFW, f.unreadSFWY, f.NSFW, f.unreadNSFW, f.unreadNSFWY, f.dead, f.unreadDead, f.unreadDeadY];
+      const iterable = [f.unreadDead, f.unreadDeadY, f.unreadSFW, f.unreadSFWY, f.unreadNSFW, f.unreadNSFWY];
       for (let i = 0; i < iterable.length; i++) {
-        var icon = iterable[i];
         if (!img[i])
-          $.add(this.nextElementSibling, $.el('img'));
-        img[i].src = icon;
+          $.add(preview, $.el('img'));
+        img[i].src = iterable[i];
       }
-    },
-    togglecss() {
-      if (($('textarea[name=usercss]', $.x('ancestor::fieldset[1]', this)).disabled = ($.id('apply-css').disabled = !this.checked))) {
-        CustomCSS.rmStyle();
-      } else {
-        CustomCSS.addStyle();
+      let errBox = preview.querySelector('.favicon-preview-errors');
+      if (errors.length) {
+        if (!errBox) {
+          errBox = $.el('ul', { className: 'favicon-preview-errors' });
+          $.add(preview, errBox);
+        }
+        $.rmAll(errBox);
+        for (const message of errors)
+          $.add(errBox, $.el('li', { textContent: message }));
+      } else if (errBox) {
+        $.rm(errBox);
       }
-      $.cb.checked.call(this);
     },
     setTimeLocale(e) {
       const input = e.target;
