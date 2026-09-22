@@ -606,6 +606,10 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
 
     $.on(updateArchives, 'click', () => Redirect.update(() => Settings.addArchiveTable(section)));
 
+    for (const {key} of Favicon.fields) {
+      Settings[key] = Settings.favicon;
+    }
+
     $.on(inputs.beepVolume, 'change', () => { ThreadUpdater.playBeep(false); });
     $.on(inputs.beepSource, 'change', () => { ThreadUpdater.playBeep(false); });
   },
@@ -757,28 +761,15 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
   favicon() {
     Favicon.switch();
 
-    const {errors} = Favicon.parseSettings(this.value);
-    const preview = this.previousElementSibling;
-    const img     = preview.children;
-    const f       = Favicon;
-    const iterable = [f.unreadDead, f.unreadDeadY, f.unreadSFW, f.unreadSFWY, f.unreadNSFW, f.unreadNSFWY];
+    const row = this.closest('tr');
+    const img = row.querySelector('.favicon-preview-icon');
+    const err = row.querySelector('.favicon-error');
 
-    for (let i = 0; i < iterable.length; i++) {
-      if (!img[i]) $.add(preview, $.el('img'));
-      img[i].src = iterable[i];
-    }
+    const {error} = Favicon.validateIcon(this.value);
+    const field   = Favicon.fields.find(f => f.key === this.name);
 
-    let errBox = preview.querySelector('.favicon-preview-errors');
-    if (errors.length) {
-      if (!errBox) {
-        errBox = $.el('ul', {className: 'favicon-preview-errors'});
-        $.add(preview, errBox);
-      }
-      $.rmAll(errBox);
-      for (const message of errors) $.add(errBox, $.el('li', {textContent: message}));
-    } else if (errBox) {
-      $.rm(errBox);
-    }
+    img.src = Favicon[field.prop] || '';
+    err.textContent = error || '';
   },
 
   setTimeLocale(e: InputEvent) {

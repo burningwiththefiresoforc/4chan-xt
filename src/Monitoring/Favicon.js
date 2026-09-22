@@ -16,14 +16,14 @@ import { Conf, d } from '../globals/globals';
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 
-const KEY_MAP = {
-  'unread-dead':    'unreadDead',
-  'unread-dead-y':  'unreadDeadY',
-  'unread-sfw':     'unreadSFW',
-  'unread-sfw-y':   'unreadSFWY',
-  'unread-nsfw':    'unreadNSFW',
-  'unread-nsfw-y':  'unreadNSFWY',
-};
+const FIELDS = [
+  {key: 'favicon-unread-dead',   prop: 'unreadDead'},
+  {key: 'favicon-unread-dead-y', prop: 'unreadDeadY'},
+  {key: 'favicon-unread-sfw',    prop: 'unreadSFW'},
+  {key: 'favicon-unread-sfw-y',  prop: 'unreadSFWY'},
+  {key: 'favicon-unread-nsfw',   prop: 'unreadNSFW'},
+  {key: 'favicon-unread-nsfw-y', prop: 'unreadNSFWY'},
+];
 
 const presets = {
   Original: {
@@ -44,6 +44,7 @@ function resolveIconSrc(value) {
   return `data:image/png;base64,${value}`;
 }
 
+// Hosts allowed for remote icons. Edit this list as needed.
 const ALLOWED_HOSTS = [
   'i.imgur.com',
   'imgur.com',
@@ -61,49 +62,22 @@ function checkHost(url) {
   }
 }
 
-function parseSettings(raw) {
-  const icons  = {};
-  const errors = [];
+function validateIcon(value) {
+  if (!value) return {src: null, error: null};
 
-  (raw || '').split('\n').forEach((line, i) => {
-    const lineNum = i + 1;
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#')) return;
-
-    const sep = trimmed.indexOf(':');
-    if (sep === -1) {
-      errors.push(`Line ${lineNum}: expected "key: value".`);
-      return;
+  if (URL_RE.test(value)) {
+    if (!checkHost(value)) {
+      let host;
+      try { host = new URL(value, location.href).hostname; } catch (e) { host = value; }
+      return {src: null, error: `"${host}" is not a whitelisted host.`};
     }
+    return {src: value, error: null};
+  }
 
-    const key   = trimmed.slice(0, sep).trim().toLowerCase();
-    const value = trimmed.slice(sep + 1).trim();
+  if (DATA_RE.test(value)) return {src: value, error: null};
+  if (B64_RE.test(value))  return {src: `data:image/png;base64,${value}`, error: null};
 
-    if (!(key in KEY_MAP)) {
-      errors.push(`Line ${lineNum}: unknown option "${key}".`);
-      return;
-    }
-    if (!value) {
-      errors.push(`Line ${lineNum}: "${key}" has no value.`);
-      return;
-    }
-
-    if (URL_RE.test(value)) {
-      if (!checkHost(value)) {
-        let host;
-        try { host = new URL(value, location.href).hostname; } catch (e) { host = value; }
-        errors.push(`Line ${lineNum}: "${host}" is not a whitelisted host.`);
-        return;
-      }
-    } else if (!DATA_RE.test(value) && !B64_RE.test(value)) {
-      errors.push(`Line ${lineNum}: "${key}" isn't a URL, data URI, or base64 string.`);
-      return;
-    }
-
-    icons[key] = value;
-  });
-
-  return {icons, errors};
+  return {src: null, error: `Not a URL, data URI, or base64 string.`};
 }
 
 var Favicon = {
@@ -130,15 +104,10 @@ var Favicon = {
   },
 
   switch() {
-    const {icons: overrides} = parseSettings(Conf.favicon);
-
     const f = Favicon;
-    for (const settingKey in KEY_MAP) {
-      const prop = KEY_MAP[settingKey];
-      const custom = overrides[settingKey];
-      f[prop] = custom
-        ? resolveIconSrc(custom)
-        : (presets.Original[prop] ? resolveIconSrc(presets.Original[prop]) : null);
+    for (const {key, prop} of FIELDS) {
+      const {src} = validateIcon(Conf[key]);
+      f[prop] = src || resolveIconSrc(presets.Original[prop]);
     }
 
     f.update();
@@ -160,10 +129,9 @@ var Favicon = {
   logo: `data:image/png;base64,${empty}`,
 };
 
-// Exposed for the settings menu (see Settings.favicon).
-Favicon.keys           = Object.keys(KEY_MAP);
-Favicon.parseSettings  = parseSettings;
+Favicon.fields        = FIELDS;
+Favicon.validateIcon  = validateIcon;
 Favicon.resolveIconSrc = resolveIconSrc;
-Favicon.allowedHosts   = ALLOWED_HOSTS;
+Favicon.allowedHosts  = ALLOWED_HOSTS;
 
 export default Favicon;

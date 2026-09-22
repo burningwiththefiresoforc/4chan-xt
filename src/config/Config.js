@@ -918,8 +918,6 @@ current-archive-text:"Archive"]
 
   fileInfo: '%l %d (%p%s, %r%g)',
 
-  favicon: 'ferongr',
-
   usercss: userCss,
 
   hotkeys: {
@@ -1225,7 +1223,8 @@ current-archive-text:"Archive"]
 
   beepSource: '',
   beepVolume: 1,
+  
+  
 
-  favicon: '',
 };
 export default Config;
