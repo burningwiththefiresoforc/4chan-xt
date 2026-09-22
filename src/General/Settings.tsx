@@ -51,6 +51,10 @@ var Settings = {
     $.on(d, 'AddSettingsSection',   Settings.addSection);
     $.on(d, 'OpenSettings', e => Settings.open(e.detail));
 
+    for (const {key} of Favicon.fields) {
+      Settings[key] = Settings.favicon;
+    }
+
     if ((g.SITE.software === 'yotsuba') && Conf['Disable Native Extension']) {
       if ($.hasStorage) {
         // Run in page context to handle case where 4chan X has localStorage access but not the page.
@@ -605,10 +609,6 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     });
 
     $.on(updateArchives, 'click', () => Redirect.update(() => Settings.addArchiveTable(section)));
-
-    for (const {key} of Favicon.fields) {
-      Settings[key] = Settings.favicon;
-    }
 
     $.on(inputs.beepVolume, 'change', () => { ThreadUpdater.playBeep(false); });
     $.on(inputs.beepSource, 'change', () => { ThreadUpdater.playBeep(false); });

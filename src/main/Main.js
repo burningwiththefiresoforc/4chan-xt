@@ -883,8 +883,6 @@ User agent: ${navigator.userAgent}\
     ['Mod Contact Links',         ModContact],
     ['Restore deleted posts from archive', RestoreDeletedFromArchive],
     ['Mark posts on scroll bar',  ScrollMarkers],
-    // ['WEBM Metadata',             Metadata],
-    // ['Captcha Configuration',     CaptchaReplace],
   ]
 };
 export default Main;
