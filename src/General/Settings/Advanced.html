@@ -149,15 +149,11 @@
 
 <fieldset>
   <legend>Unread Favicon <span class="warning" data-feature="Unread Favicon">is disabled.</span></legend>
-  <select name="favicon">
-    <option value="ferongr">ferongr</option>
-    <option value="xat-">xat-</option>
-    <option value="4chanJS">4chanJS</option>
-    <option value="Mayhem">Mayhem</option>
-    <option value="Original">Original</option>
-    <option value="Metro">Metro</option>
-  </select>
   <span class="favicon-preview"></span>
+  <label>
+    Favicon URL. Can be a base64 URI starting with <code>data:</code>. Leave empty for the default.
+    <input type="string" hidden name="favicon" class="field" spellcheck="false"/>
+  </label>
 </fieldset>
 
 <fieldset>
@@ -170,7 +166,6 @@
       <option value="bottom-right">Bottom right</option>
     </select>
   </label>
-  <span class="favicon-preview"></span>
 </fieldset>
 
 <fieldset>

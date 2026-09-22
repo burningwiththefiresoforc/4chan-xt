@@ -1,40 +1,11 @@
-import ferongr_unreadDead from './Favicon/ferongr.unreadDead.png';
-import ferongr_unreadDeadY from './Favicon/ferongr.unreadDeadY.png';
-import ferongr_unreadSFW from './Favicon/ferongr.unreadSFW.png';
-import ferongr_unreadSFWY from './Favicon/ferongr.unreadSFWY.png';
-import ferongr_unreadNSFW from './Favicon/ferongr.unreadNSFW.png';
-import ferongr_unreadNSFWY from './Favicon/ferongr.unreadNSFWY.png';
-import xat_unreadDead from './Favicon/xat-.unreadDead.png';
-import xat_unreadDeadY from './Favicon/xat-.unreadDeadY.png';
-import xat_unreadSFW from './Favicon/xat-.unreadSFW.png';
-import xat_unreadSFWY from './Favicon/xat-.unreadSFWY.png';
-import xat_unreadNSFW from './Favicon/xat-.unreadNSFW.png';
-import xat_unreadNSFWY from './Favicon/xat-.unreadNSFWY.png';
-import Mayhem_unreadDead from './Favicon/Mayhem.unreadDead.png';
-import Mayhem_unreadDeadY from './Favicon/Mayhem.unreadDeadY.png';
-import Mayhem_unreadSFW from './Favicon/Mayhem.unreadSFW.png';
-import Mayhem_unreadSFWY from './Favicon/Mayhem.unreadSFWY.png';
-import Mayhem_unreadNSFW from './Favicon/Mayhem.unreadNSFW.png';
-import Mayhem_unreadNSFWY from './Favicon/Mayhem.unreadNSFWY.png';
-import fourChanJS_unreadDead from './Favicon/4chanJS.unreadDead.png';
-import fourChanJS_unreadDeadY from './Favicon/4chanJS.unreadDeadY.png';
-import fourChanJS_unreadSFW from './Favicon/4chanJS.unreadSFW.png';
-import fourChanJS_unreadSFWY from './Favicon/4chanJS.unreadSFWY.png';
-import fourChanJS_unreadNSFW from './Favicon/4chanJS.unreadNSFW.png';
-import fourChanJS_unreadNSFWY from './Favicon/4chanJS.unreadNSFWY.png';
-import Original_unreadDead from './Favicon/Original.unreadDead.png';
-import Original_unreadDeadY from './Favicon/Original.unreadDeadY.png';
-import Original_unreadSFW from './Favicon/Original.unreadSFW.png';
-import Original_unreadSFWY from './Favicon/Original.unreadSFWY.png';
-import Original_unreadNSFW from './Favicon/Original.unreadNSFW.png';
-import Original_unreadNSFWY from './Favicon/Original.unreadNSFWY.png';
-import Metro_unreadDead from './Favicon/Metro.unreadDead.png';
-import Metro_unreadDeadY from './Favicon/Metro.unreadDeadY.png';
-import Metro_unreadSFW from './Favicon/Metro.unreadSFW.png';
-import Metro_unreadSFWY from './Favicon/Metro.unreadSFWY.png';
-import Metro_unreadNSFW from './Favicon/Metro.unreadNSFW.png';
-import Metro_unreadNSFWY from './Favicon/Metro.unreadNSFWY.png';
-import dead from './Favicon/dead.gif';
+// Only one bundled icon set now — everything else is user-supplied via Conf.
+import Original_unreadDead   from './Favicon/Original.unreadDead.png';
+import Original_unreadDeadY  from './Favicon/Original.unreadDeadY.png';
+import Original_unreadSFW    from './Favicon/Original.unreadSFW.png';
+import Original_unreadSFWY   from './Favicon/Original.unreadSFWY.png';
+import Original_unreadNSFW   from './Favicon/Original.unreadNSFW.png';
+import Original_unreadNSFWY  from './Favicon/Original.unreadNSFWY.png';
+import dead  from './Favicon/dead.gif';
 import empty from './Favicon/empty.gif';
 import $ from '../platform/$';
 import { Conf, d } from '../globals/globals';
@@ -44,6 +15,96 @@ import { Conf, d } from '../globals/globals';
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
+
+const KEY_MAP = {
+  'unread-dead':    'unreadDead',
+  'unread-dead-y':  'unreadDeadY',
+  'unread-sfw':     'unreadSFW',
+  'unread-sfw-y':   'unreadSFWY',
+  'unread-nsfw':    'unreadNSFW',
+  'unread-nsfw-y':  'unreadNSFWY',
+};
+
+const presets = {
+  Original: {
+    unreadDead:   Original_unreadDead,
+    unreadDeadY:  Original_unreadDeadY,
+    unreadSFW:    Original_unreadSFW,
+    unreadSFWY:   Original_unreadSFWY,
+    unreadNSFW:   Original_unreadNSFW,
+    unreadNSFWY:  Original_unreadNSFWY,
+  },
+};
+
+function resolveIconSrc(value) {
+  if (!value) return null;
+  if (/^(https?:)?\/\//.test(value) || /^data:/.test(value)) {
+    return value;
+  }
+  return `data:image/png;base64,${value}`;
+}
+
+const ALLOWED_HOSTS = [
+  'i.imgur.com',
+  'imgur.com',
+];
+
+const URL_RE  = /^(https?:)?\/\//i;
+const DATA_RE = /^data:image\/[a-z0-9.+-]+;base64,/i;
+const B64_RE  = /^[A-Za-z0-9+/]+=*$/;
+
+function checkHost(url) {
+  try {
+    return ALLOWED_HOSTS.includes(new URL(url, location.href).hostname);
+  } catch (e) {
+    return false;
+  }
+}
+
+function parseSettings(raw) {
+  const icons  = {};
+  const errors = [];
+
+  (raw || '').split('\n').forEach((line, i) => {
+    const lineNum = i + 1;
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) return;
+
+    const sep = trimmed.indexOf(':');
+    if (sep === -1) {
+      errors.push(`Line ${lineNum}: expected "key: value".`);
+      return;
+    }
+
+    const key   = trimmed.slice(0, sep).trim().toLowerCase();
+    const value = trimmed.slice(sep + 1).trim();
+
+    if (!(key in KEY_MAP)) {
+      errors.push(`Line ${lineNum}: unknown option "${key}".`);
+      return;
+    }
+    if (!value) {
+      errors.push(`Line ${lineNum}: "${key}" has no value.`);
+      return;
+    }
+
+    if (URL_RE.test(value)) {
+      if (!checkHost(value)) {
+        let host;
+        try { host = new URL(value, location.href).hostname; } catch (e) { host = value; }
+        errors.push(`Line ${lineNum}: "${host}" is not a whitelisted host.`);
+        return;
+      }
+    } else if (!DATA_RE.test(value) && !B64_RE.test(value)) {
+      errors.push(`Line ${lineNum}: "${key}" isn't a URL, data URI, or base64 string.`);
+      return;
+    }
+
+    icons[key] = value;
+  });
+
+  return {icons, errors};
+}
 
 var Favicon = {
   init() {
@@ -69,66 +130,17 @@ var Favicon = {
   },
 
   switch() {
-    let items = {
-      ferongr: [
-        ferongr_unreadDead,
-        ferongr_unreadDeadY,
-        ferongr_unreadSFW,
-        ferongr_unreadSFWY,
-        ferongr_unreadNSFW,
-        ferongr_unreadNSFWY,
-      ],
-      'xat-': [
-        xat_unreadDead,
-        xat_unreadDeadY,
-        xat_unreadSFW,
-        xat_unreadSFWY,
-        xat_unreadNSFW,
-        xat_unreadNSFWY,
-      ],
-      Mayhem: [
-        Mayhem_unreadDead,
-        Mayhem_unreadDeadY,
-        Mayhem_unreadSFW,
-        Mayhem_unreadSFWY,
-        Mayhem_unreadNSFW,
-        Mayhem_unreadNSFWY,
-      ],
-      '4chanJS': [
-        fourChanJS_unreadDead,
-        fourChanJS_unreadDeadY,
-        fourChanJS_unreadSFW,
-        fourChanJS_unreadSFWY,
-        fourChanJS_unreadNSFW,
-        fourChanJS_unreadNSFWY,
-      ],
-      Original: [
-        Original_unreadDead,
-        Original_unreadDeadY,
-        Original_unreadSFW,
-        Original_unreadSFWY,
-        Original_unreadNSFW,
-        Original_unreadNSFWY,
-      ],
-      'Metro': [
-        Metro_unreadDead,
-        Metro_unreadDeadY,
-        Metro_unreadSFW,
-        Metro_unreadSFWY,
-        Metro_unreadNSFW,
-        Metro_unreadNSFWY,
-      ]
-    };
-    items = $.getOwn(items, Conf.favicon);
+    const {icons: overrides} = parseSettings(Conf.favicon);
 
     const f = Favicon;
-    const t = 'data:image/png;base64,';
-    let i = 0;
-    while (items[i]) {
-      items[i] = t + items[i++];
+    for (const settingKey in KEY_MAP) {
+      const prop = KEY_MAP[settingKey];
+      const custom = overrides[settingKey];
+      f[prop] = custom
+        ? resolveIconSrc(custom)
+        : (presets.Original[prop] ? resolveIconSrc(presets.Original[prop]) : null);
     }
 
-    [f.unreadDead, f.unreadDeadY, f.unreadSFW, f.unreadSFWY, f.unreadNSFW, f.unreadNSFWY] = items;
     f.update();
   },
 
@@ -147,4 +159,11 @@ var Favicon = {
   dead: `data:image/gif;base64,${dead}`,
   logo: `data:image/png;base64,${empty}`,
 };
+
+// Exposed for the settings menu (see Settings.favicon).
+Favicon.keys           = Object.keys(KEY_MAP);
+Favicon.parseSettings  = parseSettings;
+Favicon.resolveIconSrc = resolveIconSrc;
+Favicon.allowedHosts   = ALLOWED_HOSTS;
+
 export default Favicon;

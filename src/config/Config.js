@@ -1225,5 +1225,7 @@ current-archive-text:"Archive"]
 
   beepSource: '',
   beepVolume: 1,
+
+  favicon: '',
 };
 export default Config;

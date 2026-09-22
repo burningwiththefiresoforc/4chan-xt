@@ -562,9 +562,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         input = inputs[key];
         input[input.type === 'checkbox' ? 'checked' : 'value'] = val;
         input.hidden = false; // XXX prevent Firefox from adding initialization to undo queue
-        if (key in Settings) {
-          Settings[key].call(input);
-        }
+        if (key in Settings) Settings[key].call(input);
       }
     });
 
@@ -758,24 +756,29 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
 
   favicon() {
     Favicon.switch();
-    if ((g.VIEW === 'thread') && Conf['Unread Favicon']) Unread.update();
-    const img = this.nextElementSibling.children;
-    const f = Favicon;
-    const iterable = [f.SFW, f.unreadSFW, f.unreadSFWY, f.NSFW, f.unreadNSFW, f.unreadNSFWY, f.dead, f.unreadDead, f.unreadDeadY];
-    for (let i = 0; i < iterable.length; i++) {
-      var icon = iterable[i];
-      if (!img[i]) $.add(this.nextElementSibling, $.el('img'));
-      img[i].src = icon;
-    }
-  },
 
-  togglecss() {
-    if (($('textarea[name=usercss]', $.x('ancestor::fieldset[1]', this)).disabled = ($.id('apply-css').disabled = !this.checked))) {
-      CustomCSS.rmStyle();
-    } else {
-      CustomCSS.addStyle();
+    const {errors} = Favicon.parseSettings(this.value);
+    const preview = this.previousElementSibling;
+    const img     = preview.children;
+    const f       = Favicon;
+    const iterable = [f.unreadDead, f.unreadDeadY, f.unreadSFW, f.unreadSFWY, f.unreadNSFW, f.unreadNSFWY];
+
+    for (let i = 0; i < iterable.length; i++) {
+      if (!img[i]) $.add(preview, $.el('img'));
+      img[i].src = iterable[i];
     }
-    $.cb.checked.call(this);
+
+    let errBox = preview.querySelector('.favicon-preview-errors');
+    if (errors.length) {
+      if (!errBox) {
+        errBox = $.el('ul', {className: 'favicon-preview-errors'});
+        $.add(preview, errBox);
+      }
+      $.rmAll(errBox);
+      for (const message of errors) $.add(errBox, $.el('li', {textContent: message}));
+    } else if (errBox) {
+      $.rm(errBox);
+    }
   },
 
   setTimeLocale(e: InputEvent) {
