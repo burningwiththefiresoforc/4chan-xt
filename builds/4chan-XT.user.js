@@ -11724,12 +11724,6 @@ current-archive-text:"Archive"]
 </fieldset>
 
 <fieldset>
-  <legend>Captcha Language</legend>
-  <div>Choose from <a href="https://developers.google.com/recaptcha/docs/language" target="_blank">list of language codes</a>. Leave blank to autoselect.</div>
-  <div><input name="captchaLanguage" class="field" spellcheck="false"></div>
-</fieldset>
-
-<fieldset>
   <legend>Custom Board Navigation</legend>
   <div><textarea hidden name="boardnav" class="field" spellcheck="false"></textarea></div>
   <span class="note">New lines will be converted into spaces.</span><br><br>
@@ -11835,46 +11829,44 @@ current-archive-text:"Archive"]
 
 <fieldset>
   <legend>Unread Favicon <span class="warning" data-feature="Unread Favicon">is disabled.</span></legend>
-  <table class="favicon-table">
-    <tbody>
-      <tr>
-        <td><img class="favicon-preview-icon"></td>
-        <td><label for="favicon-unread-dead">unread-dead</label></td>
-        <td><input type="text" id="favicon-unread-dead" name="favicon-unread-dead" class="field" spellcheck="false"></td>
-        <td class="favicon-error"></td>
-      </tr>
-      <tr>
-        <td><img class="favicon-preview-icon"></td>
-        <td><label for="favicon-unread-dead-y">unread-dead-y</label></td>
-        <td><input type="text" id="favicon-unread-dead-y" name="favicon-unread-dead-y" class="field" spellcheck="false"></td>
-        <td class="favicon-error"></td>
-      </tr>
-      <tr>
-        <td><img class="favicon-preview-icon"></td>
-        <td><label for="favicon-unread-sfw">unread-sfw</label></td>
-        <td><input type="text" id="favicon-unread-sfw" name="favicon-unread-sfw" class="field" spellcheck="false"></td>
-        <td class="favicon-error"></td>
-      </tr>
-      <tr>
-        <td><img class="favicon-preview-icon"></td>
-        <td><label for="favicon-unread-sfw-y">unread-sfw-y</label></td>
-        <td><input type="text" id="favicon-unread-sfw-y" name="favicon-unread-sfw-y" class="field" spellcheck="false"></td>
-        <td class="favicon-error"></td>
-      </tr>
-      <tr>
-        <td><img class="favicon-preview-icon"></td>
-        <td><label for="favicon-unread-nsfw">unread-nsfw</label></td>
-        <td><input type="text" id="favicon-unread-nsfw" name="favicon-unread-nsfw" class="field" spellcheck="false"></td>
-        <td class="favicon-error"></td>
-      </tr>
-      <tr>
-        <td><img class="favicon-preview-icon"></td>
-        <td><label for="favicon-unread-nsfw-y">unread-nsfw-y</label></td>
-        <td><input type="text" id="favicon-unread-nsfw-y" name="favicon-unread-nsfw-y" class="field" spellcheck="false"></td>
-        <td class="favicon-error"></td>
-      </tr>
-    </tbody>
-  </table>
+
+  <div class="favicon-field">
+    <img class="favicon-preview-icon">
+    <label for="favicon-unread-dead">Unread Dead</label>
+    <input type="text" id="favicon-unread-dead" name="favicon-unread-dead" class="field" spellcheck="false">
+    <span class="favicon-error"></span>
+  </div>
+  <div class="favicon-field">
+    <img class="favicon-preview-icon">
+    <label for="favicon-unread-dead-y">Unread Dead Alert</label>
+    <input type="text" id="favicon-unread-dead-y" name="favicon-unread-dead-y" class="field" spellcheck="false">
+    <span class="favicon-error"></span>
+  </div>
+  <div class="favicon-field">
+    <img class="favicon-preview-icon">
+    <label for="favicon-unread-sfw">Unread SFW</label>
+    <input type="text" id="favicon-unread-sfw" name="favicon-unread-sfw" class="field" spellcheck="false">
+    <span class="favicon-error"></span>
+  </div>
+  <div class="favicon-field">
+    <img class="favicon-preview-icon">
+    <label for="favicon-unread-sfw-y">Unread SFW Alert</label>
+    <input type="text" id="favicon-unread-sfw-y" name="favicon-unread-sfw-y" class="field" spellcheck="false">
+    <span class="favicon-error"></span>
+  </div>
+  <div class="favicon-field">
+    <img class="favicon-preview-icon">
+    <label for="favicon-unread-nsfw">Unread NSFW</label>
+    <input type="text" id="favicon-unread-nsfw" name="favicon-unread-nsfw" class="field" spellcheck="false">
+    <span class="favicon-error"></span>
+  </div>
+  <div class="favicon-field">
+    <img class="favicon-preview-icon">
+    <label for="favicon-unread-nsfw-y">Unread NSFW Alert</label>
+    <input type="text" id="favicon-unread-nsfw-y" name="favicon-unread-nsfw-y" class="field" spellcheck="false">
+    <span class="favicon-error"></span>
+  </div>
+
   <p>
     Accepted formats: a URL from a whitelisted host, a data URI (<code>data:image/png;base64,...</code>), or bare base64.
   </p>
@@ -11957,7 +11949,7 @@ current-archive-text:"Archive"]
     <input name="beepVolume" type="number" min=".01" max="1" step=".01" class="field" />
   </label><br />
   <label>
-    Sound url. Can be a base64 one starting with <code>data:</code>. Leave empty for the default beep.
+    Sound url. Can be a base64 <code>data:</code> URI. Leave empty for the default beep.
     <input type="string" name="beepSource" class="field wide" />
   </label>
 </fieldset>`;
@@ -20379,6 +20371,9 @@ svg.icon {
       add('Keybinds', this.keybinds);
       $.on(d, 'AddSettingsSection', Settings.addSection);
       $.on(d, 'OpenSettings', e => Settings.open(e.detail));
+      for (const { key } of Favicon.fields) {
+        Settings[key] = Settings.favicon;
+      }
       if ((g.SITE.software === 'yotsuba') && Conf['Disable Native Extension']) {
         if ($.hasStorage) {
           // Run in page context to handle case where 4chan X has localStorage access but not the page.
@@ -20883,9 +20878,6 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
         $(`tbody > .${this.value}`, table).hidden = false;
       });
       $.on(updateArchives, 'click', () => Redirect.update(() => Settings.addArchiveTable(section)));
-      for (const { key } of Favicon.fields) {
-        Settings[key] = Settings.favicon;
-      }
       $.on(inputs.beepVolume, 'change', () => { ThreadUpdater.playBeep(false); });
       $.on(inputs.beepSource, 'change', () => { ThreadUpdater.playBeep(false); });
     },
@@ -24879,8 +24871,6 @@ User agent: ${navigator.userAgent}\
           ['Mod Contact Links', ModContact],
           ['Restore deleted posts from archive', RestoreDeletedFromArchive],
           ['Mark posts on scroll bar', ScrollMarkers],
-          // ['WEBM Metadata',             Metadata],
-          // ['Captcha Configuration',     CaptchaReplace],
       ]
   };
   $.ready(() => Main.init());
