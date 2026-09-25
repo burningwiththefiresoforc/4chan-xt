@@ -30,7 +30,7 @@ const Sound = {
   },
 
   setupSoundpost(el: HTMLElement, file: File) {
-    const soundUrlMatch = file.name.match(/\[sound=([^\]]+\.(?:webm|ogg|mp3|wav|m4a))]/i);
+    const soundUrlMatch = file.name.match(/\[sound=([^\]]+\.(?:webm|ogg|mp3|wav|m4a|opus))]/i);
     if (!soundUrlMatch) return;
 
     let url: URL;
