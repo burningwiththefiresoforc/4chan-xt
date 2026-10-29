@@ -143,9 +143,9 @@ var ThreadHiding = {
     },
 
     hide() {
+      const {thread} = ThreadHiding.menu;
       if (thread.isHighlighted && Conf['Always Show Highlighted Threads']) return;
       const makeStub = $('input', this.parentNode).checked;
-      const {thread} = ThreadHiding.menu;
       ThreadHiding.hide(thread, makeStub, 'Hidden manually');
       ThreadHiding.saveHiddenState(thread, makeStub);
       $.event('CloseMenu');
