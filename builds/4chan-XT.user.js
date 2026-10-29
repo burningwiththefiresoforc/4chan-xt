@@ -147,6 +147,7 @@
 * figamin
 * nick-s-b
 * duanemoody
+* Squawks
 * burningwiththefiresoforc
 *
 * All the people who've taken the time to write bug reports.
@@ -277,6 +278,17 @@
       timeout = setTimeout(exec, wait);
     };
   };
+  function ready(fn) {
+    if (document.readyState !== 'loading') {
+      queueMicrotask(fn);
+      return;
+    }
+    const cb = () => {
+      document.removeEventListener('DOMContentLoaded', cb);
+      fn();
+    };
+    document.addEventListener('DOMContentLoaded', cb);
+  }
   const dict = () => Object.create(null);
   dict.clone = function (obj) {
     if ((typeof obj !== 'object') || (obj === null)) {
@@ -1404,35 +1416,35 @@
     raw: (name) => ({ innerHTML: icons[name], [isEscaped]: true }),
   };
 
-  const noticesRoot = $.el('div', { id: 'notifications' });
+  const noticesRoot = document.createElement('div');
+  noticesRoot.id = 'notifications';
   class Notice {
       constructor(type, content, timeout, onclose) {
           this.add = this.add.bind(this);
           this.close = this.close.bind(this);
           this.timeout = timeout;
           this.onclose = onclose;
-          this.el = $.el('div', {
-              innerHTML: `<a href="javascript:;" class="close" title="Close">${Icon.get('xmark')}</a><div class="message"></div>`
-          });
+          this.el = document.createElement('div');
+          this.el.innerHTML = `<a href="javascript:;" class="close" title="Close">${Icon.get('xmark')}</a><div class="message"></div>`;
           this.el.style.opacity = 0;
           this.setType(type);
-          $.on(this.el.firstElementChild, 'click', this.close);
+          this.el.firstElementChild.addEventListener('click', this.close);
           if (typeof content === 'string') {
-              content = $.tn(content);
+              content = document.createTextNode(content);
           }
-          $.add(this.el.lastElementChild, content);
-          $.ready(this.add);
+          this.el.lastElementChild.appendChild(content);
+          ready(this.add);
       }
       setType(type) { this.el.className = `notification ${type}`; }
       add() {
           if (this.closed)
               return;
           if (d.hidden) {
-              $.on(d, 'visibilitychange', this.add);
+              d.addEventListener('visibilitychange', this.add);
               return;
           }
-          $.off(d, 'visibilitychange', this.add);
-          $.add(noticesRoot, this.el);
+          d.removeEventListener('visibilitychange', this.add);
+          noticesRoot.appendChild(this.el);
           this.el.clientHeight; // force reflow
           this.el.style.opacity = 1;
           if (this.timeout)
@@ -1442,8 +1454,8 @@
           if (this.timeoutId)
               clearTimeout(this.timeoutId);
           this.closed = true;
-          $.off(d, 'visibilitychange', this.add);
-          $.rm(this.el);
+          d.removeEventListener('visibilitychange', this.add);
+          this.el.remove();
           this.onclose?.();
       }
       resetTimer() {
@@ -3776,7 +3788,6 @@ current-archive-text:"Archive"]
       fourchanImageHost: 'i.4cdn.org',
       hiddenPSAList: [{}],
       knownBanners: banners.join(','),
-      passMessageClosed: false,
       'PSAseen': [[]],
       XEmbedder: 'fxt',
       fxtLang: '',
@@ -3802,6 +3813,7814 @@ current-archive-text:"Archive"]
               }
           });
       }
+  };
+
+  const $$ = (selector, root = d.body) => Array.from(root.querySelectorAll(selector));
+
+  const parseBoardsMemo = dict();
+  // Parse comma-separated list of boards.
+  // Sites can be specified by a beginning part of the site domain followed by a colon.
+  function parseBoards(boardsRaw) {
+      if (!boardsRaw)
+          return false;
+      let boards = parseBoardsMemo[boardsRaw];
+      if (boards)
+          return boards;
+      boards = dict();
+      let siteFilter = '';
+      for (const boardID_ of boardsRaw.split(',')) {
+          let boardID = boardID_;
+          if (boardID.includes(':'))
+              [siteFilter, boardID] = boardID.split(':').slice(-2);
+          for (const siteID in g.sites) {
+              const site = g.sites[siteID];
+              if (siteID.slice(0, siteFilter.length) === siteFilter) {
+                  if (['nsfw', 'sfw'].includes(boardID)) {
+                      for (const boardID2 of site.sfwBoards?.(boardID === 'sfw') || []) {
+                          boards[`${siteID}/${boardID2}`] = true;
+                      }
+                  }
+                  else {
+                      boards[`${siteID}/${encodeURIComponent(boardID)}`] = true;
+                  }
+              }
+          }
+      }
+      parseBoardsMemo[boardsRaw] = boards;
+      return boards;
+  }
+
+  function indexEnabledOn({ siteID }) {
+      return Conf['JSON Index'] && g.sites[siteID].software === 'yotsuba';
+  }
+
+  function resolve(url = location) {
+      let { hostname } = url;
+      while (hostname && !Object.hasOwn(Conf.siteProperties, hostname)) {
+          hostname = hostname.replace(/^[^.]*\.?/, '');
+      }
+      if (hostname) {
+          const canonical = Conf.siteProperties[hostname].canonical;
+          if (canonical)
+              hostname = canonical;
+      }
+      return hostname;
+  }
+  function parseURL(url) {
+      const siteID = resolve(url);
+      return Main.parseURL(g.sites[siteID], url);
+  }
+
+  const CatalogLinks = {
+      init() {
+          if ((g.SITE.software === 'yotsuba') && (Conf['External Catalog'] || Conf['JSON Index']) && !(Conf['JSON Index'] && (g.VIEW === 'index'))) {
+              const selectors = {
+                  thread: '.navLinks.desktop > a',
+                  archive: '.navLinks.desktop > a',
+                  catalog: '.navLinks > :first-child > a',
+                  index: '#ctrl-top > a, .cataloglink > a'
+              };
+              const selector = selectors[g.VIEW];
+              $.ready(() => {
+                  for (const link of $$(selector)) {
+                      switch (link.pathname.replace(/\/+/g, '/')) {
+                          case `/${g.BOARD}/`:
+                              if (Conf['JSON Index'])
+                                  link.textContent = 'Index';
+                              link.href = CatalogLinks.index();
+                              break;
+                          case `/${g.BOARD}/catalog`:
+                              link.href = CatalogLinks.catalog();
+                              break;
+                      }
+                      let catalogURL = CatalogLinks.catalog();
+                      if ((g.VIEW === 'catalog') && (catalogURL !== g.SITE.urls.catalog?.(g.BOARD))) {
+                          const catalogLink = link.parentNode.cloneNode(true);
+                          const link2 = catalogLink.firstElementChild;
+                          link2.href = catalogURL;
+                          link2.textContent = link2.hostname === location.hostname
+                              ? `${meta.name} Catalog` : 'External Catalog';
+                          $.after(link.parentNode, [$.tn(' '), catalogLink]);
+                      }
+                  }
+              });
+          }
+          if ((g.SITE.software === 'yotsuba') && Conf['JSON Index'] && Conf[`Use ${meta.name} Catalog`]) {
+              Callbacks.Post.push({
+                  name: 'Catalog Link Rewrite',
+                  cb: this.node
+              });
+          }
+          this.enabled = Conf['Catalog Links'];
+      },
+      node() {
+          for (const a of $$('a', this.nodes.comment)) {
+              let m = a.href.match(/^https?:\/\/(boards\.4chan\.org\/[^\/]+)\/catalog(#s=.*)?/);
+              if (m)
+                  a.href = `//${m[1]}/${m[2] || '#catalog'}`;
+          }
+      },
+      set(useCatalog) { Conf['Header catalog links'] = useCatalog; },
+      // Also called by Header when board lists are loaded / generated.
+      setLinks(list) {
+          if ((!(CatalogLinks.enabled ?? Conf['Catalog Links'])) || !list)
+              return;
+          // do not transform links unless they differ from the expected value at most by this tail
+          const tail = /(?:index)?(?:\.\w+)?$/;
+          for (const a of $$('a:not([data-only])', list)) {
+              let { siteID, boardID } = a.dataset;
+              if (!siteID || !boardID) {
+                  let VIEW;
+                  ({ siteID, boardID, VIEW } = parseURL(a));
+                  if (!siteID || !boardID || !['index', 'catalog'].includes(VIEW) || (!a.dataset.indexOptions && (a.href.replace(tail, '') !== (Get.url(VIEW, { siteID, boardID }) || '').replace(tail, ''))))
+                      continue;
+                  $.extend(a.dataset, { siteID, boardID });
+              }
+              const board = { siteID, boardID };
+              const url = Conf['Header catalog links'] ? CatalogLinks.catalog(board) : Get.url('index', board);
+              if (url) {
+                  a.href = url;
+                  if (a.dataset.indexOptions && (url.split('#')[0] === Get.url('index', board))) {
+                      a.href += (a.hash ? '/' : '#') + a.dataset.indexOptions;
+                  }
+              }
+          }
+      },
+      externalParse() {
+          CatalogLinks.externalList = dict();
+          for (const line of Conf.externalCatalogURLs.split('\n')) {
+              if (line[0] === '#')
+                  continue;
+              const url = line.split(';')[0];
+              const boards = parseBoards(line.match(/;boards:([^;]+)/)?.[1] || '*');
+              const excludes = parseBoards(line.match(/;exclude:([^;]+)/)?.[1]) || dict();
+              for (const board in boards) {
+                  if (!excludes[board] && !excludes[board.split('/')[0] + '/*']) {
+                      CatalogLinks.externalList[board] = url;
+                  }
+              }
+          }
+      },
+      external({ siteID, boardID }) {
+          if (!CatalogLinks.externalList)
+              CatalogLinks.externalParse();
+          const external = (CatalogLinks.externalList[`${siteID}/${boardID}`] || CatalogLinks.externalList[`${siteID}/*`]);
+          if (external) {
+              return external.replace(/%board/g, boardID);
+          }
+          else {
+              return undefined;
+          }
+      },
+      jsonIndex(board, hash) {
+          if ((g.SITE.ID === board.siteID) && (g.BOARD.ID === board.boardID) && (g.VIEW === 'index')) {
+              return hash;
+          }
+          else {
+              return Get.url('index', board) + hash;
+          }
+      },
+      catalog(board = g.BOARD) {
+          let external, nativeCatalog;
+          if (Conf['External Catalog'] && (external = CatalogLinks.external(board))) {
+              return external;
+          }
+          else if (indexEnabledOn(board) && Conf[`Use ${meta.name} Catalog`]) {
+              return CatalogLinks.jsonIndex(board, '#catalog');
+          }
+          else if (nativeCatalog = Get.url('catalog', board)) {
+              return nativeCatalog;
+          }
+          else {
+              return CatalogLinks.external(board);
+          }
+      },
+      index: (board = g.BOARD) => indexEnabledOn(board)
+          ? CatalogLinks.jsonIndex(board, '#index') : Get.url('index', board)
+  };
+
+  const dialog = (id, properties) => {
+      const el = $.el('div', { className: 'dialog', id });
+      $.extend(el, properties);
+      el.style.cssText = Conf[`${id}.position`];
+      const move = $('.move', el);
+      $.on(move, 'touchstart mousedown', dragstart);
+      for (var child of move.children) {
+          if (!child.tagName)
+              continue;
+          $.on(child, 'touchstart mousedown', e => e.stopPropagation());
+      }
+      return el;
+  };
+  var Menu$1 = (function () {
+      let currentMenu = undefined;
+      let lastToggledButton = undefined;
+      Menu$1 = class Menu {
+          static initClass() {
+              currentMenu = null;
+              lastToggledButton = null;
+          }
+          constructor(type) {
+              // XXX AddMenuEntry event is deprecated
+              this.setPosition = this.setPosition.bind(this);
+              this.close = this.close.bind(this);
+              this.keybinds = this.keybinds.bind(this);
+              this.onFocus = this.onFocus.bind(this);
+              this.addEntry = this.addEntry.bind(this);
+              this.type = type;
+              $.on(d, 'AddMenuEntry', ({ detail }) => {
+                  if (detail.type !== this.type)
+                      return;
+                  delete detail.open;
+                  return this.addEntry(detail);
+              });
+              this.entries = [];
+          }
+          makeMenu() {
+              const menu = $.el('div', {
+                  className: 'dialog',
+                  id: 'menu',
+                  tabIndex: 0
+              });
+              menu.dataset.type = this.type;
+              $.on(menu, 'click', e => e.stopPropagation());
+              $.on(menu, 'keydown', this.keybinds);
+              return menu;
+          }
+          toggle(e, button, data) {
+              e.preventDefault();
+              e.stopPropagation();
+              if (currentMenu) {
+                  // Close if it's already opened.
+                  // Reopen if we clicked on another button.
+                  const previousButton = lastToggledButton;
+                  currentMenu.close();
+                  if (previousButton === button)
+                      return;
+              }
+              if (!this.entries.length)
+                  return;
+              this.open(button, data);
+          }
+          open(button, data) {
+              const menu = (this.menu = this.makeMenu());
+              currentMenu = this;
+              lastToggledButton = button;
+              this.entries.sort((first, second) => first.order - second.order);
+              for (const entry of this.entries) {
+                  this.insertEntry(entry, menu, data);
+              }
+              $.addClass(lastToggledButton, 'active');
+              $.on(d, 'click CloseMenu', this.close);
+              $.on(d, 'scroll', this.setPosition);
+              $.on(window, 'resize', this.setPosition);
+              $.after(button, menu);
+              this.setPosition();
+              let firstEntry = $('.entry', menu);
+              // We've removed flexbox, so we don't use order anymore.
+              // while prevEntry = @findNextEntry entry, -1
+              //   entry = prevEntry
+              this.focus(firstEntry);
+              menu.focus();
+          }
+          setPosition() {
+              const mRect = this.menu.getBoundingClientRect();
+              const bRect = lastToggledButton.getBoundingClientRect();
+              const cHeight = doc.clientHeight;
+              const cWidth = doc.clientWidth;
+              const [top, bottom] = (bRect.top + bRect.height + mRect.height) < cHeight
+                  ? [`${bRect.bottom}px`, ''] : ['', `${cHeight - bRect.top}px`];
+              const [left, right] = (bRect.left + mRect.width) < cWidth
+                  ? [`${bRect.left}px`, ''] : ['', `${cWidth - bRect.right}px`];
+              $.extend(this.menu.style, { top, right, bottom, left });
+              this.menu.classList.toggle('left', right);
+          }
+          insertEntry(entry, parent, data) {
+              if (typeof entry.open === 'function') {
+                  try {
+                      if (!entry.open(data))
+                          return;
+                  }
+                  catch (err) {
+                      Main.handleErrors({
+                          message: `Error in building the ${this.type} menu.`,
+                          error: err
+                      });
+                      return;
+                  }
+              }
+              $.add(parent, entry.el);
+              if (!entry.subEntries)
+                  return;
+              let submenu = $('.submenu', entry.el);
+              // Reset sub menu, remove irrelevant entries.
+              if (submenu)
+                  $.rm(submenu);
+              submenu = $.el('div', { className: 'dialog submenu' });
+              for (var subEntry of entry.subEntries) {
+                  this.insertEntry(subEntry, submenu, data);
+              }
+              $.add(entry.el, submenu);
+          }
+          close() {
+              $.rm(this.menu);
+              delete this.menu;
+              $.rmClass(lastToggledButton, 'active');
+              currentMenu = null;
+              lastToggledButton = null;
+              $.off(d, 'click scroll CloseMenu', this.close);
+              $.off(d, 'scroll', this.setPosition);
+              $.off(window, 'resize', this.setPosition);
+          }
+          findNextEntry(entry, direction) {
+              const entries = [...entry.parentNode.children];
+              entries.sort((first, second) => first.style.order - second.style.order);
+              return entries[entries.indexOf(entry) + direction];
+          }
+          keybinds(e) {
+              let subEntry, next, submenu;
+              let entry = $('.focused', this.menu);
+              while ((subEntry = $('.focused', entry))) {
+                  entry = subEntry;
+              }
+              switch (e.keyCode) {
+                  case 27: // Esc
+                      lastToggledButton.focus();
+                      this.close();
+                      break;
+                  case 13:
+                  case 32: // Enter, Space
+                      entry.click();
+                      break;
+                  case 38: // Up
+                      if (next = this.findNextEntry(entry, -1)) {
+                          this.focus(next);
+                      }
+                      break;
+                  case 40: // Down
+                      if (next = this.findNextEntry(entry, 1)) {
+                          this.focus(next);
+                      }
+                      break;
+                  case 39: // Right
+                      if ((submenu = $('.submenu', entry)) && (next = submenu.firstElementChild)) {
+                          let nextPrev;
+                          while ((nextPrev = this.findNextEntry(next, -1))) {
+                              next = nextPrev;
+                          }
+                          this.focus(next);
+                      }
+                      break;
+                  case 37: // Left
+                      if (next = $.x('parent::*[contains(@class,"submenu")]/parent::*', entry))
+                          this.focus(next);
+                      break;
+                  default: return;
+              }
+              e.preventDefault();
+              e.stopPropagation();
+          }
+          onFocus(e) {
+              e.stopPropagation();
+              this.focus(e.target);
+          }
+          focus(entry) {
+              let focused, submenu;
+              while ((focused = $.x('parent::*/child::*[contains(@class,"focused")]', entry))) {
+                  $.rmClass(focused, 'focused');
+              }
+              for (focused of $$('.focused', entry)) {
+                  $.rmClass(focused, 'focused');
+              }
+              $.addClass(entry, 'focused');
+              // Submenu positioning.
+              if (!(submenu = $('.submenu', entry)))
+                  return;
+              const sRect = submenu.getBoundingClientRect();
+              const eRect = entry.getBoundingClientRect();
+              const cHeight = doc.clientHeight;
+              const cWidth = doc.clientWidth;
+              const [top, bottom] = (eRect.top + sRect.height) < cHeight
+                  ? ['0px', 'auto'] : ['auto', '0px'];
+              const [left, right] = (eRect.right + sRect.width) < (cWidth - 150)
+                  ? ['100%', 'auto'] : ['auto', '100%'];
+              const { style } = submenu;
+              style.top = top;
+              style.bottom = bottom;
+              style.left = left;
+              style.right = right;
+          }
+          addEntry(entry) {
+              this.parseEntry(entry);
+              this.entries.push(entry);
+          }
+          parseEntry(entry) {
+              const { el, subEntries } = entry;
+              $.addClass(el, 'entry');
+              $.on(el, 'focus mouseover', this.onFocus);
+              el.style.order = entry.order || 100;
+              if (!subEntries)
+                  return;
+              $.addClass(el, 'has-submenu');
+              for (var subEntry of subEntries) {
+                  this.parseEntry(subEntry);
+              }
+              const span = $.el('span', { className: 'menu-indicator' });
+              Icon.set(span, 'caretRight');
+              $.add(el, span);
+          }
+      };
+      Menu$1.initClass();
+      return Menu$1;
+  })();
+  var dragstart = function (e) {
+      if ((e.type === 'mousedown') && (e.button !== 0))
+          return; // not LMB
+      // prevent text selection
+      e.preventDefault();
+      let isTouching = e.type === 'touchstart';
+      if (isTouching)
+          e = e.changedTouches[e.changedTouches.length - 1];
+      // distance from pointer to el edge is constant; calculate it here.
+      const el = $.x('ancestor::div[contains(@class,"dialog")][1]', this);
+      const rect = el.getBoundingClientRect();
+      const screenHeight = doc.clientHeight;
+      const screenWidth = doc.clientWidth;
+      const o = {
+          id: el.id,
+          style: el.style,
+          dx: e.clientX - rect.left,
+          dy: e.clientY - rect.top,
+          height: screenHeight - rect.height,
+          width: screenWidth - rect.width,
+          screenHeight,
+          screenWidth,
+          isTouching
+      };
+      [o.topBorder, o.bottomBorder] = Conf['Header auto-hide'] || !Conf['Fixed Header']
+          ? [0, 0] : Conf['Bottom Header']
+          ? [0, Header.bar.getBoundingClientRect().height]
+          : [Header.bar.getBoundingClientRect().height, 0];
+      if (isTouching) {
+          o.identifier = e.identifier;
+          o.move = touchmove.bind(o);
+          o.up = touchend.bind(o);
+          $.on(d, 'touchmove', o.move);
+          $.on(d, 'touchend touchcancel', o.up);
+      }
+      else { // mousedown
+          o.move = drag.bind(o);
+          o.up = dragend.bind(o);
+          $.on(d, 'mousemove', o.move);
+          $.on(d, 'mouseup', o.up);
+      }
+  };
+  var touchmove = function (e) {
+      for (var touch of e.changedTouches) {
+          if (touch.identifier === this.identifier) {
+              drag.call(this, touch);
+              return;
+          }
+      }
+  };
+  var drag = function (e) {
+      const { clientX, clientY } = e;
+      let left = clientX - this.dx;
+      left = left < 10 ? 0 : (this.width - left) < 10
+          ? '' : ((left / this.screenWidth) * 100) + '%';
+      let top = clientY - this.dy;
+      top = top < (10 + this.topBorder)
+          ? this.topBorder + 'px' : (this.height - top) < (10 + this.bottomBorder)
+          ? '' : ((top / this.screenHeight) * 100) + '%';
+      const right = left === '' ? 0 : '';
+      const bottom = top === '' ? this.bottomBorder + 'px' : '';
+      const { style } = this;
+      style.left = left;
+      style.right = right;
+      style.top = top;
+      style.bottom = bottom;
+  };
+  var touchend = function (e) {
+      for (var touch of e.changedTouches) {
+          if (touch.identifier === this.identifier) {
+              dragend.call(this);
+              return;
+          }
+      }
+  };
+  var dragend = function () {
+      if (this.isTouching) {
+          $.off(d, 'touchmove', this.move);
+          $.off(d, 'touchend touchcancel', this.up);
+      }
+      else { // mouseup
+          $.off(d, 'mousemove', this.move);
+          $.off(d, 'mouseup', this.up);
+      }
+      if (this.style.length === 2) { // assume only left or right and top or bottom
+          $.set(`${this.id}.position`, this.style.cssText);
+      }
+      else { // only include position data.
+          const { left, right, top, bottom } = this.style;
+          let position = '';
+          if (left)
+              position += `left:${left};`;
+          if (right)
+              position += `right:${right};`;
+          if (top)
+              position += `top:${top};`;
+          if (bottom)
+              position += `bottom:${bottom};`;
+          $.set(`${this.id}.position`, position);
+      }
+  };
+  const hoverstart = ({ root, el, latestEvent, endEvents, height, width, cb, noRemove }) => {
+      const rect = root.getBoundingClientRect();
+      const o = {
+          root,
+          el,
+          style: el.style,
+          isImage: ['IMG', 'VIDEO'].includes(el.nodeName),
+          cb,
+          endEvents,
+          latestEvent,
+          clientHeight: doc.clientHeight,
+          clientWidth: doc.clientWidth,
+          height,
+          width,
+          noRemove,
+          clientX: (rect.left + rect.right) / 2,
+          clientY: (rect.top + rect.bottom) / 2
+      };
+      o.hover = hover.bind(o);
+      o.hoverend = hoverend.bind(o);
+      o.hover(o.latestEvent);
+      new MutationObserver(() => {
+          if (el.parentNode)
+              return o.hover(o.latestEvent);
+      }).observe(el, { childList: true });
+      $.on(root, endEvents, o.hoverend);
+      if ($.x('ancestor::div[contains(@class,"inline")][1]', root))
+          $.on(d, 'keydown', o.hoverend);
+      $.on(root, 'mousemove', o.hover);
+      // Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=674955
+      o.workaround = (e) => { if (!root.contains(e.target)) {
+          return o.hoverend(e);
+      } };
+      $.on(doc, 'mousemove', o.workaround);
+  };
+  hoverstart.padding = 25;
+  var hover = function (e) {
+      this.latestEvent = e;
+      const height = (this.height || this.el.offsetHeight) + hoverstart.padding;
+      const width = (this.width || this.el.offsetWidth);
+      const { clientX, clientY } = Conf['Follow Cursor'] ? e : this;
+      const top = this.isImage
+          ? Math.max(0, (clientY * (this.clientHeight - height)) / this.clientHeight)
+          : Math.max(0, Math.min(this.clientHeight - height, clientY - 120));
+      let threshold = this.clientWidth / 2;
+      if (!this.isImage)
+          threshold = Math.max(threshold, this.clientWidth - 400);
+      let marginX = (clientX <= threshold ? clientX : this.clientWidth - clientX) + 45;
+      if (this.isImage)
+          marginX = Math.min(marginX, this.clientWidth - width);
+      marginX += 'px';
+      const [left, right] = clientX <= threshold ? [marginX, ''] : ['', marginX];
+      const { style } = this;
+      style.top = top + 'px';
+      style.left = left;
+      style.right = right;
+  };
+  var hoverend = function (e) {
+      if (((e.type === 'keydown') && (e.keyCode !== 13)) || (e.target.nodeName === "TEXTAREA"))
+          return;
+      if (!this.noRemove)
+          $.rm(this.el);
+      $.off(this.root, this.endEvents, this.hoverend);
+      $.off(d, 'keydown', this.hoverend);
+      $.off(this.root, 'mousemove', this.hover);
+      // Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=674955
+      $.off(doc, 'mousemove', this.workaround);
+      if (this.cb)
+          return this.cb.call(this);
+  };
+  const checkbox = (name, text, checked) => {
+      if (checked == null)
+          checked = Conf[name];
+      const label = $.el('label');
+      const input = $.el('input', { type: 'checkbox', name, checked });
+      $.add(label, [input, $.tn(` ${text}`)]);
+      return label;
+  };
+  const UI = {
+      dialog,
+      Menu: Menu$1,
+      hover: hoverstart,
+      checkbox
+  };
+
+  var Header = {
+    init() {
+      $.onExists(doc, 'body', () => {
+        if (!PageReady.isThisPageLegit())
+          return;
+        $.add(this.bar, [noticesRoot, this.toggle]);
+        $.prepend(d.body, this.bar);
+        $.add(d.body, Header.hover);
+        this.setBarPosition(Conf['Bottom Header']);
+      });
+      this.menu = new UI.Menu('header');
+      const menuButton = $.el('span', { className: 'menu-button' });
+      Icon.set(menuButton, 'caretDown', 'Menu');
+      const box = UI.checkbox;
+      const barFixedToggler = box('Fixed Header', 'Fixed Header');
+      const headerToggler = box('Header auto-hide', 'Auto-hide header');
+      const scrollHeaderToggler = box('Header auto-hide on scroll', 'Auto-hide header on scroll');
+      const barPositionToggler = box('Bottom Header', 'Bottom header');
+      const linkJustifyToggler = box('Centered links', 'Centered links');
+      const customNavToggler = box('Custom Board Navigation', 'Custom board navigation');
+      const footerToggler = box('Bottom Board List', 'Hide bottom board list');
+      const shortcutToggler = box('Shortcut Icons', 'Shortcut Icons');
+      const editCustomNav = $.el('a', {
+        textContent: 'Edit custom board navigation',
+        href: 'javascript:;'
+      });
+      let catalogLinksToggler;
+      if (Conf['Catalog Links']) {
+        catalogLinksToggler = UI.checkbox('Header catalog links', 'Catalog Links');
+        catalogLinksToggler.id = 'toggleCatalog';
+        this.catalogLinksToggler = catalogLinksToggler;
+        $.on($('input', catalogLinksToggler), 'change', this.toggleCatalogLinks);
+        $.sync('Header catalog links', this.updateCatalogLinks);
+      }
+      this.barFixedToggler = barFixedToggler.firstElementChild;
+      this.scrollHeaderToggler = scrollHeaderToggler.firstElementChild;
+      this.barPositionToggler = barPositionToggler.firstElementChild;
+      this.linkJustifyToggler = linkJustifyToggler.firstElementChild;
+      this.headerToggler = headerToggler.firstElementChild;
+      this.footerToggler = footerToggler.firstElementChild;
+      this.shortcutToggler = shortcutToggler.firstElementChild;
+      this.customNavToggler = customNavToggler.firstElementChild;
+      $.on(menuButton, 'click', this.menuToggle);
+      $.on(this.headerToggler, 'change', this.toggleBarVisibility);
+      $.on(this.barFixedToggler, 'change', this.toggleBarFixed);
+      $.on(this.barPositionToggler, 'change', this.toggleBarPosition);
+      $.on(this.scrollHeaderToggler, 'change', this.toggleHideBarOnScroll);
+      $.on(this.linkJustifyToggler, 'change', this.toggleLinkJustify);
+      $.on(this.footerToggler, 'change', this.toggleFooterVisibility);
+      $.on(this.shortcutToggler, 'change', this.toggleShortcutIcons);
+      $.on(this.customNavToggler, 'change', this.toggleCustomNav);
+      $.on(editCustomNav, 'click', this.editCustomNav);
+      this.setBarFixed(Conf['Fixed Header']);
+      this.setHideBarOnScroll(Conf['Header auto-hide on scroll']);
+      this.setBarVisibility(Conf['Header auto-hide']);
+      this.setLinkJustify(Conf['Centered links']);
+      this.setShortcutIcons(Conf['Shortcut Icons']);
+      this.setFooterVisibility(Conf['Bottom Board List']);
+      $.sync('Fixed Header', this.setBarFixed);
+      $.sync('Header auto-hide on scroll', this.setHideBarOnScroll);
+      $.sync('Bottom Header', this.setBarPosition);
+      $.sync('Shortcut Icons', this.setShortcutIcons);
+      $.sync('Header auto-hide', this.setBarVisibility);
+      $.sync('Centered links', this.setLinkJustify);
+      $.sync('Bottom Board List', this.setFooterVisibility);
+      this.addShortcut('menu', menuButton, 900);
+      this.menu.addEntry({
+        el: $.el('span', { textContent: 'Header' }),
+        order: 107,
+        subEntries: [
+          { el: barFixedToggler },
+          { el: headerToggler },
+          { el: scrollHeaderToggler },
+          { el: barPositionToggler },
+          { el: linkJustifyToggler },
+          { el: footerToggler },
+          { el: shortcutToggler },
+          { el: customNavToggler },
+          { el: editCustomNav },
+          ...(catalogLinksToggler ? [{ el: catalogLinksToggler }] : [])
+        ]
+      });
+      $.on(d, 'CreateNotification', this.createNotification);
+      this.setBoardList();
+      $.onExists(doc, `${g.SITE.selectors.boardList} + *`, Header.generateFullBoardList);
+      PageReady.ready(() => {
+        let footer = $.id('boardNavDesktopFoot');
+        if ((g.SITE.software === 'yotsuba') && !footer) {
+          let absbot = $.id('absbot');
+          if (!absbot)
+            return;
+          footer = $.id('boardNavDesktop').cloneNode(true);
+          footer.id = 'boardNavDesktopFoot';
+          $('#navtopright', footer).id = 'navbotright';
+          $('#settingsWindowLink', footer).id = 'settingsWindowLinkBot';
+          $.before(absbot, footer);
+          $.global('stubCloneTopNav');
+        }
+        if (Header.bottomBoardList = $(g.SITE.selectors.boardListBottom)) {
+          for (var a of $$('a', Header.bottomBoardList)) {
+            if ((a.hostname === location.hostname) && (a.pathname.split('/')[1] === g.BOARD.ID))
+              a.className = 'current';
+          }
+          CatalogLinks.setLinks(Header.bottomBoardList);
+        }
+      });
+      if ((g.SITE.software === 'yotsuba') && ((g.VIEW === 'catalog') || !Conf['Disable Native Extension'])) {
+        const cs = $.el('a', { href: 'javascript:;' });
+        if (g.VIEW === 'catalog') {
+          cs.title = (cs.textContent = 'Catalog Settings');
+          Icon.set(cs, 'bookOpen', 'Catalog Settings');
+          this.addShortcut('native', cs, 810);
+        } else {
+          cs.title = (cs.textContent = '4chan Settings');
+          cs.className = 'native-settings';
+          this.addShortcut('native', cs, 810);
+        }
+        $.on(cs, 'click', () => $.id('settingsWindowLink').click());
+      }
+      this.enableDesktopNotifications();
+    },
+    bar: $.el('div', { id: 'header-bar' }),
+    shortcuts: $.el('span', { id: 'shortcuts' }),
+    hover: $.el('div', { id: 'hoverUI' }),
+    toggle: $.el('div', { id: 'scroll-marker' }),
+    setBoardList() {
+      let boardList = $.el('span', { id: 'board-list' });
+      Header.boardList = boardList;
+      $.extend(boardList, { innerHTML: "<span id=\"custom-board-list\"></span><span id=\"full-board-list\" hidden><span class=\"hide-board-list-container brackets-wrap\"><a href=\"javascript:;\" class=\"hide-board-list-button\">&nbsp;-&nbsp;</a></span> <span class=\"boardList\"></span></span>" });
+      const btn = $('.hide-board-list-button', boardList);
+      $.on(btn, 'click', Header.toggleBoardList);
+      $.prepend(Header.bar, [Header.boardList, Header.shortcuts]);
+      Header.setCustomNav(Conf['Custom Board Navigation']);
+      Header.generateBoardList(Conf.boardnav);
+      $.sync('Custom Board Navigation', Header.setCustomNav);
+      $.sync('boardnav', Header.generateBoardList);
+    },
+    generateFullBoardList() {
+      let nodes;
+      if (g.SITE.transformBoardList) {
+        nodes = g.SITE.transformBoardList();
+      } else {
+        nodes = [...$(g.SITE.selectors.boardList).cloneNode(true).childNodes];
+      }
+      const fullBoardList = $('.boardList', Header.boardList);
+      $.add(fullBoardList, nodes);
+      for (var a of $$('a', fullBoardList)) {
+        if ((a.hostname === location.hostname) && (a.pathname.split('/')[1] === g.BOARD.ID))
+          a.className = 'current';
+      }
+      CatalogLinks.setLinks(fullBoardList);
+    },
+    generateBoardList(boardnav) {
+      const list = $('#custom-board-list', Header.boardList);
+      $.rmAll(list);
+      if (!boardnav)
+        return;
+      boardnav = boardnav.replace(/(\r\n|\n|\r)/g, ' ');
+      const segments = boardnav.split(/(\{\{(?:"[^"]+")?|\}\})/);
+      const spanStack = [];
+      let currentContainer = list;
+      segments.forEach(segment => {
+        if (segment.startsWith('{{')) {
+          const span = $.el('span');
+          $.add(currentContainer, span);
+          spanStack.push(span);
+          currentContainer = span;
+          if (segment.length > 2)
+            span.className = segment.slice(3, -1);
+        } else if (segment === '}}') {
+          spanStack.pop();
+          currentContainer = spanStack.length > 0
+            ? spanStack[spanStack.length - 1] : list;
+        } else {
+          const re = /[\w@]+(-(all|title|replace|full|index|catalog|archive|expired|nt|(mode|sort|text):"[^"]+"(,"[^"]+")?))*|[^\w@]+/g;
+          const segmentNodes = (segment.match(re) || []).map((t) => Header.mapCustomNavigation(t));
+          segmentNodes.forEach(node => currentContainer.appendChild(node));
+        }
+      });
+      CatalogLinks.setLinks(list);
+    },
+    mapCustomNavigation(t) {
+      let a, href, m, url, urlV;
+      if (/^[^\w@]/.test(t))
+        return $.tn(t);
+      let text = (url = null);
+      t = t.replace(/-text:"([^"]+)"(?:,"([^"]+)")?/g, (m0, m1, m2) => {
+        text = m1;
+        url = m2;
+        return '';
+      });
+      let indexOptions = [];
+      t = t.replace(/-(?:mode|sort):"([^"]+)"/g, (m0, m1) => {
+        indexOptions.push(m1.toLowerCase().replace(/\ /g, '-'));
+        return '';
+      });
+      indexOptions = indexOptions.join('/');
+      if (/^toggle-all/.test(t)) {
+        a = $.el('a', {
+          className: 'show-board-list-button',
+          textContent: text || '+',
+          href: 'javascript:;'
+        });
+        $.on(a, 'click', Header.toggleBoardList);
+        return a;
+      }
+      if (/^external/.test(t)) {
+        a = $.el('a', {
+          href: url || 'javascript:;',
+          textContent: text || '+',
+          className: 'external'
+        });
+        if (/-nt/.test(t)) {
+          a.target = '_blank';
+          a.rel = 'noopener';
+        }
+        return a;
+      }
+      let boardID = t.split('-')[0];
+      if (boardID === 'current') {
+        // if (['boards.4chan.org', 'boards.4channel.org'].includes(location.hostname)) {
+        if (location.hostname === 'boards.4chan.org') {
+          boardID = g.BOARD.ID;
+        } else {
+          a = $.el('a', {
+            href: `/${g.BOARD.ID}/`,
+            textContent: text || decodeURIComponent(g.BOARD.ID),
+            className: 'current'
+          });
+          if (/-nt/.test(t)) {
+            a.target = '_blank';
+            a.rel = 'noopener';
+          }
+          if (/-index/.test(t)) {
+            a.dataset.only = 'index';
+          } else if (/-catalog/.test(t)) {
+            a.dataset.only = 'catalog';
+            a.href += 'catalog.html';
+          } else if (/-(archive|expired)/.test(t)) {
+            a = a.firstChild; // Its text node.
+          }
+          return a;
+        }
+      }
+      if (boardID === '@') {
+        a = $.el('a', {
+          href: 'https://x.com/4chan',
+          title: '4chan Twitter',
+          className: 'navSmall',
+          textContent: '@'
+        });
+      } else {
+        a = $.el('a', {
+          // href: `//${BoardConfig.domain(boardID)}/${boardID}/`,
+          href: `//boards.4chan.org/${boardID}/`,
+          textContent: boardID,
+          title: BoardConfig.title(boardID)
+        });
+        if (['catalog', 'archive'].includes(g.VIEW) && (urlV = Get.url(g.VIEW, { siteID: '4chan.org', boardID })))
+          a.href = urlV;
+        if ((a.hostname === location.hostname) && (boardID === g.BOARD.ID)) {
+          a.className = 'current';
+        }
+      }
+      a.textContent = /-title/.test(t) || (/-replace/.test(t) && (a.hostname === location.hostname) && (boardID === g.BOARD.ID))
+        ? a.title || a.textContent : /-full/.test(t)
+        ? (`/${boardID}/`) + (a.title ? ` - ${a.title}` : '')
+        : text || boardID;
+      if (m = t.match(/-(index|catalog)/)) {
+        const urlIC = CatalogLinks[m[1]]({ siteID: '4chan.org', boardID });
+        if (urlIC) {
+          a.dataset.only = m[1];
+          a.href = urlIC;
+          if (m[1] === 'catalog')
+            $.addClass(a, 'catalog');
+        } else {
+          return a.firstChild; // Its text node.
+        }
+      }
+      if (Conf['JSON Index'] && indexOptions) {
+        a.dataset.indexOptions = indexOptions;
+        // if (['boards.4chan.org', 'boards.4channel.org'].includes(a.hostname) && (a.pathname.split('/')[2] === '')) {
+        if (a.hostname === 'boards.4chan.org' && a.pathname.split('/')[2] === '') {
+          a.href += (a.hash ? '/' : '#') + indexOptions;
+        }
+      }
+      if (/-archive/.test(t)) {
+        if (href = Redirect.to('board', { boardID })) {
+          a.href = href;
+        } else {
+          return a.firstChild; // Its text node.
+        }
+      }
+      if (/-expired/.test(t)) {
+        if (BoardConfig.isArchived(boardID)) {
+          // a.href = `//${BoardConfig.domain(boardID)}/${boardID}/archive`;
+          a.href = `//boards.4chan.org/${boardID}/archive`;
+        } else {
+          return a.firstChild; // Its text node.
+        }
+      }
+      if (/-nt/.test(t)) {
+        a.target = '_blank';
+        a.rel = 'noopener';
+      }
+      return a;
+    },
+    toggleCatalogLinks() {
+      $.event('CloseMenu');
+      const useCatalog = this.checked;
+      $.set('Header catalog links', useCatalog);
+      CatalogLinks.set(useCatalog);
+      Header.updateCatalogLinks(useCatalog);
+    },
+    updateCatalogLinks(useCatalog) {
+      if (Header.catalogLinksToggler) {
+        Header.catalogLinksToggler.title = `Turn catalog links ${useCatalog ? 'off' : 'on'}.`;
+        $('input', Header.catalogLinksToggler).checked = useCatalog;
+      }
+      CatalogLinks.setLinks(Header.boardList);
+      CatalogLinks.setLinks(Header.bottomBoardList);
+    },
+    applyToggle(condition, ...targets) {
+      for (const [el, ...classes] of targets) {
+        condition ? $.addClass(el, ...classes) : $.rmClass(el, ...classes);
+      }
+    },
+    setShortcutIcons(show) {
+      Header.shortcutToggler.checked = show;
+      Header.applyToggle(show, [doc, 'shortcut-icons']);
+    },
+    setBarFixed(fixed) {
+      Header.barFixedToggler.checked = fixed;
+      Header.applyToggle(fixed, [doc, 'fixed'], [Header.bar, 'dialog']);
+    },
+    setLinkJustify(centered) {
+      Header.linkJustifyToggler.checked = centered;
+      Header.applyToggle(centered, [doc, 'centered-links']);
+    },
+    hideBarOnScroll() {
+      const offsetY = window.scrollY;
+      Header.applyToggle(offsetY > (Header.previousOffset || 0), [Header.bar, 'autohide', 'scroll']);
+      return Header.previousOffset = offsetY;
+    },
+    toggleBoardList() {
+      const { bar } = Header;
+      const custom = $('#custom-board-list', bar);
+      const full = $('#full-board-list', bar);
+      const showBoardList = !full.hidden;
+      custom.hidden = !showBoardList;
+      full.hidden = showBoardList;
+    },
+    toggleLinkJustify() {
+      $.event('CloseMenu');
+      const centered = this.nodeName === 'INPUT' ? this.checked : undefined;
+      Header.setLinkJustify(centered);
+      $.set('Centered links', centered);
+    },
+    toggleBarFixed() {
+      $.event('CloseMenu');
+      Header.setBarFixed(this.checked);
+      Conf['Fixed Header'] = this.checked;
+      $.set('Fixed Header', this.checked);
+    },
+    toggleShortcutIcons() {
+      $.event('CloseMenu');
+      Header.setShortcutIcons(this.checked);
+      Conf['Shortcut Icons'] = this.checked;
+      $.set('Shortcut Icons', this.checked);
+    },
+    setBarVisibility(hide) {
+      Header.headerToggler.checked = hide;
+      $.event('CloseMenu');
+      (hide ? $.addClass : $.rmClass)(Header.bar, 'autohide');
+      (hide ? $.addClass : $.rmClass)(doc, 'autohide');
+    },
+    toggleBarVisibility() {
+      const hide = this.nodeName === 'INPUT'
+        ? this.checked : !$.hasClass(Header.bar, 'autohide');
+      Conf['Header auto-hide'] = hide;
+      $.set('Header auto-hide', hide);
+      Header.setBarVisibility(hide);
+      const message = `The header bar will ${hide
+      ? 'automatically hide itself.' : 'remain visible.'}`;
+      new Notice('info', message, 2);
+    },
+    setHideBarOnScroll(hide) {
+      Header.scrollHeaderToggler.checked = hide;
+      if (hide) {
+        $.on(window, 'scroll', Header.hideBarOnScroll);
+        return;
+      }
+      $.off(window, 'scroll', Header.hideBarOnScroll);
+      $.rmClass(Header.bar, 'scroll');
+      Header.bar.classList.toggle('autohide', Conf['Header auto-hide']);
+    },
+    toggleHideBarOnScroll() {
+      const hide = this.checked;
+      $.cb.checked.call(this);
+      Header.setHideBarOnScroll(hide);
+    },
+    setBarPosition(bottom) {
+      if (Header.barPositionToggler)
+        Header.barPositionToggler.checked = bottom;
+      $.event('CloseMenu');
+      const args = bottom ? [
+        'bottom-header',
+        'top-header',
+        'after'
+      ] : [
+        'top-header',
+        'bottom-header',
+        'add'
+      ];
+      $.addClass(doc, args[0]);
+      $.rmClass(doc, args[1]);
+      return $[args[2]](Header.bar, noticesRoot);
+    },
+    toggleBarPosition() {
+      $.cb.checked.call(this);
+      Header.setBarPosition(this.checked);
+    },
+    setFooterVisibility(hide) {
+      Header.footerToggler.checked = hide;
+      doc.classList.toggle('hide-bottom-board-list', hide);
+    },
+    toggleFooterVisibility() {
+      $.event('CloseMenu');
+      const hide = this.nodeName === 'INPUT'
+        ? this.checked : $.hasClass(doc, 'hide-bottom-board-list');
+      Header.setFooterVisibility(hide);
+      $.set('Bottom Board List', hide);
+      const message = hide
+        ? 'The bottom navigation will now be hidden.'
+        : 'The bottom navigation will remain visible.';
+      return new Notice('info', message, 2);
+    },
+    setCustomNav(show) {
+      Header.customNavToggler.checked = show;
+      const cust = $('#custom-board-list', Header.bar);
+      const full = $('#full-board-list', Header.bar);
+      const btn = $('.hide-board-list-container', full);
+      return [cust.hidden, full.hidden, btn.hidden] = show
+        ? [false, true, false] : [true, false, true];
+    },
+    toggleCustomNav() {
+      $.cb.checked.call(this);
+      Header.setCustomNav(this.checked);
+    },
+    async editCustomNav() {
+      const { default: Settings } = await Promise.resolve().then(function () { return Settings$1; });
+      Settings.open('Advanced');
+      const settings = $.id('fourchanx-settings');
+      $('[name=boardnav]', settings).focus();
+    },
+    scrollTo(root, down = false, needed = false) {
+      let height, x;
+      if (!root.offsetParent)
+        return; // hidden or fixed
+      if (down) {
+        x = Header.getBottomOf(root);
+        if (Conf['Fixed Header'] && Conf['Header auto-hide on scroll'] && Conf['Bottom header']) {
+          ({ height } = Header.bar.getBoundingClientRect());
+          const isHidden = Header.isHidden();
+          if (x <= 0 && !isHidden)
+            x += height;
+          else if (x > 0 && isHidden)
+            x -= height;
+        }
+        if (!needed || (x < 0))
+          return window.scrollBy(0, -x);
+      } else {
+        x = Header.getTopOf(root);
+        if (Conf['Fixed Header'] && Conf['Header auto-hide on scroll'] && !Conf['Bottom header']) {
+          ({ height } = Header.bar.getBoundingClientRect());
+          const isHidden = Header.isHidden();
+          if (x >= 0 && !isHidden)
+            x += height;
+          else if (x < 0 && isHidden)
+            x -= height;
+        }
+        if (!needed || (x < 0))
+          return window.scrollBy(0, x);
+      }
+    },
+    scrollToIfNeeded(root, down) { Header.scrollTo(root, down, true); },
+    getTopOf(root) {
+      let { top } = root.getBoundingClientRect();
+      if (Conf['Fixed Header'] && !Conf['Bottom Header']) {
+        const headRect = Header.toggle.getBoundingClientRect();
+        top -= headRect.top + headRect.height;
+      }
+      return top;
+    },
+    getBottomOf(root) {
+      const { clientHeight } = doc;
+      let bottom = clientHeight - root.getBoundingClientRect().bottom;
+      if (Conf['Fixed Header'] && Conf['Bottom Header']) {
+        const headRect = Header.toggle.getBoundingClientRect();
+        bottom -= (clientHeight - headRect.bottom) + headRect.height;
+      }
+      return bottom;
+    },
+    isNodeVisible(node) {
+      if (d.hidden || !doc.contains(node))
+        return false;
+      const { height } = node.getBoundingClientRect();
+      return ((Header.getTopOf(node) + height) >= 0) && ((Header.getBottomOf(node) + height) >= 0);
+    },
+    isHidden() {
+      const { top } = Header.bar.getBoundingClientRect();
+      return Conf['Bottom header'] ? top === doc.clientHeight : top < 0;
+    },
+    addShortcut(id, el, index) {
+      const shortcut = $.el('span', {
+        id: `shortcut-${id}`,
+        className: 'shortcut brackets-wrap'
+      });
+      $.add(shortcut, el);
+      shortcut.dataset.index = index.toString();
+      for (var item of $$('[data-index]', Header.shortcuts)) {
+        if (+item.dataset.index > +index) {
+          $.before(item, shortcut);
+          return;
+        }
+      }
+      $.add(Header.shortcuts, shortcut);
+    },
+    rmShortcut(el) { $.rm(el.parentElement); },
+    menuToggle(e) { Header.menu.toggle(e, this, g); },
+    createNotification(e) {
+      const { type, content, lifetime } = e.detail;
+      let notice = new Notice(type, content, lifetime);
+      return notice;
+    },
+    areNotificationsEnabled: false,
+    enableDesktopNotifications() {
+      let notice;
+      if (!window.Notification || !Conf['Desktop Notifications'])
+        return;
+      switch (Notification.permission) {
+        case 'granted':
+          Header.areNotificationsEnabled = true;
+          return;
+        case 'denied': return; // requestPermission doesn't work if status is 'denied', but it'll still work if status is 'default'.
+      }
+      const el = $.el('span', { innerHTML: `${meta.name} needs your permission to show desktop notifications. ` +
+          `[<a href=\"${E(meta.upstreamFaq)}#why-is-4chan-x-asking-for-permission-to-show-desktop-notifications\" target=\"_blank\">FAQ</a>]` +
+          `<br><button>Authorize</button> or <button>Disable</button>`
+      });
+      const [authorize, disable] = $$('button', el);
+      $.on(authorize, 'click', () => Notification.requestPermission((status) => {
+        Header.areNotificationsEnabled = status === 'granted';
+        if (status === 'default')
+          return;
+        notice.close();
+      }));
+      $.on(disable, 'click', () => {
+        $.set('Desktop Notifications', false);
+        notice.close();
+      });
+      return notice = new Notice('info', el);
+    }
+  };
+
+  var Nav = {
+      init() {
+          const navConf = { index: 'Index Navigation', thread: 'Reply Navigation' }[g.VIEW];
+          if (!navConf || !Conf[navConf])
+              return;
+          const span = $.el('span', { id: 'navlinks' });
+          const prev = $.el('a', {
+              textContent: '▲',
+              className: 'navlinks-navlink navlink-prev',
+              href: 'javascript:;'
+          });
+          const next = $.el('a', {
+              textContent: '▼',
+              className: 'navlinks-navlink navlink-next',
+              href: 'javascript:;'
+          });
+          Icon.set(prev, 'arrowUpLong');
+          Icon.set(next, 'arrowDownLong');
+          $.on(prev, 'click', this.prev);
+          $.on(next, 'click', this.next);
+          $.add(span, [prev, $.tn(' '), next]);
+          const append = () => {
+              $.off(d, '4chanXInitFinished', append);
+              return $.add(d.body, span);
+          };
+          $.on(d, '4chanXInitFinished', append);
+      },
+      prev() {
+          if (g.VIEW === 'thread') {
+              window.scrollTo(0, 0);
+          }
+          else {
+              Nav.scroll(-1);
+          }
+      },
+      next() {
+          if (g.VIEW === 'thread') {
+              window.scrollTo(0, d.body.scrollHeight);
+          }
+          else {
+              Nav.scroll(1);
+          }
+      },
+      getThread() {
+          if (g.VIEW === 'thread')
+              return g.threads.get(`${g.BOARD}.${g.THREADID}`).nodes.root;
+          if ($.hasClass(doc, 'catalog-mode'))
+              return;
+          for (var threadRoot of $$(g.SITE.selectors.thread)) {
+              var thread = Get.threadFromRoot(threadRoot);
+              if (thread.isHidden && !thread.stub)
+                  continue;
+              if (Header.getTopOf(threadRoot) >= -threadRoot.getBoundingClientRect().height)
+                  return threadRoot; // not scrolled past
+          }
+      },
+      scroll(delta) {
+          d.activeElement?.blur();
+          let thread = Nav.getThread();
+          if (!thread)
+              return;
+          const axis = delta === 1 ? 'following' : 'preceding';
+          const next = $.x(`${axis}-sibling::${g.SITE.xpath.thread}[not(@hidden)][1]`, thread);
+          if (next) {
+              // Unless we're not at the beginning of the current thread, and thus wanting to move to beginning,
+              // or we're above the first thread and don't want to skip it.
+              const top = Header.getTopOf(thread);
+              if (((delta === 1) && (top < 5)) || ((delta === -1) && (top > -5)))
+                  thread = next;
+          }
+          // Add extra space to the end of the page if necessary so that all threads can be selected by keybinds.
+          const extra = (Header.getTopOf(thread) + doc.clientHeight) - d.body.getBoundingClientRect().bottom;
+          if (extra > 0)
+              d.body.style.marginBottom = `${extra}px`;
+          Header.scrollTo(thread);
+          if ((extra > 0) && !Nav.haveExtra) {
+              Nav.haveExtra = true;
+              $.on(d, 'scroll', Nav.removeExtra);
+          }
+      },
+      removeExtra() {
+          const extra = doc.clientHeight - d.body.getBoundingClientRect().bottom;
+          if (extra > 0) {
+              d.body.style.marginBottom = `${extra}px`;
+          }
+          else {
+              d.body.style.marginBottom = '';
+              delete Nav.haveExtra;
+              $.off(d, 'scroll', Nav.removeExtra);
+          }
+      }
+  };
+
+  const ImageHost = {
+      init() {
+          if ((!(this.useFaster = /\S/.test(Conf.fourchanImageHost))) || (g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW))
+              return;
+          Callbacks.Post.push({
+              name: 'Image Host Rewriting',
+              cb: this.node
+          });
+      },
+      suggestions: ['i.4cdn.org', 'is2.4chan.org'],
+      thumbHost: () => 'i.4cdn.org',
+      host: () => Conf.fourchanImageHost.trim() || 'i.4cdn.org',
+      test: (hostname) => (hostname === 'i.4cdn.org') || ImageHost.regex.test(hostname),
+      // regex: /^is\d*\.4chan(?:nel)?\.org$/,
+      regex: /^is\d*\.4chan\.org$/,
+      node() {
+          if (this.isClone)
+              return;
+          const host = ImageHost.host();
+          if (this.file && ImageHost.test(this.file.url.split('/')[2])) {
+              this.file.link.hostname = host;
+              if (this.file.thumbLink)
+                  this.file.thumbLink.hostname = host;
+              this.file.url = this.file.link.href;
+          }
+          ImageHost.fixLinks($$('a', this.nodes.comment));
+      },
+      fixLinks(links) {
+          for (const link of links) {
+              if (ImageHost.test(link.hostname)) {
+                  const host = ImageHost.host();
+                  if (link.hostname !== host)
+                      link.hostname = host;
+              }
+          }
+      }
+  };
+
+  const Volume = {
+      init() {
+          if (!['index', 'thread'].includes(g.VIEW) ||
+              (!Conf['Image Expansion'] && !Conf['Image Hover'] && !Conf['Image Hover in Catalog'] && !Conf.Gallery))
+              return;
+          $.sync('Allow Sound', (x) => {
+              Conf['Allow Sound'] = x;
+              if (Volume.inputs)
+                  Volume.inputs.unmute.checked = x;
+          });
+          $.sync('Default Volume', (x) => {
+              Conf['Default Volume'] = x;
+              if (Volume.inputs)
+                  Volume.inputs.volume.value = x;
+          });
+          if (Conf['Mouse Wheel Volume']) {
+              Callbacks.Post.push({
+                  name: 'Mouse Wheel Volume',
+                  cb: this.node
+              });
+          }
+          if (g.SITE.noAudio?.(g.BOARD))
+              return;
+          if (Conf['Mouse Wheel Volume']) {
+              Callbacks.CatalogThread.push({
+                  name: 'Mouse Wheel Volume',
+                  cb: this.catalogNode
+              });
+          }
+          const unmuteEntry = UI.checkbox('Allow Sound', 'Allow Sound');
+          unmuteEntry.title = Config.main['Images and Videos']['Allow Sound'][1];
+          const volumeEntry = $.el('label', { title: 'Default volume for videos.' });
+          $.extend(volumeEntry, { innerHTML: "<input name=\"Default Volume\" type=\"range\" min=\"0\" max=\"1\" step=\"0.01\" value=\"" + E(Conf["Default Volume"]) + "\"> Volume" });
+          this.inputs = {
+              unmute: unmuteEntry.firstElementChild,
+              volume: volumeEntry.firstElementChild
+          };
+          $.on(this.inputs.unmute, 'change', $.cb.checked);
+          $.on(this.inputs.volume, 'change', $.cb.value);
+          Header.menu.addEntry({ el: unmuteEntry, order: 200 });
+          Header.menu.addEntry({ el: volumeEntry, order: 201 });
+      },
+      setup(video) {
+          video.muted = !Conf['Allow Sound'];
+          video.volume = Conf['Default Volume'];
+          $.on(video, 'volumechange', Volume.change);
+      },
+      change() {
+          const { muted, volume } = this;
+          const items = {
+              'Allow Sound': !muted,
+              'Default Volume': volume
+          };
+          for (const key in items) {
+              const val = items[key];
+              if (Conf[key] === val)
+                  delete items[key];
+          }
+          $.set(items);
+          $.extend(Conf, items);
+          if (Volume.inputs) {
+              Volume.inputs.unmute.checked = !muted;
+              Volume.inputs.volume.value = volume;
+          }
+      },
+      node() {
+          if (g.SITE.noAudio?.(this.board))
+              return;
+          for (const file of this.files) {
+              if (file.isVideo) {
+                  if (file.thumb)
+                      $.on(file.thumb, 'wheel', Volume.wheel.bind(Header.hover));
+                  $.on(($('.file-info', file.text) || file.link), 'wheel', Volume.wheel.bind(file.thumbLink));
+              }
+          }
+      },
+      catalogNode() {
+          const file = this.thread.OP.files[0];
+          if (!file?.isVideo)
+              return;
+          $.on(this.nodes.thumb, 'wheel', Volume.wheel.bind(Header.hover));
+      },
+      wheel(e) {
+          if (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey)
+              return;
+          let el = $('video:not([data-md5])', this);
+          if (!el)
+              return;
+          if (el.muted || !$.hasAudio(el))
+              return;
+          let volume = el.volume + 0.1;
+          if (e.deltaY < 0)
+              volume *= 1.1;
+          if (e.deltaY > 0)
+              volume /= 1.1;
+          el.volume = $.minmax(volume - 0.1, 0, 1);
+          e.preventDefault();
+      }
+  };
+
+  var ImageCommon = {
+      // Pause and mute video in preparation for removing the element from the document.
+      pause(video) {
+          if (video.nodeName !== 'VIDEO')
+              return;
+          video.pause();
+          $.off(video, 'volumechange', Volume.change);
+          return video.muted = true;
+      },
+      rewind(el) {
+          if (el.nodeName === 'VIDEO') {
+              if (el.readyState >= el.HAVE_METADATA)
+                  return el.currentTime = 0;
+          }
+          else if (/\.gif$/.test(el.src)) {
+              return $.queueTask(() => el.src = el.src);
+          }
+      },
+      pushCache(el) {
+          ImageCommon.cache = el;
+          $.on(el, 'error', ImageCommon.cacheError);
+      },
+      popCache() {
+          const el = ImageCommon.cache;
+          $.off(el, 'error', ImageCommon.cacheError);
+          delete ImageCommon.cache;
+          return el;
+      },
+      cacheError() { if (ImageCommon.cache === this)
+          delete ImageCommon.cache; },
+      decodeError(file, fileObj) {
+          if (file.error?.code !== MediaError.MEDIA_ERR_DECODE)
+              return false;
+          let message = $('.warning', fileObj.thumb.parentNode);
+          if (!message) {
+              message = $.el('div', { className: 'warning' });
+              $.after(fileObj.thumb, message);
+          }
+          message.textContent = 'Error: Corrupt or unplayable video';
+          return true;
+      },
+      isFromArchive: (file) => (g.SITE.software === 'yotsuba') && !ImageHost.test(file.src.split('/')[2]),
+      error(file, post, fileObj, delay, cb) {
+          const src = fileObj.url.split('/');
+          let url = null;
+          if ((g.SITE.software === 'yotsuba') && Conf['404 Redirect']) {
+              url = Redirect.to('file', {
+                  boardID: post.board.ID,
+                  filename: src[src.length - 1]
+              });
+          }
+          if (!url || !Redirect.securityCheck(url))
+              url = null;
+          if ((post.isDead || fileObj.isDead) && !ImageCommon.isFromArchive(file))
+              return cb(url);
+          let timeoutID;
+          if (delay)
+              timeoutID = setTimeout((() => cb(url)), delay);
+          if (post.isDead || fileObj.isDead)
+              return;
+          const redirect = () => {
+              if (!ImageCommon.isFromArchive(file)) {
+                  if (delay)
+                      clearTimeout(timeoutID);
+                  return cb(url);
+              }
+          };
+          const threadJSON = g.SITE.urls.threadJSON?.(post);
+          if (!threadJSON)
+              return;
+          var parseJSON = function (isArchiveURL) {
+              let needle, postObj;
+              if (this.status === 404) {
+                  let archivedThreadJSON;
+                  if (!isArchiveURL && (archivedThreadJSON = g.SITE.urls.archivedThreadJSON?.(post))) {
+                      $.ajax(archivedThreadJSON, { onloadend() { return parseJSON.call(this, true); } });
+                  }
+                  else {
+                      post.kill(!post.isClone, fileObj.index);
+                  }
+              }
+              if (this.status !== 200)
+                  return redirect();
+              for (postObj of this.response.posts) {
+                  if (postObj.no === post.ID)
+                      break;
+              }
+              if (postObj.no !== post.ID) {
+                  post.kill();
+                  return redirect();
+              }
+              else if ((needle = fileObj.docIndex, g.SITE.Build.parseJSON(postObj, post.board).filesDeleted.includes(needle))) {
+                  post.kill(true);
+                  return redirect();
+              }
+              else {
+                  return url = fileObj.url;
+              }
+          };
+          $.ajax(threadJSON, { onloadend() { return parseJSON.call(this); } });
+      },
+      // XXX Estimate whether clicks are on the video controls and should be ignored.
+      onControls: (e) => (Conf['Show Controls'] && Conf['Click Passthrough'] && (e.target.nodeName === 'VIDEO')) || (e.target.controls && ((e.target.getBoundingClientRect().bottom - e.clientY) < 35)),
+      download(e) {
+          if (this.protocol === 'blob:')
+              return true;
+          e.preventDefault();
+          const { href, download } = this;
+          CrossOrigin.file(href, (blob) => {
+              if (blob) {
+                  const a = $.el('a', {
+                      href: URL.createObjectURL(blob),
+                      download,
+                      hidden: true
+                  });
+                  $.add(d.body, a);
+                  a.click();
+                  $.rm(a);
+              }
+              else {
+                  new Notice('warning', `Could not download ${href}`, 20);
+              }
+          });
+      }
+  };
+
+  function MediaControls() {
+    return (h("div", { class: 'media-controls' },
+      h("button", { "data-action": "rotateLeft" }, Icon.raw('rotateLeft')),
+      h("button", { "data-action": "rotateRight" }, Icon.raw('rotateRight'))));
+  }
+
+  const Sound = {
+    /** Add event listeners for videos with audio from a third party */
+    setupSync(video, audio) {
+      const syncTime = () => {
+        video.currentTime = audio.currentTime % video.duration;
+      };
+      $.on(audio, 'playing play', () => {
+        syncTime();
+        video.play();
+      });
+      $.on(audio, 'seeked waiting', syncTime);
+      $.on(audio, 'ratechange', () => {
+        video.currentTime = audio.currentTime;
+        video.playbackRate = audio.playbackRate;
+      });
+      $.on(audio, 'waiting pause', () => { video.pause(); });
+      $.one(audio, 'canplay', () => {
+        if (audio.currentTime < .1)
+          video.currentTime = 0;
+      });
+    },
+    setupSoundpost(el, file) {
+      const soundUrlMatch = file.name.match(/\[sound=([^\]]+\.(?:webm|ogg|mp3|wav|m4a|opus))]/i);
+      if (!soundUrlMatch)
+        return;
+      let url;
+      try {
+        const src = decodeURIComponent(soundUrlMatch[1]);
+        url = new URL(src.startsWith('http') ? src : `https://${src}`);
+      } catch {
+        return;
+      }
+      const audioEl = new Audio(url.href);
+      Volume.setup(audioEl);
+      if (el instanceof HTMLVideoElement) {
+        Sound.setupSync(el, audioEl);
+        el.controls = false;
+      }
+      audioEl.loop = true;
+      audioEl.controls = Conf['Show Controls'];
+      audioEl.autoplay = Conf.Autoplay;
+      el.after(audioEl);
+      file.audio = audioEl;
+    }
+  };
+
+  var ImageExpand = {
+    init() {
+      if (!(this.enabled = Conf['Image Expansion'] && ['index', 'thread'].includes(g.VIEW)))
+        return;
+      this.EAI = $.el('a', {
+        className: 'expand-all-shortcut',
+        title: 'Expand All Images',
+        href: 'javascript:;'
+      });
+      Icon.set(this.EAI, 'expand', 'Expand All Images');
+      $.on(this.EAI, 'click', this.cb.toggleAll);
+      Header.addShortcut('expand-all', this.EAI, 520);
+      $.on(d, 'scroll visibilitychange', this.cb.playVideos);
+      this.videoControls = $.el('span', { className: 'video-controls' });
+      $.extend(this.videoControls, { innerHTML: " <a href=\"javascript:;\" title=\"You can also contract the video by dragging it to the left.\">contract</a>" });
+      Callbacks.Post.push({ name: 'Image Expansion', cb: this.node });
+    },
+    node() {
+      if (!this.file || (!this.file.isImage && !this.file.isVideo))
+        return;
+      $.on(this.file.thumbLink, 'click', ImageExpand.cb.toggle);
+      if (this.isClone) {
+        if (this.file.isExpanding) {
+          // If we clone a post where the image is still loading,
+          // make it loading in the clone too.
+          ImageExpand.contract(this);
+          ImageExpand.expand(this);
+        } else if (this.file.isExpanded && this.file.isVideo) {
+          Volume.setup(this.file.fullImage);
+          ImageExpand.setupVideoCB(this);
+          ImageExpand.setupVideo(this, !this.origin.file.fullImage?.paused || this.origin.file.wasPlaying, this.file.fullImage.controls);
+        }
+      } else if (ImageExpand.on && !this.isHidden && !this.isFetchedQuote &&
+        (Conf['Expand spoilers'] || !this.file.isSpoiler) &&
+        (Conf['Expand videos'] || !this.file.isVideo)) {
+        ImageExpand.expand(this);
+      }
+    },
+    cb: {
+      toggle(e) {
+        if ($.modifiedClick(e))
+          return;
+        const post = Get.postFromNode(this);
+        const { file } = post;
+        if (file.isExpanded && ImageCommon.onControls(e))
+          return;
+        e.preventDefault();
+        if (!Conf.Autoplay && file.fullImage?.paused) {
+          file.fullImage.play();
+        } else {
+          ImageExpand.toggle(post);
+        }
+      },
+      toggleAll() {
+        let func;
+        $.event('CloseMenu');
+        const threadRoot = Nav.getThread();
+        const toggle = (post) => {
+          const { file } = post;
+          if (!file || (!file.isImage && !file.isVideo) || !doc.contains(post.nodes.root))
+            return;
+          if (ImageExpand.on &&
+            ((!Conf['Expand spoilers'] && file.isSpoiler) ||
+              (!Conf['Expand videos'] && file.isVideo) ||
+              (Conf['Expand from here'] && (Header.getTopOf(file.thumb) < 0)) ||
+              (Conf['Expand thread only'] && (g.VIEW === 'index') && !threadRoot?.contains(file.thumb)))) {
+            return;
+          }
+          return $.queueTask(func, post);
+        };
+        if (ImageExpand.on = $.hasClass(ImageExpand.EAI, 'expand-all-shortcut')) {
+          ImageExpand.EAI.className = 'contract-all-shortcut';
+          ImageExpand.EAI.title = 'Contract All Images';
+          Icon.set(ImageExpand.EAI, 'shrink', 'Contract All Images');
+          func = ImageExpand.expand;
+        } else {
+          ImageExpand.EAI.className = 'expand-all-shortcut';
+          ImageExpand.EAI.title = 'Expand All Images';
+          Icon.set(ImageExpand.EAI, 'expand', 'Expand All Images');
+          func = ImageExpand.contract;
+        }
+        return g.posts.forEach((post) => {
+          for (post of [post, ...post.clones]) {
+            toggle(post);
+          }
+        });
+      },
+      playVideos() {
+        return g.posts.forEach((post) => {
+          for (post of [post, ...post.clones]) {
+            var { file } = post;
+            if (!file || !file.isVideo || !file.isExpanded)
+              continue;
+            var video = file.fullImage;
+            var visible = ($.hasAudio(video) && !video.muted) || Header.isNodeVisible(video);
+            if (visible && file.wasPlaying) {
+              delete file.wasPlaying;
+              video.play();
+            } else if (!visible && !video.paused) {
+              file.wasPlaying = true;
+              video.pause();
+            }
+          }
+        });
+      },
+      setFitness() {
+        return $[this.checked ? 'addClass' : 'rmClass'](doc, this.name.toLowerCase().replace(/\s+/g, '-'));
+      }
+    },
+    toggle(post) {
+      if (!post.file.isExpanding && !post.file.isExpanded) {
+        post.file.scrollIntoView = Conf['Scroll into view'];
+        ImageExpand.expand(post);
+        return;
+      }
+      ImageExpand.contract(post);
+      if (Conf['Advance on contract']) {
+        let next = post.nodes.root;
+        while ((next = $.x("following::div[contains(@class,'postContainer')][1]", next))) {
+          if (!$('.stub', next) && (next.offsetHeight !== 0))
+            break;
+        }
+        if (next)
+          Header.scrollTo(next);
+      }
+    },
+    contract(post) {
+      let bottom, el, oldHeight, scrollY;
+      const { file } = post;
+      if (el = file.fullImage) {
+        const top = Header.getTopOf(el);
+        bottom = top + el.getBoundingClientRect().height;
+        oldHeight = d.body.clientHeight;
+        ({ scrollY } = window);
+      }
+      $.rmClass(post.nodes.root, 'expanded-image');
+      $.rmClass(file.thumb, 'expanding');
+      $.rm(file.videoControls);
+      file.thumbLink.href = file.url;
+      file.thumbLink.target = '_blank';
+      for (var x of ['isExpanding', 'isExpanded', 'videoControls', 'wasPlaying', 'scrollIntoView']) {
+        delete file[x];
+      }
+      if (!el)
+        return;
+      if (doc.contains(el)) {
+        if (bottom <= 0) {
+          // For images entirely above us, scroll to remain in place.
+          window.scrollBy(0, ((scrollY - window.scrollY) + d.body.clientHeight) - oldHeight);
+        } else {
+          // For images not above us that would be moved above us, scroll to the thumbnail.
+          Header.scrollToIfNeeded(post.nodes.root);
+        }
+        // If we have scrolled right viewing an expanded image, return to the left.
+        if (window.scrollX > 0)
+          window.scrollBy(-window.scrollX, 0);
+      }
+      $.off(el, 'error', ImageExpand.error);
+      ImageCommon.pushCache(el);
+      if (file.isVideo) {
+        ImageCommon.pause(el);
+        for (var eventName in ImageExpand.videoCB) {
+          var cb = ImageExpand.videoCB[eventName];
+          $.off(el, eventName, cb);
+        }
+      }
+      if (Conf['Restart when Opened'])
+        ImageCommon.rewind(file.thumb);
+      delete file.fullImage;
+      $.queueTask(() => {
+        // XXX Work around Chrome/Chromium not firing mouseover on the thumbnail.
+        if (file.isExpanding || file.isExpanded)
+          return;
+        $.rmClass(el, 'full-image');
+        if (el.id)
+          return;
+        $.rm(el);
+      });
+      if (file.audio) {
+        file.audio.remove();
+        delete file.audio;
+        if (file.audioSlider) {
+          file.audioSlider.remove();
+          delete file.audioSlider;
+        }
+      }
+      if (file.imageMediaControls) {
+        $.rm(file.imageMediaControls);
+        delete file.imageMediaControls;
+      }
+    },
+    expand(post, src) {
+      const { file } = post;
+      const { thumb, thumbLink, isVideo } = file;
+      // Do not expand images of hidden/filtered replies, or already expanded pictures.
+      if (post.isHidden || file.isExpanding || file.isExpanded)
+        return;
+      let el;
+      $.addClass(thumb, 'expanding');
+      file.isExpanding = true;
+      if (file.fullImage) {
+        el = file.fullImage;
+      } else if (ImageCommon.cache?.dataset.fileID === `${post.fullID}.${file.index}`) {
+        el = (file.fullImage = ImageCommon.popCache());
+        $.on(el, 'error', ImageExpand.error);
+        if (Conf['Restart when Opened'] && (el.id !== 'ihover'))
+          ImageCommon.rewind(el);
+        el.removeAttribute('id');
+      } else {
+        el = (file.fullImage = $.el((isVideo ? 'video' : 'img')));
+        el.dataset.fileID = `${post.fullID}.${file.index}`;
+        $.on(el, 'error', ImageExpand.error);
+        el.src = src || file.url;
+      }
+      el.className = 'full-image';
+      $.after(thumb, el);
+      if (isVideo) {
+        // add contract link to file info
+        if (!file.videoControls) {
+          file.videoControls = ImageExpand.videoControls.cloneNode(true);
+          $.add(file.text, file.videoControls);
+        }
+        // disable link to file so native controls can work
+        thumbLink.removeAttribute('href');
+        thumbLink.removeAttribute('target');
+        el.loop = true;
+        Volume.setup(el);
+        ImageExpand.setupVideoCB(post);
+      }
+      if (!isVideo) {
+        $.asap((() => el.naturalHeight), () => ImageExpand.completeExpand(post));
+      } else if (el.readyState >= el.HAVE_METADATA) {
+        ImageExpand.completeExpand(post);
+      } else {
+        $.on(el, 'loadedmetadata', () => ImageExpand.completeExpand(post));
+      }
+      if (Conf['Enable sound posts'] && Conf['Allow Sound'])
+        Sound.setupSoundpost(el, file);
+      if (Conf['Image Media Controls']) {
+        const controls = $.el('div', MediaControls());
+        const [y, x] = Conf.imageMediaControlsPosition.split('-');
+        [...controls.childNodes][0].classList.add(`media-controls-${x}`, `media-controls-${y}`);
+        const container = $.el('div', { className: 'media-controls-container' });
+        const wrapper = $.el('div', { className: 'media-controls-wrapper' });
+        file.imageMediaControls = container;
+        $.add(container, [...controls.childNodes]);
+        $.add(wrapper, el);
+        $.add(container, wrapper);
+        $.prepend(thumbLink, container);
+        const totalRotationStates = 4;
+        let currentRotationState = 0;
+        let initialImageContentWidth = 0;
+        const positiveModulo = (a, n) => ((a % n) + n) % n;
+        const compensateTransformedSize = () => {
+          const rotationState = positiveModulo(currentRotationState, totalRotationStates);
+          const { width, height } = wrapper.getBoundingClientRect();
+          if (rotationState === 1 || rotationState === 3) {
+            el.style.maxHeight = `${initialImageContentWidth}px`;
+          } else {
+            el.style.maxHeight = '';
+          }
+          Object.assign(container.style, { width: `${width}px`, height: `${height}px` });
+        };
+        const compensateTransformedSizeObserver = new ResizeObserver(compensateTransformedSize);
+        // Capture width once the element is actually laid out, regardless of
+        // whether expansion was triggered by click or keybinding.
+        const initWidthObserver = new ResizeObserver((entries, obs) => {
+          const w = entries[0]?.contentRect.width ?? 0;
+          if (w > 0) {
+            initialImageContentWidth = w;
+            el.style.maxWidth = `${w}px`;
+            el.style.maxHeight = '';
+            obs.disconnect();
+          }
+        });
+        initWidthObserver.observe(el);
+        function updateRotation() {
+          compensateTransformedSizeObserver.observe(wrapper);
+          wrapper.setAttribute('rotation', String(positiveModulo(currentRotationState, totalRotationStates)));
+          compensateTransformedSize();
+        }
+        const leftBtn = thumbLink.querySelector('[data-action="rotateLeft"]');
+        const rightBtn = thumbLink.querySelector('[data-action="rotateRight"]');
+        $.on(leftBtn, 'click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          currentRotationState--;
+          updateRotation();
+        });
+        $.on(rightBtn, 'click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          currentRotationState++;
+          updateRotation();
+        });
+      }
+    },
+    completeExpand(post) {
+      const { file } = post;
+      if (!file.isExpanding)
+        return; // contracted before the image loaded
+      const bottom = Header.getTopOf(file.thumb) + file.thumb.getBoundingClientRect().height;
+      const oldHeight = d.body.clientHeight;
+      const { scrollY } = window;
+      $.addClass(post.nodes.root, 'expanded-image');
+      $.rmClass(file.thumb, 'expanding');
+      file.isExpanded = true;
+      delete file.isExpanding;
+      // Scroll to keep our place in the thread when images are expanded above us.
+      if (doc.contains(post.nodes.root) && (bottom <= 0))
+        window.scrollBy(0, ((scrollY - window.scrollY) + d.body.clientHeight) - oldHeight);
+      // Scroll to display full image.
+      if (file.scrollIntoView) {
+        delete file.scrollIntoView;
+        const imageBottom = Math.min(doc.clientHeight - file.fullImage.getBoundingClientRect().bottom - 25, Header.getBottomOf(file.fullImage));
+        if (imageBottom < 0)
+          window.scrollBy(0, Math.min(-imageBottom, Header.getTopOf(file.fullImage)));
+      }
+      if (file.isVideo)
+        ImageExpand.setupVideo(post, Conf.Autoplay, Conf['Show Controls']);
+    },
+    setupVideo(post, playing, controls) {
+      const { audio } = post.file;
+      const fullImage = post.file.fullImage;
+      if (!playing && !audio) {
+        fullImage.controls = controls;
+        return;
+      }
+      fullImage.controls = false;
+      $.asap((() => doc.contains(fullImage)), function () {
+        if (!d.hidden && Header.isNodeVisible(fullImage)) {
+          fullImage.play();
+        } else {
+          post.file.wasPlaying = true;
+        }
+      });
+      fullImage.controls = controls && !audio;
+    },
+    videoCB: (function () {
+      // dragging to the left contracts the video
+      let mousedown = false;
+      return {
+        mouseover: () => mousedown = false,
+        mousedown: (e) => { if (e.button === 0) {
+          return mousedown = true;
+        } },
+        mouseup: (e) => { if (e.button === 0) {
+          return mousedown = false;
+        } },
+        mouseout(e) { if (((e.buttons & 1) || mousedown) && (e.clientX <= this.getBoundingClientRect().left)) {
+          ImageExpand.toggle(Get.postFromNode(this));
+        } }
+      };
+    })(),
+    setupVideoCB(post) {
+      for (var eventName in ImageExpand.videoCB) {
+        var cb = ImageExpand.videoCB[eventName];
+        $.on(post.file.fullImage, eventName, cb);
+      }
+      if (post.file.videoControls)
+        $.on(post.file.videoControls.firstElementChild, 'click', () => ImageExpand.toggle(post));
+    },
+    error() {
+      const post = Get.postFromNode(this);
+      $.rm(this);
+      delete post.file.fullImage;
+      // Images can error:
+      //  - before the image started loading.
+      //  - after the image started loading.
+      // Don't try to re-expand if it was already contracted.
+      if (!post.file.isExpanding && !post.file.isExpanded)
+        return;
+      if (ImageCommon.decodeError(this, post.file))
+        return ImageExpand.contract(post);
+      // Don't autoretry images from the archive.
+      if (ImageCommon.isFromArchive(this))
+        return ImageExpand.contract(post);
+      ImageCommon.error(this, post, post.file, 10 * SECOND, function (URL) {
+        if (post.file.isExpanding || post.file.isExpanded) {
+          ImageExpand.contract(post);
+          if (URL)
+            return ImageExpand.expand(post, URL);
+        }
+      });
+    },
+    menu: {
+      init() {
+        if (!ImageExpand.enabled)
+          return;
+        const el = $.el('span', {
+          textContent: 'Image Expansion',
+          className: 'image-expansion-link'
+        });
+        const { createSubEntry } = ImageExpand.menu;
+        const subEntries = [];
+        for (var name in Config.imageExpansion) {
+          var conf = Config.imageExpansion[name];
+          subEntries.push(createSubEntry(name, conf[1]));
+        }
+        Header.menu.addEntry({ el, order: 105, subEntries });
+      },
+      createSubEntry(name, desc) {
+        const label = UI.checkbox(name, name);
+        label.title = desc;
+        const input = label.firstElementChild;
+        if (['Fit width', 'Fit height'].includes(name))
+          $.on(input, 'change', ImageExpand.cb.setFitness);
+        $.event('change', null, input);
+        $.on(input, 'change', $.cb.checked);
+        return { el: label };
+      }
+    }
+  };
+
+  class Post {
+    toString() { return this.ID; }
+    constructor(root, thread, board, flags = {}) {
+
+      // Skip initialization for PostClone
+      if (root === undefined && thread === undefined && board === undefined)
+        return;
+      this.root = root;
+      this.thread = thread;
+      this.board = board;
+      $.extend(this, flags);
+      this.ID = +root.id.match(/\d*$/)[0];
+      this.postID = this.ID;
+      this.threadID = this.thread.ID;
+      this.boardID = this.board.ID;
+      this.siteID = g.SITE.ID;
+      this.fullID = `${this.board}.${this.ID}`;
+      this.context = this;
+      this.isReply = (this.ID !== this.threadID);
+      root.dataset.fullID = this.fullID;
+      this.nodes = this.parseNodes(root);
+      if (!this.isReply) {
+        this.thread.OP = this;
+        for (var key of ['isSticky', 'isClosed', 'isArchived']) {
+          let selector = g.SITE.selectors.icons[key];
+          if (selector)
+            this.thread[key] = !!$(selector, this.nodes.info);
+        }
+        if (this.thread.isArchived) {
+          this.thread.isClosed = true;
+          this.thread.kill();
+        }
+      }
+      const name = this.nodes.name?.textContent;
+      const tripcode = this.nodes.tripcode?.textContent;
+      this.info = {
+        subject: this.nodes.subject?.textContent || undefined,
+        name,
+        email: this.nodes.email ? decodeURIComponent(this.nodes.email.href.replace(/^mailto:/, '')) : undefined,
+        tripcode,
+        uniqueID: this.nodes.uniqueID?.textContent,
+        capcode: this.nodes.capcode?.textContent.replace('## ', ''),
+        pass: this.nodes.pass?.title.match(/\d*$/)[0],
+        flagCode: this.nodes.flag?.className.match(/flag-(\w+)/)?.[1].toUpperCase(),
+        flagCodeTroll: this.nodes.flag?.className.match(/bfl-(\w+)/)?.[1].toUpperCase(),
+        flag: this.nodes.flag?.title,
+        date: this.nodes.date ? g.SITE.parseDate(this.nodes.date) : undefined,
+      };
+      g.SITE.parseInfo?.(this); // parses the tripcode
+      if (this.info.tripcode && !this.nodes.tripcode) {
+        if (this.nodes.name)
+          this.nodes.name.textContent = this.info.name;
+        const span = $.el('span', { className: 'postertrip', textContent: this.info.tripcode });
+        this.nodes.name.insertAdjacentElement('afterend', span);
+        span.insertAdjacentText('beforebegin', ' ');
+        this.nodes.tripcode = span;
+      }
+      // this now has to happen after the tripcode parsing
+      this.info.nameBlock = Conf.Anonymize
+        ? 'Anonymous' : `${this.info.name || ''} ${this.info.tripcode || ''}`.trim();
+      if (this.info.capcode)
+        this.info.nameBlock += ` ## ${this.info.capcode}`;
+      if (this.info.uniqueID)
+        this.info.nameBlock += ` (ID: ${this.info.uniqueID})`;
+      this.parseComment();
+      this.parseQuotes();
+      this.parseFiles();
+      this.isDead = false;
+      this.isHidden = false;
+      this.clones = [];
+
+      if (g.posts.get(this.fullID)) {
+        this.isRebuilt = true;
+        this.clones = g.posts.get(this.fullID).clones;
+        for (var clone of this.clones) {
+          clone.origin = this;
+        }
+      }
+      if (!this.isFetchedQuote && (this.ID > this.thread.lastPost))
+        this.thread.lastPost = this.ID;
+      if (this.ID < this.thread.lastPost && g.VIEW === 'thread') {
+        this.board.posts.insert(this.ID, this);
+        this.thread.posts.insert(this.ID, this);
+        g.posts.insert(this.fullID, this, key => +(key.split('.')[1]) < this.ID);
+      } else {
+        this.board.posts.push(this.ID, this);
+        this.thread.posts.push(this.ID, this);
+        g.posts.push(this.fullID, this);
+      }
+    }
+    parseNodes(root) {
+      const s = g.SITE.selectors;
+      const post = $(s.post, root) || root;
+      const info = $(s.infoRoot, post);
+      const nodes = {
+        root,
+        bottom: this.isReply || !g.SITE.isOPContainerThread ? root : $(s.opBottom, root),
+        post,
+        info,
+        comment: $(s.comment, post),
+        quotelinks: [],
+        archivelinks: [],
+        embedlinks: [],
+        backlinks: post.getElementsByClassName('backlink'),
+        uniqueIDRoot: undefined,
+        uniqueID: undefined,
+      };
+      for (var key in s.info) {
+        var selector = s.info[key];
+        nodes[key] = $(selector, info);
+      }
+      g.SITE.parseNodes?.(this, nodes);
+      if (!nodes.uniqueIDRoot)
+        nodes.uniqueIDRoot = nodes.uniqueID;
+      return nodes;
+    }
+    parseComment() {
+      // Merge text nodes and remove empty ones.
+      this.nodes.comment.normalize();
+      // Get the comment's text.
+      // <br> -> \n
+      // Remove:
+      //   'Comment too long'...
+      //   EXIF data. (/p/)
+      let bq = this.nodes.comment.cloneNode(true);
+      this.nodes.commentClean = bq;
+      g.SITE.cleanComment?.(bq);
+      return this.info.comment = this.nodesToText(bq);
+    }
+    commentDisplay() {
+      // Get the comment's text for display purposes (e.g. notifications, excerpts).
+      // In addition to what's done in generating `@info.comment`, remove:
+      //   Spoilers. (filter to '[spoiler]')
+      //   Rolls. (/tg/, /qst/)
+      //   Fortunes. (/s4s/)
+      //   Preceding and following new lines.
+      //   Trailing spaces.
+      const bq = this.nodes.commentClean.cloneNode(true);
+      if (!Conf['Remove Spoilers'] && !Conf['Reveal Spoilers'])
+        this.cleanSpoilers(bq);
+      g.SITE.cleanCommentDisplay?.(bq);
+      return this.nodesToText(bq).trim().replace(/\s+$/gm, '');
+    }
+    commentOrig() {
+      // Get the comment's text for reposting purposes.
+      const bq = this.nodes.commentClean.cloneNode(true);
+      g.SITE.insertTags?.(bq);
+      return this.nodesToText(bq);
+    }
+    nodesToText(bq) {
+      let node;
+      let text = "";
+      const nodes = $.X('.//br|.//text()', bq);
+      let i = 0;
+      while ((node = nodes.snapshotItem(i++))) {
+        text += node.data || '\n';
+      }
+      return text;
+    }
+    cleanSpoilers(bq) {
+      const spoilers = $$(g.SITE.selectors.spoiler, bq);
+      for (var node of spoilers) {
+        $.replace(node, $.tn('[spoiler]'));
+      }
+    }
+    parseQuotes() {
+      this.quotes = [];
+      for (var quotelink of $$(g.SITE.selectors.quotelink, this.nodes.comment)) {
+        this.parseQuote(quotelink);
+      }
+    }
+    parseQuote(quotelink) {
+      // Only add quotes that link to posts on an imageboard.
+      // Don't add:
+      //  - board links. (>>>/b/)
+      //  - catalog links. (>>>/b/catalog or >>>/b/search)
+      //  - rules links. (>>>/a/rules)
+      //  - text-board quotelinks. (>>>/img/1234)
+      const match = quotelink.href.match(g.SITE.regexp.quotelink);
+      if (!match && (!this.isClone || !quotelink.dataset.postID))
+        return; // normal or resurrected quote
+      this.nodes.quotelinks.push(quotelink);
+      if (this.isClone)
+        return;
+      // ES6 Set when?
+      const fullID = `${match[1]}.${match[3]}`;
+      if (!this.quotes.includes(fullID))
+        this.quotes.push(fullID);
+    }
+    parseFiles() {
+      this.files = [];
+      const fileRoots = this.fileRoots();
+      let index = 0;
+      for (let docIndex = 0; docIndex < fileRoots.length; docIndex++) {
+        var fileRoot = fileRoots[docIndex];
+        let file = this.parseFile(fileRoot);
+        if (file) {
+          file.index = (index++);
+          file.docIndex = docIndex;
+          this.files.push(file);
+        }
+      }
+      if (this.files.length)
+        return this.file = this.files[0];
+    }
+    fileRoots() {
+      if (g.SITE.selectors.multifile) {
+        const roots = $$(g.SITE.selectors.multifile, this.nodes.root);
+        if (roots.length)
+          return roots;
+      }
+      return [this.nodes.root];
+    }
+    parseFile(fileRoot) {
+      const file = { isDead: false };
+      for (var key in g.SITE.selectors.file) {
+        var selector = g.SITE.selectors.file[key];
+        file[key] = $(selector, fileRoot);
+      }
+      file.thumbLink = file.thumb?.parentNode;
+      if (!(file.text && file.link))
+        return;
+      if (!g.SITE.parseFile(this, file))
+        return;
+      $.extend(file, {
+        url: file.link.href,
+        isImage: $.isImage(file.link.href),
+        isVideo: $.isVideo(file.link.href)
+      });
+      let size = +file.size.match(/[\d.]+/)[0];
+      let unit = ['B', 'KB', 'MB', 'GB'].indexOf(file.size.match(/\w+$/)[0]);
+      while (unit-- > 0) {
+        size *= 1024;
+      }
+      file.sizeInBytes = size;
+      return file;
+    }
+    kill(file = false, index = 0) {
+      if (file) {
+        if (this.isDead || this.files[index].isDead)
+          return;
+        this.files[index].isDead = true;
+        $.addClass(this.nodes.root, 'deleted-file');
+      } else {
+        if (this.isDead)
+          return;
+        this.isDead = true;
+        $.rmClass(this.nodes.root, 'deleted-file');
+        $.addClass(this.nodes.root, 'deleted-post');
+      }
+      let strong = $('strong.warning', this.nodes.info);
+      if (!strong) {
+        strong = $.el('strong', { className: 'warning' });
+        $.after($('input', this.nodes.info), strong);
+      }
+      strong.textContent = file ? '[File deleted]' : '[Deleted]';
+      if (this.isClone)
+        return;
+      for (var clone of this.clones) {
+        clone.kill(file, index);
+      }
+      if (file)
+        return;
+      // Get quotelinks/backlinks to this post
+      // and paint them (Dead).
+      for (var quotelink of Get.allQuotelinksLinkingTo(this)) {
+        if (!$.hasClass(quotelink, 'deadlink')) {
+          $.add(quotelink, Post.deadMark.cloneNode(true));
+          $.addClass(quotelink, 'deadlink');
+        }
+      }
+    }
+    markAsFromArchive() {
+      let strong = $('strong.warning', this.nodes.info);
+      if (!strong) {
+        strong = $.el('strong', { className: 'warning' });
+        $.after($('input', this.nodes.info), strong);
+      }
+      strong.textContent = '[Deleted, restored from external archive]';
+      $.addClass(this.nodes.root, 'from-archive');
+      if (this.isClone)
+        return;
+      for (var clone of this.clones) {
+        clone.markAsFromArchive();
+      }
+      for (var quotelink of Get.allQuotelinksLinkingTo(this)) {
+        $.addClass(quotelink, 'from-archive-link');
+      }
+    }
+    // XXX Workaround for 4chan's racing condition
+    // giving us false-positive dead posts.
+    resurrect() {
+      this.isDead = false;
+      $.rmClass(this.nodes.root, 'deleted-post', 'from-archive');
+      const strong = $('strong.warning', this.nodes.info);
+      // no false-positive files
+      if (this.files.some(file => file.isDead)) {
+        $.addClass(this.nodes.root, 'deleted-file');
+        strong.textContent = '[File deleted]';
+      } else {
+        $.rm(strong);
+      }
+      if (this.isClone)
+        return;
+      for (var clone of this.clones) {
+        clone.resurrect();
+      }
+      for (var quotelink of Get.allQuotelinksLinkingTo(this)) {
+        if ($.hasClass(quotelink, 'deadlink'))
+          $.rm($('.qmark-dead', quotelink));
+        $.rmClass(quotelink, 'deadlink', 'from-archive-link');
+      }
+    }
+    collect() {
+      g.posts.rm(this.fullID);
+      this.thread.posts.rm(this);
+      this.board.posts.rm(this);
+    }
+    addClone(context, contractThumb) {
+      // Callbacks may not have been run yet due to anti-browser-lock delay in Main.callbackNodesDB.
+      Callbacks.Post.execute(this);
+      return new PostClone(this, context, contractThumb);
+    }
+    rmClone(index) {
+      this.clones.splice(index, 1);
+      for (var clone of this.clones.slice(index)) {
+        clone.nodes.root.dataset.clone = index++;
+      }
+    }
+    setCatalogOP(isCatalogOP) {
+      this.nodes.root.classList.toggle('catalog-container', isCatalogOP);
+      this.nodes.root.classList.toggle('opContainer', !isCatalogOP);
+      this.nodes.post.classList.toggle('catalog-post', isCatalogOP);
+      this.nodes.post.classList.toggle('op', !isCatalogOP);
+      this.nodes.post.style.left = (this.nodes.post.style.right = null);
+    }
+  }
+  // because of a circular dependency $ might not be initialized, so we can't use $.el
+  Post.deadMark = (() => {
+    const el = d.createElement('span');
+    // \u00A0 is nbsp
+    el.textContent = '\u00A0(Dead)';
+    el.className = 'qmark-dead';
+    return el;
+  })();
+  class PostClone extends Post {
+    constructor(origin, context, contractThumb) {
+      super();
+      this.isClone = true;
+      let file, fileRoots, key;
+      this.origin = origin;
+      this.context = context;
+      for (key of ['ID', 'postID', 'threadID', 'boardID', 'siteID', 'fullID', 'board', 'thread', 'info', 'quotes', 'isReply']) {
+        // Copy or point to the origin's key value.
+        this[key] = this.origin[key];
+      }
+      const { nodes } = this.origin;
+      const root = contractThumb ? this.cloneWithoutVideo(nodes.root) : nodes.root.cloneNode(true);
+      for (var node of [root, ...$$('[id]', root)]) {
+        node.id += `_${PostClone.suffix}`;
+      }
+      PostClone.suffix++;
+      // Remove inlined posts inside of this post.
+      for (var inline of $$('.inline', root)) {
+        $.rm(inline);
+      }
+      for (var inlined of $$('.inlined', root)) {
+        $.rmClass(inlined, 'inlined');
+      }
+      this.nodes = this.parseNodes(root);
+      root.hidden = false; // post hiding
+      $.rmClass(root, 'forwarded'); // quote inlining
+      $.rmClass(this.nodes.post, 'highlight'); // keybind navigation, ID highlighting
+      // Remove catalog stuff.
+      if (!this.isReply) {
+        this.setCatalogOP(false);
+        $.rm($('.catalog-link', this.nodes.post));
+        $.rm($('.catalog-stats', this.nodes.post));
+        $.rm($('.catalog-replies', this.nodes.post));
+      }
+      this.parseQuotes();
+      this.quotes = [...this.origin.quotes];
+      this.files = [];
+      if (this.origin.files.length)
+        fileRoots = this.fileRoots();
+      for (var originFile of this.origin.files) {
+        // Copy values, point to relevant elements.
+        file = { ...originFile };
+        var fileRoot = fileRoots[file.docIndex];
+        for (key in g.SITE.selectors.file) {
+          var selector = g.SITE.selectors.file[key];
+          file[key] = $(selector, fileRoot);
+        }
+        file.thumbLink = file.thumb?.parentNode;
+        if (file.thumbLink)
+          file.fullImage = $('.full-image', file.thumbLink);
+        file.videoControls = $('.video-controls', file.text);
+        if (file.videoThumb)
+          file.thumb.muted = true;
+        this.files.push(file);
+      }
+      if (this.files.length) {
+        this.file = this.files[0];
+        // Contract thumbnails in quote preview
+        if (this.file.thumb && contractThumb)
+          ImageExpand.contract(this);
+      }
+      if (this.origin.isDead)
+        this.isDead = true;
+      root.dataset.clone = this.origin.clones.push(this) - 1;
+      return this;
+    }
+    cloneWithoutVideo(node) {
+      if ((node.tagName === 'VIDEO') && !node.dataset.md5) { // (exception for WebM thumbnails)
+        return [];
+      } else if ((node.nodeType === Node.ELEMENT_NODE) && $('video', node)) {
+        const clone = node.cloneNode(false);
+        for (var child of node.childNodes) {
+          $.add(clone, this.cloneWithoutVideo(child));
+        }
+        return clone;
+      } else {
+        return node.cloneNode(true);
+      }
+    }
+  }
+  PostClone.suffix = 0;
+
+  const Anonymize = {
+      init() {
+          if (!Conf.Anonymize) {
+              return;
+          }
+          $.addClass(doc, 'anonymize');
+      }
+  };
+
+  var Menu = {
+      init() {
+          if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu)
+              return;
+          this.button = $.el('a', {
+              className: 'menu-button',
+              href: 'javascript:;'
+          });
+          Icon.set(this.button, 'caretDown');
+          this.menu = new UI.Menu('post');
+          Callbacks.Post.push({
+              name: 'Menu',
+              cb: this.node
+          });
+          Callbacks.CatalogThread.push({
+              name: 'Menu',
+              cb: this.catalogNode
+          });
+      },
+      node() {
+          if (this.isClone) {
+              const button = $('.menu-button', this.nodes.info);
+              $.rmClass(button, 'active');
+              $.rm($('.dialog', this.nodes.info));
+              Menu.makeButton(this, button);
+              return;
+          }
+          $.add(this.nodes.info, Menu.makeButton(this));
+      },
+      catalogNode() { $.after(this.nodes.icons, Menu.makeButton(this.thread.OP)); },
+      makeButton(post, button) {
+          button || (button = Menu.button.cloneNode(true));
+          $.on(button, 'click', function (e) { Menu.menu.toggle(e, this, post); });
+          return button;
+      }
+  };
+
+  class RandomAccessList {
+      constructor(items) {
+          this.length = 0;
+          if (items) {
+              for (var item of items) {
+                  this.push(item);
+              }
+          }
+      }
+      push(data) {
+          let { ID } = data;
+          if (!ID)
+              ID = data.id;
+          if (this[ID])
+              return;
+          const { last } = this;
+          let item = {
+              prev: last,
+              next: null,
+              data,
+              ID
+          };
+          this[ID] = item;
+          item.prev = last;
+          this.last = last ? (last.next = item) : (this.first = item);
+          return this.length++;
+      }
+      before(root, item) {
+          if ((item.next === root) || (item === root))
+              return;
+          this.rmi(item);
+          const { prev } = root;
+          root.prev = item;
+          item.next = root;
+          item.prev = prev;
+          if (prev) {
+              return prev.next = item;
+          }
+          else {
+              return this.first = item;
+          }
+      }
+      after(root, item) {
+          if ((item.prev === root) || (item === root))
+              return;
+          this.rmi(item);
+          const { next } = root;
+          root.next = item;
+          item.prev = root;
+          item.next = next;
+          if (next) {
+              return next.prev = item;
+          }
+          else {
+              return this.last = item;
+          }
+      }
+      prepend(item) {
+          const { first } = this;
+          if ((item === first) || !this[item.ID])
+              return;
+          this.rmi(item);
+          item.next = first;
+          if (first) {
+              first.prev = item;
+          }
+          else {
+              this.last = item;
+          }
+          this.first = item;
+          delete item.prev;
+      }
+      shift() { return this.rm(this.first.ID); }
+      order() {
+          let item = this.first;
+          const order = [item];
+          while ((item = item.next)) {
+              order.push(item);
+          }
+          return order;
+      }
+      rm(ID) {
+          const item = this[ID];
+          if (!item)
+              return;
+          delete this[ID];
+          this.length--;
+          this.rmi(item);
+          delete item.next;
+          delete item.prev;
+      }
+      rmi(item) {
+          const { prev, next } = item;
+          if (prev) {
+              prev.next = next;
+          }
+          else {
+              this.first = next;
+          }
+          if (next) {
+              next.prev = prev;
+          }
+          else {
+              this.last = prev;
+          }
+      }
+  }
+
+  const ExpandComment = {
+      init() {
+          if ((g.VIEW !== 'index') || !Conf['Comment Expansion'] || Conf['JSON Index'])
+              return;
+          Callbacks.Post.push({
+              name: 'Comment Expansion',
+              cb: this.node
+          });
+      },
+      node() {
+          let a = $('.abbr > a:not([onclick])', this.nodes.comment);
+          if (a)
+              $.on(a, 'click', ExpandComment.cb);
+      },
+      callbacks: [],
+      cb(e) {
+          e.preventDefault();
+          ExpandComment.expand(Get.postFromNode(this));
+      },
+      expand(post) {
+          if (post.nodes.longComment && !post.nodes.longComment.parentNode) {
+              $.replace(post.nodes.shortComment, post.nodes.longComment);
+              post.nodes.comment = post.nodes.longComment;
+              return;
+          }
+          let a = $('.abbr > a', post.nodes.comment);
+          if (!a)
+              return;
+          a.textContent = `Post No.${post} Loading...`;
+          $.cache(g.SITE.urls.threadJSON({ boardID: post.boardID, threadID: post.threadID }), function () { ExpandComment.parse(this, a, post); });
+      },
+      contract(post) {
+          if (!post.nodes.shortComment)
+              return;
+          const a = $('.abbr > a', post.nodes.shortComment);
+          a.textContent = 'here';
+          $.replace(post.nodes.longComment, post.nodes.shortComment);
+          return post.nodes.comment = post.nodes.shortComment;
+      },
+      parse(req, a, post) {
+          const { status } = req;
+          if (![200, 304].includes(status)) {
+              a.textContent = status ? `Error ${req.statusText} (${status})` : 'Connection Error';
+              return;
+          }
+          const { posts } = req.response;
+          let spoilerRange = posts[0].custom_spoiler;
+          if (spoilerRange)
+              g.SITE.Build.spoilerRange[g.BOARD] = spoilerRange;
+          const postObj = posts.find(p => p.no === post.ID);
+          if (!postObj) {
+              a.textContent = `Post No.${post.ID} not found.`;
+              return;
+          }
+          const { comment } = post.nodes;
+          const clone = comment.cloneNode(false);
+          clone.innerHTML = postObj.com;
+          const pathParts = a.pathname.split(/\/+/);
+          const threadBase = pathParts.slice(0, 4).join('/');
+          const boardBase = pathParts.slice(0, 3).join('/');
+          // Fix pathnames
+          for (const quote of $$('.quotelink', clone)) {
+              const href = quote.getAttribute('href');
+              if (!href || href[0] === '/')
+                  continue;
+              quote.href = href[0] === '#' ? `${threadBase}${href}` : `${boardBase}/${href}`;
+          }
+          post.nodes.shortComment = comment;
+          $.replace(comment, clone);
+          post.nodes.comment = (post.nodes.longComment = clone);
+          post.parseComment();
+          post.parseQuotes();
+          for (const callback of ExpandComment.callbacks) {
+              callback.call(post);
+          }
+      }
+  };
+
+  const ScrollMarkers = {
+    init() {
+      ScrollMarkers.container = $.el('div', { classList: 'scroll-marker-container' });
+      doc.insertAdjacentElement('afterbegin', ScrollMarkers.container);
+      $.on(ScrollMarkers.container, 'click', (e) => {
+        const { postId } = e.target.dataset;
+        if (postId)
+          Header.scrollTo(g.posts[postId].nodes.root);
+      });
+      new ResizeObserver(ScrollMarkers.markScroll).observe(doc);
+    },
+    container: undefined,
+    // Keep instead of redoing so renewing doesn't lose keyboard focus
+    markers: undefined,
+    markScroll: debounce(100, () => {
+      if (!Conf['Scroll Markers']) {
+        ScrollMarkers.container.innerText = '';
+        ScrollMarkers.markers = undefined;
+        return;
+      }
+      const newMarkers = new Map();
+      g.posts?.forEach((post) => {
+        const postEl = post.nodes.root;
+        let isReply = false;
+        if ($.hasClass(postEl, 'quotesYou')) {
+          isReply = true;
+        } else if (!$.hasClass(postEl, 'yourPost')) {
+          return;
+        }
+        const postPosition = postEl.getBoundingClientRect();
+        newMarkers.set(`${post.boardID}.${post.ID}`, {
+          classList: `post-scroll-marker ${isReply ? 'reply' : 'you'}-scroll-marker`,
+          ariaLabel: `Jump to ${isReply ? 'reply to ' : ''} my post`,
+          top: (((postPosition.top + window.scrollY) / doc.scrollHeight) * 100).toFixed(1),
+          height: Math.max(1, (postPosition.height / doc.scrollHeight) * 100).toFixed(1),
+        });
+      });
+      let previousEl;
+      for (const [key, marker] of newMarkers) {
+        const existing = ScrollMarkers.markers?.get(key);
+        let el = existing?.el;
+        if (!el) {
+          el = $.el('button', { type: 'button' });
+          if (previousEl) {
+            previousEl.insertAdjacentElement('afterend', el);
+          } else {
+            $.add(ScrollMarkers.container, el);
+          }
+        }
+        el.classList = marker.classList;
+        el.style.setProperty('--top', marker.top);
+        el.style.setProperty('--height', marker.height);
+        el.dataset.postId = key;
+        marker.el = el;
+        previousEl = el;
+        d.createElement('button');
+      }
+      // Remove those that don't exist anymore
+      if (ScrollMarkers.markers) {
+        for (const [key, { el }] of ScrollMarkers.markers) {
+          if (!newMarkers.has(key))
+            el.remove();
+        }
+      }
+      ScrollMarkers.markers = newMarkers;
+    }, false),
+  };
+
+  const PostRedirect = {
+      init() {
+          $.on(d, 'QRPostSuccessful', e => {
+              if (!e.detail.redirect)
+                  return;
+              this.event = e;
+              this.delays = 0;
+              $.queueTask(() => {
+                  if ((e === this.event) && (this.delays === 0))
+                      return location.href = e.detail.redirect;
+              });
+          });
+      },
+      delays: 0,
+      delay() {
+          if (!this.event)
+              return null;
+          const e = this.event;
+          this.delays++;
+          return () => {
+              if (e !== this.event)
+                  return;
+              this.delays--;
+              if (this.delays === 0)
+                  return location.href = e.detail.redirect;
+          };
+      }
+  };
+
+  var QuoteYou = {
+      init() {
+          if (!Conf['Remember Your Posts'])
+              return;
+          this.db = new DataBoard('yourPosts');
+          $.sync('Remember Your Posts', enabled => Conf['Remember Your Posts'] = enabled);
+          $.on(d, 'QRPostSuccessful', function (e) {
+              const cb = PostRedirect.delay();
+              return $.get('Remember Your Posts', Conf['Remember Your Posts'], function (items) {
+                  if (!items['Remember Your Posts'])
+                      return;
+                  const { boardID, threadID, postID } = e.detail;
+                  return QuoteYou.db.set({ boardID, threadID, postID, val: true }, cb);
+              });
+          });
+          if (!['index', 'thread', 'archive'].includes(g.VIEW))
+              return;
+          if (Conf['Highlight Own Posts'])
+              $.addClass(doc, 'highlight-own');
+          if (Conf['Highlight Posts Quoting You'])
+              $.addClass(doc, 'highlight-you');
+          if (Conf['Comment Expansion'])
+              ExpandComment.callbacks.push(this.node);
+          // \u00A0 is nbsp
+          this.mark = $.el('span', {
+              textContent: '\u00A0(You)',
+              className: 'qmark-you'
+          });
+          Callbacks.Post.push({
+              name: 'Mark Quotes of You',
+              cb: this.node
+          });
+          QuoteYou.menu.init();
+      },
+      isYou(post) {
+          return !!QuoteYou.db?.get({
+              boardID: post.boardID,
+              threadID: post.threadID,
+              postID: post.ID
+          });
+      },
+      node() {
+          if (this.isClone)
+              return;
+          if (QuoteYou.isYou(this)) {
+              $.addClass(this.nodes.root, 'yourPost');
+              ScrollMarkers.markScroll();
+          }
+          // Stop there if there's no quotes in that post.
+          if (!this.quotes.length)
+              return;
+          for (var quotelink of this.nodes.quotelinks) {
+              if (QuoteYou.db.get(Get.postDataFromLink(quotelink))) {
+                  if (Conf['Mark Quotes of You']) {
+                      $.add(quotelink, QuoteYou.mark.cloneNode(true));
+                  }
+                  $.addClass(quotelink, 'you');
+                  $.addClass(this.nodes.root, 'quotesYou');
+              }
+          }
+      },
+      menu: {
+          init() {
+              const label = $.el('label', { className: 'toggle-you' }, { innerHTML: '<input type="checkbox"> You' });
+              const input = $('input', label);
+              $.on(input, 'change', QuoteYou.menu.toggle);
+              Menu.menu?.addEntry({
+                  el: label,
+                  order: 80,
+                  open(post) {
+                      QuoteYou.menu.post = (post.origin || post);
+                      input.checked = QuoteYou.isYou(post);
+                      return true;
+                  }
+              });
+          },
+          toggle() {
+              const { post } = QuoteYou.menu;
+              const data = { boardID: post.board.ID, threadID: post.thread.ID, postID: post.ID, val: true };
+              if (this.checked) {
+                  QuoteYou.db.set(data);
+              }
+              else {
+                  QuoteYou.db.delete(data);
+              }
+              for (var clone of [post].concat(post.clones)) {
+                  clone.nodes.root.classList.toggle('yourPost', this.checked);
+              }
+              for (var quotelink of Get.allQuotelinksLinkingTo(post)) {
+                  if (this.checked) {
+                      if (Conf['Mark Quotes of You'])
+                          $.add(quotelink, QuoteYou.mark.cloneNode(true));
+                  }
+                  else {
+                      $.rm($('.qmark-you', quotelink));
+                  }
+                  quotelink.classList.toggle('you', this.checked);
+                  if ($.hasClass(quotelink, 'quotelink')) {
+                      var quoter = Get.postFromNode(quotelink).nodes.root;
+                      quoter.classList.toggle('quotesYou', !!$('.quotelink.you', quoter));
+                  }
+              }
+              ScrollMarkers.markScroll();
+          }
+      },
+      cb: {
+          seek(type) {
+              let highlighted, post, result;
+              const { highlight } = g.SITE.classes;
+              if (highlighted = $(`.${highlight}`))
+                  $.rmClass(highlighted, highlight);
+              if (!QuoteYou.lastRead || !doc.contains(QuoteYou.lastRead) || !$.hasClass(QuoteYou.lastRead, 'quotesYou')) {
+                  if (!(post = (QuoteYou.lastRead = $('.quotesYou')))) {
+                      new Notice('warning', 'No posts are currently quoting you, loser.', 20);
+                      return;
+                  }
+                  if (QuoteYou.cb.scroll(post))
+                      return;
+              }
+              else {
+                  post = QuoteYou.lastRead;
+              }
+              const str = `${type}::div[contains(@class,'quotesYou')]`;
+              while (post = (result = $.X(str, post)).snapshotItem(type === 'preceding' ? result.snapshotLength - 1 : 0)) {
+                  if (QuoteYou.cb.scroll(post))
+                      return;
+              }
+              const posts = $$('.quotesYou');
+              QuoteYou.cb.scroll(posts[type === 'following' ? 0 : posts.length - 1]);
+          },
+          scroll(root) {
+              const post = Get.postFromRoot(root);
+              if (!post.nodes.post.getBoundingClientRect().height) {
+                  return false;
+              }
+              else {
+                  QuoteYou.lastRead = root;
+                  location.href = Get.url('post', post);
+                  Header.scrollTo(post.nodes.post);
+                  if (post.isReply) {
+                      const sel = `${g.SITE.selectors.postContainer}${g.SITE.selectors.highlightable.reply}`;
+                      let node = post.nodes.root;
+                      if (!node.matches(sel))
+                          node = $(sel, node);
+                      $.addClass(node, g.SITE.classes.highlight);
+                  }
+                  return true;
+              }
+          }
+      }
+  };
+
+  var ferongr_unreadDead = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAFVBMVEX///9zBQC/AADpDAP/gID/q6voCwJJTwpOAAAAAXRSTlMAQObYZgAAAFNJREFUeNptjQUCQCEIQ4XJ7n9ji/hpvj2D9tNIPoAicgdKt/4CYMHKgGfVTdurusm39Rl53x1jzZxPmNm8irmJelH9CKRACF2dvsWb1Ws7pvHaJi3gAk+U2XRGAAAAAElFTkSuQmCC';
+
+  var ferongr_unreadDeadY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAxElEQVR42q2TAQYCURCG//dWKQWyUICEAJQIoFN0kC6w6DaLjhCgI3SFOsVkX35+z06vaPhN+r/5mTcWf6vHJBr1E0PjNAClQJmhYU1j1rapK1BkFHhOqyQFZJh+//AVb+VQFk6uP4RSs+wL9OkSl1GwTURS9xteeQHdIAvAzR32VphBA3B3h/Mz8f91XRtrFZDv75+K3lZWmIfsEfVUXsB5GGwMJB2iE8D7smvAXt5gGeB/D9rVO1awXYQtgnNGguzfei/okTkjgCMZiwAAAABJRU5ErkJggg==';
+
+  var ferongr_unreadSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAFVBMVEX///8AcH4AtswA2PJ55fKi6fIA1/FtpPADAAAAAXRSTlMAQObYZgAAAFNJREFUeNptjQUCQCEIQ4XJ7n9ji/hpvj2D9tNIPoAicgdKt/4CYMHKgGfVTdurusm39Rl53x1jzZxPmNm8irmJelH9CKRACF2dvsWb1Ws7pvHaJi3gAk+U2XRGAAAAAElFTkSuQmCC';
+
+  var ferongr_unreadSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAv0lEQVR42mOgHrj+8T8Mk6IGIVFQB8MIBYTVICQqn376v+jlJxCNpoCwGoTpNz4BMZoChGaoPC7N286AMIYiNMNh6nAYgulHwvLIivDGxKJt/xn0TcAYzMYFcBkA0ggDQN5xXJpxe0FQGNmA67g0Y0QTTFxIWRVhgKIq1HDMeMYdC/qmCAMkpFFdiIgqPAZUdf5n4OCEYHt3HAZsOwOjMQ0ws0H2Au78gEyjyIXE/2cwNP/PICmLGY3ICmE0sXIAYT+TvkUROOYAAAAASUVORK5CYII=';
+
+  var ferongr_unreadNSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAFVBMVEX///8oeQBJ3ABV/wHM/7Lu/+ZU/gAqUP3dAAAAAXRSTlMAQObYZgAAAFNJREFUeNptjQUCQCEIQ4XJ7n9ji/hpvj2D9tNIPoAicgdKt/4CYMHKgGfVTdurusm39Rl53x1jzZxPmNm8irmJelH9CKRACF2dvsWb1Ws7pvHaJi3gAk+U2XRGAAAAAElFTkSuQmCC';
+
+  var ferongr_unreadNSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAw0lEQVR42mOgGgj5x/AfhklQg5DQqIRjhALCahASZ/5v+v/u/zMQjaqAsBqEgtD/jCCMogBJM0weu2bPO2CMoQjNcJg6bIbg8CNheYQifDFhf4Dhv5A5BIPYBKMTXRykEQaA3OM4NOP2ApsQigHXcWnGiCaYuIKGNNwAXnU0F+KLKpickAXCBRxSCBeipwOcBhhMZPjPzAXBYi44DPC8A6cxDBB1RLiAWwVPfkCmkeXkohn+C1sx/OeUxhqNCIUwmlg5ABb/Y7V8eEcdAAAAAElFTkSuQmCC';
+
+  var xat_unreadDead = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAG1BMVEX+AACLkZFub2yfaF3zZGIAAAD/AAD/iYr/zs8IPcF6AAAABXRSTlMAeprJ7xzg6IEAAABUSURBVHjaYiAGAOocCwMAgRCKUh/cf2L1Ot8FHQBYPhhAst0d+pGU5jGbbEfEJ6vnIz5QepCoRTxPhKncHLWkOBi1KZhOY+tmo+M7IklQAt+pYucFkFsDARa59ZMAAAAASUVORK5CYII=';
+
+  var xat_unreadDeadY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAPFBMVEUAAACEgoBva2ilamDxcG7IaWYgFBNOSEf//f0PDQwBAAA7LCwAAAD/AAD+hIX+m5z+zc5HAADPAAAGAADl032uAAAADHRSTlMAzNv0/vz+6v3+7ALrmfyXAAAAZUlEQVR42oxNxQHAIAzE9ZLa/rNW0V9xTsWfAUBKpaQE8P6JCPoe76Mhxkx/AjOoIffgZWGUDKG04WVdF+ucnwAXQnwBqYulAfhCtwrU2htAB7TGfhwVuKdSXSEg8F4J+RoWrwIAQKkGZfFYhZ4AAAAASUVORK5CYII=';
+
+  var xat_unreadSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAIVBMVEUAAACRjop4dXVpZ2tdcI9dfKdisfMAAAAumMN9xv+s2/+PADT2AAAAB3RSTlMAepGdv83v3HIc4QAAAFdJREFUeNqNTYUBAyEMjF/C/vu27244p/RlAGBRFQYw/DMT5m7DY0Eidv9E1XhPGajWClMGqUf375BwvQbEZovJADDmUDBd1E6A+xbopupw0YgQ5uti/AEjcAQde9z08gAAAABJRU5ErkJggg==';
+
+  var xat_unreadSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAMFBMVEUAAACAgYVlc4ljsu4AAAAAAAAAAAAumMODyP6b1P6e1f/g8v89msgSIiwNFxwbPU3tQYj5AAAABnRSTlMAxej+9VTmD9ciAAAAY0lEQVR42ozNUQ4DIQiEYRmbH6xde//bdkMsiW/Li/LFGduTAcwkMyB3d0f35KWk92N3IvASIMY72B1N6jHmHJ9r6YBrzpVg2pECspS1ob69IxQg8YU/kFAvGo08XvzGisWrAAQRBA+DRjP7AAAAAElFTkSuQmCC';
+
+  var xat_unreadNSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAHlBMVEUfJSCRi5Frbm9dn19082KR/30AAABmzDOq/5vZ/9Gt/vt2AAAABnRSTlMAe5rJ7/4vxEp4AAAAU0lEQVR42mIgBgDqHAsDCGIQgKGB7j/wy7mmggug9kOBya4q/MekbJ6Ik11kUpsHyO5k6SHmkT1GZ7i9OdaSxaGsTVF5GrtudnRQmE1CJhBW8cAXuLsDUS249XUAAAAASUVORK5CYII=';
+
+  var xat_unreadNSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAM1BMVEUAAACBj39tfm1qj2RepFlu2VQAAQAAAAAAAABmyzOX/oSr/pus/pzk/98PGgtatC4CBAI1ENblAAAACHRSTlMA09/p9v77ig0SBcQAAABkSURBVHjajE2FDQAhDKSWXIvuv+y7EX2c0/RnACDeBgE4/u4OUZXj8SBm098RAX+QbUQugSsjsVrkWrO1xhPQam0nIJflBghn6KO4azcAL6CKPsYNbJP5VSSkdRD3sHGwY/EqAIxSBSCMVsKoAAAAAElFTkSuQmCC';
+
+  var Mayhem_unreadDead = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABFklEQVR42p2SAYf0MBCGo/3UqlqVpqn1qarYOGtV63Dc//9fdzPrUbm4wIVHat73HZOkRlYjtEIvWPZOuAj/4EIt9bSvLIIXFiEIq3DD2IHVGlrA69GM0+JXssZx3Oq6VuMEi9ZSj2bImv9UTnQ553Y1SaOo3795NCuYWTgKhjfv/bOgHWTzCYoNihN44Z6er3iEZGmGrLlyw1HYGW3DMMOd2oEnkrka3tPxNA+Mz7wBtQ3PQqZNGwThHJVArKrqkR7BWvuux0obdIzz47Josmsgr3M/N7KmF9bCU330ff9Z0FayxgrhDw0C2VeX5TSxY9qGYTgK2kLWtLxnQDjYo7BCzLRARrOm4TIcf9bMPlFTpkxzZJpvFGg1bzaJAWwAAAAASUVORK5CYII=';
+
+  var Mayhem_unreadDeadY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABRklEQVR42oWSgWb0QBDHx+UTn4iKzSanKiKiEedEomg0r5AHKAV9pDxSXqDVAlB9lHT+/J3BxS0/O2bnNze3G9EVKpGSKI57rPxX/hHEsa2hEwoPcqVUaqVS7lkYE8dcxZoSDs/EI7mZlWVZFwQBCo+kRM7WwKErD8xcwPLe9yjSRg3iazVwFSmUYaegzfP8vHM20LUT3GiwM0GuPG527fwFu+DQlTvecKP0HK1jQUEQvyvf5I0OXIkUz6c5UT5fafBlfv2DTmQb1MplVDZpDofDCX+hbVs7/o9tEHMce1kMpXfOPSFumWP+Fw5dSZRq56mekyR5QTyaBuM4bnDoilPqWw0WzUVkWRZ+ieqyS4kiirZBl6bpgHg2E8zzvMGhKxHfs6Y0cG+UijTruiL3OU0T9lc4dCXkZXh+WQX3I3OesT3zdMI/nyk9ocCqsEIAAAAASUVORK5CYII=';
+
+  var Mayhem_unreadSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA/ElEQVR42p3RgWbEQBSF4Ytaa4yKiI2IGDEStSIS0EftA/XB2hP+rnEZ6PIZO/eckWRMv5sEaaRljXKXN9wlukyga1EekiTLLAPBiJa9mUyiE8U6yT/FT/+fhHokebpMpmvjtbF/fb8Q2CRjq2RGsUnOSuDjUpmddP0T1A+oPcFDlvL9Kq/g5wtde5dBVjl4tJ3AhIW9k8wqA10L0hlfmuDmD2BvJ5PohPKALId7hRVbsX9ILg+IMvireoXF73P4QNcamStX9XmpzGa61kr+xwGZrjWS/kLlykfbK7NE1wL3mRmcrKvMWN0s0wliN4nSySgTay8dejfr6Nx+ARmXRvbmqvoaAAAAAElFTkSuQmCC';
+
+  var Mayhem_unreadSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABP0lEQVR42oWTRVJEMRiEg8OrcXd3nw16hVnirLgAd3krroOs0S1ylUf/U50ilbFUfdHuP66QtoEDQiDC0gd2wabAus/SOFMvBxKgCKqgDNIU+kiEfWVqivT4gIqBqmcktDsUJYnUO5amSq/KSsfg/lmjBT1QJb0FmixQeTBeIGgJC8bG9NorWB3AXkEC1D0jLdqCNV6nVwV4wg0w4tIGFOQF1m/BJ7mhJ6B4nzF90jT35gT4MGZ/pccxA1TByNpCg/RarZa5/G8zgA+k7auicKSD7iQLZoBfenyKz7K84KoOBKk75f93dHh46ImHXhUB1VUBMmd33trWzhTXdfkS4WWUog5gljzQgdT9/WNPp8lk4omHXuXwPqs0jVk2QJk0Hh8fpe/t5OREykt6HP2dfTzVLMizTIIYSVpjMXq2/wDfYUr8wN0YOAAAAABJRU5ErkJggg==';
+
+  var Mayhem_unreadNSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA/ElEQVR42p3RAWfEMBjG8RdTJ2Kq6qqqoqIxp6o17Bvt0+47bU/570QI3PETl/d5om1Mv0actNKxernJG27ii4yja17uEiTKIiNBj469hUyg48V6ib/ZT/8fhAYEeRSZSNema+P75/OJwCYRWyUzic1yVgIfl8rspFs+Qf2A2hPcZc3fr/IK5Xyla+8ySpKDR9sJzFjZO8kkGemak9740gS38gD2djKBjssPiHIUr5CwZfuHxPwAL2N5Vc+wlPscPtK1VpbKVX1dKrOFrnUSXzgg0rVWwn8oX/loe2UW6JrjPiODkzXJglTMIh0n1oiXXiaZWQfpMRSznk7zB4RaQX4rJ6lsAAAAAElFTkSuQmCC';
+
+  var Mayhem_unreadNSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABP0lEQVR4AYWS0UqFQBCGhziImNRBRImDmUgiIaF0kWSP4AMEXXXTE/QiPpL3UdR19Crb/PAvLEtyFj5mmfn/cdxd0RUokbJXEsZYCZUd4D72NBG8wkKmlEqtVMoFhTFJmKuoKelBTVIkjbNE5IainJTIeZqaXjkg8fp+Z7GCjiLQbWgOihTKsCFowUZtoNef4HgDf4JMuTbe8n/Br8NDr5zxhBul52i3FBQE+xflmzzTA69ESmpPmubunwZfztc/6IncBrXSe7/QkK5tW3f8H7dBjHH8q6Kwt033V6Hb4JeeWPgsq42rugfYZ92psWscRwMPvZIo9bEGD2+F2YUnBizLwpeoXnYpbQM34kAB9peP58aueZ4NPPRKxPusaRoYG6UizbquyH1O04T4RA+8EvAwUr6sgjFnDuReLaUn+ANygUa7+9SCWgAAAABJRU5ErkJggg==';
+
+  var fourChanJS_unreadDead = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAD1BMVEUBAAAAAAD/AABnZ2f///8nFk05AAAAAXRSTlMAQObYZgAAAEFJREFUeNqNjgEKACAMAjvX/98cAkkxgmSgO8Bt/Ai4ApJ6KKhzF3OiEMDASrGB/QWgPEHsUpN+Ng9xAETMYhDrWmeHAMcmvycWAAAAAElFTkSuQmCC';
+
+  var fourChanJS_unreadDeadY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAD1BMVEUAAAAAAAD/AABmZmYA/wBD99DBAAAAAXRSTlMAQObYZgAAAERJREFUeNpiIAYA6pwDDApiGAig/yW9/5m/YEdXbGDSh2nwWlTVXpq+3+UcFcEApHhg8gtoWshTOrK/zUEuUBIzfhJ7/meHAMdsgg3zAAAAAElFTkSuQmCC';
+
+  var fourChanJS_unreadSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAD1BMVEUBAAAAAAAul8NnZ2f////82iC9AAAAAXRSTlMAQObYZgAAAEFJREFUeNqNjgEKACAMAjvX/98cAkkxgmSgO8Bt/Ai4ApJ6KKhzF3OiEMDASrGB/QWgPEHsUpN+Ng9xAETMYhDrWmeHAMcmvycWAAAAAElFTkSuQmCC';
+
+  var fourChanJS_unreadSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAD1BMVEUAAAAAAAAul8NnZ2f/AAD7B+mqAAAAAXRSTlMAQObYZgAAAERJREFUeNpiIAYA6pwDDApiGAig/yW9/5m/YEdXbGDSh2nwWlTVXpq+3+UcFcEApHhg8gtoWshTOrK/zUEuUBIzfhJ7/meHAMdsgg3zAAAAAElFTkSuQmCC';
+
+  var fourChanJS_unreadNSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAElBMVEUBAAAAAABmzDNlyjJnZ2f///+6o7dfAAAAAXRSTlMAQObYZgAAAERJREFUeF6NjkEKADEIA51o///lJZfQxUsHITogWi8AvwZJuxmYa25xDooBLEwOWFTYAsYVhdorLZt9Ng9xCUTCUCQ2H3F4ANrZ2WNiAAAAAElFTkSuQmCC';
+
+  var fourChanJS_unreadNSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAD1BMVEUAAAAAAABmzDNmZmb/AAC8/wCMAAAAAXRSTlMAQObYZgAAAERJREFUeNpiIAYA6pwDDApiGAig/yW9/5m/YEdXbGDSh2nwWlTVXpq+3+UcFcEApHhg8gtoWshTOrK/zUEuUBIzfhJ7/meHAMdsgg3zAAAAAElFTkSuQmCC';
+
+  var Original_unreadDead = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAADFBMVEX/////AAD///8AAABBZmS3AAAAAXRSTlMAQObYZgAAAEJJREFUeNp1jQEKwEAIwzT9/58Hk3ATbgVoG6jWRcAKJPkG0t23sLpA4tZjwPGRoOxOsHt0yH77AzIgbkLQXlEcewCo8AFNs8H5UAAAAABJRU5ErkJggg==';
+
+  var Original_unreadDeadY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAhElEQVR42q1RwQnAMAjMu5M4guAKXa4j5dUROo5tipSDcrFChUONd0di2m/hEGVOHDyIPufgwAFASDkpoSzmBrkJ2UMyR9LsJ3rvrqo3Rt1YMIMhhNnOxLMnoMFBxHyJAr2IOBFzA8U+6pLBdmEJTA0aMVjpDd6Loks0s5HZNwYx8tfZCZ0kll7ORffZAAAAAElFTkSuQmCC';
+
+  var Original_unreadSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAADFBMVEX///8ul8P///8AAACaqgkzAAAAAXRSTlMAQObYZgAAAEJJREFUeNp1jQEKwEAIwzT9/58Hk3ATbgVoG6jWRcAKJPkG0t23sLpA4tZjwPGRoOxOsHt0yH77AzIgbkLQXlEcewCo8AFNs8H5UAAAAABJRU5ErkJggg==';
+
+  var Original_unreadSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAALVBMVEUAAAAAAAAAAAAAAAABBQcHFx4KISoNLToaVW4oKCgul8M4ODg7OzvBwcH///8uS/CdAAAAA3RSTlMAx9dmesIgAAAAV0lEQVR42m2PgQqAIAxErVmV5vv/zw3arRQUwLsHe2Np8oAhYGZ9wEopszD2ACIx+8lkb7U2LXZQYVHXCKzqLt3gUnewg9GDM+cA9oID4gZcepvWkvi/BwR+Bfo8YGYaAAAAAElFTkSuQmCC';
+
+  var Original_unreadNSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAADFBMVEX///9mzDP///8AAACT0n1lAAAAAXRSTlMAQObYZgAAAEJJREFUeNp1jQEKwEAIwzT9/58Hk3ATbgVoG6jWRcAKJPkG0t23sLpA4tZjwPGRoOxOsHt0yH77AzIgbkLQXlEcewCo8AFNs8H5UAAAAABJRU5ErkJggg==';
+
+  var Original_unreadNSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAALVBMVEUAAAAAAAAAAAAAAAAECAIQIAgWLAsePA8oKCg4ODg6dB07OztmzDPBwcH///+rsf3XAAAAA3RSTlMAx9dmesIgAAAAV0lEQVR42m2PgQqAIAxErVll6fv/zw3arRQUwLsHe2Np8oAhYGZ9wGqtszD2ACIx+8lkb6U0LXZQYFHXCKzqLt3gVHewg9GDK+cA9oID4gZcepvWkvi/ByUyBjCqN1XpAAAAAElFTkSuQmCC';
+
+  var Metro_unreadDead = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEUAAAC/AABrZQDiAAAAAXRSTlMAQObYZgAAABJJREFUCB1jZGBgrMNAQEEc4gCSfAX5bRw/NQAAAABJRU5ErkJggg==';
+
+  var Metro_unreadDeadY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAJFBMVEUAAAAAAAAAAAC/AAD///8dAAApAABsAAAHAAA4AACQAAAsAABMCpCvAAAAA3RSTlMAPse+s4iwAAAAMklEQVQI12NggAFmY2MDECaNAQZCilAzVJyg5oS4GqAxUtygjIp2KGOKJ5SxepcB3BUAcdYRqxAtgFoAAAAASUVORK5CYII=';
+
+  var Metro_unreadSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEUAAAAA1/GhpCidAAAAAXRSTlMAQObYZgAAABJJREFUCB1jZGBgrMNAQEEc4gCSfAX5bRw/NQAAAABJRU5ErkJggg==';
+
+  var Metro_unreadSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAJFBMVEUAAAAAAAAAAAAA1/H///8AISUALzQAeokACAkAQEcAorYAMTcE9WFNAAAAA3RSTlMAPse+s4iwAAAAMklEQVQI12NggAFmY2MDECaNAQZCilAzVJyg5oS4GqAxUtygjIp2KGOKJ5SxepcB3BUAcdYRqxAtgFoAAAAASUVORK5CYII=';
+
+  var Metro_unreadNSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEUAAABV/wErM5hwAAAAAXRSTlMAQObYZgAAABJJREFUCB1jZGBgrMNAQEEc4gCSfAX5bRw/NQAAAABJRU5ErkJggg==';
+
+  var Metro_unreadNSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAJFBMVEUAAAAAAAAAAABV/wH///8NKAASOAAwkQADCgAZTABAwQATOwC5e3VGAAAAA3RSTlMAPse+s4iwAAAAMklEQVQI12NggAFmY2MDECaNAQZCilAzVJyg5oS4GqAxUtygjIp2KGOKJ5SxepcB3BUAcdYRqxAtgFoAAAAASUVORK5CYII=';
+
+  var dead = 'R0lGODlhEAAQAKECAAAAAP8AAP///////yH5BAEKAAIALAAAAAAQABAAAAIslI+pq+D9DAgUoFnPrDLkHnxYJgFReTLqyqSpJn5w/HXx101ApyeWdfixGAUAOw==';
+
+  var empty = 'R0lGODlhEAAQAPD/AAAAANvb2yH5BAUAAAIALAAAAAAQABAAAAIslI+pq+D9DAgUoFnPrDLkHnxYJgFReTLqyqSpJn5w/HXx101ApyeWdfixGAUAOw==';
+
+  var Favicon = {
+      init() {
+          $.asap((() => d.head && (Favicon.el = $('link[rel="shortcut icon"]', d.head))), Favicon.initAsap);
+      },
+      set(status) {
+          Favicon.status = status;
+          if (Favicon.el) {
+              Favicon.el.href = Favicon[status];
+              // `favicon.href = href` doesn't work on Firefox.
+              $.add(d.head, Favicon.el);
+          }
+      },
+      initAsap() {
+          Favicon.el.type = 'image/x-icon';
+          const { href } = Favicon.el;
+          Favicon.isSFW = /ws\.ico$/.test(href);
+          Favicon.default = href;
+          Favicon.switch();
+          if (Favicon.status)
+              Favicon.set(Favicon.status);
+      },
+      switch() {
+          let items = {
+              ferongr: [
+                  ferongr_unreadDead,
+                  ferongr_unreadDeadY,
+                  ferongr_unreadSFW,
+                  ferongr_unreadSFWY,
+                  ferongr_unreadNSFW,
+                  ferongr_unreadNSFWY,
+              ],
+              'xat-': [
+                  xat_unreadDead,
+                  xat_unreadDeadY,
+                  xat_unreadSFW,
+                  xat_unreadSFWY,
+                  xat_unreadNSFW,
+                  xat_unreadNSFWY,
+              ],
+              Mayhem: [
+                  Mayhem_unreadDead,
+                  Mayhem_unreadDeadY,
+                  Mayhem_unreadSFW,
+                  Mayhem_unreadSFWY,
+                  Mayhem_unreadNSFW,
+                  Mayhem_unreadNSFWY,
+              ],
+              '4chanJS': [
+                  fourChanJS_unreadDead,
+                  fourChanJS_unreadDeadY,
+                  fourChanJS_unreadSFW,
+                  fourChanJS_unreadSFWY,
+                  fourChanJS_unreadNSFW,
+                  fourChanJS_unreadNSFWY,
+              ],
+              Original: [
+                  Original_unreadDead,
+                  Original_unreadDeadY,
+                  Original_unreadSFW,
+                  Original_unreadSFWY,
+                  Original_unreadNSFW,
+                  Original_unreadNSFWY,
+              ],
+              'Metro': [
+                  Metro_unreadDead,
+                  Metro_unreadDeadY,
+                  Metro_unreadSFW,
+                  Metro_unreadSFWY,
+                  Metro_unreadNSFW,
+                  Metro_unreadNSFWY,
+              ]
+          };
+          items = $.getOwn(items, Conf.favicon);
+          const f = Favicon;
+          const t = 'data:image/png;base64,';
+          let i = 0;
+          while (items[i]) {
+              items[i] = t + items[i++];
+          }
+          [f.unreadDead, f.unreadDeadY, f.unreadSFW, f.unreadSFWY, f.unreadNSFW, f.unreadNSFWY] = items;
+          f.update();
+      },
+      update() {
+          if (this.isSFW) {
+              this.unread = this.unreadSFW;
+              this.unreadY = this.unreadSFWY;
+          }
+          else {
+              this.unread = this.unreadNSFW;
+              this.unreadY = this.unreadNSFWY;
+          }
+      },
+      SFW: '//s.4cdn.org/image/favicon-ws.ico',
+      NSFW: '//s.4cdn.org/image/favicon.ico',
+      dead: `data:image/gif;base64,${dead}`,
+      logo: `data:image/png;base64,${empty}`,
+  };
+
+  var Unread = {
+      init() {
+          if ((g.VIEW !== 'thread') || (!Conf['Unread Count'] &&
+              !Conf['Unread Favicon'] &&
+              !Conf['Unread Line'] &&
+              !Conf['Remember Last Read Post'] &&
+              !Conf['Desktop Notifications'] &&
+              !Conf['Quote Threading']))
+              return;
+          if (Conf['Remember Last Read Post']) {
+              $.sync('Remember Last Read Post', enabled => Conf['Remember Last Read Post'] = enabled);
+              this.db = new DataBoard('lastReadPosts', this.sync);
+          }
+          this.hr = $.el('hr', {
+              id: 'unread-line',
+              className: 'unread-line'
+          });
+          this.posts = new Set();
+          this.postsQuotingYou = new Set();
+          this.order = new RandomAccessList();
+          this.position = null;
+          Callbacks.Thread.push({
+              name: 'Unread',
+              cb: this.node
+          });
+          Callbacks.Post.push({
+              name: 'Unread',
+              cb: this.addPost
+          });
+      },
+      node() {
+          Unread.thread = this;
+          Unread.title = d.title;
+          Unread.lastReadPost = Unread.db?.get({
+              boardID: this.board.ID,
+              threadID: this.ID
+          }) || 0;
+          Unread.readCount = 0;
+          for (var ID of this.posts.keys) {
+              if (+ID <= Unread.lastReadPost) {
+                  Unread.readCount++;
+              }
+          }
+          $.one(d, '4chanXInitFinished', Unread.ready);
+          $.on(d, 'PostsInserted', Unread.onUpdate);
+          $.on(d, 'ThreadUpdate', (e) => { if (e.detail[404]) {
+              return Unread.update();
+          } });
+          const resetLink = $.el('a', {
+              href: 'javascript:;',
+              className: 'unread-reset',
+              textContent: 'Mark all unread'
+          });
+          $.on(resetLink, 'click', Unread.reset);
+          Header.menu.addEntry({
+              el: resetLink,
+              order: 70
+          });
+      },
+      ready() {
+          if (Conf['Remember Last Read Post'] && Conf['Scroll to Last Read Post'])
+              Unread.scroll();
+          Unread.setLine(true);
+          Unread.read();
+          Unread.update();
+          $.on(d, 'scroll visibilitychange', Unread.read);
+          if (Conf['Unread Line'])
+              $.on(d, 'visibilitychange', Unread.setLine);
+      },
+      positionPrev() {
+          if (Unread.position) {
+              return Unread.position.prev;
+          }
+          else {
+              return Unread.order.last;
+          }
+      },
+      scroll() {
+          // Let the header's onload callback handle it.
+          let hash = location.hash.match(/\d+/);
+          if (hash && hash[0] in Unread.thread.posts)
+              return;
+          let position = Unread.positionPrev();
+          while (position) {
+              var { bottom } = position.data.nodes;
+              if (!bottom.getBoundingClientRect().height) {
+                  // Don't try to scroll to posts with display: none
+                  position = position.prev;
+              }
+              else {
+                  Header.scrollToIfNeeded(bottom, true);
+                  break;
+              }
+          }
+      },
+      reset() {
+          if (Unread.lastReadPost == null)
+              return;
+          Unread.posts = new Set();
+          Unread.postsQuotingYou = new Set();
+          Unread.order = new RandomAccessList();
+          Unread.position = null;
+          Unread.lastReadPost = 0;
+          Unread.readCount = 0;
+          Unread.thread.posts.forEach(post => Unread.addPost.call(post));
+          $.forceSync('Remember Last Read Post');
+          if (Conf['Remember Last Read Post'] && (!Unread.thread.isDead || Unread.thread.isArchived)) {
+              Unread.db.set({
+                  boardID: Unread.thread.board.ID,
+                  threadID: Unread.thread.ID,
+                  val: 0
+              });
+          }
+          Unread.updatePosition();
+          Unread.setLine();
+          Unread.update();
+      },
+      sync() {
+          if (Unread.lastReadPost == null)
+              return;
+          const lastReadPost = Unread.db.get({
+              boardID: Unread.thread.board.ID,
+              threadID: Unread.thread.ID,
+              defaultValue: 0
+          });
+          if (Unread.lastReadPost >= lastReadPost)
+              return;
+          Unread.lastReadPost = lastReadPost;
+          const postIDs = Unread.thread.posts.keys;
+          for (let i = Unread.readCount, end = postIDs.length; i < end; i++) {
+              var ID = +postIDs[i];
+              if (!Unread.thread.posts.get(ID).isFetchedQuote) {
+                  if (ID > Unread.lastReadPost)
+                      break;
+                  Unread.posts.delete(ID);
+                  Unread.postsQuotingYou.delete(ID);
+              }
+              Unread.readCount++;
+          }
+          Unread.updatePosition();
+          Unread.setLine();
+          Unread.update();
+      },
+      addPost() {
+          if (this.isFetchedQuote || this.isClone)
+              return;
+          Unread.order.push(this);
+          if ((this.ID <= Unread.lastReadPost) || this.isHidden || QuoteYou.isYou(this))
+              return;
+          Unread.posts.add((Unread.posts.last = this.ID));
+          Unread.addPostQuotingYou(this);
+          return Unread.position != null ? Unread.position : (Unread.position = Unread.order[this.ID]);
+      },
+      addPostQuotingYou(post) {
+          for (var quotelink of post.nodes.quotelinks) {
+              if (QuoteYou.db?.get(Get.postDataFromLink(quotelink))) {
+                  Unread.postsQuotingYou.add((Unread.postsQuotingYou.last = post.ID));
+                  Unread.openNotification(post);
+                  return;
+              }
+          }
+      },
+      openNotification(post, predicate = ' replied to you') {
+          if (!Header.areNotificationsEnabled)
+              return;
+          const notif = new Notification(`${post.info.nameBlock}${predicate}`, {
+              body: post.commentDisplay(),
+              icon: Favicon.logo
+          });
+          notif.onclick = () => {
+              Header.scrollToIfNeeded(post.nodes.bottom, true);
+              window.focus();
+          };
+          notif.onshow = () => setTimeout(() => notif.close(), 7 * SECOND);
+      },
+      onUpdate() {
+          $.queueTask(() => {
+              Unread.setLine();
+              Unread.read();
+              Unread.update();
+          });
+      },
+      readSinglePost(post) {
+          const { ID } = post;
+          if (!Unread.posts.has(ID))
+              return;
+          Unread.posts.delete(ID);
+          Unread.postsQuotingYou.delete(ID);
+          Unread.updatePosition();
+          Unread.saveLastReadPost();
+          Unread.update();
+      },
+      read: debounce(100, function (e) {
+          // Update the lastReadPost when hidden posts are added to the thread.
+          if (!Unread.posts.size && (Unread.readCount !== Unread.thread.posts.keys.length))
+              Unread.saveLastReadPost();
+          if (d.hidden || !Unread.posts.size)
+              return;
+          let count = 0;
+          while (Unread.position) {
+              var { ID, data } = Unread.position;
+              var { bottom } = data.nodes;
+              if (bottom.getBoundingClientRect().height && // post has been hidden
+                  (Header.getBottomOf(bottom) <= -1))
+                  break; // post is completely read
+              count++;
+              Unread.posts.delete(ID);
+              Unread.postsQuotingYou.delete(ID);
+              Unread.position = Unread.position.next;
+          }
+          if (!count)
+              return;
+          Unread.updatePosition();
+          Unread.saveLastReadPost();
+          if (e)
+              return Unread.update();
+      }),
+      updatePosition() {
+          while (Unread.position && !Unread.posts.has(Unread.position.ID)) {
+              Unread.position = Unread.position.next;
+          }
+      },
+      saveLastReadPost: debounce(2 * SECOND, function () {
+          $.forceSync('Remember Last Read Post');
+          if (!Conf['Remember Last Read Post'] || !Unread.db)
+              return;
+          const postIDs = Unread.thread.posts.keys;
+          for (let i = Unread.readCount, end = postIDs.length; i < end; i++) {
+              let ID = +postIDs[i];
+              if (!Unread.thread.posts.get(ID).isFetchedQuote) {
+                  if (Unread.posts.has(ID))
+                      break;
+                  Unread.lastReadPost = ID;
+              }
+              Unread.readCount++;
+          }
+          if (Unread.thread.isDead && !Unread.thread.isArchived)
+              return;
+          return Unread.db.set({
+              boardID: Unread.thread.board.ID,
+              threadID: Unread.thread.ID,
+              val: Unread.lastReadPost
+          });
+      }),
+      setLine(force) {
+          if (!Conf['Unread Line'])
+              return;
+          if (Unread.hr.hidden || d.hidden || (force === true)) {
+              const oldPosition = Unread.linePosition;
+              if (Unread.linePosition = Unread.positionPrev()) {
+                  if (Unread.linePosition !== oldPosition) {
+                      let node = Unread.linePosition.data.nodes.bottom;
+                      if (node.nextSibling?.tagName === 'BR')
+                          node = node.nextSibling;
+                      $.after(node, Unread.hr);
+                  }
+              }
+              else {
+                  $.rm(Unread.hr);
+              }
+          }
+          return Unread.hr.hidden = Unread.linePosition === Unread.order.last;
+      },
+      update() {
+          const count = Unread.posts.size;
+          const countQuotingYou = Unread.postsQuotingYou.size;
+          if (Conf['Unread Count']) {
+              const titleQuotingYou = Conf['Quoted Title'] && countQuotingYou ? '(!) ' : '';
+              const titleCount = count || !Conf['Hide Unread Count at (0)'] ? `(${count}) ` : '';
+              const titleDead = Unread.thread.isDead
+                  ? Unread.title.replace('-', (Unread.thread.isArchived
+                      ? '- Archived -' : '- 404 -'))
+                  : Unread.title;
+              d.title = `${titleQuotingYou}${titleCount}${titleDead}`;
+          }
+          Unread.saveThreadWatcherCount();
+          if (Conf['Unread Favicon'] && (g.SITE.software === 'yotsuba')) {
+              const { isDead } = Unread.thread;
+              return Favicon.set((countQuotingYou ? (isDead ? 'unreadDeadY' : 'unreadY') : count
+                  ? (isDead ? 'unreadDead' : 'unread') : (isDead ? 'dead' : 'default')));
+          }
+      },
+      saveThreadWatcherCount: debounce(2 * SECOND, async function () {
+          $.forceSync('Remember Last Read Post');
+          if (Conf['Remember Last Read Post'] && (!Unread.thread.isDead || Unread.thread.isArchived)) {
+              const quotingYou = !Conf['Require OP Quote Link'] && QuoteYou.isYou(Unread.thread.OP) ? Unread.posts : Unread.postsQuotingYou;
+              if (!quotingYou.size) {
+                  quotingYou.last = 0;
+              }
+              else if (!quotingYou.has(quotingYou.last)) {
+                  quotingYou.last = 0;
+                  let posts = Unread.thread.posts.keys;
+                  for (let i = posts.length - 1; i >= 0; i--) {
+                      if (quotingYou.has(+posts[i])) {
+                          quotingYou.last = posts[i];
+                          break;
+                      }
+                  }
+              }
+              const { default: ThreadWatcher } = await Promise.resolve().then(function () { return ThreadWatcher$1; });
+              ThreadWatcher.update(g.SITE.ID, Unread.thread.board.ID, Unread.thread.ID, {
+                  last: Unread.thread.lastPost,
+                  isDead: Unread.thread.isDead,
+                  isArchived: Unread.thread.isArchived,
+                  unread: Unread.posts.size,
+                  quotingYou: (quotingYou.last || 0)
+              });
+          }
+      })
+  };
+
+  var Recursive = {
+    recursives: new Map(),
+    init() {
+      if (!['index', 'thread'].includes(g.VIEW))
+        return;
+      Callbacks.Post.push({
+        name: 'Recursive',
+        cb: this.node
+      });
+    },
+    node() {
+      if (this.isClone || this.isFetchedQuote)
+        return;
+      for (var quote of this.quotes) {
+        const obj = Recursive.recursives.get(quote);
+        if (obj) {
+          for (var i = 0; i < obj.recursives.length; i++) {
+            obj.recursives[i](this, ...obj.args[i]);
+          }
+        }
+      }
+    },
+    add(recursive, post, ...args) {
+      let obj = Recursive.recursives.get(post.fullID);
+      if (!obj) {
+        obj = { recursives: [], args: [] };
+        Recursive.recursives.set(post.fullID, obj);
+      }
+      obj.recursives.push(recursive);
+      obj.args.push(args);
+    },
+    rm(recursive, post) {
+      const obj = Recursive.recursives.get(post.fullID);
+      if (!obj)
+        return;
+      for (let i = obj.recursives.length - 1; i >= 0; --i) {
+        if (obj.recursives[i] === recursive) {
+          obj.recursives.splice(i, 1);
+          obj.args.splice(i, 1);
+        }
+      }
+    },
+    apply(recursive, post, ...args) {
+      const { fullID } = post;
+      g.posts.forEach((post) => {
+        if (post.quotes.includes(fullID))
+          recursive(post, ...args);
+      });
+    },
+    applyAndAdd(recursive, post, ...args) {
+      Recursive.apply(recursive, post, ...args);
+      this.add(recursive, post, ...args);
+    },
+  };
+
+  var PostHiding = {
+    db: undefined,
+    /** poster Ids to filter */
+    posterIdDb: undefined,
+    init() {
+      if (!['index', 'thread'].includes(g.VIEW) || (!Conf['Reply Hiding Buttons'] && !(Conf.Menu && Conf['Reply Hiding Link'])))
+        return;
+      if (Conf['Reply Hiding Buttons']) {
+        $.addClass(doc, "reply-hide");
+      }
+      this.db = new DataBoard('hiddenPosts');
+      this.posterIdDb = new DataBoard('hiddenPosterIds');
+      Callbacks.Post.push({
+        name: 'Reply Hiding',
+        cb: this.node
+      });
+    },
+    isHidden: (boardID, threadID, postID) => !!(PostHiding.db && PostHiding.db.get({ boardID, threadID, postID })),
+    node() {
+      if (!this.isReply || this.isClone || this.isFetchedQuote)
+        return;
+      let data = PostHiding.db.get({ boardID: this.board.ID, threadID: this.thread.ID, postID: this.ID });
+      if (!data && this.info.uniqueID) {
+        const hiddenPosterIds = PostHiding.posterIdDb.get({ boardID: this.board.ID, threadID: this.thread.ID });
+        if (hiddenPosterIds && this.info.uniqueID in hiddenPosterIds) {
+          data = hiddenPosterIds[this.info.uniqueID];
+          // thisPost is only on the first hidden posts, it shouldn't apply when hiding on poster ID
+          data.thisPost = true;
+        }
+      }
+      if (data) {
+        if (data.thisPost) {
+          PostHiding.hide(this, data.makeStub, data.hideRecursively, 'Hidden manually');
+        } else {
+          PostHiding.hideRecursive(this, data.makeStub);
+        }
+      }
+      if (!Conf['Reply Hiding Buttons'])
+        return;
+      const button = PostHiding.makeButton(this, 'hide');
+      const sa = g.SITE.selectors.sideArrows;
+      if (sa) {
+        const sideArrows = $(sa, this.nodes.root);
+        $.replace(sideArrows.firstChild, button);
+        sideArrows.className = 'replacedSideArrows';
+      } else {
+        $.prepend(this.nodes.info, button);
+      }
+    },
+    menu: {
+      post: undefined,
+      async init() {
+        if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf['Reply Hiding Link'])
+          return;
+        await new Promise(res => BoardConfig.ready(res));
+        // Hide
+        let applyHide = $.el('a', {
+          textContent: 'Apply',
+          href: 'javascript:;'
+        });
+        $.on(applyHide, 'click', PostHiding.menu.hide);
+        const hideOptions = [
+          { el: applyHide },
+          { el: UI.checkbox('thisPost', 'This post', true) },
+          { el: UI.checkbox('replies', 'Hide replies', Conf['Recursive Hiding']) },
+          { el: UI.checkbox('makeStub', 'Make stub', Conf.Stubs) },
+        ];
+        if (g.BOARD.config.user_ids)
+          hideOptions.push({ el: UI.checkbox('byId', 'By poster id', false) });
+        Menu.menu.addEntry({
+          el: $.el('div', {
+            className: 'hide-reply-link',
+            textContent: 'Hide'
+          }),
+          order: 20,
+          open(post) {
+            if (!post.isReply || post.isClone || post.isHidden) {
+              return false;
+            }
+            PostHiding.menu.post = post;
+            return true;
+          },
+          subEntries: hideOptions
+        });
+        // Show
+        const applyShow = $.el('a', {
+          textContent: 'Apply',
+          href: 'javascript:;'
+        });
+        $.on(applyShow, 'click', PostHiding.menu.show);
+        const thisPost = UI.checkbox('thisPost', 'This post', false);
+        const replies = UI.checkbox('replies', 'Show replies', false);
+        const hideStubLink = $.el('a', {
+          textContent: 'Hide stub',
+          href: 'javascript:;'
+        });
+        $.on(hideStubLink, 'click', PostHiding.menu.hideStub);
+        const showOptions = [
+          { el: applyShow },
+          { el: thisPost },
+          { el: replies },
+        ];
+        let byId;
+        if (g.BOARD.config.user_ids) {
+          byId = UI.checkbox('byId', 'By poster id', false);
+          showOptions.push({ el: byId });
+        }
+        Menu.menu.addEntry({
+          el: $.el('div', {
+            className: 'show-reply-link',
+            textContent: 'Show'
+          }),
+          order: 20,
+          open(post) {
+            if (!post.isReply || post.isClone || !post.isHidden)
+              return false;
+            const data = PostHiding.db.get({ boardID: post.board.ID, threadID: post.thread.ID, postID: post.ID });
+            if (!data)
+              return false;
+            PostHiding.menu.post = post;
+            thisPost.firstChild.checked = post.isHidden;
+            replies.firstChild.checked = data.hideRecursively ?? Conf['Recursive Hiding'];
+            if (byId)
+              byId.firstChild.checked = data.byId;
+            return true;
+          },
+          subEntries: showOptions
+        });
+        Menu.menu.addEntry({
+          el: hideStubLink,
+          order: 15,
+          open(post) {
+            if (!post.isReply || post.isClone || !post.isHidden)
+              return false;
+            let data = PostHiding.db.get({ boardID: post.board.ID, threadID: post.thread.ID, postID: post.ID });
+            if (!data)
+              return false;
+            return PostHiding.menu.post = post;
+          }
+        });
+      },
+      hide() {
+        const parent = this.parentNode;
+        const thisPost = $('input[name=thisPost]', parent).checked;
+        const replies = $('input[name=replies]', parent).checked;
+        const makeStub = $('input[name=makeStub]', parent).checked;
+        const byId = $('input[name=byId]', parent)?.checked;
+        const { post } = PostHiding.menu;
+        if (!thisPost && !replies && !byId)
+          return;
+        if (thisPost) {
+          PostHiding.hide(post, makeStub, replies, 'Hidden manually');
+        } else if (replies) {
+          PostHiding.hideRecursive(post, makeStub);
+        }
+        if (byId) {
+          const msg = `Hidden because of poster ID ${post.info.uniqueID}`;
+          g.posts.forEach((p) => {
+            if (p.info.uniqueID === post.info.uniqueID && p !== post) {
+              PostHiding.hide(p, makeStub, replies, msg);
+              PostHiding.saveHiddenState(p, true, thisPost, makeStub, replies, byId);
+            }
+          });
+          const data = PostHiding.posterIdDb.get({ boardID: post.boardID, threadID: post.threadID, defaultValue: dict() });
+          if (!(post.info.uniqueID in data)) {
+            data[post.info.uniqueID] = { makeStub, hideRecursively: replies };
+            PostHiding.posterIdDb.set({ boardID: post.boardID, threadID: post.threadID, val: data });
+          }
+        }
+        PostHiding.saveHiddenState(post, true, thisPost, makeStub, replies, byId);
+        $.event('CloseMenu');
+      },
+      show() {
+        const parent = this.parentNode;
+        const thisPost = $('input[name=thisPost]', parent).checked;
+        const replies = $('input[name=replies]', parent).checked;
+        const byId = $('input[name=byId]', parent)?.checked;
+        const { post } = PostHiding.menu;
+        const { boardID, threadID, postID } = post;
+        if (!thisPost && !replies && !byId)
+          return;
+        if (thisPost) {
+          PostHiding.show(post, replies);
+        } else if (replies) {
+          Recursive.apply(PostHiding.show, post, true);
+          Recursive.rm(PostHiding.hide, post);
+        }
+        if (byId) {
+          g.posts.forEach((p) => {
+            if (p.info.uniqueID === post.info.uniqueID && p !== post) {
+              PostHiding.show(p, replies);
+              const data = PostHiding.db.get({ boardID, threadID, postID });
+              if (data) {
+                PostHiding.saveHiddenState(post, !(thisPost && replies), !thisPost, data.makeStub, !replies, byId);
+              }
+            }
+          });
+          const byIdState = PostHiding.posterIdDb.get({ boardID, threadID });
+          if (byIdState && post.info.uniqueID in byIdState) {
+            delete byIdState[post.info.uniqueID];
+            PostHiding.posterIdDb.set({ boardID, threadID, val: byIdState });
+          }
+        }
+        const data = PostHiding.db.get({ boardID, threadID, postID });
+        if (data)
+          PostHiding.saveHiddenState(post, !(thisPost && replies), !thisPost, data.makeStub, !replies, byId);
+        $.event('CloseMenu');
+      },
+      hideStub() {
+        let data = PostHiding.db.get({ boardID: post.board.ID, threadID: post.thread.ID, postID: post.ID });
+        const { post } = PostHiding.menu;
+        if (data) {
+          PostHiding.show(post, data.hideRecursively);
+          PostHiding.hide(post, false, data.hideRecursively);
+          PostHiding.saveHiddenState(post, true, true, false, data.hideRecursively, data.byId);
+        }
+        $.event('CloseMenu');
+      }
+    },
+    makeButton(post, type) {
+      const span = $.el('span', { className: 'stub-icon', });
+      const a = $.el('a', {
+        className: `${type}-post-button ${type}-reply-button`,
+        href: 'javascript:;'
+      });
+      Icon.set(span, type === 'hide' ? 'squareMinus' : 'squarePlus');
+      $.add(a, span);
+      $.on(a, 'click', PostHiding.toggle);
+      return a;
+    },
+    saveHiddenState(post, isHiding, thisPost, makeStub, hideRecursively, byId) {
+      const data = {
+        boardID: post.board.ID,
+        threadID: post.thread.ID,
+        postID: post.ID
+      };
+      if (isHiding) {
+        data.val = {
+          thisPost: thisPost !== false, // undefined -> true
+          makeStub,
+          hideRecursively,
+          byId
+        };
+        PostHiding.db.set(data);
+      } else {
+        PostHiding.db.delete(data);
+      }
+    },
+    toggle() {
+      const post = Get.postFromNode(this);
+      post.isHidden ? PostHiding.show(post)
+        : PostHiding.hide(post, undefined, undefined, 'Hidden manually');
+      PostHiding.saveHiddenState(post, post.isHidden);
+    },
+    hide(post, makeStub = Conf.Stubs, hideRecursively = Conf['Recursive Hiding'], reason) {
+      if (post.isHidden)
+        return;
+      post.isHidden = true;
+      if (hideRecursively) {
+        PostHiding.hideRecursive(post, makeStub);
+      }
+      for (var quotelink of Get.allQuotelinksLinkingTo(post)) {
+        $.addClass(quotelink, 'filtered');
+      }
+      if (!makeStub) {
+        post.nodes.root.hidden = true;
+        return;
+      }
+      post.nodes.stub = $.el('div', { className: 'stub' });
+      const a = PostHiding.makeButton(post, 'show');
+      $.add(a, $.el('span', { className: 'stub-name', textContent: post.info.nameBlock }));
+      let reasons = post.filterResults?.reasons || [];
+      if (reason)
+        reasons = [...reasons, reason];
+      if (Conf['Filter Reason'] && reasons.length) {
+        const reasonsSpan = $.el('span', { className: 'stub-reasons' });
+        $.add(reasonsSpan, reasons.map(re => $.el('span', { className: 'stub-reason', textContent: re })));
+        a.appendChild(reasonsSpan);
+      }
+      $.add(post.nodes.stub, a);
+      if (!Conf['Filter Reason'] && reasons)
+        post.nodes.stub.title = reasons.join(' & ');
+      if (Conf.Menu)
+        $.add(post.nodes.stub, Menu.makeButton(post));
+      $.prepend(post.nodes.root, post.nodes.stub);
+    },
+    hideRecursive(post, makeStub) {
+      Recursive.applyAndAdd(PostHiding.hide, post, makeStub, true, `Hidden recursively from ${post.ID}`);
+    },
+    show(post, showRecursively = Conf['Recursive Hiding']) {
+      if (post.nodes.stub) {
+        $.rm(post.nodes.stub);
+        delete post.nodes.stub;
+      } else {
+        post.nodes.root.hidden = false;
+      }
+      post.isHidden = false;
+      if (showRecursively) {
+        Recursive.apply(PostHiding.show, post, true);
+        Recursive.rm(PostHiding.hide, post);
+      }
+      for (var quotelink of Get.allQuotelinksLinkingTo(post)) {
+        $.rmClass(quotelink, 'filtered');
+      }
+    }
+  };
+
+  class CatalogThread {
+      toString() { return this.ID; }
+      constructor(root, thread) {
+          this.thread = thread;
+          this.ID = this.thread.ID;
+          this.board = this.thread.board;
+          const { post } = this.thread.OP.nodes;
+          this.nodes = {
+              root,
+              thumb: $('.catalog-thumb', post),
+              icons: $('.catalog-icons', post),
+              postCount: $('.post-count', post),
+              fileCount: $('.file-count', post),
+              pageCount: $('.page-count', post),
+              replies: null
+          };
+          this.thread.catalogView = this;
+      }
+  }
+
+  let indexEnabled = false;
+  function setIndexEnabled(val) { indexEnabled = val; }
+
+  const RelativeDates = {
+    INTERVAL: 30000,
+    init() {
+      if ((['index', 'thread', 'archive'].includes(g.VIEW)
+        && ['Show', 'Both', 'BothRelativeFirst'].includes(Conf.RelativeTime))
+        || indexEnabled) {
+        this.flush();
+        $.on(d, 'visibilitychange PostsInserted', this.flush);
+      }
+      if (Conf.RelativeTime !== 'No') {
+        Callbacks.Post.push({
+          name: 'Relative Post Dates',
+          cb: this.node
+        });
+      }
+    },
+    node() {
+      if (!this.info.date)
+        return;
+      const dateEl = this.nodes.date;
+      if (Conf.RelativeTime === 'Hover') {
+        $.on(dateEl, 'mouseover', () => RelativeDates.hover(this));
+        return;
+      }
+      if (this.isClone)
+        return;
+      // Show original absolute time as tooltip so users can still know exact times
+      // Since "Time Formatting" runs its `node` before us, the title tooltip will
+      // pick up the user-formatted time instead of 4chan time when enabled.
+      if (Conf.RelativeTime === 'Show') {
+        dateEl.dataset.fullTime = dateEl.textContent;
+        dateEl.title = dateEl.textContent;
+      }
+      RelativeDates.update(this);
+    },
+    /** @param diff is milliseconds from now. */
+    relative(diff, now, date, abbrev) {
+      let number = diff / DAY;
+      let unit;
+      if (number >= 1) {
+        const years = now.getFullYear() - date.getFullYear();
+        let months = now.getMonth() - date.getMonth();
+        const days = now.getDate() - date.getDate();
+        if (years > 1) {
+          number = years - ((months < 0) || ((months === 0) && (days < 0)));
+          unit = 'year';
+        } else if ((years === 1) && ((months > 0) || ((months === 0) && (days >= 0)))) {
+          number = years;
+          unit = 'year';
+        } else if ((months = months + (12 * years)) > 1) {
+          number = months - (days < 0);
+          unit = 'month';
+        } else if ((months === 1) && (days >= 0)) {
+          number = months;
+          unit = 'month';
+        } else {
+          unit = 'day';
+        }
+      } else if ((number = (diff / HOUR)) >= 1) {
+        unit = 'hour';
+      } else if ((number = (diff / MINUTE)) >= 1) {
+        unit = 'minute';
+      } else {
+        // prevent "-1 seconds ago"
+        number = Math.max(0, diff) / SECOND;
+        unit = 'second';
+      }
+      const rounded = Math.round(number);
+      if (abbrev) {
+        unit = unit === 'month' ? 'mo' : unit[0];
+      } else {
+        if (rounded !== 1) {
+          unit += 's';
+        } // pluralize
+      }
+      if (abbrev) {
+        return `${rounded}${unit}`;
+      } else {
+        return `${rounded} ${unit} ago`;
+      }
+    },
+    // Changing all relative dates as soon as possible incurs many annoying
+    // redraws and scroll stuttering. Thus, sacrifice accuracy for UX/CPU economy,
+    // and perform redraws when the DOM is otherwise being manipulated (and scroll
+    // stuttering won't be noticed), falling back to INTERVAL while the page
+    // is visible.
+    //
+    // Each individual dateTime element will add its update() function to the stale list
+    // when it is to be called.
+    stale: [],
+    timeout: undefined,
+    flush() {
+      // No point in changing the dates until the user sees them.
+      if (d.hidden)
+        return;
+      const now = new Date();
+      for (const data of RelativeDates.stale) {
+        RelativeDates.update(data, now);
+      }
+      RelativeDates.stale = [];
+      // Reset automatic flush.
+      clearTimeout(RelativeDates.timeout);
+      RelativeDates.timeout = setTimeout(RelativeDates.flush, RelativeDates.INTERVAL);
+    },
+    hover(post) {
+      const { date } = post.info;
+      const now = new Date();
+      const diff = now - date;
+      post.nodes.date.title = RelativeDates.relative(diff, now, date);
+    },
+    // `update()`, when called from `flush()`, updates the elements,
+    // and re-calls `setOwnTimeout()` to re-add `data` to the stale list later.
+    update(data, now = new Date()) {
+      let abbrev, date;
+      const isPost = data instanceof Post;
+      if (isPost) {
+        ({ date } = data.info);
+        abbrev = false;
+      } else {
+        date = new Date(+data.dataset.utc);
+        abbrev = !!data.dataset.abbrev;
+      }
+      const diff = now - date;
+      const relative = RelativeDates.relative(diff, now, date, abbrev);
+      if (isPost) {
+        for (const singlePost of [data].concat(data.clones)) {
+          const node = singlePost.nodes.date;
+          if (Conf.RelativeTime === 'Show') {
+            node.textContent = relative;
+          } else {
+            let full = node.dataset.fullTime;
+            if (!full) {
+              full = node.textContent;
+              node.dataset.fullTime = full;
+            }
+            node.textContent = Conf.RelativeTime === 'Both'
+              ? `${full}, ${relative}` : `${relative}, ${full}`;
+          }
+        }
+      } else {
+        data.firstChild.textContent = relative;
+      }
+      RelativeDates.setOwnTimeout(diff, data);
+    },
+    setOwnTimeout(diff, data) {
+      const delay = diff < MINUTE
+        ? SECOND - ((diff + (SECOND / 2)) % SECOND) : diff < HOUR
+        ? MINUTE - ((diff + (MINUTE / 2)) % MINUTE) : diff < DAY
+        ? HOUR - ((diff + (HOUR / 2)) % HOUR) : DAY - ((diff + (DAY / 2)) % DAY);
+      setTimeout(RelativeDates.markStale, delay, data);
+    },
+    markStale(data) {
+      if (RelativeDates.stale.includes(data))
+        return; // We can call RelativeDates.update() multiple times.
+      if (data instanceof Post && !g.posts.get(data.fullID))
+        return; // collected post.
+      if (data instanceof Element && !doc.contains(data))
+        return; // removed catalog reply.
+      RelativeDates.stale.push(data);
+    }
+  };
+
+  var ThreadWatcherPage = `<div class="move">
+  Thread Watcher <a class="refresh" title="Check threads" href="javascript:;" title="refresh"></a>
+  <span id="watcher-status"></span>
+  <a class="menu-button" href="javascript:;"></a>
+  <a class="close" href="javascript:;">×</a>
+</div>
+<div id="watched-threads"></div>`;
+
+  var ExpandThread = {
+      statuses: dict(),
+      init() {
+          if (!((g.VIEW === 'index') && Conf['Thread Expansion']))
+              return;
+          if (Conf['JSON Index']) {
+              $.on(d, 'IndexRefreshInternal', this.onIndexRefresh);
+          }
+          else {
+              Callbacks.Thread.push({
+                  name: 'Expand Thread',
+                  cb() { ExpandThread.setButton(this); }
+              });
+          }
+      },
+      setButton(thread) {
+          if (!thread.nodes.root)
+              return;
+          const a = $('a.summary', thread.nodes.root);
+          if (!a)
+              return;
+          a.textContent = g.SITE.Build.summaryText('+', ...a.textContent.match(/\d+/g));
+          a.style.cursor = 'pointer';
+          $.on(a, 'click', ExpandThread.cbToggle);
+      },
+      disconnect(refresh) {
+          if ((g.VIEW === 'thread') || !Conf['Thread Expansion'])
+              return;
+          for (var threadID in ExpandThread.statuses) {
+              let status = ExpandThread.statuses[threadID];
+              let oldReq = status.req;
+              if (oldReq) {
+                  delete status.req;
+                  oldReq.abort();
+              }
+              delete ExpandThread.statuses[threadID];
+          }
+          if (!refresh)
+              $.off(d, 'IndexRefreshInternal', this.onIndexRefresh);
+      },
+      onIndexRefresh() {
+          ExpandThread.disconnect(true);
+          g.BOARD.threads.forEach(thread => ExpandThread.setButton(thread));
+      },
+      cbToggle(e) {
+          if ($.modifiedClick(e))
+              return;
+          e.preventDefault();
+          ExpandThread.toggle(Get.threadFromNode(this));
+      },
+      cbToggleBottom(e) {
+          if ($.modifiedClick(e))
+              return;
+          e.preventDefault();
+          const thread = Get.threadFromNode(this);
+          $.rm(this); // remove before fixing bottom of thread position
+          const { bottom } = thread.nodes.root.getBoundingClientRect();
+          ExpandThread.toggle(thread);
+          window.scrollBy(0, (thread.nodes.root.getBoundingClientRect().bottom - bottom));
+      },
+      toggle(thread) {
+          if (!thread.nodes.root)
+              return;
+          const a = $('a.summary', thread.nodes.root);
+          if (!a)
+              return;
+          if (thread.ID in ExpandThread.statuses) {
+              ExpandThread.contract(thread, a, thread.nodes.root);
+          }
+          else {
+              ExpandThread.expand(thread, a);
+          }
+      },
+      expand(thread, a) {
+          let status = {};
+          ExpandThread.statuses[thread] = status;
+          a.textContent = g.SITE.Build.summaryText('...', ...a.textContent.match(/\d+/g));
+          status.req = $.cache(g.SITE.urls.threadJSON({ boardID: thread.board.ID, threadID: thread.ID }), function () {
+              if (this !== status.req)
+                  return; // aborted
+              delete status.req;
+              ExpandThread.parse(this, thread, a);
+          });
+          status.numReplies = $$(g.SITE.selectors.replyOriginal, thread.nodes.root).length;
+      },
+      contract(thread, a, threadRoot) {
+          const status = ExpandThread.statuses[thread];
+          delete ExpandThread.statuses[thread];
+          let oldReq = status.req;
+          if (oldReq) {
+              delete status.req;
+              oldReq.abort();
+              if (a)
+                  a.textContent = g.SITE.Build.summaryText('+', ...a.textContent.match(/\d+/g));
+              return;
+          }
+          let replies = $$('.thread > .replyContainer', threadRoot);
+          if (status.numReplies)
+              replies = replies.slice(0, (-status.numReplies));
+          let postsCount = 0;
+          let filesCount = 0;
+          for (var reply of replies) {
+              // rm clones
+              if (Conf['Quote Inlining']) {
+                  var inlined;
+                  while ((inlined = $('.inlined', reply))) {
+                      inlined.click();
+                  }
+              }
+              postsCount++;
+              if ('file' in Get.postFromRoot(reply))
+                  filesCount++;
+              $.rm(reply);
+          }
+          if (indexEnabled)
+              $.event('PostsRemoved', null, a.parentNode); // otherwise handled by Main.addPosts
+          a.textContent = g.SITE.Build.summaryText('+', postsCount, filesCount);
+          $.rm($('.summary-bottom', threadRoot));
+      },
+      parse(req, thread, a) {
+          if (![200, 304].includes(req.status)) {
+              a.textContent = req.status ? `Error ${req.statusText} (${req.status})` : 'Connection Error';
+              return;
+          }
+          g.SITE.Build.spoilerRange[thread.board] = req.response.posts[0].custom_spoiler;
+          const posts = [];
+          const postsRoot = [];
+          let filesCount = 0;
+          let root;
+          for (var postData of req.response.posts) {
+              if (postData.no === thread.ID) {
+                  continue;
+              }
+              let post = thread.posts.get(postData.no);
+              if (post && !post.isFetchedQuote) {
+                  if ('file' in post) {
+                      filesCount++;
+                  }
+                  ({ root } = post.nodes);
+                  postsRoot.push(root);
+                  continue;
+              }
+              root = g.SITE.Build.postFromObject(postData, thread.board.ID);
+              post = new Post(root, thread, thread.board);
+              if ('file' in post)
+                  filesCount++;
+              posts.push(post);
+              postsRoot.push(root);
+          }
+          Main.callbackNodes('Post', posts);
+          $.after(a, postsRoot);
+          $.event('PostsInserted', null, a.parentNode);
+          const postsCount = postsRoot.length;
+          a.textContent = g.SITE.Build.summaryText('-', postsCount, filesCount);
+          if (root) {
+              const a2 = a.cloneNode(true);
+              a2.classList.add('summary-bottom');
+              $.on(a2, 'click', ExpandThread.cbToggleBottom);
+              $.after(root, a2);
+          }
+      }
+  };
+
+  var UnreadIndex = {
+      lastReadPost: dict(),
+      hr: dict(),
+      markReadLink: dict(),
+      init() {
+          if ((g.VIEW !== 'index') || !Conf['Remember Last Read Post'] || !Conf['Unread Line in Index'])
+              return;
+          this.enabled = true;
+          this.db = new DataBoard('lastReadPosts', this.sync);
+          Callbacks.Thread.push({
+              name: 'Unread Line in Index',
+              cb: this.node
+          });
+          $.on(d, 'IndexRefreshInternal', this.onIndexRefresh);
+          $.on(d, 'PostsInserted PostsRemoved', this.onPostsInserted);
+      },
+      node() {
+          UnreadIndex.lastReadPost[this.fullID] = UnreadIndex.db.get({
+              boardID: this.board.ID,
+              threadID: this.ID
+          }) || 0;
+          if (!indexEnabled)
+              return UnreadIndex.update(this); // let onIndexRefresh handle JSON Index
+      },
+      onIndexRefresh(e) {
+          if (e.detail.isCatalog)
+              return;
+          const result = [];
+          for (const threadID of e.detail.threadIDs) {
+              const thread = g.threads.get(threadID);
+              result.push(UnreadIndex.update(thread));
+          }
+          return result;
+      },
+      onPostsInserted(e) {
+          if (e.target === Index.root)
+              return; // onIndexRefresh handles this case
+          const thread = Get.threadFromNode(e.target);
+          if (!thread || (thread.nodes.root !== e.target))
+              return;
+          const wasVisible = !!UnreadIndex.hr[thread.fullID]?.parentNode;
+          UnreadIndex.update(thread);
+          if (Conf['Scroll to Last Read Post'] && (e.type === 'PostsInserted') && !wasVisible && UnreadIndex.hr[thread.fullID]?.parentNode) {
+              Header.scrollToIfNeeded(UnreadIndex.hr[thread.fullID], true);
+          }
+      },
+      sync() {
+          return g.threads.forEach((thread) => {
+              const lastReadPost = UnreadIndex.db.get({
+                  boardID: thread.board.ID,
+                  threadID: thread.ID
+              }) || 0;
+              if (lastReadPost !== UnreadIndex.lastReadPost[thread.fullID]) {
+                  UnreadIndex.lastReadPost[thread.fullID] = lastReadPost;
+                  if (thread.nodes.root?.parentNode)
+                      UnreadIndex.update(thread);
+              }
+          });
+      },
+      update(thread) {
+          const lastReadPost = UnreadIndex.lastReadPost[thread.fullID];
+          let repliesShown = 0;
+          let repliesRead = 0;
+          let firstUnread = null;
+          thread.posts.forEach((post) => {
+              if (post.isReply && thread.nodes.root.contains(post.nodes.root)) {
+                  repliesShown++;
+                  if (post.ID <= lastReadPost) {
+                      return repliesRead++;
+                  }
+                  else if ((!firstUnread || (post.ID < firstUnread.ID)) && !post.isHidden && !QuoteYou.isYou(post)) {
+                      return firstUnread = post;
+                  }
+              }
+          });
+          let hr = UnreadIndex.hr[thread.fullID];
+          if (firstUnread && (repliesRead || ((lastReadPost === thread.OP.ID) && (!$(g.SITE.selectors.summary, thread.nodes.root) || thread.ID in ExpandThread.statuses)))) {
+              if (!hr) {
+                  hr = (UnreadIndex.hr[thread.fullID] = $.el('hr', { className: 'unread-line' }));
+              }
+              $.before(firstUnread.nodes.root, hr);
+          }
+          else {
+              $.rm(hr);
+          }
+          const hasUnread = repliesShown
+              ? firstUnread || !repliesRead : indexEnabled
+              ? thread.lastPost > lastReadPost : thread.OP.ID > lastReadPost;
+          thread.nodes.root.classList.toggle('unread-thread', hasUnread);
+          let link = UnreadIndex.markReadLink[thread.fullID];
+          if (!link) {
+              link = (UnreadIndex.markReadLink[thread.fullID] = $.el('a', {
+                  className: 'unread-mark-read brackets-wrap',
+                  href: 'javascript:;',
+                  textContent: 'Mark Read'
+              }));
+              $.on(link, 'click', UnreadIndex.markRead);
+          }
+          let divider = $(g.SITE.selectors.threadDivider, thread.nodes.root);
+          if (divider) { // divider inside thread as in Tinyboard
+              $.before(divider, link);
+          }
+          else {
+              $.add(thread.nodes.root, link);
+          }
+      },
+      markRead() {
+          const thread = Get.threadFromNode(this);
+          UnreadIndex.lastReadPost[thread.fullID] = thread.lastPost;
+          UnreadIndex.db.set({
+              boardID: thread.board.ID,
+              threadID: thread.ID,
+              val: thread.lastPost
+          });
+          $.rm(UnreadIndex.hr[thread.fullID]);
+          thread.nodes.root.classList.remove('unread-thread');
+          ThreadWatcher.update(g.SITE.ID, thread.board.ID, thread.ID, {
+              last: thread.lastPost,
+              unread: 0,
+              quotingYou: 0
+          });
+      }
+  };
+
+  var ThreadWatcher = {
+      init() {
+          if (!(this.enabled = Conf['Thread Watcher']))
+              return;
+          let sc = $.el('a', {
+              id: 'watcher-link',
+              title: 'Thread Watcher',
+              href: 'javascript:;',
+          });
+          this.shortcut = sc;
+          Icon.set(this.shortcut, 'eye', 'Watcher');
+          this.db = new DataBoard('watchedThreads', this.refresh, true);
+          this.dbLM = new DataBoard('watcherLastModified', null, true);
+          this.dialog = UI.dialog('thread-watcher', { innerHTML: ThreadWatcherPage });
+          this.status = $('#watcher-status', this.dialog);
+          this.list = this.dialog.lastElementChild;
+          this.refreshButton = $('.refresh', this.dialog);
+          this.menuButton = $('.menu-button', this.dialog);
+          this.closeButton = $('.move > .close', this.dialog);
+          this.unreaddb = Unread.db || UnreadIndex.db || new DataBoard('lastReadPosts');
+          this.unreadEnabled = Conf['Remember Last Read Post'];
+          Icon.set(this.refreshButton, 'refresh');
+          Icon.set(this.menuButton, 'caretDown');
+          Icon.set(this.closeButton, 'xmark');
+          $.on(d, 'QRPostSuccessful', this.cb.post);
+          $.on(sc, 'click', this.toggleWatcher);
+          $.on(this.refreshButton, 'click', this.buttonFetchAll);
+          $.on(this.closeButton, 'click', this.toggleWatcher);
+          this.menu.addHeaderMenuEntry();
+          $.onExists(doc, 'body', this.addDialog);
+          switch (g.VIEW) {
+              case 'index':
+                  $.on(d, 'IndexUpdate', this.cb.onIndexUpdate);
+                  break;
+              case 'thread':
+                  $.on(d, 'ThreadUpdate', this.cb.onThreadRefresh);
+                  break;
+          }
+          if (Conf['Fixed Thread Watcher'])
+              $.addClass(doc, 'fixed-watcher');
+          if (!Conf['Persistent Thread Watcher']) {
+              $.addClass(ThreadWatcher.shortcut, 'disabled');
+              this.dialog.hidden = true;
+          }
+          Header.addShortcut('watcher', sc, 510);
+          ThreadWatcher.initLastModified();
+          ThreadWatcher.fetchAuto();
+          $.on(window, 'visibilitychange focus', () => $.queueTask(ThreadWatcher.fetchAuto));
+          if (Conf.Menu && indexEnabled) {
+              Menu.menu.addEntry({
+                  el: $.el('a', {
+                      href: 'javascript:;',
+                      className: 'has-shortcut-text'
+                  }, { innerHTML: '<span></span><span class="shortcut-text">Alt+click</span>' }),
+                  order: 6,
+                  open({ thread }) {
+                      if (Conf['Index Mode'] !== 'catalog')
+                          return false;
+                      this.el.firstElementChild.textContent = ThreadWatcher.isWatched(thread)
+                          ? 'Unwatch' : 'Watch';
+                      if (this.cb)
+                          $.off(this.el, 'click', this.cb);
+                      this.cb = () => {
+                          $.event('CloseMenu');
+                          return ThreadWatcher.toggle(thread, true);
+                      };
+                      $.on(this.el, 'click', this.cb);
+                      return true;
+                  }
+              });
+          }
+          if (!['index', 'thread'].includes(g.VIEW))
+              return;
+          Callbacks.Post.push({
+              name: 'Thread Watcher',
+              cb: this.node
+          });
+          Callbacks.CatalogThread.push({
+              name: 'Thread Watcher',
+              cb: this.catalogNode
+          });
+      },
+      isWatched: (thread) => !!ThreadWatcher.db?.get({ boardID: thread.board.ID, threadID: thread.ID }),
+      isWatchedRaw: (boardID, threadID) => !!ThreadWatcher.db?.get({ boardID, threadID }),
+      setToggler(toggler, isWatched) {
+          toggler.classList.toggle('watched', isWatched);
+          return toggler.title = `${isWatched ? 'Unwatch' : 'Watch'} Thread`;
+      },
+      node() {
+          let toggler;
+          if (this.isReply)
+              return;
+          if (this.isClone) {
+              toggler = $('.watch-thread-link', this.nodes.info);
+          }
+          else {
+              toggler = $.el('button', {
+                  type: 'button',
+                  className: 'watch-thread-link'
+              });
+              Icon.set(toggler, 'heart');
+              $.before($('input', this.nodes.info), toggler);
+          }
+          const siteID = g.SITE.ID;
+          const boardID = this.board.ID;
+          const threadID = this.thread.ID;
+          const data = ThreadWatcher.db.get({ siteID, boardID, threadID });
+          ThreadWatcher.setToggler(toggler, !!data);
+          $.on(toggler, 'click', ThreadWatcher.cb.toggle);
+          // Add missing excerpt for threads added by Auto Watch
+          if (data && (data.excerpt == null)) {
+              return $.queueTask(() => {
+                  return ThreadWatcher.update(siteID, boardID, threadID, { excerpt: Get.threadExcerpt(this.thread) });
+              });
+          }
+      },
+      catalogNode() {
+          if (ThreadWatcher.isWatched(this.thread))
+              $.addClass(this.nodes.root, 'watched');
+          $.on(this.nodes.root, 'mousedown click', e => {
+              if ((e.button !== 0) || !e.altKey)
+                  return;
+              if (e.type === 'click')
+                  ThreadWatcher.toggle(this.thread, true);
+              e.preventDefault();
+          });
+      }, // Also on mousedown to prevent highlighting thumbnail in Firefox.
+      addDialog() {
+          if (!PageReady.isThisPageLegit())
+              return;
+          ThreadWatcher.build();
+          $.prepend(d.body, ThreadWatcher.dialog);
+      },
+      toggleWatcher() {
+          $.toggleClass(ThreadWatcher.shortcut, 'disabled');
+          return ThreadWatcher.dialog.hidden = !ThreadWatcher.dialog.hidden;
+      },
+      cb: {
+          openAll() {
+              if ($.hasClass(this, 'disabled'))
+                  return;
+              for (var a of $$('a.watcher-link', ThreadWatcher.list)) {
+                  $.open(a.href);
+              }
+              $.event('CloseMenu');
+          },
+          openUnread() {
+              if ($.hasClass(this, 'disabled'))
+                  return;
+              for (var a of $$('.replies-unread > a.watcher-link', ThreadWatcher.list)) {
+                  $.open(a.href);
+              }
+              $.event('CloseMenu');
+          },
+          openDeads() {
+              if ($.hasClass(this, 'disabled'))
+                  return;
+              for (var a of $$('.dead-thread.replies-unread > a.watcher-link', ThreadWatcher.list)) {
+                  $.open(a.href);
+              }
+              $.event('CloseMenu');
+          },
+          clear() {
+              if (!confirm("Delete ALL threads from watcher?"))
+                  return;
+              const ref = ThreadWatcher.getAll();
+              for (let i = 0, len = ref.length; i < len; i++) {
+                  const { siteID, boardID, threadID } = ref[i];
+                  ThreadWatcher.db.delete({ siteID, boardID, threadID });
+              }
+              ThreadWatcher.refresh(true);
+              $.event('CloseMenu');
+          },
+          pruneDeads() {
+              if ($.hasClass(this, 'disabled'))
+                  return;
+              for (var { siteID, boardID, threadID, data } of ThreadWatcher.getAll()) {
+                  if (data.isDead)
+                      ThreadWatcher.db.delete({ siteID, boardID, threadID });
+              }
+              ThreadWatcher.refresh(true);
+              $.event('CloseMenu');
+          },
+          pruneReadDeads() {
+              if ($.hasClass(this, 'disabled'))
+                  return;
+              for (var { siteID, boardID, threadID, data } of ThreadWatcher.getAll()) {
+                  if (data.isDead && !data.unread)
+                      ThreadWatcher.db.delete({ siteID, boardID, threadID });
+              }
+              ThreadWatcher.refresh(true);
+              $.event('CloseMenu');
+          },
+          dismiss() {
+              for (var { siteID, boardID, threadID, data } of ThreadWatcher.getAll()) {
+                  if (data.quotingYou)
+                      ThreadWatcher.update(siteID, boardID, threadID, { dismiss: data.quotingYou || 0 });
+              }
+              $.event('CloseMenu');
+          },
+          toggle() {
+              const { thread } = Get.postFromNode(this);
+              ThreadWatcher.toggle(thread, true);
+          },
+          rm() {
+              const { siteID } = this.parentNode.dataset;
+              const [boardID, threadID] = this.parentNode.dataset.fullID.split('.');
+              ThreadWatcher.rm(siteID, boardID, +threadID, undefined, true);
+          },
+          post(e) {
+              const { boardID, threadID, postID } = e.detail;
+              const cb = PostRedirect.delay();
+              if (postID === threadID) {
+                  if (Conf['Auto Watch'])
+                      ThreadWatcher.addRaw(boardID, threadID, {}, cb, true);
+              }
+              else if (Conf['Auto Watch Reply']) {
+                  ThreadWatcher.add((g.threads.get(boardID + '.' + threadID) || new Thread(threadID, g.boards[boardID] || new Board(boardID))), cb, true);
+              }
+          },
+          onIndexUpdate(e) {
+              const { db } = ThreadWatcher;
+              const siteID = g.SITE.ID;
+              const boardID = g.BOARD.ID;
+              let nKilled = 0;
+              for (var threadID in db.data[siteID].boards[boardID]) {
+                  // Don't prune threads that have yet to appear in index.
+                  var data = db.data[siteID].boards[boardID][threadID];
+                  if (!data?.isDead && !e.detail.threads.includes(`${boardID}.${threadID}`)) {
+                      if (!e.detail.threads.some(fullID => +fullID.split('.')[1] > threadID))
+                          continue;
+                      if (Conf['Auto Prune'] || !(data && (typeof data === 'object'))) { // corrupt data
+                          db.delete({ boardID, threadID });
+                          nKilled++;
+                      }
+                      else {
+                          ThreadWatcher.fetchStatus({ siteID, boardID, threadID, data });
+                      }
+                  }
+              }
+              if (nKilled)
+                  return ThreadWatcher.refresh();
+          },
+          onThreadRefresh(e) {
+              const thread = g.threads.get(e.detail.threadID);
+              if (!e.detail[404] || !ThreadWatcher.isWatched(thread))
+                  return;
+              // Update dead status.
+              ThreadWatcher.add(thread);
+          }
+      },
+      requests: [],
+      fetched: 0,
+      fetch(url, { siteID, force }, args, cb) {
+          if (ThreadWatcher.requests.length === 0) {
+              ThreadWatcher.status.textContent = '...';
+              $.addClass(ThreadWatcher.refreshButton, 'spin');
+          }
+          const onloadend = function () {
+              if (this.finished)
+                  return;
+              this.finished = true;
+              ThreadWatcher.fetched++;
+              if (ThreadWatcher.fetched === ThreadWatcher.requests.length) {
+                  ThreadWatcher.clearRequests();
+              }
+              else {
+                  ThreadWatcher.status.textContent = `${Math.round((ThreadWatcher.fetched / ThreadWatcher.requests.length) * 100)}%`;
+              }
+              return cb.apply(this, args);
+          };
+          const ajax = siteID === g.SITE.ID ? $.ajax : CrossOrigin.ajax;
+          if (force) {
+              delete $.lastModified.ThreadWatcher?.[url];
+          }
+          const req = $.whenModified(url, 'ThreadWatcher', onloadend, { timeout: MINUTE, ajax });
+          ThreadWatcher.requests.push(req);
+      },
+      clearRequests() {
+          ThreadWatcher.requests = [];
+          ThreadWatcher.fetched = 0;
+          ThreadWatcher.status.textContent = '';
+          $.rmClass(ThreadWatcher.refreshButton, 'spin');
+      },
+      abort() {
+          delete ThreadWatcher.syncing;
+          for (var req of ThreadWatcher.requests) {
+              if (!req.finished) {
+                  req.finished = true;
+                  req.abort();
+              }
+          }
+          ThreadWatcher.clearRequests();
+      },
+      initLastModified() {
+          const lm = ($.lastModified.ThreadWatcher || ($.lastModified.ThreadWatcher = dict()));
+          for (var siteID in ThreadWatcher.dbLM.data) {
+              var boards = ThreadWatcher.dbLM.data[siteID];
+              for (var boardID in boards.boards) {
+                  var data = boards.boards[boardID];
+                  if (ThreadWatcher.db.get({ siteID, boardID })) {
+                      for (var url in data) {
+                          var date = data[url];
+                          lm[url] = date;
+                      }
+                  }
+                  else {
+                      ThreadWatcher.dbLM.delete({ siteID, boardID });
+                  }
+              }
+          }
+      },
+      fetchAuto() {
+          clearTimeout(ThreadWatcher.timeout);
+          if (!Conf['Auto Update Thread Watcher'])
+              return;
+          const { db } = ThreadWatcher;
+          const interval = Conf['Show Page'] || (ThreadWatcher.unreadEnabled && Conf['Show Unread Count']) ? 5 * MINUTE : 2 * HOUR;
+          const now = Date.now();
+          let middle = db.data.lastChecked || 0;
+          if ((now - interval >= middle || middle > now) && !d.hidden && d.hasFocus())
+              ThreadWatcher.fetchAllStatus(interval);
+          return ThreadWatcher.timeout = setTimeout(ThreadWatcher.fetchAuto, interval);
+      },
+      buttonFetchAll() {
+          if (ThreadWatcher.syncing || ThreadWatcher.requests.length) {
+              ThreadWatcher.abort();
+          }
+          else {
+              ThreadWatcher.fetchAllStatus();
+          }
+      },
+      fetchAllStatus(interval = 0) {
+          ThreadWatcher.status.textContent = '...';
+          $.addClass(ThreadWatcher.refreshButton, 'spin');
+          ThreadWatcher.syncing = true;
+          const dbs = [ThreadWatcher.db, ThreadWatcher.unreaddb, QuoteYou.db].filter(x => x);
+          let n = 0;
+          return dbs.map((dbi) => dbi.forceSync(function () {
+              if ((++n) === dbs.length) {
+                  if (!ThreadWatcher.syncing)
+                      return; // aborted
+                  delete ThreadWatcher.syncing;
+                  let middle = Date.now() - (ThreadWatcher.db.data.lastChecked || 0);
+                  if (0 > middle || middle >= interval) { // not checked in another tab
+                      // XXX On vichan boards, last_modified field of threads.json does not account for sage posts.
+                      // Occasionally check replies field of catalog.json to find these posts.
+                      const { db } = ThreadWatcher;
+                      const now = Date.now();
+                      let middle1 = db.data.lastChecked2 || 0;
+                      const deep = !(now - (2 * HOUR) < middle1 && middle1 <= now);
+                      const boards = ThreadWatcher.getAll(true);
+                      for (var board of boards) {
+                          ThreadWatcher.fetchBoard(board, deep);
+                      }
+                      db.setLastChecked();
+                      if (deep)
+                          db.setLastChecked('lastChecked2');
+                  }
+                  if (ThreadWatcher.fetched === ThreadWatcher.requests.length)
+                      return ThreadWatcher.clearRequests();
+              }
+          }));
+      },
+      fetchBoard(board, deep) {
+          if (!board.some(thread => !thread.data.isDead))
+              return;
+          let force = false;
+          for (var thread of board) {
+              var { data } = thread;
+              if (!data.isDead && (data.last !== -1)) {
+                  if (Conf['Show Page'] && (data.page == null))
+                      force = true;
+                  if ((data.modified == null))
+                      force = (thread.force = true);
+              }
+          }
+          const { siteID, boardID } = board[0];
+          const site = g.sites[siteID];
+          if (!site)
+              return;
+          const urlF = deep && site.threadModTimeIgnoresSage ? 'catalogJSON' : 'threadsListJSON';
+          const url = site.urls[urlF]?.({ siteID, boardID });
+          if (!url)
+              return;
+          return ThreadWatcher.fetch(url, { siteID, force }, [board, url], ThreadWatcher.parseBoard);
+      },
+      parseBoard(board, url) {
+          let page, thread;
+          if (this.status !== 200)
+              return;
+          const { siteID, boardID } = board[0];
+          const lmDate = this.getResponseHeader('Last-Modified');
+          ThreadWatcher.dbLM.extend({ siteID, boardID, val: $.item(url, lmDate) });
+          const threads = dict();
+          let pageLength = 0;
+          let nThreads = 0;
+          let oldest = null;
+          try {
+              pageLength = this.response[0]?.threads.length || 0;
+              for (let i = 0; i < this.response.length; i++) {
+                  page = this.response[i];
+                  for (var item of page.threads) {
+                      threads[item.no] = {
+                          page: i + 1,
+                          index: nThreads,
+                          modified: item.last_modified,
+                          replies: item.replies
+                      };
+                      nThreads++;
+                      if ((oldest == null) || (item.no < oldest))
+                          oldest = item.no;
+                  }
+              }
+          }
+          catch (error) {
+              for (thread of board) {
+                  ThreadWatcher.fetchStatus(thread);
+              }
+          }
+          for (thread of board) {
+              var { threadID, data } = thread;
+              if (threads[threadID]) {
+                  var index, modified, replies;
+                  ({ page, index, modified, replies } = threads[threadID]);
+                  if (Conf['Show Page']) {
+                      const lastPage = index >= (nThreads - pageLength);
+                      ThreadWatcher.update(siteID, boardID, threadID, { page, lastPage });
+                  }
+                  if (ThreadWatcher.unreadEnabled && Conf['Show Unread Count']) {
+                      if ((modified !== data.modified) || ((replies != null) && (replies !== data.replies))) {
+                          (thread.newData || (thread.newData = {})).modified = modified;
+                          ThreadWatcher.fetchStatus(thread);
+                      }
+                  }
+              }
+              else {
+                  ThreadWatcher.fetchStatus(thread);
+              }
+          }
+      },
+      fetchStatus(thread) {
+          const { siteID, boardID, threadID, data, force } = thread;
+          const url = g.sites[siteID]?.urls.threadJSON?.({ siteID, boardID, threadID });
+          if (!url)
+              return;
+          if (data.isDead && !force)
+              return;
+          if (data.last === -1)
+              return; // 404 or no JSON API
+          ThreadWatcher.fetch(url, { siteID, force }, [thread], ThreadWatcher.parseStatus);
+      },
+      parseStatus(thread, isArchiveURL) {
+          let isDead, last;
+          let { siteID, boardID, threadID, data, newData, force } = thread;
+          const site = g.sites[siteID];
+          if ((this.status === 200) && this.response) {
+              last = this.response.posts[this.response.posts.length - 1].no;
+              const replies = this.response.posts.length - 1;
+              let isArchived = !!(this.response.posts[0].archived || isArchiveURL);
+              isDead = isArchived;
+              if (isDead && Conf['Auto Prune']) {
+                  ThreadWatcher.rm(siteID, boardID, threadID);
+                  return;
+              }
+              if ((last === data.last) && (isDead === data.isDead) && (isArchived === data.isArchived))
+                  return;
+              const lastReadPost = ThreadWatcher.unreaddb.get({ siteID, boardID, threadID, defaultValue: 0 });
+              let unread = data.unread || 0;
+              let quotingYou = data.quotingYou || 0;
+              const youOP = !!QuoteYou.db?.get({ siteID, boardID, threadID, postID: threadID });
+              for (var postObj of this.response.posts) {
+                  if ((postObj.no <= (data.last || 0)) || (postObj.no <= lastReadPost))
+                      continue;
+                  if (QuoteYou.db?.get({ siteID, boardID, threadID, postID: postObj.no }))
+                      continue;
+                  var quotesYou = false;
+                  if (!Conf['Require OP Quote Link'] && youOP) {
+                      quotesYou = true;
+                  }
+                  else if (QuoteYou.db && postObj.com) {
+                      var match;
+                      var regexp = site.regexp.quotelinkHTML;
+                      regexp.lastIndex = 0;
+                      while (match = regexp.exec(postObj.com)) {
+                          if (QuoteYou.db.get({
+                              siteID,
+                              boardID: match[1] ? encodeURIComponent(match[1]) : boardID,
+                              threadID: match[2] || threadID,
+                              postID: match[3] || match[2] || threadID
+                          })) {
+                              quotesYou = true;
+                              break;
+                          }
+                      }
+                  }
+                  if ((!unread || (!quotingYou && quotesYou)) && Filter.isHidden(site.Build.parseJSON(postObj, { siteID, boardID })))
+                      continue;
+                  unread++;
+                  if (quotesYou)
+                      quotingYou = postObj.no;
+              }
+              if (!newData)
+                  newData = {};
+              $.extend(newData, { last, replies, isDead, isArchived, unread, quotingYou });
+              ThreadWatcher.update(siteID, boardID, threadID, newData);
+          }
+          else if (this.status === 404) {
+              const archiveURL = g.sites[siteID]?.urls.archivedThreadJSON?.({ siteID, boardID, threadID });
+              if (!isArchiveURL && archiveURL) {
+                  ThreadWatcher.fetch(archiveURL, { siteID, force }, [thread, true], ThreadWatcher.parseStatus);
+              }
+              else if (site.mayLackJSON && (data.last == null)) {
+                  ThreadWatcher.update(siteID, boardID, threadID, { last: -1 });
+              }
+              else {
+                  ThreadWatcher.update(siteID, boardID, threadID, { isDead: true });
+              }
+          }
+      },
+      getAll(groupByBoard) {
+          const all = [];
+          for (var siteID in ThreadWatcher.db.data) {
+              var boards = ThreadWatcher.db.data[siteID];
+              for (var boardID in boards.boards) {
+                  var cont;
+                  var threads = boards.boards[boardID];
+                  if (Conf['Current Board'] && ((siteID !== g.SITE.ID) || (boardID !== g.BOARD.ID)))
+                      continue;
+                  if (groupByBoard)
+                      all.push((cont = []));
+                  for (var threadID in threads) {
+                      var data = threads[threadID];
+                      if (data && (typeof data === 'object'))
+                          (groupByBoard ? cont : all).push({ siteID, boardID, threadID, data });
+                  }
+              }
+          }
+          return all;
+      },
+      makeLine(siteID, boardID, threadID, data) {
+          const x = $.el('a', {
+              textContent: '✕',
+              href: 'javascript:;'
+          });
+          Icon.set(x, 'xmark');
+          $.on(x, 'click', ThreadWatcher.cb.rm);
+          let { excerpt, isArchived } = data;
+          if (!excerpt)
+              excerpt = `/${boardID}/ - No.${threadID}`;
+          if (Conf['Show Site Prefix'])
+              excerpt = ThreadWatcher.prefixes[siteID] + excerpt;
+          const link = $.el('a', {
+              href: g.sites[siteID]?.urls.thread({ siteID, boardID, threadID }, isArchived) || '',
+              title: excerpt,
+              className: 'watcher-link'
+          });
+          if (Conf['Show Page'] && (data.page != null)) {
+              let page = $.el('span', {
+                  textContent: `[${data.page}]`,
+                  className: 'watcher-page'
+              });
+              $.add(link, page);
+          }
+          if (ThreadWatcher.unreadEnabled && Conf['Show Unread Count'] && (data.unread != null)) {
+              const count = $.el('span', {
+                  textContent: `(${data.unread})`,
+                  className: 'watcher-unread'
+              });
+              $.add(link, count);
+          }
+          const title = $.el('span', {
+              textContent: excerpt,
+              className: 'watcher-title'
+          });
+          $.add(link, title);
+          const div = $.el('div');
+          const fullID = `${boardID}.${threadID}`;
+          div.dataset.fullID = fullID;
+          div.dataset.siteID = siteID;
+          if ((g.VIEW === 'thread') && (fullID === `${g.BOARD}.${g.THREADID}`))
+              $.addClass(div, 'current');
+          if (data.isDead)
+              $.addClass(div, 'dead-thread');
+          if (Conf['Show Page']) {
+              if (data.lastPage)
+                  $.addClass(div, 'last-page');
+              if (data.page != null)
+                  div.dataset.page = data.page;
+          }
+          if (ThreadWatcher.unreadEnabled && Conf['Show Unread Count']) {
+              if (data.unread === 0)
+                  $.addClass(div, 'replies-read');
+              if (data.unread)
+                  $.addClass(div, 'replies-unread');
+              if ((data.quotingYou || 0) > (data.dismiss || 0))
+                  $.addClass(div, 'replies-quoting-you');
+          }
+          $.add(div, [x, $.tn(' '), link]);
+          return div;
+      },
+      setPrefixes(threads) {
+          const prefixes = dict();
+          for (var { siteID } of threads) {
+              if (siteID in prefixes)
+                  continue;
+              var len = 0;
+              var prefix = '';
+              var conflicts = Object.keys(prefixes);
+              while (conflicts.length > 0) {
+                  len++;
+                  prefix = siteID.slice(0, len);
+                  var conflicts2 = [];
+                  for (var siteID2 of conflicts) {
+                      if (siteID2.slice(0, len) === prefix) {
+                          conflicts2.push(siteID2);
+                      }
+                      else if (prefixes[siteID2].length < len) {
+                          prefixes[siteID2] = siteID2.slice(0, len);
+                      }
+                  }
+                  conflicts = conflicts2;
+              }
+              prefixes[siteID] = prefix;
+          }
+          return ThreadWatcher.prefixes = prefixes;
+      },
+      build() {
+          const nodes = [];
+          const threads = ThreadWatcher.getAll();
+          ThreadWatcher.setPrefixes(threads);
+          for (var { siteID, boardID, threadID, data } of threads) {
+              // Add missing excerpt for threads added by Auto Watch
+              let thread = g.threads.get(`${boardID}.${threadID}`);
+              if ((data.excerpt == null) && (siteID === g.SITE.ID) && thread && thread.OP) {
+                  ThreadWatcher.db.extend({ boardID, threadID, val: { excerpt: Get.threadExcerpt(thread) } });
+              }
+              nodes.push(ThreadWatcher.makeLine(siteID, boardID, threadID, data));
+          }
+          const { list } = ThreadWatcher;
+          $.rmAll(list);
+          $.add(list, nodes);
+          ThreadWatcher.refreshIcon();
+      },
+      refresh(manual) {
+          ThreadWatcher.build();
+          g.threads.forEach((thread) => {
+              const isWatched = ThreadWatcher.isWatched(thread);
+              if (thread.OP) {
+                  for (var post of [thread.OP, ...thread.OP.clones]) {
+                      let toggler = $('.watch-thread-link', post.nodes.info);
+                      if (toggler)
+                          ThreadWatcher.setToggler(toggler, isWatched);
+                  }
+              }
+              if (thread.catalogView)
+                  return thread.catalogView.nodes.root.classList.toggle('watched', isWatched);
+          });
+          if (Conf['Pin Watched Threads'])
+              return $.event('SortIndex', { deferred: !(manual && Conf['Index Mode'] === 'catalog') });
+      },
+      refreshIcon() {
+          for (var className of ['replies-unread', 'replies-quoting-you']) {
+              ThreadWatcher.shortcut.classList.toggle(className, !!$(`.${className}`, ThreadWatcher.dialog));
+          }
+      },
+      update(siteID, boardID, threadID, newData) {
+          let data, key, line, val;
+          if (!(data = ThreadWatcher.db?.get({ siteID, boardID, threadID })))
+              return;
+          if (newData.isDead && Conf['Auto Prune']) {
+              ThreadWatcher.rm(siteID, boardID, threadID);
+              return;
+          }
+          if (newData.isDead || (newData.last === -1)) {
+              for (key of ['isArchived', 'page', 'lastPage', 'unread', 'quotingyou']) {
+                  if (!(key in newData))
+                      newData[key] = undefined;
+              }
+          }
+          if ((newData.last != null) && (newData.last < data.last))
+              newData.modified = undefined;
+          let n = 0;
+          for (key in newData) {
+              val = newData[key];
+              if (data[key] !== val) {
+                  n++;
+              }
+          }
+          if (!n)
+              return;
+          ThreadWatcher.db.extend({ siteID, boardID, threadID, val: newData });
+          if (line = $(`#watched-threads > [data-site-i-d='${siteID}'][data-full-i-d='${boardID}.${threadID}']`, ThreadWatcher.dialog)) {
+              const newLine = ThreadWatcher.makeLine(siteID, boardID, threadID, data);
+              $.replace(line, newLine);
+              ThreadWatcher.refreshIcon();
+          }
+          else {
+              ThreadWatcher.refresh();
+          }
+      },
+      set404(boardID, threadID, cb) {
+          let data = ThreadWatcher.db?.get({ boardID, threadID });
+          if (!data)
+              return cb();
+          if (Conf['Auto Prune']) {
+              ThreadWatcher.db.delete({ boardID, threadID });
+              return cb();
+          }
+          if (data.isDead && data.isArchived == null && data.page == null && data.lastPage == null && data.unread == null && data.quotingYou == null)
+              return cb();
+          return ThreadWatcher.db.extend({ boardID, threadID, val: { isDead: true, isArchived: undefined, page: undefined, lastPage: undefined, unread: undefined, quotingYou: undefined } }, cb);
+      },
+      toggle(thread, manual) {
+          const siteID = g.SITE.ID;
+          const boardID = thread.board.ID;
+          const threadID = thread.ID;
+          if (ThreadWatcher.db.get({ boardID, threadID })) {
+              ThreadWatcher.rm(siteID, boardID, threadID, undefined, manual);
+          }
+          else {
+              ThreadWatcher.add(thread, undefined, manual);
+          }
+      },
+      add(thread, cb, manual) {
+          const data = {};
+          const siteID = g.SITE.ID;
+          const boardID = thread.board.ID;
+          const threadID = thread.ID;
+          if (thread.isDead) {
+              if (Conf['Auto Prune'] && ThreadWatcher.db.get({ boardID, threadID })) {
+                  ThreadWatcher.rm(siteID, boardID, threadID, cb);
+                  return;
+              }
+              data.isDead = true;
+          }
+          if (thread.OP)
+              data.excerpt = Get.threadExcerpt(thread);
+          ThreadWatcher.addRaw(boardID, threadID, data, cb, manual);
+      },
+      addRaw(boardID, threadID, data, cb, manual) {
+          const oldData = ThreadWatcher.db.get({ boardID, threadID, defaultValue: dict() });
+          delete oldData.last;
+          delete oldData.modified;
+          $.extend(oldData, data);
+          ThreadWatcher.db.set({ boardID, threadID, val: oldData }, cb);
+          ThreadWatcher.refresh(manual);
+          const thread = { siteID: g.SITE.ID, boardID, threadID, data, force: true };
+          if (Conf['Show Page'] && !data.isDead) {
+              ThreadWatcher.fetchBoard([thread]);
+          }
+          else if (ThreadWatcher.unreadEnabled && Conf['Show Unread Count']) {
+              ThreadWatcher.fetchStatus(thread);
+          }
+      },
+      rm(siteID, boardID, threadID, cb, manual) {
+          ThreadWatcher.db.delete({ siteID, boardID, threadID }, cb);
+          ThreadWatcher.refresh(manual);
+      },
+      menu: {
+          init() {
+              if (!Conf['Thread Watcher'])
+                  return;
+              const menu = (this.menu = new UI.Menu('thread watcher'));
+              $.on($('.menu-button', ThreadWatcher.dialog), 'click', function (e) {
+                  menu.toggle(e, this, ThreadWatcher);
+              });
+              this.addMenuEntries();
+          },
+          addHeaderMenuEntry() {
+              if (g.VIEW !== 'thread')
+                  return;
+              const entryEl = $.el('a', { href: 'javascript:;' });
+              Header.menu.addEntry({
+                  el: entryEl,
+                  order: 60,
+                  open() {
+                      const [addClass, rmClass, text] = !!ThreadWatcher.db.get({ boardID: g.BOARD.ID, threadID: g.THREADID })
+                          ? ['unwatch-thread', 'watch-thread', 'Unwatch thread']
+                          : ['watch-thread', 'unwatch-thread', 'Watch thread'];
+                      $.addClass(entryEl, addClass);
+                      $.rmClass(entryEl, rmClass);
+                      entryEl.textContent = text;
+                      return true;
+                  }
+              });
+              $.on(entryEl, 'click', () => ThreadWatcher.toggle(g.threads.get(`${g.BOARD}.${g.THREADID}`), true));
+          },
+          addMenuEntries() {
+              const toggleDisabledDead = function () {
+                  this.el.classList.toggle('disabled', !$('.dead-thread', ThreadWatcher.list));
+                  return true;
+              };
+              const entries = [
+                  // `Open all` entry
+                  {
+                      text: 'Open all threads',
+                      cb: ThreadWatcher.cb.openAll,
+                      open() {
+                          this.el.classList.toggle('disabled', !ThreadWatcher.list.firstElementChild);
+                          return true;
+                      }
+                  },
+                  {
+                      text: 'Clear all threads',
+                      cb: ThreadWatcher.cb.clear,
+                      open() {
+                          this.el.classList.toggle('disabled', !ThreadWatcher.list.firstElementChild);
+                          return true;
+                      }
+                  },
+                  // `Open Unread` entry
+                  {
+                      text: 'Open unread threads',
+                      cb: ThreadWatcher.cb.openUnread,
+                      open() {
+                          this.el.classList.toggle('disabled', !$('.replies-unread', ThreadWatcher.list));
+                          return true;
+                      }
+                  },
+                  // `Open unread dead threads` entry
+                  {
+                      text: 'Open unread dead threads',
+                      cb: ThreadWatcher.cb.openDeads,
+                      open: toggleDisabledDead,
+                  },
+                  // `Prune all dead threads` entry
+                  {
+                      text: 'Prune all dead threads',
+                      cb: ThreadWatcher.cb.pruneDeads,
+                      open: toggleDisabledDead,
+                  },
+                  // `Prune read dead threads` entry
+                  {
+                      text: 'Prune read dead threads',
+                      cb: ThreadWatcher.cb.pruneReadDeads,
+                      open: toggleDisabledDead,
+                  },
+                  // `Dismiss posts quoting you` entry
+                  {
+                      text: 'Dismiss posts quoting you',
+                      title: 'Unhighlight the thread watcher icon and threads until there are new replies quoting you.',
+                      cb: ThreadWatcher.cb.dismiss,
+                      open() {
+                          this.el.classList.toggle('disabled', !$.hasClass(ThreadWatcher.shortcut, 'replies-quoting-you'));
+                          return true;
+                      }
+                  },
+              ];
+              for (var { text, title, cb, open } of entries) {
+                  var entry = {
+                      el: $.el('a', {
+                          textContent: text,
+                          href: 'javascript:;'
+                      })
+                  };
+                  if (title)
+                      entry.el.title = title;
+                  $.on(entry.el, 'click', cb);
+                  entry.open = open.bind(entry);
+                  this.menu.addEntry(entry);
+              }
+              // Settings checkbox entries:
+              for (var name in Config.threadWatcher) {
+                  var conf = Config.threadWatcher[name];
+                  this.addCheckbox(name, conf[1]);
+              }
+          },
+          addCheckbox(name, desc) {
+              const entry = {
+                  type: 'thread watcher',
+                  el: UI.checkbox(name, name.replace(' Thread Watcher', ''))
+              };
+              entry.el.title = desc;
+              const input = entry.el.firstElementChild;
+              if ((name === 'Show Unread Count') && !ThreadWatcher.unreadEnabled) {
+                  input.disabled = true;
+                  $.addClass(entry.el, 'disabled');
+                  entry.el.title += '\n[Remember Last Read Post is disabled.]';
+              }
+              $.on(input, 'change', $.cb.checked);
+              if (['Current Board', 'Show Page', 'Show Unread Count', 'Show Site Prefix'].includes(name))
+                  $.on(input, 'change', () => ThreadWatcher.refresh());
+              if (['Show Page', 'Show Unread Count', 'Auto Update Thread Watcher'].includes(name))
+                  $.on(input, 'change', ThreadWatcher.fetchAuto);
+              return this.menu.addEntry(entry);
+          }
+      }
+  };
+
+  var ThreadWatcher$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    default: ThreadWatcher
+  });
+
+  const parseArchivePost = (data) => {
+    // https://github.com/eksopl/asagi/blob/v0.4.0b74/src/main/java/net/easymodo/asagi/YotsubaAbstract.java#L82-L129
+    // https://github.com/FoolCode/FoolFuuka/blob/800bd090835489e7e24371186db6e336f04b85c0/src/Model/Comment.php#L368-L428
+    // https://github.com/bstats/b-stats/blob/6abe7bffaf6e5f523498d760e54b110df5331fbb/inc/classes/Yotsuba.php#L157-L168
+    let comment = (data.comment || '').split(/(\n|\[\/?(?:b|spoiler|code|moot|banned|fortune(?: color="#\w+")?|i|red|green|blue)\])/);
+    comment = comment.map((text, i) => {
+      if ((i % 2) === 1) {
+        var tag = Fetcher.archiveTags[text.replace(/\ .*\]/, ']')];
+        return (typeof tag === 'function') ? tag(text) : tag;
+      } else {
+        var greentext = text[0] === '>';
+        text = text
+          .replace(/(\[\/?[a-z]+):lit(\])/g, '$1$2')
+          .split(/(>>(?:>\/[a-z\d]+\/)?\d+)/g)
+          .map((text2, j) => ((j % 2) ? `<span class="deadlink">${E(text2)}</span>` : E(text2)))
+          .join('');
+        return { innerHTML: (greentext ? `<span class="quote">${text}</span>` : text) };
+      }
+    });
+    comment = { innerHTML: E.cat(comment), [isEscaped]: true };
+    // https://github.com/pleebe/FoolFuuka/blob/bf4224eed04637a4d0bd4411c2bf5f9945dfec0b/assets/themes/foolz/foolfuuka-theme-fuuka/src/Partial/Board.php#L77
+    const CAPCODES = {
+      M: 'Mod',
+      A: 'Admin',
+      D: 'Developer',
+      V: 'Verified',
+      F: 'Founder',
+      G: 'Manager',
+    };
+    const o = {
+      ID: data.num,
+      threadID: data.thread_num,
+      boardID: data.board.shortname,
+      isReply: data.num !== data.thread_num,
+      fileDeleted: false,
+      info: {
+        subject: data.title,
+        email: data.email,
+        name: data.name || '',
+        tripcode: data.trip,
+        capcode: CAPCODES[data.capcode],
+        uniqueID: data.poster_hash,
+        flagCode: data.poster_country,
+        flagCodeTroll: data.troll_country_code,
+        flag: data.poster_country_name || data.troll_country_name,
+        dateUTC: data.timestamp,
+        dateText: data.fourchan_date,
+        commentHTML: comment,
+      },
+      file: null,
+      extra: null,
+    };
+    if (o.info.capcode)
+      delete o.info.uniqueID;
+    if (data.media && +data.media.banned) {
+      o.fileDeleted = true;
+    } else if (data.media?.media_filename) {
+      let { thumb_link } = data.media;
+      // Fix URLs missing origin
+      if (thumb_link?.[0] === '/')
+        thumb_link = url.split('/', 3).join('/') + thumb_link;
+      if (!Redirect.securityCheck(thumb_link))
+        thumb_link = '';
+      let media_link = Redirect.to('file', { boardID: o.boardID, filename: data.media.media_orig });
+      if (!Redirect.securityCheck(media_link))
+        media_link = '';
+      o.file = {
+        name: data.media.media_filename,
+        url: media_link || `${location.protocol}//${ImageHost.host()}/${o.boardID}/${data.media.media_orig}`,
+        height: data.media.media_h,
+        width: data.media.media_w,
+        MD5: data.media.media_hash,
+        size: $.bytesToString(data.media.media_size),
+        thumbURL: thumb_link || `${location.protocol}//${ImageHost.thumbHost()}/${o.boardID}/${data.media.preview_orig}`,
+        theight: data.media.preview_h,
+        twidth: data.media.preview_w,
+        isSpoiler: data.media.spoiler === '1'
+      };
+      if (!/\.pdf$/.test(o.file.url))
+        o.file.dimensions = `${o.file.width}x${o.file.height}`;
+    }
+    o.extra = dict();
+    const board = g.boards[o.boardID] || new Board(o.boardID);
+    const thread = g.threads.get(`${o.boardID}.${o.threadID}`) ||
+      new Thread(o.threadID, board);
+    const post = new Post(g.SITE.Build.post(o), thread, board);
+    post.resurrect();
+    post.markAsFromArchive();
+    if (post.file)
+      post.file.thumbURL = o.file.thumbURL;
+    Main.callbackNodes('Post', [post]);
+    return post;
+  };
+
+  var ReplyPruning = {
+      init() {
+          if ((g.VIEW !== 'thread') || !Conf['Reply Pruning'])
+              return;
+          this.container = $.frag();
+          this.summary = $.el('span', {
+              hidden: true,
+              className: 'summary'
+          });
+          this.summary.style.cursor = 'pointer';
+          $.on(this.summary, 'click', () => {
+              this.inputs.enabled.checked = !this.inputs.enabled.checked;
+              $.event('change', null, this.inputs.enabled);
+          });
+          const label = UI.checkbox('Prune Replies', 'Show Last', Conf['Prune All Threads']);
+          const el = $.el('span', { title: 'Maximum number of replies to show.' }, { innerHTML: " <input type=\"number\" name=\"Max Replies\" min=\"0\" step=\"1\" value=\"" + E(Conf["Max Replies"]) + "\" class=\"field\">" });
+          $.prepend(el, label);
+          this.inputs = {
+              enabled: label.firstElementChild,
+              replies: el.lastElementChild
+          };
+          this.setEnabled.call(this.inputs.enabled);
+          $.on(this.inputs.enabled, 'change', this.setEnabled);
+          $.on(this.inputs.replies, 'change', $.cb.value);
+          Header.menu.addEntry({ el, order: 190 });
+          Callbacks.Thread.push({
+              name: 'Reply Pruning',
+              cb: this.node
+          });
+      },
+      position: 0,
+      hidden: 0,
+      hiddenFiles: 0,
+      total: 0,
+      totalFiles: 0,
+      setEnabled() {
+          const other = QuoteThreading.input;
+          if (this.checked && other?.checked) {
+              other.checked = false;
+              $.event('change', null, other);
+          }
+          return ReplyPruning.active = this.checked;
+      },
+      node() {
+          ReplyPruning.thread = this;
+          if (this.isSticky) {
+              ReplyPruning.active = (ReplyPruning.inputs.enabled.checked = true);
+              if (QuoteThreading.input) {
+                  // Disable Quote Threading for this thread but don't save the setting.
+                  Conf['Thread Quotes'] = (QuoteThreading.input.checked = false);
+              }
+          }
+          this.posts.forEach((post) => {
+              if (post.isReply) {
+                  ReplyPruning.total++;
+                  if (post.file)
+                      return ReplyPruning.totalFiles++;
+              }
+          });
+          // If we're linked to a post that we would hide, don't hide the posts in the first place.
+          let middle = this.posts.keys.indexOf(location.hash.slice(2));
+          if (ReplyPruning.active && /^#p\d+$/.test(location.hash) &&
+              (1 <= middle && middle < 1 + Math.max(ReplyPruning.total - +Conf["Max Replies"], 0))) {
+              ReplyPruning.active = (ReplyPruning.inputs.enabled.checked = false);
+          }
+          $.after(this.OP.nodes.root, ReplyPruning.summary);
+          $.on(ReplyPruning.inputs.enabled, 'change', ReplyPruning.update);
+          $.on(ReplyPruning.inputs.replies, 'change', ReplyPruning.update);
+          $.on(d, 'ThreadUpdate', ReplyPruning.updateCount);
+          $.on(d, 'ThreadUpdate', ReplyPruning.update);
+          ReplyPruning.update();
+      },
+      updateCount(e) {
+          if (e.detail[404])
+              return;
+          for (var fullID of e.detail.newPosts) {
+              ReplyPruning.total++;
+              if (g.posts.get(fullID).file)
+                  ReplyPruning.totalFiles++;
+          }
+      },
+      update() {
+          let boardTop, node, post;
+          const hidden1 = ReplyPruning.hidden;
+          const hidden2 = ReplyPruning.active ?
+              Math.max(ReplyPruning.total - +Conf["Max Replies"], 0) : 0;
+          // Record position from bottom of document
+          const oldPos = d.body.clientHeight - window.scrollY;
+          const { posts } = ReplyPruning.thread;
+          if (ReplyPruning.hidden < hidden2) {
+              while ((ReplyPruning.hidden < hidden2) && (ReplyPruning.position < posts.keys.length)) {
+                  post = posts.get(posts.keys[ReplyPruning.position++]);
+                  if (post.isReply && !post.isFetchedQuote) {
+                      while ((node = ReplyPruning.summary.nextSibling) && (node !== post.nodes.root)) {
+                          $.add(ReplyPruning.container, node);
+                      }
+                      $.add(ReplyPruning.container, post.nodes.root);
+                      ReplyPruning.hidden++;
+                      if (post.file)
+                          ReplyPruning.hiddenFiles++;
+                  }
+              }
+          }
+          else if (ReplyPruning.hidden > hidden2) {
+              const frag = $.frag();
+              while ((ReplyPruning.hidden > hidden2) && (ReplyPruning.position > 0)) {
+                  post = posts.get(posts.keys[--ReplyPruning.position]);
+                  if (post.isReply && !post.isFetchedQuote) {
+                      while ((node = ReplyPruning.container.lastChild) && (node !== post.nodes.root)) {
+                          $.prepend(frag, node);
+                      }
+                      $.prepend(frag, post.nodes.root);
+                      ReplyPruning.hidden--;
+                      if (post.file)
+                          ReplyPruning.hiddenFiles--;
+                  }
+              }
+              $.after(ReplyPruning.summary, frag);
+              $.event('PostsInserted', null, ReplyPruning.summary.parentNode);
+          }
+          ReplyPruning.summary.textContent = ReplyPruning.active
+              ? g.SITE.Build.summaryText('+', ReplyPruning.hidden, ReplyPruning.hiddenFiles)
+              : g.SITE.Build.summaryText('-', ReplyPruning.total, ReplyPruning.totalFiles);
+          ReplyPruning.summary.hidden = (ReplyPruning.total <= +Conf["Max Replies"]);
+          // Maintain position in thread when posts are added/removed above
+          if ((hidden1 !== hidden2) && ((boardTop = Header.getTopOf($('.board'))) < 0)) {
+              window.scrollBy(0, Math.max(d.body.clientHeight - oldPos, window.scrollY + boardTop) - window.scrollY);
+          }
+      }
+  };
+
+  /*
+    <3 aeosynth
+  */
+  var QuoteThreading = {
+    init() {
+      if (!Conf['Quote Threading'] || (g.VIEW !== 'thread'))
+        return;
+      this.controls = $.el('label', { innerHTML: "<input id=\"threadingControl\" name=\"Thread Quotes\" type=\"checkbox\"> Threading" });
+      this.threadNewLink = $.el('span', {
+        className: 'brackets-wrap threadnewlink',
+        hidden: true
+      });
+      $.extend(this.threadNewLink, { innerHTML: "<a href=\"javascript:;\">Thread New Posts</a>" });
+      this.input = $('input', this.controls);
+      this.input.checked = Conf['Thread Quotes'];
+      $.on(this.input, 'change', this.setEnabled);
+      $.on(this.input, 'change', this.rethread);
+      $.on(this.threadNewLink.firstElementChild, 'click', this.rethread);
+      $.on(d, '4chanXInitFinished', () => { this.ready = true; });
+      Header.menu.addEntry(this.entry = { el: this.controls, order: 99 });
+      Callbacks.Thread.push({
+        name: 'Quote Threading',
+        cb: this.setThread
+      });
+      Callbacks.Post.push({
+        name: 'Quote Threading',
+        cb: this.node
+      });
+    },
+    parent: dict(),
+    children: dict(),
+    inserted: dict(),
+    toggleThreading() { this.setThreadingState(!Conf['Thread Quotes']); },
+    setThreadingState(enabled) {
+      this.input.checked = enabled;
+      this.setEnabled.call(this.input);
+      this.rethread.call(this.input);
+    },
+    setEnabled() {
+      if (this.checked) {
+        $.set('Prune All Threads', false);
+        const other = ReplyPruning.inputs?.enabled;
+        if (other?.checked) {
+          other.checked = false;
+          $.event('change', null, other);
+        }
+      }
+      $.cb.checked.call(this);
+    },
+    setThread() {
+      QuoteThreading.thread = this;
+      $.asap((() => !Conf['Thread Updater'] || $('.navLinksBot > .updatelink')), function () {
+        let navLinksBot = $('.navLinksBot');
+        if (navLinksBot) {
+          $.add(navLinksBot, [$.tn(' '), QuoteThreading.threadNewLink]);
+        }
+      });
+    },
+    node() {
+      if (this.isFetchedQuote || this.isClone || !this.isReply)
+        return;
+      const parents = new Set();
+      let lastParent = null;
+      for (var quote of this.quotes) {
+        let parent = g.posts.get(quote);
+        if (parent) {
+          if (!parent.isFetchedQuote && parent.isReply && (parent.ID < this.ID)) {
+            parents.add(parent.ID);
+            if (!lastParent || (parent.ID > lastParent.ID))
+              lastParent = parent;
+          }
+        }
+      }
+      if (!lastParent)
+        return;
+      let ancestor = lastParent;
+      while ((ancestor = QuoteThreading.parent[ancestor.fullID])) {
+        parents.delete(ancestor.ID);
+      }
+      if (parents.size === 1)
+        QuoteThreading.parent[this.fullID] = lastParent;
+    },
+    descendants(post) {
+      let posts = [post];
+      let children = QuoteThreading.children[post.fullID];
+      if (children) {
+        for (var child of children) {
+          posts = posts.concat(QuoteThreading.descendants(child));
+        }
+      }
+      return posts;
+    },
+    insert(post) {
+      let parent, x;
+      if (!Conf['Thread Quotes'] ||
+        !(parent = QuoteThreading.parent[post.fullID]) ||
+        QuoteThreading.inserted[post.fullID])
+        return false;
+      const descendants = QuoteThreading.descendants(post);
+      if (!Unread.posts.has(parent.ID)) {
+        if (descendants.some(x => Unread.posts.has(x.ID))) {
+          QuoteThreading.threadNewLink.hidden = false;
+          return false;
+        }
+      }
+      const { order } = Unread;
+      const children = (QuoteThreading.children[parent.fullID] || (QuoteThreading.children[parent.fullID] = []));
+      const threadContainer = parent.nodes.threadContainer || $.el('div', { className: 'threadContainer' });
+      const nodes = [post.nodes.root];
+      if (post.nodes.threadContainer) {
+        nodes.push(post.nodes.threadContainer);
+      }
+      let i = children.length;
+      for (let j = children.length - 1; j >= 0; j--) {
+        var child = children[j];
+        if (child.ID >= post.ID) {
+          i--;
+        }
+      }
+      if (i !== children.length) {
+        const next = children[i];
+        for (x of descendants) {
+          order.before(order[next.ID], order[x.ID]);
+        }
+        children.splice(i, 0, post);
+        $.before(next.nodes.root, nodes);
+      } else {
+        let prev2;
+        let prev = parent;
+        while ((prev2 = QuoteThreading.children[prev.fullID]) && prev2.length) {
+          prev = prev2[prev2.length - 1];
+        }
+        for (let k = descendants.length - 1; k >= 0; k--) {
+          x = descendants[k];
+          order.after(order[prev.ID], order[x.ID]);
+        }
+        children.push(post);
+        $.add(threadContainer, nodes);
+      }
+      QuoteThreading.inserted[post.fullID] = true;
+      if (!parent.nodes.threadContainer) {
+        parent.nodes.threadContainer = threadContainer;
+        $.addClass(parent.nodes.root, 'threadOP');
+        $.after(parent.nodes.root, threadContainer);
+      }
+      return true;
+    },
+    rethread() {
+      if (!QuoteThreading.ready)
+        return;
+      const { thread } = QuoteThreading;
+      const { posts } = thread;
+      QuoteThreading.threadNewLink.hidden = true;
+      if (Conf['Thread Quotes']) {
+        posts.forEach(QuoteThreading.insert);
+      } else {
+        const nodes = [];
+        Unread.order = new RandomAccessList();
+        QuoteThreading.inserted = dict();
+        posts.forEach(function (post) {
+          if (post.isFetchedQuote)
+            return;
+          Unread.order.push(post);
+          if (post.isReply) {
+            nodes.push(post.nodes.root);
+          }
+          if (QuoteThreading.children[post.fullID]) {
+            delete QuoteThreading.children[post.fullID];
+            $.rmClass(post.nodes.root, 'threadOP');
+            $.rm(post.nodes.threadContainer);
+            delete post.nodes.threadContainer;
+          }
+        });
+        $.add(thread.nodes.root, nodes);
+      }
+      Unread.position = Unread.order.first;
+      Unread.updatePosition();
+      Unread.setLine(true);
+      Unread.read();
+      Unread.update();
+    },
+  };
+
+  const RestoreDeletedFromArchive = {
+    restore() {
+      const url = Redirect.to('threadJSON', { boardID: g.boardID, threadID: g.threadID });
+      if (!url) {
+        new Notice('warning', 'No archive found', 3);
+        return;
+      }
+      const encryptionOK = url.startsWith('https://');
+      if (encryptionOK || Conf['Exempt Archives from Encryption']) {
+        CrossOrigin.ajax(url, { onloadend() {
+            if (this.status < 200 || this.status >= 400 || !this.response) {
+              const domain = E(new URL(url).origin);
+              new Notice('error', $.el('div', {
+                innerHTML: 'There was an error while fetching from the archive. See the console for details.<br />' +
+                  'Some archives check the browser first before checking content, you might need to open the archive ' +
+                  `first to get past the browser check: <a href="${domain}" target="_blank">${domain}</a><br />` +
+                  'If that doesn\'t work, try a different archive under Settings > Advanced > Archives > Thread fetching.'
+              }));
+              console.error(this);
+              return;
+            }
+            let nrRestored = 0;
+            const archivePosts = this.response[g.threadID.toString()].posts;
+            for (const [postID, raw] of Object.entries(archivePosts)) {
+              if (RestoreDeletedFromArchive.insert(raw)[1])
+                ++nrRestored;
+            }
+            let msg;
+            if (nrRestored === 0) {
+              msg = 'No removed posts found';
+            } else if (nrRestored === 1) {
+              msg = '1 post restored';
+            } else {
+              msg = `${nrRestored} posts restored`;
+            }
+            new Notice('info', msg, 3);
+          } });
+      }
+    },
+    init() {
+      if (g.VIEW !== 'thread')
+        return;
+      const menuEntry = $.el('a', {
+        href: 'javascript:;',
+        textContent: 'Restore from archive',
+      });
+      $.on(menuEntry, 'click', () => {
+        RestoreDeletedFromArchive.restore();
+        Header.menu.close();
+      });
+      Header.menu.addEntry({ el: menuEntry, order: 10, });
+    },
+    /**
+    * Inserts a post from the archive in the thread. Will automatically skip posts from other threads and posts already
+    * in the thread.
+    * @param raw The raw data returned from the archive
+    * @returns A tuple with as first value the new post, and the second value a boolean whether is was inserted into the
+    * page.
+    */
+    insert(raw) {
+      const key = `${raw.board.shortname}.${raw.num}`;
+      if (g.posts.keys.includes(key))
+        return [undefined, false];
+      let inserted = false;
+      const post = parseArchivePost(raw);
+      post.resurrect();
+      post.markAsFromArchive();
+      if (post.threadID === g.threadID && g.VIEW === 'thread') {
+        const newPostIndex = g.posts.insert(key, post, key => +(key.split('.')[1]) < post.ID);
+        if (Conf['Thread Quotes']) {
+          post.thread.nodes.root.insertAdjacentElement('beforeend', post.root);
+        } else {
+          g.posts.get(g.posts.keys[newPostIndex - 1]).root.insertAdjacentElement('afterend', post.root);
+        }
+        QuoteThreading.insert(post);
+        inserted = true;
+        for (const quotelink of Get.allQuotelinksLinkingTo(post)) {
+          quotelink.href = `#p${post.ID}`;
+        }
+      }
+      return [post, inserted];
+    },
+  };
+
+  class Fetcher {
+    constructor(boardID, threadID, postID, root, quoter) {
+      let post, thread;
+      this.boardID = boardID;
+      this.threadID = threadID;
+      this.postID = postID;
+      this.root = root;
+      this.quoter = quoter;
+      if (post = g.posts.get(`${this.boardID}.${this.postID}`)) {
+        this.insert(post);
+        return;
+      }
+      // 4chan X catalog data
+      if ((post = Index.replyData?.[`${this.boardID}.${this.postID}`]) && (thread = g.threads.get(`${this.boardID}.${this.threadID}`))) {
+        const board = g.boards[this.boardID];
+        post = new Post(g.SITE.Build.postFromObject(post, this.boardID), thread, board, { isFetchedQuote: true });
+        Main.callbackNodes('Post', [post]);
+        this.insert(post);
+        return;
+      }
+      this.root.textContent = `Loading post No.${this.postID}...`;
+      if (this.threadID) {
+        const that = this;
+        $.cache(g.SITE.urls.threadJSON({ boardID: this.boardID, threadID: this.threadID }), function ({ isCached }) {
+          return that.fetchedPost(this, isCached);
+        });
+      } else {
+        this.archivedPost();
+      }
+    }
+    insert(post) {
+      // Stop here if the container has been removed while loading.
+      if (!this.root.parentNode)
+        return;
+      if (!this.quoter)
+        this.quoter = post;
+      const clone = post.addClone(this.quoter.context, ($.hasClass(this.root, 'dialog')));
+      Main.callbackNodes('Post', [clone]);
+      // Get rid of the side arrows/stubs.
+      const { nodes } = clone;
+      $.rmAll(nodes.root);
+      $.add(nodes.root, nodes.post);
+      // Indicate links to the containing post.
+      const quotes = [...clone.nodes.quotelinks, ...clone.nodes.backlinks];
+      for (var quote of quotes) {
+        var { boardID, postID } = Get.postDataFromLink(quote);
+        if ((postID === this.quoter.ID) && (boardID === this.quoter.board.ID))
+          $.addClass(quote, 'forwardlink');
+      }
+      // Set up flag CSS for cross-board links to boards with flags
+      if (clone.nodes.flag && !(Fetcher.flagCSS || (Fetcher.flagCSS = $('link[href^="//s.4cdn.org/css/flags."]')))) {
+        const cssVersion = $('link[href^="//s.4cdn.org/css/"]')?.href.match(/\d+(?=\.css$)|$/)[0] || Date.now();
+        Fetcher.flagCSS = $.el('link', {
+          rel: 'stylesheet',
+          href: `//s.4cdn.org/css/flags.${cssVersion}.css`
+        });
+        $.add(d.head, Fetcher.flagCSS);
+      }
+      $.rmAll(this.root);
+      $.add(this.root, nodes.root);
+      $.event('PostsInserted', null, this.root);
+    }
+    fetchedPost(req, isCached) {
+      // In case of multiple callbacks for the same request,
+      // don't parse the same original post more than once.
+      const cachedPost = g.posts.get(`${this.boardID}.${this.postID}`);
+      if (cachedPost) {
+        this.insert(cachedPost);
+        return;
+      }
+      const { status } = req;
+      if (status !== 200) {
+        // The thread can die by the time we check a quote.
+        if (status && this.archivedPost())
+          return;
+        $.addClass(this.root, 'warning');
+        this.root.textContent =
+          status === 404
+            ? `Thread No.${this.threadID} 404'd.` : !status
+            ? 'Connection Error' : `Error ${req.statusText} (${req.status}).`;
+        return;
+      }
+      const { posts } = req.response;
+      g.SITE.Build.spoilerRange[this.boardID] = posts[0].custom_spoiler;
+      const foundPost = posts.find(p => p.no === this.postID); // we found it!
+      if (!foundPost) {
+        // Cached requests can be stale and must be rechecked.
+        if (isCached) {
+          const api = g.SITE.urls.threadJSON({ boardID: this.boardID, threadID: this.threadID });
+          $.cleanCache(url => url === api);
+          $.cache(api, (req) => this.fetchedPost(req, false));
+          return;
+        }
+        // The post can be deleted by the time we check a quote.
+        if (this.archivedPost())
+          return;
+        $.addClass(this.root, 'warning');
+        this.root.textContent = `Post No.${this.postID} was not found.`;
+        return;
+      }
+      const board = g.boards[this.boardID] || new Board(this.boardID);
+      const thread = g.threads.get(`${this.boardID}.${this.threadID}`) || new Thread(this.threadID, board);
+      const newPost = new Post(g.SITE.Build.postFromObject(foundPost, this.boardID), thread, board, { isFetchedQuote: true });
+      Main.callbackNodes('Post', [newPost]);
+      this.insert(newPost);
+    }
+    archivedPost() {
+      if (!Conf['Resurrect Quotes'])
+        return false;
+      let url = Redirect.to('post', { boardID: this.boardID, postID: this.postID });
+      if (!url)
+        return false;
+      const archive = Redirect.data.post.get(this.boardID);
+      const encryptionOK = /^https:\/\//.test(url) || (location.protocol === 'http:');
+      if (encryptionOK || Conf['Exempt Archives from Encryption']) {
+        const that = this;
+        CrossOrigin.cache(url, function () {
+          if (!encryptionOK && this.response?.media) {
+            const { media } = this.response;
+            for (var key in media) {
+              // Image/thumbnail URLs loaded over HTTP can be modified in transit.
+              // Require them to be from an HTTP host so that no referrer is sent to them from an HTTPS page.
+              if (/_link$/.test(key) && !$.getOwn(media, key)?.match(/^http:\/\//))
+                delete media[key];
+            }
+          }
+          return that.parseArchivedPost(this.response, url, archive);
+        });
+        return true;
+      }
+      return false;
+    }
+    parseArchivedPost(data, url, archive) {
+      // In case of multiple callbacks for the same request,
+      // don't parse the same original post more than once.
+      let post = g.posts.get(`${this.boardID}.${this.postID}`);
+      if (post) {
+        this.insert(post);
+        return;
+      }
+      if (data == null) {
+        $.addClass(this.root, 'warning');
+        this.root.textContent = archive?.name
+          ? `Error fetching Post No.${this.postID} from ${archive.name}.`
+          : `Error fetching Post No.${this.postID} from the archive.`;
+        return;
+      }
+      if (data.error) {
+        $.addClass(this.root, 'warning');
+        this.root.textContent = data.error;
+        return;
+      }
+      return this.insert(RestoreDeletedFromArchive.insert(data)[0]);
+    }
+  }
+  Fetcher.archiveTags = {
+    '\n': { innerHTML: "<br>" },
+    '[b]': { innerHTML: "<b>" },
+    '[/b]': { innerHTML: "</b>" },
+    '[spoiler]': { innerHTML: "<s>" },
+    '[/spoiler]': { innerHTML: "</s>" },
+    '[code]': { innerHTML: "<pre class=\"prettyprint\">" },
+    '[/code]': { innerHTML: "</pre>" },
+    '[moot]': { innerHTML: "<div style=\"padding:5px;margin-left:.5em;border-color:#faa;border:2px dashed rgba(255,0,0,.1);border-radius:2px\">" },
+    '[/moot]': { innerHTML: "</div>" },
+    '[banned]': { innerHTML: "<strong style=\"color: red;\">" },
+    '[/banned]': { innerHTML: "</strong>" },
+    '[fortune]'(text) { return { innerHTML: "<span class=\"fortune\" style=\"color:" + E(text.match(/#\w+|$/)[0]) + "\"><b>" }; },
+    '[/fortune]': { innerHTML: "</b></span>" },
+    '[i]': { innerHTML: "<span class=\"mu-i\">" },
+    '[/i]': { innerHTML: "</span>" },
+    '[red]': { innerHTML: "<span class=\"mu-r\">" },
+    '[/red]': { innerHTML: "</span>" },
+    '[green]': { innerHTML: "<span class=\"mu-g\">" },
+    '[/green]': { innerHTML: "</span>" },
+    '[blue]': { innerHTML: "<span class=\"mu-b\">" },
+    '[/blue]': { innerHTML: "</span>" }
+  };
+
+  var QuotePreview = {
+      init() {
+          if (!Conf['Quote Previewing'])
+              return;
+          if (g.VIEW === 'archive') {
+              $.on(d, 'mouseover', function (e) {
+                  if ((e.target.nodeName === 'A') && $.hasClass(e.target, 'quotelink')) {
+                      return QuotePreview.mouseover.call(e.target, e);
+                  }
+              });
+          }
+          if (!['index', 'thread'].includes(g.VIEW))
+              return;
+          if (Conf['Comment Expansion'])
+              ExpandComment.callbacks.push(this.node);
+          Callbacks.Post.push({ name: 'Quote Previewing', cb: this.node });
+      },
+      node() {
+          for (var link of this.nodes.quotelinks.concat([...this.nodes.backlinks], this.nodes.archivelinks)) {
+              $.on(link, 'mouseover', QuotePreview.mouseover);
+          }
+      },
+      mouseover(e) {
+          if (($.hasClass(this, 'inlined') && !$.hasClass(doc, 'catalog-mode')) || !d.contains(this))
+              return;
+          const { boardID, threadID, postID } = Get.postDataFromLink(this);
+          const qp = $.el('div', { id: 'qp', className: 'dialog' });
+          $.add(Header.hover, qp);
+          new Fetcher(boardID, threadID, postID, qp, Get.postFromNode(this));
+          UI.hover({
+              root: this,
+              el: qp,
+              latestEvent: e,
+              endEvents: 'mouseout click',
+              cb: QuotePreview.mouseout
+          });
+          let origin = g.posts.get(`${boardID}.${postID}`);
+          if (Conf['Quote Highlighting'] && origin) {
+              const posts = [origin].concat(origin.clones);
+              // Remove the clone that's in the qp from the array.
+              posts.pop();
+              for (var post of posts) {
+                  $.addClass(post.nodes.post, 'qphl');
+              }
+          }
+      },
+      mouseout() {
+          // Stop if it only contains text.
+          let root = this.el.firstElementChild;
+          if (!root)
+              return;
+          $.event('PostsRemoved', null, Header.hover);
+          const clone = Get.postFromRoot(root);
+          let post = clone.origin;
+          post.rmClone(root.dataset.clone);
+          if (!Conf['Quote Highlighting'])
+              return;
+          for (post of [post].concat(post.clones)) {
+              $.rmClass(post.nodes.post, 'qphl');
+          }
+      }
+  };
+
+  var NavLinksPage = `<span class="brackets-wrap indexlink"><a href="#index">Index</a></span> 
+<span class="brackets-wrap cataloglink"><a href="#catalog">Catalog</a></span> 
+<span class="brackets-wrap archlistlink"><a href="./archive">Archive</a></span> 
+<span class="brackets-wrap bottomlink"><a href="#bottom">Bottom</a></span> 
+<span class="brackets-wrap" id="index-last-refresh"><a href="javascript:;"><time title="Last index refresh">...</time></a></span> 
+<input type="search" id="index-search" class="field" placeholder="Search">
+<a id="index-search-clear" href="javascript:;" title="Clear search">×</a>
+<span id="hidden-label" hidden> &mdash; <span id="hidden-count"></span> <span id="hidden-toggle">[<a href="javascript:;">Show</a>]</span></span>
+<span id="index-options">
+  <input type="checkbox" id="index-rev" name="Reverse Sort" title="Reverse sort order">
+  <span id="lastlong-options" hidden>
+    <input type="text" title="Minimum letter count (without image)">
+    <input type="text" title="Minimum letter count (with image)">
+  </span>
+  <select id="index-sort" name="Index Sort">
+    <option disabled>Index Sort</option>
+    <option value="bump">Bump order</option>
+    <option value="lastreply">Last reply</option>
+    <option value="lastlong">Last long reply</option>
+    <option value="birth">Creation date</option>
+    <option value="replycount">Reply count</option>
+    <option value="filecount">File count</option>
+    <option value="activity">Posts per minute</option>
+  </select>
+  <select id="index-size" name="Index Size">
+    <option disabled>Image Size</option>
+    <option value="small">Small</option>
+    <option value="large">Large</option>
+  </select>
+  <select id="index-mode" name="Index Mode">
+    <option disabled>Index Mode</option>
+    <option value="paged">Paged</option>
+    <option value="infinite">Infinite scrolling</option>
+    <option value="all pages">All threads</option>
+    <option value="catalog">Catalog</option>
+  </select>
+</span>`;
+
+  var PageList = `<div class="prev">
+  <a>
+    <button disabled>Previous</button>
+  </a>
+</div>
+<div class="pages"></div>
+<div class="next">
+  <a>
+    <button disabled>Next</button>
+  </a>
+</div>
+<div class="pages cataloglink">
+  <a href="./catalog">Catalog</a>
+</div>`;
+
+  var Index = {
+      showHiddenThreads: false,
+      changed: {},
+      init() {
+          let input, inputs, name;
+          if (g.VIEW !== 'index')
+              return;
+          // For IndexRefresh events
+          $.one(d, '4chanXInitFinished', this.cb.initFinished);
+          $.on(d, 'PostsInserted', this.cb.postsInserted);
+          if (!indexEnabledOn(g.BOARD))
+              return;
+          setIndexEnabled(true);
+          Callbacks.Post.push({
+              name: 'Index Page Numbers',
+              cb: this.node
+          });
+          Callbacks.CatalogThread.push({
+              name: 'Catalog Features',
+              cb: this.catalogNode
+          });
+          this.search = history.state?.searched || '';
+          if (history.state?.mode)
+              Conf['Index Mode'] = history.state?.mode;
+          this.currentSort = history.state?.sort;
+          if (!this.currentSort) {
+              this.currentSort = typeof Conf['Index Sort'] === 'object'
+                  ? Conf['Index Sort'][g.BOARD.ID] || 'bump' : Conf['Index Sort'];
+          }
+          this.currentPage = this.getCurrentPage();
+          this.processHash();
+          $.addClass(doc, 'index-loading', `${Conf['Index Mode'].replace(/\ /g, '-')}-mode`);
+          $.on(window, 'popstate', this.cb.popstate);
+          $.on(d, 'scroll', this.scroll);
+          $.on(d, 'SortIndex', this.cb.resort);
+          // Header refresh button
+          this.button = $.el('a', {
+              title: 'Refresh',
+              href: 'javascript:;',
+          });
+          Icon.set(this.button, 'refresh', 'Refresh');
+          $.on(this.button, 'click', () => Index.update());
+          Header.addShortcut('index-refresh', this.button, 590);
+          // Header "Index Navigation" submenu
+          const entries = [];
+          this.inputs = (inputs = dict());
+          for (name in Config.Index) {
+              var arr = Config.Index[name];
+              if (arr instanceof Array) {
+                  var label = UI.checkbox(name, `${name[0]}${name.slice(1).toLowerCase()}`);
+                  label.title = arr[1];
+                  entries.push({ el: label });
+                  input = label.firstChild;
+                  $.on(input, 'change', $.cb.checked);
+                  inputs[name] = input;
+              }
+          }
+          $.on(inputs['Show Replies'], 'change', this.cb.replies);
+          $.on(inputs['Catalog Hover Expand'], 'change', this.cb.hover);
+          $.on(inputs['Pin Watched Threads'], 'change', this.cb.resort);
+          $.on(inputs['Anchor Hidden Threads'], 'change', this.cb.resort);
+          const watchSettings = (e) => {
+              if (input = $.getOwn(inputs, e.target.name)) {
+                  input.checked = e.target.checked;
+                  $.event('change', null, input);
+              }
+          };
+          $.on(d, 'OpenSettings', () => $.on($.id('fourchanx-settings'), 'change', watchSettings));
+          const sortEntry = UI.checkbox('Per-Board Sort Type', 'Per-board sort type', (typeof Conf['Index Sort'] === 'object'));
+          sortEntry.title = 'Set the sorting order of each board independently.';
+          $.on(sortEntry.firstChild, 'change', this.cb.perBoardSort);
+          entries.splice(3, 0, { el: sortEntry });
+          Header.menu.addEntry({
+              el: $.el('span', { textContent: 'Index Navigation' }),
+              order: 100,
+              subEntries: entries
+          });
+          // Navigation links at top of index
+          this.navLinks = $.el('div', { className: 'navLinks json-index' });
+          $.extend(this.navLinks, { innerHTML: NavLinksPage });
+          $('.cataloglink a', this.navLinks).href = CatalogLinks.catalog();
+          if (!BoardConfig.isArchived(g.BOARD.ID))
+              $('.archlistlink', this.navLinks).hidden = true;
+          $.on($('#index-last-refresh a', this.navLinks), 'click', this.cb.refreshFront);
+          // Search field
+          this.searchInput = $('#index-search', this.navLinks);
+          this.setupSearch();
+          $.on(this.searchInput, 'input', this.onSearchInput);
+          $.on($('#index-search-clear', this.navLinks), 'click', this.clearSearch);
+          Icon.set($('#index-search-clear', this.navLinks), 'xmark');
+          // Hidden threads toggle
+          this.hideLabel = $('#hidden-label', this.navLinks);
+          $.on($('#hidden-toggle a', this.navLinks), 'click', this.cb.toggleHiddenThreads);
+          // Drop-down menus and reverse sort toggle
+          this.selectRev = $('#index-rev', this.navLinks);
+          this.selectMode = $('#index-mode', this.navLinks);
+          this.selectSort = $('#index-sort', this.navLinks);
+          this.selectSize = $('#index-size', this.navLinks);
+          $.on(this.selectRev, 'change', this.cb.sort);
+          $.on(this.selectMode, 'change', this.cb.mode);
+          $.on(this.selectSort, 'change', this.cb.sort);
+          $.on(this.selectSize, 'change', $.cb.value);
+          $.on(this.selectSize, 'change', this.cb.size);
+          for (var select of [this.selectMode, this.selectSize]) {
+              select.value = Conf[select.name];
+          }
+          this.selectRev.checked = /-rev$/.test(Index.currentSort);
+          this.selectSort.value = Index.currentSort.replace(/-rev$/, '');
+          // Last Long Reply options
+          this.lastLongOptions = $('#lastlong-options', this.navLinks);
+          this.lastLongInputs = $$('input', this.lastLongOptions);
+          this.lastLongThresholds = [0, 0];
+          this.lastLongOptions.hidden = (this.selectSort.value !== 'lastlong');
+          for (let i = 0; i < this.lastLongInputs.length; i++) {
+              input = this.lastLongInputs[i];
+              $.on(input, 'change', this.cb.lastLongThresholds);
+              var tRaw = Conf[`Last Long Reply Thresholds ${i}`];
+              input.value = (this.lastLongThresholds[i] =
+                  typeof tRaw === 'object' ? (tRaw[g.BOARD.ID] ?? 100) : tRaw);
+          }
+          // Thread container
+          this.root = $.el('div', { className: 'board json-index' });
+          $.on(this.root, 'click', this.cb.hoverToggle);
+          this.cb.size();
+          this.cb.hover();
+          // Page list
+          this.pagelist = $.el('div', { className: 'pagelist json-index' });
+          $.extend(this.pagelist, { innerHTML: PageList });
+          $('.cataloglink a', this.pagelist).href = CatalogLinks.catalog();
+          $.on(this.pagelist, 'click', this.cb.pageNav);
+          this.update(true);
+          $.onExists(doc, 'title + *', () => d.title = d.title.replace(/\ -\ Page\ \d+/, ''));
+          $.onExists(doc, '.board > .thread > .postContainer, .board + *', () => {
+              g.SITE.Build.hat = $('.board > .thread > img:first-child');
+              if (g.SITE.Build.hat) {
+                  g.BOARD.threads.forEach((thread) => {
+                      if (thread.nodes.root)
+                          return $.prepend(thread.nodes.root, g.SITE.Build.hat.cloneNode(false));
+                  });
+                  $.addClass(doc, 'hats-enabled');
+                  $.addStyle(`.catalog-thread::after {background-image: url(${g.SITE.Build.hat.src});}`);
+              }
+              const board = $('.board');
+              $.replace(board, Index.root);
+              if (Index.loaded)
+                  $.event('PostsInserted', null, Index.root);
+              // Hacks:
+              // - When removing an element from the document during page load,
+              //   its ancestors will still be correctly created inside of it.
+              // - Creating loadable elements inside of an origin-less document
+              //   will not download them.
+              // - Combine the two and you get a download canceller!
+              //   Does not work on Firefox unfortunately. bugzil.la/939713
+              let el;
+              try {
+                  d.implementation.createDocument(null, null, null).appendChild(board);
+              }
+              catch (error) { }
+              for (el of $$('.navLinks')) {
+                  $.rm(el);
+              }
+              $.rm($.id('ctrl-top'));
+              const topNavPos = $.id('delform').previousElementSibling;
+              $.before(topNavPos, $.el('hr'));
+              $.before(topNavPos, Index.navLinks);
+              const timeEl = $('#index-last-refresh time', Index.navLinks);
+              if (timeEl.dataset.utc)
+                  return RelativeDates.update(timeEl);
+          });
+          PageReady.ready(() => {
+              let pagelist = $('.pagelist');
+              if (pagelist)
+                  $.replace(pagelist, Index.pagelist);
+              $.rmClass(doc, 'index-loading');
+          });
+      },
+      scroll() {
+          if (Index.req || !Index.liveThreadData || (Conf['Index Mode'] !== 'infinite')
+              || (window.scrollY <= (doc.scrollHeight - (300 + window.innerHeight))))
+              return;
+          Index.pageNum ?? (Index.pageNum = Index.currentPage); // Avoid having to pushState to keep track of the current page
+          const pageNum = ++Index.pageNum;
+          if (pageNum > Index.pagesNum)
+              return Index.endNotice();
+          const threadIDs = Index.threadsOnPage(pageNum);
+          Index.buildStructure(threadIDs);
+      },
+      endNotice: (function () {
+          let notify = false;
+          const reset = () => notify = false;
+          return () => {
+              if (notify)
+                  return;
+              notify = true;
+              new Notice('info', "Last page reached.", 2);
+              setTimeout(reset, 3 * SECOND);
+          };
+      })(),
+      menu: {
+          init() {
+              if ((g.VIEW !== 'index') || !Conf.Menu || !Conf['Thread Hiding Link'] || !indexEnabledOn(g.BOARD))
+                  return;
+              Menu.menu.addEntry({
+                  el: $.el('a', {
+                      href: 'javascript:;',
+                      className: 'has-shortcut-text'
+                  }, { innerHTML: "<span></span><span class=\"shortcut-text\">Shift+click</span>" }),
+                  order: 20,
+                  open({ thread }) {
+                      if (Conf['Index Mode'] !== 'catalog')
+                          return false;
+                      this.el.firstElementChild.textContent = thread.isHidden
+                          ? 'Unhide' : 'Hide';
+                      if (this.cb)
+                          $.off(this.el, 'click', this.cb);
+                      this.cb = () => {
+                          $.event('CloseMenu');
+                          Index.toggleHide(thread);
+                      };
+                      $.on(this.el, 'click', this.cb);
+                      return true;
+                  }
+              });
+          }
+      },
+      node() {
+          if (this.isReply || this.isClone || !Index.threadPosition[this.ID])
+              return;
+          this.thread.setPage(Math.floor(Index.threadPosition[this.ID] / Index.threadsNumPerPage) + 1);
+      },
+      catalogNode() {
+          $.on(this.nodes.root, 'click', e => {
+              if ((e.button !== 0) || !e.shiftKey)
+                  return;
+              e.preventDefault();
+              getSelection().removeAllRanges();
+              if (Conf['MD5 Quick Filter in the Catalog'] && e.target.classList.contains('catalog-thumb')) {
+                  Filter.quickFilterMD5.call(this.thread.OP);
+              }
+              else {
+                  Index.toggleHide(this.thread);
+              }
+          });
+      },
+      toggleHide(thread) {
+          if (Index.showHiddenThreads) {
+              ThreadHiding.show(thread);
+              if (!ThreadHiding.db.get({ boardID: thread.board.ID, threadID: thread.ID }))
+                  return;
+              // Don't save when un-hiding filtered threads.
+          }
+          else {
+              ThreadHiding.hide(thread);
+          }
+          ThreadHiding.saveHiddenState(thread);
+      },
+      cycleSortType() {
+          const types = Index.selectSort.options.filter(option => !option.disabled);
+          let i;
+          for (i = 0; i < types.length; i++) {
+              var type = types[i];
+              if (type.selected)
+                  break;
+          }
+          types[(i + 1) % types.length].selected = true;
+          $.event('change', null, Index.selectSort);
+      },
+      cb: {
+          initFinished() {
+              Index.initFinishedFired = true;
+              return $.queueTask(() => Index.cb.postsInserted());
+          },
+          postsInserted() {
+              if (!Index.initFinishedFired)
+                  return;
+              let n = 0;
+              g.posts.forEach((post) => {
+                  if (!post.isFetchedQuote && !post.indexRefreshSeen && doc.contains(post.nodes.root)) {
+                      post.indexRefreshSeen = true;
+                      return n++;
+                  }
+              });
+              if (n)
+                  return $.event('IndexRefresh');
+          },
+          toggleHiddenThreads() {
+              $('#hidden-toggle a', Index.navLinks).textContent = (Index.showHiddenThreads = !Index.showHiddenThreads) ? 'Hide' : 'Show';
+              Index.sort();
+              Index.buildIndex();
+          },
+          mode() {
+              Index.pushState({ mode: this.value });
+              Index.pageLoad(false);
+          },
+          sort() {
+              const value = Index.selectRev.checked ? Index.selectSort.value + "-rev" : Index.selectSort.value;
+              Index.pushState({ sort: value });
+              Index.pageLoad(false);
+          },
+          resort(e) {
+              Index.changed.order = true;
+              if (!e?.detail?.deferred)
+                  Index.pageLoad(false);
+          },
+          perBoardSort() {
+              Conf['Index Sort'] = this.checked ? dict() : '';
+              Index.saveSort();
+              for (let i = 0; i < 2; i++) {
+                  Conf[`Last Long Reply Thresholds ${i}`] = this.checked ? dict() : '';
+                  Index.saveLastLongThresholds(i);
+              }
+          },
+          lastLongThresholds() {
+              const i = [...this.parentNode.children].indexOf(this);
+              const value = +this.value;
+              if (!Number.isFinite(value)) {
+                  this.value = Index.lastLongThresholds[i];
+                  return;
+              }
+              Index.lastLongThresholds[i] = value;
+              Index.saveLastLongThresholds(i);
+              Index.changed.order = true;
+              Index.pageLoad(false);
+          },
+          size(e) {
+              if (Conf['Index Mode'] !== 'catalog') {
+                  $.rmClass(Index.root, 'catalog-small');
+                  $.rmClass(Index.root, 'catalog-large');
+              }
+              else if (Conf['Index Size'] === 'small') {
+                  $.addClass(Index.root, 'catalog-small');
+                  $.rmClass(Index.root, 'catalog-large');
+              }
+              else {
+                  $.addClass(Index.root, 'catalog-large');
+                  $.rmClass(Index.root, 'catalog-small');
+              }
+              if (e)
+                  Index.buildIndex();
+          },
+          replies() { Index.buildIndex(); },
+          hover: () => doc.classList.toggle('catalog-hover-expand', Conf['Catalog Hover Expand']),
+          hoverToggle(e) {
+              if (Conf['Catalog Hover Toggle'] && $.hasClass(doc, 'catalog-mode') && !$.modifiedClick(e) && !$.x('ancestor-or-self::a', e.target)) {
+                  let thread;
+                  const input = Index.inputs['Catalog Hover Expand'];
+                  input.checked = !input.checked;
+                  $.event('change', null, input);
+                  if (thread = Get.threadFromNode(e.target)) {
+                      Index.cb.catalogReplies.call(thread);
+                      Index.cb.hoverAdjust.call(thread.OP.nodes);
+                  }
+              }
+          },
+          popstate(e) {
+              if (e?.state) {
+                  const { searched, mode, sort } = e.state;
+                  const page = Index.getCurrentPage();
+                  Index.setState({ search: searched, mode, sort, page });
+                  Index.pageLoad(false);
+              }
+              else {
+                  // page load or hash change
+                  const nCommands = Index.processHash();
+                  if (Conf['Refreshed Navigation'] && nCommands) {
+                      Index.update();
+                  }
+                  else {
+                      Index.pageLoad();
+                  }
+              }
+          },
+          pageNav(e) {
+              let a;
+              if ($.modifiedClick(e))
+                  return;
+              switch (e.target.nodeName) {
+                  case 'BUTTON':
+                      e.target.blur();
+                      a = e.target.parentNode;
+                      break;
+                  case 'A':
+                      a = e.target;
+                      break;
+                  default:
+                      return;
+              }
+              if (a.textContent === 'Catalog')
+                  return;
+              e.preventDefault();
+              Index.userPageNav(+a.pathname.split(/\/+/)[2] || 1);
+          },
+          refreshFront() {
+              Index.pushState({ page: 1 });
+              Index.update();
+          },
+          catalogReplies() {
+              if (Conf['Show Replies'] && $.hasClass(doc, 'catalog-hover-expand') && !this.catalogView.nodes.replies)
+                  return Index.buildCatalogReplies(this);
+          },
+          hoverAdjust() {
+              // Prevent hovered catalog threads from going offscreen.
+              if (!$.hasClass(doc, 'catalog-hover-expand'))
+                  return;
+              const rect = this.post.getBoundingClientRect();
+              let x = $.minmax(0, -rect.left, doc.clientWidth - rect.right);
+              if (x) {
+                  const { style } = this.post;
+                  style.left = `${x}px`;
+                  style.right = `${-x}px`;
+                  $.one(this.root, 'mouseleave', () => style.left = (style.right = null));
+              }
+          }
+      },
+      // Scroll to navlinks, or top of board if navlinks are hidden.
+      scrollToIndex: () => Header.scrollToIfNeeded((Index.navLinks.getBoundingClientRect().height ? Index.navLinks : Index.root)),
+      getCurrentPage: () => +window.location.pathname.split(/\/+/)[2] || 1,
+      userPageNav(page) {
+          Index.pushState({ page });
+          if (Conf['Refreshed Navigation']) {
+              Index.update();
+          }
+          else {
+              Index.pageLoad();
+          }
+      },
+      hashCommands: {
+          mode: {
+              'paged': 'paged',
+              'infinite-scrolling': 'infinite',
+              'infinite': 'infinite',
+              'all-threads': 'all pages',
+              'all-pages': 'all pages',
+              'catalog': 'catalog'
+          },
+          sort: {
+              'bump-order': 'bump',
+              'last-reply': 'lastreply',
+              'last-long-reply': 'lastlong',
+              'creation-date': 'birth',
+              'reply-count': 'replycount',
+              'file-count': 'filecount',
+              'posts-per-minute': 'activity'
+          }
+      },
+      processHash() {
+          // XXX https://bugzilla.mozilla.org/show_bug.cgi?id=483304
+          let hash = location.href.match(/#.*/)?.[0] || '';
+          const state = { replace: true };
+          const commands = hash.slice(1).split('/');
+          const leftover = [];
+          for (var command of commands) {
+              let mode, sort;
+              if (mode = $.getOwn(Index.hashCommands.mode, command)) {
+                  state.mode = mode;
+              }
+              else if (command === 'index') {
+                  state.mode = Conf['Previous Index Mode'];
+                  state.page = 1;
+              }
+              else if (sort = $.getOwn(Index.hashCommands.sort, command.replace(/-rev$/, ''))) {
+                  state.sort = sort;
+                  if (/-rev$/.test(command))
+                      state.sort += '-rev';
+              }
+              else if (/^s=/.test(command)) {
+                  state.search = decodeURIComponent(command.slice(2)).replace(/\+/g, ' ').trim();
+              }
+              else {
+                  leftover.push(command);
+              }
+          }
+          hash = leftover.join('/');
+          if (hash)
+              state.hash = `#${hash}`;
+          Index.pushState(state);
+          return commands.length - leftover.length;
+      },
+      pushState(state) {
+          let { search, hash, replace } = state;
+          let pageBeforeSearch = history.state?.oldpage;
+          if ((search != null) && (search !== Index.search)) {
+              state.page = search ? 1 : (pageBeforeSearch || 1);
+              if (!search) {
+                  pageBeforeSearch = undefined;
+              }
+              else if (!Index.search) {
+                  pageBeforeSearch = Index.currentPage;
+              }
+          }
+          Index.setState(state);
+          const pathname = Index.currentPage === 1 ? `/${g.BOARD}/` : `/${g.BOARD}/${Index.currentPage}`;
+          hash || (hash = '');
+          return history[replace ? 'replaceState' : 'pushState']({
+              mode: Conf['Index Mode'],
+              sort: Index.currentSort,
+              searched: Index.search,
+              oldpage: pageBeforeSearch
+          }, '', `${location.protocol}//${location.host}${pathname}${hash}`);
+      },
+      setState({ search, mode, sort, page, hash }) {
+          if ((search != null) && (search !== Index.search)) {
+              Index.changed.search = true;
+              Index.search = search;
+          }
+          if ((mode != null) && (mode !== Conf['Index Mode'])) {
+              Index.changed.mode = true;
+              Conf['Index Mode'] = mode;
+              $.set('Index Mode', mode);
+              if ((mode !== 'catalog') && (Conf['Previous Index Mode'] !== mode)) {
+                  Conf['Previous Index Mode'] = mode;
+                  $.set('Previous Index Mode', mode);
+              }
+          }
+          if ((sort != null) && (sort !== Index.currentSort)) {
+              Index.changed.sort = true;
+              Index.currentSort = sort;
+              Index.saveSort();
+          }
+          if (['all pages', 'catalog'].includes(Conf['Index Mode']))
+              page = 1;
+          if ((page != null) && (page !== Index.currentPage)) {
+              Index.changed.page = true;
+              Index.currentPage = page;
+          }
+          if (hash != null)
+              return Index.changed.hash = true;
+      },
+      savePerBoard(key, value) {
+          typeof Conf[key] === 'object'
+              ? (Conf[key][g.BOARD.ID] = value) : (Conf[key] = value);
+          $.set(key, Conf[key]);
+      },
+      saveSort() { Index.savePerBoard('Index Sort', Index.currentSort); },
+      saveLastLongThresholds(i) {
+          Index.savePerBoard(`Last Long Reply Thresholds ${i}`, Index.lastLongThresholds[i]);
+      },
+      pageLoad(scroll = true) {
+          if (!Index.liveThreadData)
+              return;
+          let { threads, order, search, mode, sort, page, hash } = Index.changed;
+          threads || (threads = search);
+          order || (order = sort);
+          if (threads || order)
+              Index.sort();
+          if (threads)
+              Index.buildPagelist();
+          if (search)
+              Index.setupSearch();
+          if (mode)
+              Index.setupMode();
+          if (sort)
+              Index.setupSort();
+          if (threads || mode || page || order)
+              Index.buildIndex();
+          if (threads || page)
+              Index.setPage();
+          if (scroll && !hash)
+              Index.scrollToIndex();
+          Index.changed = {};
+      },
+      setupMode() {
+          for (var mode of ['paged', 'infinite', 'all pages', 'catalog']) {
+              $[mode === Conf['Index Mode'] ? 'addClass' : 'rmClass'](doc, `${mode.replace(/\ /g, '-')}-mode`);
+          }
+          Index.selectMode.value = Conf['Index Mode'];
+          Index.cb.size();
+          Index.showHiddenThreads = false;
+          $('#hidden-toggle a', Index.navLinks).textContent = 'Show';
+      },
+      setupSort() {
+          Index.selectRev.checked = /-rev$/.test(Index.currentSort);
+          Index.selectSort.value = Index.currentSort.replace(/-rev$/, '');
+          Index.lastLongOptions.hidden = (Index.selectSort.value !== 'lastlong');
+      },
+      getPagesNum: () => Index.search ? Math.ceil(Index.sortedThreadIDs.length / Index.threadsNumPerPage) : Index.pagesNum,
+      getMaxPageNum: () => Math.max(1, Index.getPagesNum()),
+      buildPagelist() {
+          const pagesRoot = $('.pages', Index.pagelist);
+          const maxPageNum = Index.getMaxPageNum();
+          if (pagesRoot.childElementCount !== maxPageNum) {
+              const nodes = [];
+              for (let i = 1, end = maxPageNum; i <= end; i++) {
+                  var a = $.el('a', {
+                      textContent: i,
+                      href: i === 1 ? './' : i
+                  });
+                  nodes.push($.tn('['), a, $.tn('] '));
+              }
+              $.rmAll(pagesRoot);
+              $.add(pagesRoot, nodes);
+          }
+      },
+      setPage() {
+          let a, strong;
+          const pageNum = Index.currentPage;
+          const maxPageNum = Index.getMaxPageNum();
+          const pagesRoot = $('.pages', Index.pagelist);
+          // Previous/Next buttons
+          const prev = pagesRoot.previousElementSibling.firstElementChild;
+          const next = pagesRoot.nextElementSibling.firstElementChild;
+          let href = Math.max(pageNum - 1, 1);
+          prev.href = href === 1 ? './' : href;
+          prev.firstElementChild.disabled = href === pageNum;
+          href = Math.min(pageNum + 1, maxPageNum);
+          next.href = href === 1 ? './' : href;
+          next.firstElementChild.disabled = href === pageNum;
+          // <strong> current page
+          if (strong = $('strong', pagesRoot)) {
+              if (+strong.textContent === pageNum)
+                  return;
+              $.replace(strong, strong.firstChild);
+          }
+          else {
+              strong = $.el('strong');
+          }
+          if (a = pagesRoot.children[pageNum - 1]) {
+              $.before(a, strong);
+              $.add(strong, a);
+          }
+      },
+      updateHideLabel() {
+          if (!Index.hideLabel)
+              return;
+          let hiddenCount = 0;
+          for (var threadID of Index.liveThreadIDs) {
+              if (Index.isHidden(threadID))
+                  hiddenCount++;
+          }
+          if (!hiddenCount) {
+              Index.hideLabel.hidden = true;
+              if (Index.showHiddenThreads)
+                  Index.cb.toggleHiddenThreads();
+              return;
+          }
+          Index.hideLabel.hidden = false;
+          return $('#hidden-count', Index.navLinks).textContent = hiddenCount === 1 ?
+              '1 hidden thread' : `${hiddenCount} hidden threads`;
+      },
+      update(firstTime) {
+          let oldReq = Index.req;
+          if (oldReq) {
+              delete Index.req;
+              oldReq.abort();
+          }
+          if (Conf['Index Refresh Notifications']) {
+              // Optional notification for manual refreshes
+              if (!Index.notice)
+                  Index.notice = new Notice('info', 'Refreshing index...');
+              if (!Index.nTimeout) {
+                  Index.nTimeout = setTimeout(() => {
+                      if (Index.notice)
+                          Index.notice.el.lastElementChild.textContent += ' (disable JSON Index if this takes too long)';
+                  }, 3 * SECOND);
+              }
+          }
+          else {
+              // Also display notice if Index Refresh is taking too long
+              if (!Index.nTimeout)
+                  Index.nTimeout = setTimeout(() => Index.notice || (Index.notice = new Notice('info', 'Refreshing index... (disable JSON Index if this takes too long)')), 3 * SECOND);
+          }
+          // Hard refresh in case of incomplete page load.
+          if (!firstTime && (d.readyState !== 'loading') && !$('.board + *')) {
+              location.reload();
+              return;
+          }
+          Index.req = $.whenModified(g.SITE.urls.catalogJSON({ boardID: g.BOARD.ID }), 'Index', Index.load);
+          $.addClass(Index.button, 'spin');
+      },
+      load() {
+          if (this !== Index.req)
+              return; // aborted
+          $.rmClass(Index.button, 'spin');
+          const { notice, nTimeout } = Index;
+          if (nTimeout)
+              clearTimeout(nTimeout);
+          delete Index.nTimeout;
+          delete Index.req;
+          delete Index.notice;
+          if (![200, 304].includes(this.status)) {
+              let err = `Index refresh failed. ${this.status ? `Error ${this.statusText} (${this.status})` : 'Connection Error'}`;
+              if (notice) {
+                  notice.setType('warning');
+                  notice.el.lastElementChild.textContent = err;
+                  setTimeout(notice.close, SECOND);
+              }
+              else {
+                  new Notice('warning', err, 1);
+              }
+              return;
+          }
+          try {
+              if (this.status === 200) {
+                  Index.parse(this.response);
+              }
+              else if (this.status === 304) {
+                  Index.pageLoad();
+              }
+          }
+          catch (error) {
+              c.error(`Index failure: ${error.message}`, error.stack);
+              if (notice) {
+                  notice.setType('error');
+                  notice.el.lastElementChild.textContent = 'Index refresh failed.';
+                  setTimeout(notice.close, SECOND);
+              }
+              else {
+                  new Notice('error', 'Index refresh failed.', 1);
+              }
+              return;
+          }
+          if (notice) {
+              if (Conf['Index Refresh Notifications']) {
+                  notice.setType('success');
+                  notice.el.lastElementChild.textContent = 'Index refreshed!';
+                  setTimeout(notice.close, SECOND);
+              }
+              else {
+                  notice.close();
+              }
+          }
+          const timeEl = $('#index-last-refresh time', Index.navLinks);
+          timeEl.dataset.utc = Date.parse(this.getResponseHeader('Last-Modified'));
+          RelativeDates.update(timeEl);
+      },
+      parse(pages) {
+          $.cleanCache(url => /^https?:\/\/a\.4cdn\.org\//.test(url));
+          Index.parseThreadList(pages);
+          Index.changed.threads = true;
+          Index.pageLoad();
+      },
+      parseThreadList(pages) {
+          Index.pagesNum = pages.length;
+          Index.threadsNumPerPage = pages[0]?.threads.length || 1;
+          Index.liveThreadData = pages.reduce(((arr, next) => arr.concat(next.threads)), []);
+          Index.liveThreadIDs = Index.liveThreadData.map(data => data.no);
+          Index.liveThreadDict = dict();
+          Index.threadPosition = dict();
+          Index.parsedThreads = dict();
+          Index.replyData = dict();
+          for (let i = 0; i < Index.liveThreadData.length; i++) {
+              var obj, results;
+              var data = Index.liveThreadData[i];
+              Index.liveThreadDict[data.no] = data;
+              Index.threadPosition[data.no] = i;
+              Index.parsedThreads[data.no] = (obj = g.SITE.Build.parseJSON(data, g.BOARD));
+              results = Filter.test(obj);
+              obj.isOnTop = results.top;
+              obj.isHidden = results.hide || ThreadHiding.isHidden(obj.boardID, obj.threadID);
+              if (data.last_replies) {
+                  for (var reply of data.last_replies) {
+                      Index.replyData[`${g.BOARD}.${reply.no}`] = reply;
+                  }
+              }
+          }
+          if (Index.liveThreadData[0])
+              g.SITE.Build.spoilerRange[g.BOARD.ID] = Index.liveThreadData[0].custom_spoiler;
+          g.BOARD.threads.forEach((thread) => {
+              if (!Index.liveThreadIDs.includes(thread.ID))
+                  return thread.collect();
+          });
+          $.event('IndexUpdate', { threads: ((Index.liveThreadIDs.map((ID) => `${g.BOARD}.${ID}`))) });
+      },
+      isHidden(threadID) {
+          let thread = g.BOARD.threads.get(threadID);
+          if (thread && thread.OP && !thread.OP.isFetchedQuote) {
+              return thread.isHidden;
+          }
+          else {
+              return Index.parsedThreads[threadID].isHidden;
+          }
+      },
+      isHiddenReply: (threadID, replyData) => PostHiding.isHidden(g.BOARD.ID, threadID, replyData.no) || Filter.isHidden(g.SITE.Build.parseJSON(replyData, g.BOARD)),
+      buildThreads(threadIDs, isCatalog, withReplies) {
+          let errors;
+          const threads = [];
+          const newThreads = [];
+          let newPosts = [];
+          for (var ID of threadIDs) {
+              var opRoot, thread;
+              try {
+                  var OP;
+                  var threadData = Index.liveThreadDict[ID];
+                  if (thread = g.BOARD.threads.get(ID)) {
+                      var isStale = (thread.json !== threadData) && (JSON.stringify(thread.json) !== JSON.stringify(threadData));
+                      if (isStale) {
+                          thread.setCount('post', threadData.replies + 1, threadData.bumplimit);
+                          thread.setCount('file', threadData.images + !!threadData.ext, threadData.imagelimit);
+                          thread.setStatus('Sticky', !!threadData.sticky);
+                          thread.setStatus('Closed', !!threadData.closed);
+                      }
+                      if (thread.catalogView) {
+                          $.rm(thread.catalogView.nodes.replies);
+                          thread.catalogView.nodes.replies = null;
+                      }
+                  }
+                  else {
+                      thread = new Thread(ID, g.BOARD);
+                      newThreads.push(thread);
+                  }
+                  var lastPost = threadData.last_replies && threadData.last_replies.length
+                      ? threadData.last_replies[threadData.last_replies.length - 1].no : ID;
+                  if (lastPost > thread.lastPost)
+                      thread.lastPost = lastPost;
+                  thread.json = threadData;
+                  threads.push(thread);
+                  if ((OP = thread.OP) && !OP.isFetchedQuote) {
+                      OP.setCatalogOP(isCatalog);
+                      thread.setPage(Math.floor(Index.threadPosition[ID] / Index.threadsNumPerPage) + 1);
+                  }
+                  else {
+                      var obj = Index.parsedThreads[ID];
+                      opRoot = g.SITE.Build.post(obj);
+                      OP = new Post(opRoot, thread, g.BOARD);
+                      OP.filterResults = obj.filterResults;
+                      newPosts.push(OP);
+                  }
+                  if (!isCatalog || !thread.nodes.root)
+                      g.SITE.Build.thread(thread, threadData, withReplies);
+              }
+              catch (err) {
+                  // Skip posts that we failed to parse.
+                  if (!errors)
+                      errors = [];
+                  errors.push({
+                      message: `Parsing of Thread No.${thread} failed. Thread will be skipped.`,
+                      error: err,
+                      html: opRoot?.outerHTML
+                  });
+              }
+          }
+          if (errors)
+              Main.handleErrors(errors);
+          if (withReplies)
+              newPosts = newPosts.concat(Index.buildReplies(threads));
+          Main.callbackNodes('Thread', newThreads);
+          Main.callbackNodes('Post', newPosts);
+          Index.updateHideLabel();
+          $.event('IndexRefreshInternal', { threadIDs: (threads.map((t) => t.fullID)), isCatalog });
+          return threads;
+      },
+      buildReplies(threads) {
+          let errors;
+          const posts = [];
+          for (var thread of threads) {
+              let lastReplies = Index.liveThreadDict[thread.ID].last_replies;
+              if (!lastReplies)
+                  continue;
+              var nodes = [];
+              for (var data of lastReplies) {
+                  var node, post;
+                  if ((post = thread.posts.get(data.no)) && !post.isFetchedQuote) {
+                      nodes.push(post.nodes.root);
+                      continue;
+                  }
+                  nodes.push(node = g.SITE.Build.postFromObject(data, thread.board.ID));
+                  try {
+                      posts.push(new Post(node, thread, thread.board));
+                  }
+                  catch (err) {
+                      // Skip posts that we failed to parse.
+                      errors || (errors = []);
+                      errors.push({
+                          message: `Parsing of Post No.${data.no} failed. Post will be skipped.`,
+                          error: err,
+                          html: node?.outerHTML
+                      });
+                  }
+              }
+              $.add(thread.nodes.root, nodes);
+          }
+          if (errors)
+              Main.handleErrors(errors);
+          return posts;
+      },
+      buildCatalogViews(threads) {
+          const catalogThreads = [];
+          for (var thread of threads) {
+              if (!thread.catalogView) {
+                  var { ID } = thread;
+                  var page = Math.floor(Index.threadPosition[ID] / Index.threadsNumPerPage) + 1;
+                  var root = g.SITE.Build.catalogThread(thread, Index.liveThreadDict[ID], page);
+                  catalogThreads.push(new CatalogThread(root, thread));
+              }
+          }
+          Main.callbackNodes('CatalogThread', catalogThreads);
+      },
+      sizeCatalogViews(threads) {
+          // XXX When browsers support CSS3 attr(), use it instead.
+          const size = Conf['Index Size'] === 'small' ? 150 : 250;
+          for (var thread of threads) {
+              var { thumb } = thread.catalogView.nodes;
+              var { width, height } = thumb.dataset;
+              if (!width)
+                  continue;
+              var ratio = size / Math.max(width, height);
+              thumb.style.width = (width * ratio) + 'px';
+              thumb.style.height = (height * ratio) + 'px';
+          }
+      },
+      buildCatalogReplies(thread) {
+          const { nodes } = thread.catalogView;
+          let lastReplies = Index.liveThreadDict[thread.ID].last_replies;
+          if (!lastReplies)
+              return;
+          const replies = [];
+          for (var data of lastReplies) {
+              if (Index.isHiddenReply(thread.ID, data))
+                  continue;
+              var reply = g.SITE.Build.catalogReply(thread, data);
+              RelativeDates.update($('time', reply));
+              $.on($('.catalog-reply-preview', reply), 'mouseover', QuotePreview.mouseover);
+              replies.push(reply);
+          }
+          nodes.replies = $.el('div', { className: 'catalog-replies' });
+          $.add(nodes.replies, replies);
+          $.add(thread.OP.nodes.post, nodes.replies);
+      },
+      sort() {
+          const { liveThreadIDs, liveThreadData } = Index;
+          if (!liveThreadData)
+              return;
+          const tmp_time = new Date().getTime() / 1000;
+          const sortType = Index.currentSort.replace(/-rev$/, '');
+          Index.sortedThreadIDs = (() => {
+              switch (sortType) {
+                  case 'lastreply':
+                  case 'lastlong':
+                      var repliesAvailable = liveThreadData.some(thread => thread.last_replies?.length);
+                      var lastlong = (thread) => {
+                          if (!repliesAvailable)
+                              return thread.last_modified;
+                          const iterable = thread.last_replies || [];
+                          for (let i = iterable.length - 1; i >= 0; i--) {
+                              var r = iterable[i];
+                              if (Index.isHiddenReply(thread.no, r))
+                                  continue;
+                              if (sortType === 'lastreply')
+                                  return r;
+                              var len = r.com ? g.SITE.Build.parseComment(r.com).replace(/[^a-z]/ig, '').length : 0;
+                              if (len >= Index.lastLongThresholds[+!!r.ext])
+                                  return r;
+                          }
+                          if (thread.omitted_posts && thread.last_replies?.length) {
+                              return thread.last_replies[0];
+                          }
+                          else {
+                              return thread;
+                          }
+                      };
+                      var lastlongD = dict();
+                      for (var thread of liveThreadData) {
+                          lastlongD[thread.no] = lastlong(thread).no;
+                      }
+                      return [...liveThreadData].sort((a, b) => lastlongD[b.no] - lastlongD[a.no]).map(post => post.no);
+                  case 'birth': return [...liveThreadIDs].sort((a, b) => b - a);
+                  case 'replycount': return [...liveThreadData].sort((a, b) => b.replies - a.replies).map(post => post.no);
+                  case 'filecount': return [...liveThreadData].sort((a, b) => b.images - a.images).map(post => post.no);
+                  case 'activity': return [...liveThreadData].sort((a, b) => ((tmp_time - a.time) / (a.replies + 1)) - ((tmp_time - b.time) / (b.replies + 1))).map(post => post.no);
+                  case 'bump':
+                  default: return liveThreadIDs;
+              }
+          })();
+          if (/-rev$/.test(Index.currentSort))
+              Index.sortedThreadIDs.reverse();
+          let threadIDs = Index.querySearch(Index.search);
+          if (Index.search && threadIDs)
+              Index.sortedThreadIDs = threadIDs;
+          // Sticky threads
+          Index.sortOnTop(obj => obj.isSticky);
+          // Highlighted threads
+          Index.sortOnTop(obj => obj.isOnTop || (Conf['Pin Watched Threads'] && ThreadWatcher.isWatchedRaw(obj.boardID, obj.threadID)));
+          // Non-hidden threads
+          if (Conf['Anchor Hidden Threads'])
+              Index.sortOnTop(obj => !Index.isHidden(obj.threadID));
+      },
+      sortOnTop(match) {
+          const topThreads = [];
+          const bottomThreads = [];
+          for (var ID of Index.sortedThreadIDs) {
+              (match(Index.parsedThreads[ID]) ? topThreads : bottomThreads).push(ID);
+          }
+          Index.sortedThreadIDs = topThreads.concat(bottomThreads);
+      },
+      buildIndex() {
+          let threadIDs;
+          if (!Index.liveThreadData)
+              return;
+          switch (Conf['Index Mode']) {
+              case 'all pages':
+                  threadIDs = Index.sortedThreadIDs;
+                  break;
+              case 'catalog':
+                  threadIDs = Index.sortedThreadIDs.filter(ID => !Index.isHidden(ID) !== Index.showHiddenThreads);
+                  break;
+              default:
+                  threadIDs = Index.threadsOnPage(Index.currentPage);
+          }
+          delete Index.pageNum;
+          $.rmAll(Index.root);
+          $.rmAll(Header.hover);
+          if (Index.loaded && Index.root.parentNode)
+              $.event('PostsRemoved', null, Index.root);
+          if (Conf['Index Mode'] === 'catalog') {
+              Index.buildCatalog(threadIDs);
+          }
+          else {
+              Index.buildStructure(threadIDs);
+          }
+      },
+      threadsOnPage(pageNum) {
+          const nodesPerPage = Index.threadsNumPerPage;
+          const offset = nodesPerPage * (pageNum - 1);
+          return Index.sortedThreadIDs.slice(offset, offset + nodesPerPage);
+      },
+      buildStructure(threadIDs) {
+          const threads = Index.buildThreads(threadIDs, false, Conf['Show Replies']);
+          const nodes = [];
+          for (var thread of threads) {
+              nodes.push(thread.nodes.root, $.el('hr'));
+          }
+          $.add(Index.root, nodes);
+          if (Index.root.parentNode)
+              $.event('PostsInserted', null, Index.root);
+          Index.loaded = true;
+      },
+      buildCatalog(threadIDs) {
+          let i = 0;
+          const n = threadIDs.length;
+          let node0 = null;
+          var fn = () => {
+              if (node0 && !node0.parentNode)
+                  return; // Index.root cleared
+              const j = (i > 0) && Index.root.parentNode ? n : i + 30;
+              node0 = Index.buildCatalogPart(threadIDs.slice(i, j))[0];
+              i = j;
+              if (i < n) {
+                  return $.queueTask(fn);
+              }
+              else {
+                  if (Index.root.parentNode)
+                      $.event('PostsInserted', null, Index.root);
+                  return Index.loaded = true;
+              }
+          };
+          fn();
+      },
+      buildCatalogPart(threadIDs) {
+          const threads = Index.buildThreads(threadIDs, true);
+          Index.buildCatalogViews(threads);
+          Index.sizeCatalogViews(threads);
+          const nodes = [];
+          for (var thread of threads) {
+              thread.OP.setCatalogOP(true);
+              $.add(thread.catalogView.nodes.root, thread.OP.nodes.root);
+              nodes.push(thread.catalogView.nodes.root);
+              $.on(thread.catalogView.nodes.root, 'mouseenter', Index.cb.catalogReplies.bind(thread));
+              $.on(thread.OP.nodes.root, 'mouseenter', Index.cb.hoverAdjust.bind(thread.OP.nodes));
+          }
+          $.add(Index.root, nodes);
+          return nodes;
+      },
+      clearSearch() {
+          Index.searchInput.value = '';
+          Index.onSearchInput();
+          Index.searchInput.focus();
+      },
+      setupSearch() {
+          Index.searchInput.value = Index.search;
+          if (Index.search) {
+              Index.searchInput.dataset.searching = 1;
+          }
+          else {
+              // XXX https://bugzilla.mozilla.org/show_bug.cgi?id=1021289
+              Index.searchInput.removeAttribute('data-searching');
+          }
+      },
+      onSearchInput() {
+          const search = Index.searchInput.value.trim();
+          if (search === Index.search)
+              return;
+          Index.pushState({
+              search,
+              replace: !!search === !!Index.search
+          });
+          Index.pageLoad(false);
+      },
+      querySearch(query) {
+          let keywords, match;
+          if (match = query.match(/^([\w+]+):\/(.*)\/(\w*)$/)) {
+              let regexp;
+              try {
+                  regexp = RegExp(match[2], match[3]);
+              }
+              catch (error) {
+                  return [];
+              }
+              return Index.sortedThreadIDs.filter(ID => regexp.test(Filter.values(match[1], Index.parsedThreads[ID]).join('\n')));
+          }
+          if (!(keywords = query.toLowerCase().match(/\S+/g)))
+              return;
+          return Index.sortedThreadIDs.filter(ID => Index.searchMatch(Index.parsedThreads[ID], keywords));
+      },
+      searchMatch(obj, keywords) {
+          const { info, file } = obj;
+          info.comment ?? (info.comment = g.SITE.Build.parseComment(info.commentHTML.innerHTML));
+          let text = [];
+          for (var key of ['comment', 'subject', 'name', 'tripcode']) {
+              if (key in info)
+                  text.push(info[key]);
+          }
+          if (file)
+              text.push(file.name);
+          text = text.join(' ').toLowerCase();
+          for (var keyword of keywords) {
+              if (-1 === text.indexOf(keyword))
+                  return false;
+          }
+          return true;
+      }
+  };
+
+  var ThreadHiding = {
+      init() {
+          if (!['index', 'catalog'].includes(g.VIEW) || (!Conf['Thread Hiding Buttons'] && !(Conf.Menu && Conf['Thread Hiding Link']) && !Conf['JSON Index']))
+              return;
+          this.db = new DataBoard('hiddenThreads');
+          if (g.VIEW === 'catalog')
+              return this.catalogWatch();
+          this.catalogSet(g.BOARD);
+          $.on(d, 'IndexRefreshInternal', this.onIndexRefresh);
+          if (Conf['Thread Hiding Buttons'])
+              $.addClass(doc, 'thread-hide');
+          Callbacks.Post.push({
+              name: 'Thread Hiding',
+              cb: this.node
+          });
+      },
+      catalogSet(board) {
+          if (!$.hasStorage || (g.SITE.software !== 'yotsuba'))
+              return;
+          const hiddenThreads = ThreadHiding.db.get({
+              boardID: board.ID,
+              defaultValue: dict()
+          });
+          for (var threadID in hiddenThreads) {
+              hiddenThreads[threadID] = true;
+          }
+          return localStorage.setItem(`4chan-hide-t-${board}`, JSON.stringify(hiddenThreads));
+      },
+      catalogWatch() {
+          if (!$.hasStorage || (g.SITE.software !== 'yotsuba'))
+              return;
+          this.hiddenThreads = JSON.parse(localStorage.getItem(`4chan-hide-t-${g.BOARD}`)) || {};
+          return PageReady.ready(() => // 4chan's catalog sets the style to "display: none;" when hiding or unhiding a thread.
+           new MutationObserver(ThreadHiding.catalogSave).observe($.id('threads'), {
+              attributes: true,
+              subtree: true,
+              attributeFilter: ['style']
+          }));
+      },
+      catalogSave() {
+          let threadID;
+          const hiddenThreads2 = JSON.parse(localStorage.getItem(`4chan-hide-t-${g.BOARD}`)) || {};
+          for (threadID in hiddenThreads2) {
+              if (!$.hasOwn(ThreadHiding.hiddenThreads, threadID)) {
+                  ThreadHiding.db.set({
+                      boardID: g.BOARD.ID,
+                      threadID,
+                      val: { makeStub: Conf.Stubs }
+                  });
+              }
+          }
+          for (threadID in ThreadHiding.hiddenThreads) {
+              if (!$.hasOwn(hiddenThreads2, threadID)) {
+                  ThreadHiding.db.delete({
+                      boardID: g.BOARD.ID,
+                      threadID
+                  });
+              }
+          }
+          return ThreadHiding.hiddenThreads = hiddenThreads2;
+      },
+      isHidden: (boardID, threadID) => !!(ThreadHiding.db && ThreadHiding.db.get({ boardID, threadID })),
+      node() {
+          if (this.isReply || this.isClone || this.isFetchedQuote)
+              return;
+          if (Conf['Thread Hiding Buttons'])
+              $.prepend(this.nodes.root, ThreadHiding.makeButton(this.thread, 'hide'));
+          let data = ThreadHiding.db.get({ boardID: this.board.ID, threadID: this.ID });
+          if (data)
+              ThreadHiding.hide(this.thread, data.makeStub, 'Hidden manually');
+      },
+      onIndexRefresh() {
+          return g.BOARD.threads.forEach((thread) => {
+              const { root } = thread.nodes;
+              if (thread.isHidden && thread.stub && !root.contains(thread.stub))
+                  ThreadHiding.makeStub(thread, root);
+          });
+      },
+      menu: {
+          init() {
+              if ((g.VIEW !== 'index') || !Conf.Menu || !Conf['Thread Hiding Link'])
+                  return;
+              let div = $.el('div', {
+                  className: 'hide-thread-link',
+                  textContent: 'Hide'
+              });
+              const apply = $.el('a', {
+                  textContent: 'Apply',
+                  href: 'javascript:;'
+              });
+              $.on(apply, 'click', ThreadHiding.menu.hide);
+              const makeStub = UI.checkbox('Stubs', 'Make stub');
+              Menu.menu.addEntry({ el: div, order: 20, open({ thread, isReply }) {
+                      if (isReply || thread.isHidden || (Conf['JSON Index'] && (Conf['Index Mode'] === 'catalog')))
+                          return false;
+                      ThreadHiding.menu.thread = thread;
+                      return true;
+                  },
+                  subEntries: [{ el: apply }, { el: makeStub }] });
+              div = $.el('a', {
+                  className: 'show-thread-link',
+                  textContent: 'Show',
+                  href: 'javascript:;'
+              });
+              $.on(div, 'click', ThreadHiding.menu.show);
+              Menu.menu.addEntry({ el: div, order: 20, open({ thread, isReply }) {
+                      if (isReply || !thread.isHidden || (Conf['JSON Index'] && (Conf['Index Mode'] === 'catalog')))
+                          return false;
+                      ThreadHiding.menu.thread = thread;
+                      return true;
+                  }
+              });
+              const hideStubLink = $.el('a', {
+                  textContent: 'Hide stub',
+                  href: 'javascript:;'
+              });
+              $.on(hideStubLink, 'click', ThreadHiding.menu.hideStub);
+              Menu.menu.addEntry({ el: hideStubLink, order: 15, open({ thread, isReply }) {
+                      if (isReply || !thread.isHidden || (Conf['JSON Index'] && (Conf['Index Mode'] === 'catalog')))
+                          return false;
+                      return ThreadHiding.menu.thread = thread;
+                  }
+              });
+          },
+          hide() {
+              const { thread } = ThreadHiding.menu;
+              if (thread.isHighlighted && Conf['Always Show Highlighted Threads'])
+                  return;
+              const makeStub = $('input', this.parentNode).checked;
+              ThreadHiding.hide(thread, makeStub, 'Hidden manually');
+              ThreadHiding.saveHiddenState(thread, makeStub);
+              $.event('CloseMenu');
+          },
+          show() {
+              const { thread } = ThreadHiding.menu;
+              ThreadHiding.show(thread);
+              ThreadHiding.saveHiddenState(thread);
+              $.event('CloseMenu');
+          },
+          hideStub() {
+              const { thread } = ThreadHiding.menu;
+              ThreadHiding.show(thread);
+              ThreadHiding.hide(thread, false);
+              ThreadHiding.saveHiddenState(thread, false);
+              $.event('CloseMenu');
+          }
+      },
+      makeButton(thread, type) {
+          const span = $.el('span', { className: 'stub-icon', });
+          const a = $.el('a', {
+              className: `${type}-post-button ${type}-thread-button`,
+              href: 'javascript:;'
+          });
+          Icon.set(span, type === 'hide' ? 'squareMinus' : 'squarePlus');
+          $.add(a, span);
+          a.dataset.fullID = thread.fullID;
+          $.on(a, 'click', ThreadHiding.toggle);
+          return a;
+      },
+      makeStub(thread, root, reason) {
+          let summary, threadDivider;
+          let numReplies = $$(g.SITE.selectors.replyOriginal, root).length;
+          if (summary = $(g.SITE.selectors.summary, root))
+              numReplies += +summary.textContent.match(/\d+/);
+          const a = ThreadHiding.makeButton(thread, 'show');
+          const { nameBlock, subject } = thread.OP.info;
+          if (subject) {
+              $.add(a, $.el('span', {
+                  className: 'stub-subject',
+                  textContent: subject
+              }));
+          }
+          $.add(a, $.el('span', {
+              className: 'stub-name',
+              textContent: nameBlock
+          }));
+          $.add(a, $.el('span', {
+              className: 'stub-replies',
+              textContent: `(${numReplies} repl${numReplies === 1 ? 'y' : 'ies'})`
+          }));
+          let reasons = thread.OP.filterResults?.reasons || [];
+          if (reason)
+              reasons = [...reasons, reason];
+          if (Conf['Filter Reason'] && reasons.length) {
+              const reasonsSpan = $.el('span', { className: 'stub-reasons' });
+              $.add(reasonsSpan, reasons.map(re => $.el('span', { className: 'stub-reason', textContent: re })));
+              a.appendChild(reasonsSpan);
+          }
+          thread.stub = $.el('div', { className: 'stub' });
+          if (Conf.Menu) {
+              $.add(thread.stub, [a, Menu.makeButton(thread.OP)]);
+          }
+          else {
+              $.add(thread.stub, a);
+          }
+          if (!Conf['Filter Reason'] && reasons)
+              thread.stub.title = reasons.join(' & ');
+          $.prepend(root, thread.stub);
+          // Prevent hiding of thread divider on sites that put it inside the thread
+          if (threadDivider = $(g.SITE.selectors.threadDivider, root)) {
+              $.addClass(threadDivider, 'threadDivider');
+          }
+      },
+      saveHiddenState(thread, makeStub) {
+          if (thread.isHidden) {
+              ThreadHiding.db.set({
+                  boardID: thread.board.ID,
+                  threadID: thread.ID,
+                  val: { makeStub }
+              });
+          }
+          else {
+              ThreadHiding.db.delete({
+                  boardID: thread.board.ID,
+                  threadID: thread.ID
+              });
+          }
+          ThreadHiding.catalogSet(thread.board);
+      },
+      toggle(thread) {
+          if (!(thread instanceof Thread))
+              thread = g.threads.get(this.dataset.fullID);
+          if (thread.isHidden) {
+              ThreadHiding.show(thread);
+          }
+          else {
+              ThreadHiding.hide(thread, undefined, 'Hidden manually');
+          }
+          ThreadHiding.saveHiddenState(thread);
+      },
+      hide(thread, makeStub = Conf.Stubs, reason) {
+          if (thread.isHidden)
+              return;
+          const threadRoot = thread.nodes.root;
+          thread.isHidden = true;
+          Index.updateHideLabel();
+          if (thread.catalogView && !Index.showHiddenThreads) {
+              $.rm(thread.catalogView.nodes.root);
+              $.event('PostsRemoved', null, Index.root);
+          }
+          if (!makeStub)
+              return threadRoot.hidden = true;
+          ThreadHiding.makeStub(thread, threadRoot, reason);
+      },
+      show(thread) {
+          if (thread.stub) {
+              $.rm(thread.stub);
+              delete thread.stub;
+          }
+          const threadRoot = thread.nodes.root;
+          threadRoot.hidden = (thread.isHidden = false);
+          Index.updateHideLabel();
+          if (thread.catalogView && Conf['Index Mode'] === 'catalog') {
+              const { root } = thread.catalogView.nodes;
+              if (Index.showHiddenThreads) {
+                  $.rm(root);
+                  $.event('PostsRemoved', null, Index.root);
+              }
+              else {
+                  let i = Index.sortedThreadIDs.indexOf(thread.ID) - 1;
+                  while (true) {
+                      if (i < 0) {
+                          $('.board').insertAdjacentElement('afterbegin', root);
+                          break;
+                      }
+                      const rootPrevious = d.getElementById(`t${Index.sortedThreadIDs[i]}`);
+                      if (rootPrevious) {
+                          rootPrevious.insertAdjacentElement('afterend', root);
+                          break;
+                      }
+                      --i;
+                  }
+                  $.event('PostsInserted', null, Index.root);
+              }
+          }
+      }
+  };
+
+  var Filter = {
+    /**
+    * Uses a Map for string types, with the value to filter for as the key.
+    * This allows faster lookup than iterating over every filter.
+    */
+    filters: new Map(),
+    init() {
+      if (!['index', 'thread', 'catalog'].includes(g.VIEW) || !Conf.Filter)
+        return;
+      if ((g.VIEW === 'catalog') && !Conf['Filter in Native Catalog'])
+        return;
+      if (!Conf['Filtered Backlinks']) {
+        $.addClass(doc, 'hide-backlinks');
+      }
+      for (var key in Config.filter) {
+        for (var line of Conf[key].split('\n')) {
+          let hl;
+          let regexp;
+          let top;
+          let hide = true;
+          let mask = 0;
+          let boards = false;
+          let excludes = false;
+          let reason;
+          let poster = false;
+          let replies = false;
+          let noti = false;
+          let stub = Conf.Stubs;
+          if (line[0] === '#')
+            continue;
+          const regexpMatch = line.match(/\/(.*)\/(\w*)/);
+          if (!regexpMatch)
+            continue;
+          if (key === 'uniqueID' || key === 'MD5') {
+            // MD5 filter will use strings instead of regular expressions.
+            regexp = regexpMatch[1];
+          } else {
+            try {
+              // Please, don't write silly regular expressions.
+              regexp = RegExp(regexpMatch[1], regexpMatch[2]);
+            } catch (err) {
+              // I warned you, bro.
+              new Notice('warning', [
+                $.tn(`Invalid ${key} filter:`),
+                $.el('br'),
+                $.tn(line),
+                $.el('br'),
+                $.tn(err.message)
+              ], 60);
+              continue;
+            }
+          }
+          // Don't mix up filter flags with the regular expression.
+          const options = line.length > regexpMatch[0].length ? line.replace(regexpMatch[0], '') : '';
+          if (options) {
+            // List of the boards this filter applies to.
+            boards = parseBoards(options.match(/(?:^|;)\s*boards:([^;]+)/)?.[1]);
+            // Boards to exclude from an otherwise global rule.
+            excludes = parseBoards(options.match(/(?:^|;)\s*exclude:([^;]+)/)?.[1]);
+            // Filter OPs along with their threads or replies only.
+            const op = options.match(/(?:^|;)\s*op:(no|only)/)?.[1] || '';
+            mask = $.getOwn({ 'no': 1, 'only': 2 }, op) || 0;
+            // Filter only posts with/without files.
+            const file = options.match(/(?:^|;)\s*file:(no|only)/)?.[1] || '';
+            mask = mask | ($.getOwn({ 'no': 4, 'only': 8 }, file) || 0);
+            // Overrule the `Show Stubs` setting.
+            // Defaults to stub showing.
+            const stubOption = options.match(/(?:^|;)\s*stub:(yes|no)/)?.[1];
+            if (stubOption === 'yes')
+              stub = true;
+            else if (stubOption === 'no')
+              stub = false;
+            // Desktop notification
+            noti = /(?:^|;)\s*notify/.test(options);
+            // Highlight the post.
+            // If not specified, the highlight class will be filter-highlight.
+            const highlightRes = options.match(/(?:^|;)\s*highlight(?::([\w-]+))?/);
+            if (highlightRes) {
+              hl = highlightRes[1] || 'filter-highlight';
+              // Put highlighted OP's thread on top of the board page or not.
+              // Defaults to on top.
+              top = (options.match(/(?:^|;)\s*top:(yes|no)/)?.[1] || 'yes') === 'yes';
+              hide = /(?:^|;)\s*hide(?:[;:]|$)/.test(options);
+            }
+            // Hide the post (default case).
+            hide = hide || !(hl || noti);
+            reason = options.match(/(?:^|;)\s*reason:([^;$]+)/)?.[1];
+            poster = /(?:^|;)\s*poster(?:[;:]|$)/.test(options);
+            replies = /(?:^|;)\s*replies(?:[;:]|$)/.test(options);
+          }
+          const filterObj = { regexp, boards, excludes, mask, hide, stub, hl, top, noti, reason, poster, replies };
+          // Fields that this filter applies to (for 'general' filters)
+          if (key === 'general') {
+            const types = options.match(/(?:^|;)\s*type:([^;]*)/)?.[1].split(',')
+              || ['subject', 'name', 'filename', 'comment'];
+            for (var type of types) {
+              this.filters.get(type)?.push(filterObj) ?? this.filters.set(type, [filterObj]);
+            }
+          } else {
+            this.filters.get(key)?.push(filterObj) ?? this.filters.set(key, [filterObj]);
+          }
+        }
+      }
+      if (!this.filters.size)
+        return;
+      // conversion from array to map for string types
+      for (const type of ['MD5', 'uniqueID']) {
+        const filtersForType = this.filters.get(type);
+        if (!filtersForType)
+          continue;
+        const map = new Map();
+        for (const filter of filtersForType) {
+          map.get(filter.regexp)?.push(filter) ?? map.set(filter.regexp, [filter]);
+        }
+        this.filters.set(type, map);
+      }
+      if (g.VIEW === 'catalog') {
+        Filter.catalog();
+      } else {
+        Callbacks.Post.push({
+          name: 'Filter',
+          cb: this.node
+        });
+      }
+    },
+    test(post, hideable = true) {
+      if (post.filterResults)
+        return post.filterResults;
+      let hide = false;
+      let stub = true;
+      let hl = undefined;
+      let top = false;
+      let noti = false;
+      let poster = false;
+      let replies = false;
+      let reasons;
+      if (QuoteYou.isYou(post)) {
+        hideable = false;
+      }
+      let mask = (post.isReply ? 2 : 1);
+      mask = (mask | (post.file ? 4 : 8));
+      const board = `${post.siteID}/${post.boardID}`;
+      const site = `${post.siteID}/*`;
+      for (const type of Filter.filters.keys()) {
+        for (const value of Filter.values(type, post)) {
+          const filtersOrMap = Filter.filters.get(type);
+          const filtersForType = Array.isArray(filtersOrMap) ? filtersOrMap : filtersOrMap.get(value);
+          if (!filtersForType)
+            continue;
+          const isString = type === 'uniqueID' || type === 'MD5';
+          for (const filter of filtersForType) {
+            if ((filter.boards && !(filter.boards[board]
+              || filter.boards[site]))
+              || (filter.excludes && (filter.excludes[board]
+                || filter.excludes[site]))
+              || (filter.mask & mask)
+              || (isString ? (filter.regexp !== value)
+                : !filter.regexp.test(value)))
+              continue;
+            if (filter.hide) {
+              if (hideable) {
+                hide = true;
+                if (stub) {
+                  ({ stub } = filter);
+                  (reasons || (reasons = [])).push(filter.reason || `Filtered ${type} ${filter.regexp}`);
+                }
+              }
+            }
+            if (filter.hl) {
+              if (!hl?.includes(filter.hl))
+                (hl || (hl = [])).push(filter.hl);
+              if (Conf['Always Show Highlighted Threads']) {
+                hide = false;
+                hideable = false;
+              }
+            }
+            if (!top)
+              ({ top } = filter);
+            if (filter.noti)
+              noti = true;
+            if (filter.poster)
+              poster = true;
+            if (filter.replies)
+              replies = true;
+          }
+        }
+      }
+      post.filterResults = { hide, stub, hl, top, noti, poster, replies, reasons };
+      return post.filterResults;
+    },
+    node() {
+      if (this.isClone ||
+        // Happens when hovering over a dead link in the catalog.
+        (!this.isReply && !this.thread.nodes.root))
+        return;
+      const { hide, stub, hl, noti, poster, replies } = Filter.test(this, (!this.isFetchedQuote && (this.isReply || (g.VIEW === 'index'))));
+      // Add temporary filter for the poster ID for future posts.
+      let reason;
+      if (poster && this.info.uniqueID) {
+        reason = `Hidden because it's the same poster as ${this.ID} (${this.filterResults.reasons})`;
+        const { uniqueID } = this.info;
+        const newFilter = {
+          regexp: uniqueID,
+          boards: false,
+          excludes: false,
+          mask: 0,
+          hide,
+          stub,
+          replies,
+          // A filter can only have one hl class.
+          hl: hl?.[0],
+          reason,
+        };
+        const map = Filter.filters.get('uniqueID');
+        if (map) {
+          map.get(uniqueID)?.push(newFilter) ?? map.set(uniqueID, [newFilter]);
+        } else {
+          Filter.filters.set('uniqueID', (new Map()).set(uniqueID, [newFilter]));
+        }
+      }
+      if (hide) {
+        if (this.isReply) {
+          PostHiding.hide(this, stub);
+          if (replies) {
+            Recursive.applyAndAdd(PostHiding.hide, this, stub, undefined, `Hidden recursively from ${this.ID}`);
+          }
+          if (poster && this.info.uniqueID) {
+            g.posts.forEach((p) => {
+              if (p.info.uniqueID === this.info.uniqueID && p !== this) {
+                PostHiding.hide(p, stub, replies, reason);
+                if (replies) {
+                  Recursive.applyAndAdd(PostHiding.hide, p, stub, undefined, `Hidden recursively from ${p.ID}`);
+                }
+              }
+            });
+          }
+        } else {
+          ThreadHiding.hide(this.thread, stub);
+        }
+      }
+      if (hl) {
+        this.thread.isHighlighted = true;
+        this.highlights = hl;
+        $.addClass(this.nodes.root, ...hl);
+        if (this.isReply) {
+          const hlFn = (post, ...hl) => { $.addClass(post.nodes.root, ...hl); };
+          if (replies)
+            Recursive.applyAndAdd(hlFn, this, ...hl);
+          if (poster && this.info.uniqueID) {
+            g.posts.forEach((p) => {
+              if (p.info.uniqueID === this.info.uniqueID && p !== this) {
+                $.addClass(p.nodes.root, ...hl);
+                if (replies)
+                  Recursive.applyAndAdd(hlFn, p, ...hl);
+              }
+            });
+          }
+        }
+      }
+      if (noti && Unread.posts && (this.ID > Unread.lastReadPost) && !QuoteYou.isYou(this)) {
+        Unread.openNotification(this, ' triggered a notification filter');
+      }
+      if (this.file?.thumbLink) {
+        $.on(this.file.thumbLink, 'click', (e) => {
+          if (!e.shiftKey || !Conf['MD5 Quick Filter in Threads'])
+            return;
+          Filter.quickFilterMD5.call(this);
+          e.preventDefault();
+          e.stopImmediatePropagation();
+        });
+      }
+    },
+    catalog() {
+      let url = g.SITE.urls.catalogJSON?.(g.BOARD);
+      if (!url)
+        return;
+      Filter.catalogData = dict();
+      $.ajax(url, { onloadend: Filter.catalogParse });
+      Callbacks.CatalogThreadNative.push({
+        name: 'Filter',
+        cb: this.catalogNode
+      });
+    },
+    catalogParse() {
+      if (![200, 404].includes(this.status)) {
+        new Notice('warning', `Failed to fetch catalog JSON data. ${this.status ? `Error ${this.statusText} (${this.status})` : 'Connection Error'}`, 1);
+        return;
+      }
+      for (var page of this.response) {
+        for (var item of page.threads) {
+          Filter.catalogData[item.no] = item;
+        }
+      }
+      g.BOARD.threads.forEach((thread) => {
+        if (thread.catalogViewNative) {
+          return Filter.catalogNode.call(thread.catalogViewNative);
+        }
+      });
+    },
+    catalogNode() {
+      if ((this.boardID !== g.BOARD.ID) || !Filter.catalogData[this.ID])
+        return;
+      if (QuoteYou.db?.get({ siteID: g.SITE.ID, boardID: this.boardID, threadID: this.ID, postID: this.ID }))
+        return;
+      const { hide, hl, top } = Filter.test(g.SITE.Build.parseJSON(Filter.catalogData[this.ID], this));
+      if (hide)
+        this.nodes.root.hidden = true;
+      if (hl) {
+        this.highlights = hl;
+        $.addClass(this.nodes.root, ...hl);
+      }
+      if (top) {
+        $.prepend(this.nodes.root.parentNode, this.nodes.root);
+        g.SITE.catalogPin?.(this.nodes.root);
+      }
+    },
+    isHidden: (post) => !!Filter.test(post).hide,
+    valueF: {
+      postID: (post) => [`${post.ID}`],
+      name: (post) => post.info.name === undefined ? [] : [post.info.name],
+      uniqueID: (post) => [post.info.uniqueID || ''],
+      tripcode: (post) => post.info.tripcode === undefined ? [] : [post.info.tripcode],
+      capcode: (post) => post.info.capcode === undefined ? [] : [post.info.capcode],
+      pass: (post) => [post.info.pass],
+      email: (post) => [post.info.email],
+      subject: (post) => [post.info.subject || (post.isReply ? undefined : '')],
+      comment: (post) => {
+        if (post.info.comment == null) {
+          post.info.comment = g.sites[post.siteID]?.Build?.parseComment?.(post.info.commentHTML.innerHTML);
+        }
+        return [post.info.comment];
+      },
+      flag: (post) => post.info.flag === undefined ? [] : [post.info.flag],
+      filename: (post) => post.files.map(f => f.name),
+      dimensions: (post) => post.files.map(f => f.dimensions),
+      filesize: (post) => post.files.map(f => f.size),
+      MD5: (post) => post.files.map(f => f.MD5)
+    },
+    values(key, post) {
+      if ($.hasOwn(Filter.valueF, key)) {
+        return Filter.valueF[key](post).filter(v => v != null);
+      } else {
+        return [key.split('+').map((k) => {
+            let f;
+            if (f = $.getOwn(Filter.valueF, k)) {
+              return f(post).map(v => v || '').join('\n');
+            } else {
+              return '';
+            }
+          }).join('\n')];
+      }
+    },
+    addFilter(type, re, cb) {
+      if (!$.hasOwn(Config.filter, type))
+        return;
+      return $.get(type, Conf[type], (item) => {
+        // Add a new line before the regexp unless the text is empty.
+        const save = item[type] ? `${item[type]}\n${re}` : re;
+        return $.set(type, save, cb);
+      });
+    },
+    removeFilters(type, res, cb) {
+      return $.get(type, Conf[type], (item) => {
+        let save = item[type];
+        const filterArray = Array.isArray(res) ? res : [...res.values()].flat();
+        const r = filterArray.map(Filter.escape).join('|');
+        save = save.replace(RegExp(`(?:$\n|^)(?:${r})$`, 'mg'), '');
+        $.set(type, save, cb);
+      });
+    },
+    async showFilters(type) {
+      // Open the settings and display & focus the relevant filter textarea.
+      const { default: Settings } = await Promise.resolve().then(function () { return Settings$1; });
+      Settings.open('Filter');
+      const section = $('.section-container');
+      const select = $('select[name=filter]', section);
+      select.value = type;
+      Settings.selectFilter.call(select);
+      $.onExists(section, 'textarea', (ta) => {
+        const tl = ta.textLength;
+        ta.setSelectionRange(tl, tl);
+        ta.focus();
+      });
+    },
+    quickFilterMD5() {
+      const post = this instanceof Post ? this : Get.postFromNode(this);
+      const files = post.files.filter(f => f.MD5);
+      if (!files.length)
+        return;
+      const filter = files.map(f => `/${f.MD5}/`).join('\n');
+      Filter.addFilter('MD5', filter);
+      const origin = post.origin || post;
+      if (origin.isReply) {
+        PostHiding.hide(origin, undefined, undefined, files.map(f => `Filtered MD5 ${f.MD5}`).join(' & '));
+      } else if (g.VIEW === 'index') {
+        ThreadHiding.hide(origin.thread);
+      }
+      if (!Conf['MD5 Quick Filter Notifications']) {
+        // feedback for when nothing gets hidden
+        if (post.nodes.post.getBoundingClientRect().height) {
+          new Notice('info', 'MD5 filtered.', 2);
+        }
+        return;
+      }
+      let { notice } = Filter.quickFilterMD5;
+      if (notice) {
+        notice.filters.push(filter);
+        notice.posts.push(origin);
+        $('span', notice.el).textContent = `${notice.filters.length} MD5s filtered.`;
+        notice.resetTimer();
+      } else {
+        const msg = $.el('div', { innerHTML: "<span>MD5 filtered.</span> [<a href=\"javascript:;\">show</a>] [<a href=\"javascript:;\">undo</a>]" });
+        notice = (Filter.quickFilterMD5.notice = new Notice('info', msg, 10, () => delete Filter.quickFilterMD5.notice));
+        notice.filters = [filter];
+        notice.posts = [origin];
+        const links = $$('a', msg);
+        $.on(links[0], 'click', Filter.quickFilterCB.show.bind(notice));
+        $.on(links[1], 'click', Filter.quickFilterCB.undo.bind(notice));
+      }
+    },
+    quickFilterCB: {
+      show() {
+        Filter.showFilters('MD5');
+        this.close();
+      },
+      undo() {
+        Filter.removeFilters('MD5', this.filters);
+        for (var post of this.posts) {
+          if (post.isReply) {
+            PostHiding.show(post);
+          } else if (g.VIEW === 'index') {
+            ThreadHiding.show(post.thread);
+          }
+        }
+        this.close();
+      }
+    },
+    escape: (value) => value.replace(/[/\\^$\n.(){}[\]?*+|]/g, (c) => c === '\n' ? '\\n' : `\\${c}`),
+    menu: {
+      init() {
+        if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf.Filter)
+          return;
+        const div = $.el('div', { textContent: 'Filter' });
+        const entry = {
+          el: div,
+          order: 50,
+          open(post) {
+            Filter.menu.post = post;
+            return true;
+          },
+          subEntries: []
+        };
+        for (var type of [
+          ['Name', 'name'],
+          ['Unique ID', 'uniqueID'],
+          ['Tripcode', 'tripcode'],
+          ['Capcode', 'capcode'],
+          ['Pass Date', 'pass'],
+          ['Email', 'email'],
+          ['Subject', 'subject'],
+          ['Comment', 'comment'],
+          ['Flag', 'flag'],
+          ['Filename', 'filename'],
+          ['Image dimensions', 'dimensions'],
+          ['Filesize', 'filesize'],
+          ['Image MD5', 'MD5']
+        ]) {
+          // Add a sub entry for each filter type.
+          entry.subEntries.push(Filter.menu.createSubEntry(type[0], type[1]));
+        }
+        Menu.menu.addEntry(entry);
+      },
+      createSubEntry(text, type) {
+        const el = $.el('a', {
+          href: 'javascript:;',
+          textContent: text
+        });
+        el.dataset.type = type;
+        $.on(el, 'click', Filter.menu.makeFilter);
+        return { el, open(post) { return Filter.values(type, post).length; }
+        };
+      },
+      makeFilter() {
+        const { type } = this.dataset;
+        // Convert value -> regexp, unless type is MD5
+        const values = Filter.values(type, Filter.menu.post);
+        const res = values.map((value) => {
+          if (['uniqueID', 'MD5'].includes(type)) {
+            return `/${value}/`;
+          } else {
+            return `/^${Filter.escape(value)}$/`;
+          }
+        }).join('\n');
+        Filter.addFilter(type, res, () => Filter.showFilters(type));
+      }
+    }
   };
 
   const settingsHtml = h("div", { id: "fourchanx-settings", class: "dialog" },
@@ -4184,46 +12003,6 @@ current-archive-text:"Archive"]
   <button type="submit">Export</button>
   <button type="button" id="cancel-export">Cancel</button>
 </form>`;
-
-  const $$ = (selector, root = d.body) => Array.from(root.querySelectorAll(selector));
-
-  const ImageHost = {
-      init() {
-          if ((!(this.useFaster = /\S/.test(Conf.fourchanImageHost))) || (g.SITE.software !== 'yotsuba') || !['index', 'thread'].includes(g.VIEW))
-              return;
-          Callbacks.Post.push({
-              name: 'Image Host Rewriting',
-              cb: this.node
-          });
-      },
-      suggestions: ['i.4cdn.org', 'is2.4chan.org'],
-      thumbHost: () => 'i.4cdn.org',
-      host: () => Conf.fourchanImageHost.trim() || 'i.4cdn.org',
-      test: (hostname) => (hostname === 'i.4cdn.org') || ImageHost.regex.test(hostname),
-      // regex: /^is\d*\.4chan(?:nel)?\.org$/,
-      regex: /^is\d*\.4chan\.org$/,
-      node() {
-          if (this.isClone)
-              return;
-          const host = ImageHost.host();
-          if (this.file && ImageHost.test(this.file.url.split('/')[2])) {
-              this.file.link.hostname = host;
-              if (this.file.thumbLink)
-                  this.file.thumbLink.hostname = host;
-              this.file.url = this.file.link.href;
-          }
-          ImageHost.fixLinks($$('a', this.nodes.comment));
-      },
-      fixLinks(links) {
-          for (const link of links) {
-              if (ImageHost.test(link.hostname)) {
-                  const host = ImageHost.host();
-                  if (link.hostname !== host)
-                      link.hostname = host;
-              }
-          }
-      }
-  };
 
   var variableBase = `/* General */
 .dialog {
@@ -7391,7670 +15170,83 @@ svg.icon {
       }
   };
 
-  const dialog = (id, properties) => {
-      const el = $.el('div', { className: 'dialog', id });
-      $.extend(el, properties);
-      el.style.cssText = Conf[`${id}.position`];
-      const move = $('.move', el);
-      $.on(move, 'touchstart mousedown', dragstart);
-      for (var child of move.children) {
-          if (!child.tagName)
-              continue;
-          $.on(child, 'touchstart mousedown', e => e.stopPropagation());
-      }
-      return el;
-  };
-  var Menu$1 = (function () {
-      let currentMenu = undefined;
-      let lastToggledButton = undefined;
-      Menu$1 = class Menu {
-          static initClass() {
-              currentMenu = null;
-              lastToggledButton = null;
-          }
-          constructor(type) {
-              // XXX AddMenuEntry event is deprecated
-              this.setPosition = this.setPosition.bind(this);
-              this.close = this.close.bind(this);
-              this.keybinds = this.keybinds.bind(this);
-              this.onFocus = this.onFocus.bind(this);
-              this.addEntry = this.addEntry.bind(this);
-              this.type = type;
-              $.on(d, 'AddMenuEntry', ({ detail }) => {
-                  if (detail.type !== this.type)
-                      return;
-                  delete detail.open;
-                  return this.addEntry(detail);
-              });
-              this.entries = [];
-          }
-          makeMenu() {
-              const menu = $.el('div', {
-                  className: 'dialog',
-                  id: 'menu',
-                  tabIndex: 0
-              });
-              menu.dataset.type = this.type;
-              $.on(menu, 'click', e => e.stopPropagation());
-              $.on(menu, 'keydown', this.keybinds);
-              return menu;
-          }
-          toggle(e, button, data) {
-              e.preventDefault();
-              e.stopPropagation();
-              if (currentMenu) {
-                  // Close if it's already opened.
-                  // Reopen if we clicked on another button.
-                  const previousButton = lastToggledButton;
-                  currentMenu.close();
-                  if (previousButton === button)
-                      return;
-              }
-              if (!this.entries.length)
-                  return;
-              this.open(button, data);
-          }
-          open(button, data) {
-              const menu = (this.menu = this.makeMenu());
-              currentMenu = this;
-              lastToggledButton = button;
-              this.entries.sort((first, second) => first.order - second.order);
-              for (const entry of this.entries) {
-                  this.insertEntry(entry, menu, data);
-              }
-              $.addClass(lastToggledButton, 'active');
-              $.on(d, 'click CloseMenu', this.close);
-              $.on(d, 'scroll', this.setPosition);
-              $.on(window, 'resize', this.setPosition);
-              $.after(button, menu);
-              this.setPosition();
-              firstEntry = $('.entry', menu);
-              // We've removed flexbox, so we don't use order anymore.
-              // while prevEntry = @findNextEntry entry, -1
-              //   entry = prevEntry
-              this.focus(firstEntry);
-              menu.focus();
-          }
-          setPosition() {
-              const mRect = this.menu.getBoundingClientRect();
-              const bRect = lastToggledButton.getBoundingClientRect();
-              const cHeight = doc.clientHeight;
-              const cWidth = doc.clientWidth;
-              const [top, bottom] = (bRect.top + bRect.height + mRect.height) < cHeight
-                  ? [`${bRect.bottom}px`, ''] : ['', `${cHeight - bRect.top}px`];
-              const [left, right] = (bRect.left + mRect.width) < cWidth
-                  ? [`${bRect.left}px`, ''] : ['', `${cWidth - bRect.right}px`];
-              $.extend(this.menu.style, { top, right, bottom, left });
-              this.menu.classList.toggle('left', right);
-          }
-          insertEntry(entry, parent, data) {
-              if (typeof entry.open === 'function') {
-                  try {
-                      if (!entry.open(data))
-                          return;
-                  }
-                  catch (err) {
-                      Main.handleErrors({
-                          message: `Error in building the ${this.type} menu.`,
-                          error: err
-                      });
-                      return;
-                  }
-              }
-              $.add(parent, entry.el);
-              if (!entry.subEntries)
-                  return;
-              let submenu = $('.submenu', entry.el);
-              // Reset sub menu, remove irrelevant entries.
-              if (submenu)
-                  $.rm(submenu);
-              submenu = $.el('div', { className: 'dialog submenu' });
-              for (var subEntry of entry.subEntries) {
-                  this.insertEntry(subEntry, submenu, data);
-              }
-              $.add(entry.el, submenu);
-          }
-          close() {
-              $.rm(this.menu);
-              delete this.menu;
-              $.rmClass(lastToggledButton, 'active');
-              currentMenu = null;
-              lastToggledButton = null;
-              $.off(d, 'click scroll CloseMenu', this.close);
-              $.off(d, 'scroll', this.setPosition);
-              $.off(window, 'resize', this.setPosition);
-          }
-          findNextEntry(entry, direction) {
-              const entries = [...entry.parentNode.children];
-              entries.sort((first, second) => first.style.order - second.style.order);
-              return entries[entries.indexOf(entry) + direction];
-          }
-          keybinds(e) {
-              let subEntry, next, submenu;
-              let entry = $('.focused', this.menu);
-              while ((subEntry = $('.focused', entry))) {
-                  entry = subEntry;
-              }
-              switch (e.keyCode) {
-                  case 27: // Esc
-                      lastToggledButton.focus();
-                      this.close();
-                      break;
-                  case 13:
-                  case 32: // Enter, Space
-                      entry.click();
-                      break;
-                  case 38: // Up
-                      if (next = this.findNextEntry(entry, -1)) {
-                          this.focus(next);
-                      }
-                      break;
-                  case 40: // Down
-                      if (next = this.findNextEntry(entry, 1)) {
-                          this.focus(next);
-                      }
-                      break;
-                  case 39: // Right
-                      if ((submenu = $('.submenu', entry)) && (next = submenu.firstElementChild)) {
-                          let nextPrev;
-                          while ((nextPrev = this.findNextEntry(next, -1))) {
-                              next = nextPrev;
-                          }
-                          this.focus(next);
-                      }
-                      break;
-                  case 37: // Left
-                      if (next = $.x('parent::*[contains(@class,"submenu")]/parent::*', entry))
-                          this.focus(next);
-                      break;
-                  default: return;
-              }
-              e.preventDefault();
-              e.stopPropagation();
-          }
-          onFocus(e) {
-              e.stopPropagation();
-              this.focus(e.target);
-          }
-          focus(entry) {
-              let focused, submenu;
-              while ((focused = $.x('parent::*/child::*[contains(@class,"focused")]', entry))) {
-                  $.rmClass(focused, 'focused');
-              }
-              for (focused of $$('.focused', entry)) {
-                  $.rmClass(focused, 'focused');
-              }
-              $.addClass(entry, 'focused');
-              // Submenu positioning.
-              if (!(submenu = $('.submenu', entry)))
-                  return;
-              const sRect = submenu.getBoundingClientRect();
-              const eRect = entry.getBoundingClientRect();
-              const cHeight = doc.clientHeight;
-              const cWidth = doc.clientWidth;
-              const [top, bottom] = (eRect.top + sRect.height) < cHeight
-                  ? ['0px', 'auto'] : ['auto', '0px'];
-              const [left, right] = (eRect.right + sRect.width) < (cWidth - 150)
-                  ? ['100%', 'auto'] : ['auto', '100%'];
-              const { style } = submenu;
-              style.top = top;
-              style.bottom = bottom;
-              style.left = left;
-              style.right = right;
-          }
-          addEntry(entry) {
-              this.parseEntry(entry);
-              this.entries.push(entry);
-          }
-          parseEntry(entry) {
-              const { el, subEntries } = entry;
-              $.addClass(el, 'entry');
-              $.on(el, 'focus mouseover', this.onFocus);
-              el.style.order = entry.order || 100;
-              if (!subEntries)
-                  return;
-              $.addClass(el, 'has-submenu');
-              for (var subEntry of subEntries) {
-                  this.parseEntry(subEntry);
-              }
-              const span = $.el('span', { className: 'menu-indicator' });
-              Icon.set(span, 'caretRight');
-              $.add(el, span);
-          }
-      };
-      Menu$1.initClass();
-      return Menu$1;
-  })();
-  var dragstart = function (e) {
-      if ((e.type === 'mousedown') && (e.button !== 0))
-          return; // not LMB
-      // prevent text selection
-      e.preventDefault();
-      let isTouching = e.type === 'touchstart';
-      if (isTouching)
-          e = e.changedTouches[e.changedTouches.length - 1];
-      // distance from pointer to el edge is constant; calculate it here.
-      const el = $.x('ancestor::div[contains(@class,"dialog")][1]', this);
-      const rect = el.getBoundingClientRect();
-      const screenHeight = doc.clientHeight;
-      const screenWidth = doc.clientWidth;
-      const o = {
-          id: el.id,
-          style: el.style,
-          dx: e.clientX - rect.left,
-          dy: e.clientY - rect.top,
-          height: screenHeight - rect.height,
-          width: screenWidth - rect.width,
-          screenHeight,
-          screenWidth,
-          isTouching
-      };
-      [o.topBorder, o.bottomBorder] = Conf['Header auto-hide'] || !Conf['Fixed Header']
-          ? [0, 0] : Conf['Bottom Header']
-          ? [0, Header.bar.getBoundingClientRect().height]
-          : [Header.bar.getBoundingClientRect().height, 0];
-      if (isTouching) {
-          o.identifier = e.identifier;
-          o.move = touchmove.bind(o);
-          o.up = touchend.bind(o);
-          $.on(d, 'touchmove', o.move);
-          $.on(d, 'touchend touchcancel', o.up);
-      }
-      else { // mousedown
-          o.move = drag.bind(o);
-          o.up = dragend.bind(o);
-          $.on(d, 'mousemove', o.move);
-          $.on(d, 'mouseup', o.up);
-      }
-  };
-  var touchmove = function (e) {
-      for (var touch of e.changedTouches) {
-          if (touch.identifier === this.identifier) {
-              drag.call(this, touch);
-              return;
-          }
-      }
-  };
-  var drag = function (e) {
-      const { clientX, clientY } = e;
-      let left = clientX - this.dx;
-      left = left < 10 ? 0 : (this.width - left) < 10
-          ? '' : ((left / this.screenWidth) * 100) + '%';
-      let top = clientY - this.dy;
-      top = top < (10 + this.topBorder)
-          ? this.topBorder + 'px' : (this.height - top) < (10 + this.bottomBorder)
-          ? '' : ((top / this.screenHeight) * 100) + '%';
-      const right = left === '' ? 0 : '';
-      const bottom = top === '' ? this.bottomBorder + 'px' : '';
-      const { style } = this;
-      style.left = left;
-      style.right = right;
-      style.top = top;
-      style.bottom = bottom;
-  };
-  var touchend = function (e) {
-      for (var touch of e.changedTouches) {
-          if (touch.identifier === this.identifier) {
-              dragend.call(this);
-              return;
-          }
-      }
-  };
-  var dragend = function () {
-      if (this.isTouching) {
-          $.off(d, 'touchmove', this.move);
-          $.off(d, 'touchend touchcancel', this.up);
-      }
-      else { // mouseup
-          $.off(d, 'mousemove', this.move);
-          $.off(d, 'mouseup', this.up);
-      }
-      if (this.style.length === 2) { // assume only left or right and top or bottom
-          $.set(`${this.id}.position`, this.style.cssText);
-      }
-      else { // only include position data.
-          const { left, right, top, bottom } = this.style;
-          let position = '';
-          if (left)
-              position += `left:${left};`;
-          if (right)
-              position += `right:${right};`;
-          if (top)
-              position += `top:${top};`;
-          if (bottom)
-              position += `bottom:${bottom};`;
-          $.set(`${this.id}.position`, position);
-      }
-  };
-  const hoverstart = ({ root, el, latestEvent, endEvents, height, width, cb, noRemove }) => {
-      const rect = root.getBoundingClientRect();
-      const o = {
-          root,
-          el,
-          style: el.style,
-          isImage: ['IMG', 'VIDEO'].includes(el.nodeName),
-          cb,
-          endEvents,
-          latestEvent,
-          clientHeight: doc.clientHeight,
-          clientWidth: doc.clientWidth,
-          height,
-          width,
-          noRemove,
-          clientX: (rect.left + rect.right) / 2,
-          clientY: (rect.top + rect.bottom) / 2
-      };
-      o.hover = hover.bind(o);
-      o.hoverend = hoverend.bind(o);
-      o.hover(o.latestEvent);
-      new MutationObserver(() => {
-          if (el.parentNode)
-              return o.hover(o.latestEvent);
-      }).observe(el, { childList: true });
-      $.on(root, endEvents, o.hoverend);
-      if ($.x('ancestor::div[contains(@class,"inline")][1]', root))
-          $.on(d, 'keydown', o.hoverend);
-      $.on(root, 'mousemove', o.hover);
-      // Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=674955
-      o.workaround = (e) => { if (!root.contains(e.target)) {
-          return o.hoverend(e);
-      } };
-      $.on(doc, 'mousemove', o.workaround);
-  };
-  hoverstart.padding = 25;
-  var hover = function (e) {
-      this.latestEvent = e;
-      const height = (this.height || this.el.offsetHeight) + hoverstart.padding;
-      const width = (this.width || this.el.offsetWidth);
-      const { clientX, clientY } = Conf['Follow Cursor'] ? e : this;
-      const top = this.isImage
-          ? Math.max(0, (clientY * (this.clientHeight - height)) / this.clientHeight)
-          : Math.max(0, Math.min(this.clientHeight - height, clientY - 120));
-      let threshold = this.clientWidth / 2;
-      if (!this.isImage)
-          threshold = Math.max(threshold, this.clientWidth - 400);
-      let marginX = (clientX <= threshold ? clientX : this.clientWidth - clientX) + 45;
-      if (this.isImage)
-          marginX = Math.min(marginX, this.clientWidth - width);
-      marginX += 'px';
-      const [left, right] = clientX <= threshold ? [marginX, ''] : ['', marginX];
-      const { style } = this;
-      style.top = top + 'px';
-      style.left = left;
-      style.right = right;
-  };
-  var hoverend = function (e) {
-      if (((e.type === 'keydown') && (e.keyCode !== 13)) || (e.target.nodeName === "TEXTAREA"))
-          return;
-      if (!this.noRemove)
-          $.rm(this.el);
-      $.off(this.root, this.endEvents, this.hoverend);
-      $.off(d, 'keydown', this.hoverend);
-      $.off(this.root, 'mousemove', this.hover);
-      // Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=674955
-      $.off(doc, 'mousemove', this.workaround);
-      if (this.cb)
-          return this.cb.call(this);
-  };
-  const checkbox = (name, text, checked) => {
-      if (checked == null)
-          checked = Conf[name];
-      const label = $.el('label');
-      const input = $.el('input', { type: 'checkbox', name, checked });
-      $.add(label, [input, $.tn(` ${text}`)]);
-      return label;
-  };
-  const UI = {
-      dialog,
-      Menu: Menu$1,
-      hover: hoverstart,
-      checkbox
-  };
-
-  const Volume = {
-      init() {
-          if (!['index', 'thread'].includes(g.VIEW) ||
-              (!Conf['Image Expansion'] && !Conf['Image Hover'] && !Conf['Image Hover in Catalog'] && !Conf.Gallery))
-              return;
-          $.sync('Allow Sound', (x) => {
-              Conf['Allow Sound'] = x;
-              if (Volume.inputs)
-                  Volume.inputs.unmute.checked = x;
-          });
-          $.sync('Default Volume', (x) => {
-              Conf['Default Volume'] = x;
-              if (Volume.inputs)
-                  Volume.inputs.volume.value = x;
-          });
-          if (Conf['Mouse Wheel Volume']) {
-              Callbacks.Post.push({
-                  name: 'Mouse Wheel Volume',
-                  cb: this.node
-              });
-          }
-          if (g.SITE.noAudio?.(g.BOARD))
-              return;
-          if (Conf['Mouse Wheel Volume']) {
-              Callbacks.CatalogThread.push({
-                  name: 'Mouse Wheel Volume',
-                  cb: this.catalogNode
-              });
-          }
-          const unmuteEntry = UI.checkbox('Allow Sound', 'Allow Sound');
-          unmuteEntry.title = Config.main['Images and Videos']['Allow Sound'][1];
-          const volumeEntry = $.el('label', { title: 'Default volume for videos.' });
-          $.extend(volumeEntry, { innerHTML: "<input name=\"Default Volume\" type=\"range\" min=\"0\" max=\"1\" step=\"0.01\" value=\"" + E(Conf["Default Volume"]) + "\"> Volume" });
-          this.inputs = {
-              unmute: unmuteEntry.firstElementChild,
-              volume: volumeEntry.firstElementChild
-          };
-          $.on(this.inputs.unmute, 'change', $.cb.checked);
-          $.on(this.inputs.volume, 'change', $.cb.value);
-          Header.menu.addEntry({ el: unmuteEntry, order: 200 });
-          Header.menu.addEntry({ el: volumeEntry, order: 201 });
-      },
-      setup(video) {
-          video.muted = !Conf['Allow Sound'];
-          video.volume = Conf['Default Volume'];
-          $.on(video, 'volumechange', Volume.change);
-      },
-      change() {
-          const { muted, volume } = this;
-          const items = {
-              'Allow Sound': !muted,
-              'Default Volume': volume
-          };
-          for (const key in items) {
-              const val = items[key];
-              if (Conf[key] === val)
-                  delete items[key];
-          }
-          $.set(items);
-          $.extend(Conf, items);
-          if (Volume.inputs) {
-              Volume.inputs.unmute.checked = !muted;
-              Volume.inputs.volume.value = volume;
-          }
-      },
-      node() {
-          if (g.SITE.noAudio?.(this.board))
-              return;
-          for (const file of this.files) {
-              if (file.isVideo) {
-                  if (file.thumb)
-                      $.on(file.thumb, 'wheel', Volume.wheel.bind(Header.hover));
-                  $.on(($('.file-info', file.text) || file.link), 'wheel', Volume.wheel.bind(file.thumbLink));
-              }
-          }
-      },
-      catalogNode() {
-          const file = this.thread.OP.files[0];
-          if (!file?.isVideo)
-              return;
-          $.on(this.nodes.thumb, 'wheel', Volume.wheel.bind(Header.hover));
-      },
-      wheel(e) {
-          if (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey)
-              return;
-          let el = $('video:not([data-md5])', this);
-          if (!el)
-              return;
-          if (el.muted || !$.hasAudio(el))
-              return;
-          let volume = el.volume + 0.1;
-          if (e.deltaY < 0)
-              volume *= 1.1;
-          if (e.deltaY > 0)
-              volume /= 1.1;
-          el.volume = $.minmax(volume - 0.1, 0, 1);
-          e.preventDefault();
-      }
-  };
-
-  var ImageCommon = {
-      // Pause and mute video in preparation for removing the element from the document.
-      pause(video) {
-          if (video.nodeName !== 'VIDEO')
-              return;
-          video.pause();
-          $.off(video, 'volumechange', Volume.change);
-          return video.muted = true;
-      },
-      rewind(el) {
-          if (el.nodeName === 'VIDEO') {
-              if (el.readyState >= el.HAVE_METADATA)
-                  return el.currentTime = 0;
-          }
-          else if (/\.gif$/.test(el.src)) {
-              return $.queueTask(() => el.src = el.src);
-          }
-      },
-      pushCache(el) {
-          ImageCommon.cache = el;
-          $.on(el, 'error', ImageCommon.cacheError);
-      },
-      popCache() {
-          const el = ImageCommon.cache;
-          $.off(el, 'error', ImageCommon.cacheError);
-          delete ImageCommon.cache;
-          return el;
-      },
-      cacheError() { if (ImageCommon.cache === this)
-          delete ImageCommon.cache; },
-      decodeError(file, fileObj) {
-          if (file.error?.code !== MediaError.MEDIA_ERR_DECODE)
-              return false;
-          let message = $('.warning', fileObj.thumb.parentNode);
-          if (!message) {
-              message = $.el('div', { className: 'warning' });
-              $.after(fileObj.thumb, message);
-          }
-          message.textContent = 'Error: Corrupt or unplayable video';
-          return true;
-      },
-      isFromArchive: (file) => (g.SITE.software === 'yotsuba') && !ImageHost.test(file.src.split('/')[2]),
-      error(file, post, fileObj, delay, cb) {
-          const src = fileObj.url.split('/');
-          let url = null;
-          if ((g.SITE.software === 'yotsuba') && Conf['404 Redirect']) {
-              url = Redirect.to('file', {
-                  boardID: post.board.ID,
-                  filename: src[src.length - 1]
-              });
-          }
-          if (!url || !Redirect.securityCheck(url))
-              url = null;
-          if ((post.isDead || fileObj.isDead) && !ImageCommon.isFromArchive(file))
-              return cb(url);
-          let timeoutID;
-          if (delay)
-              timeoutID = setTimeout((() => cb(url)), delay);
-          if (post.isDead || fileObj.isDead)
-              return;
-          const redirect = () => {
-              if (!ImageCommon.isFromArchive(file)) {
-                  if (delay)
-                      clearTimeout(timeoutID);
-                  return cb(url);
-              }
-          };
-          const threadJSON = g.SITE.urls.threadJSON?.(post);
-          if (!threadJSON)
-              return;
-          var parseJSON = function (isArchiveURL) {
-              let needle, postObj;
-              if (this.status === 404) {
-                  let archivedThreadJSON;
-                  if (!isArchiveURL && (archivedThreadJSON = g.SITE.urls.archivedThreadJSON?.(post))) {
-                      $.ajax(archivedThreadJSON, { onloadend() { return parseJSON.call(this, true); } });
-                  }
-                  else {
-                      post.kill(!post.isClone, fileObj.index);
-                  }
-              }
-              if (this.status !== 200)
-                  return redirect();
-              for (postObj of this.response.posts) {
-                  if (postObj.no === post.ID)
-                      break;
-              }
-              if (postObj.no !== post.ID) {
-                  post.kill();
-                  return redirect();
-              }
-              else if ((needle = fileObj.docIndex, g.SITE.Build.parseJSON(postObj, post.board).filesDeleted.includes(needle))) {
-                  post.kill(true);
-                  return redirect();
-              }
-              else {
-                  return url = fileObj.url;
-              }
-          };
-          $.ajax(threadJSON, { onloadend() { return parseJSON.call(this); } });
-      },
-      // XXX Estimate whether clicks are on the video controls and should be ignored.
-      onControls: (e) => (Conf['Show Controls'] && Conf['Click Passthrough'] && (e.target.nodeName === 'VIDEO')) || (e.target.controls && ((e.target.getBoundingClientRect().bottom - e.clientY) < 35)),
-      download(e) {
-          if (this.protocol === 'blob:')
-              return true;
-          e.preventDefault();
-          const { href, download } = this;
-          CrossOrigin.file(href, (blob) => {
-              if (blob) {
-                  const a = $.el('a', {
-                      href: URL.createObjectURL(blob),
-                      download,
-                      hidden: true
-                  });
-                  $.add(d.body, a);
-                  a.click();
-                  $.rm(a);
-              }
-              else {
-                  new Notice('warning', `Could not download ${href}`, 20);
-              }
-          });
-      }
-  };
-
-  var ReportPage = `<legend><label><input id="archive-report-enabled" type="checkbox">Report illegal content to archives</label></legend>
-<label for="archive-report-reason">Details</label>
-<textarea id="archive-report-reason" disabled>Illegal content</textarea>
-<button id="archive-report-submit" hidden>Submit</button>`;
-
-  var QuickReplyPage = `<div class="move">
-  <label>
-    <input type="checkbox" id="autohide" title="Auto-hide">
-    Quick Reply
-  </label>
-  <a href="javascript:;" class="close" title="Close">✕</a>
-  <select data-name="thread" title="Create a new thread / Reply">
-    <option value="new">New thread</option>
-  </select>
-</div>
-<form>
-  <div class="persona">
-    <button type="button" id="sjis-toggle" class="qr-button" title="Toggle Mona font">∀</button>
-    <button type="button" id="tex-preview-button" class="qr-button" title="Preview TeX">T<sub>E</sub>X</button>
-    <input name="name" data-name="name" list="list-name" placeholder="Name" class="field" size="1">
-    <input name="email" data-name="email" list="list-email" placeholder="Options" class="field" size="1">
-    <input name="sub" data-name="sub" list="list-sub" placeholder="Subject" class="field" size="1" maxlength="100">
-  </div>
-  <div class="textarea">
-    <textarea data-name="com" placeholder="Comment" class="field"></textarea>
-    <span id="char-count"></span>
-    <div id="tex-preview"></div>
-  </div>
-  <div id="dump-list-container">
-    <div id="dump-list"></div>
-    <a id="add-post" href="javascript:;" title="Add a post">+</a>
-  </div>
-  <div class="oekaki" hidden>
-    <input type="button" id="qr-draw-button" class="qr-button" value="Draw">
-    <label><span>Width:</span><input name="oekaki-width" value="400" type="number" class="field" size="1"></label>
-    <label><span>Height:</span><input name="oekaki-height" value="400" type="number" class="field" size="1"></label>
-    <span class="oekaki-bg" title="Background Color"><input name="oekaki-bg" type="checkbox" checked><input name="oekaki-bgcolor" type="color" value="#ffffff"></span>
-  </div>
-  <div id="file-n-submit">
-    <span id="qr-file" class="row">
-      <input type="button" id="qr-file-button" class="qr-button" value="Files">
-      <span id="qr-filename-container" class="field">
-        <span id="qr-no-file">No selected file</span>
-        <input id="qr-filename" data-name="filename" spellcheck="false">
-        <label id="qr-spoiler-label">
-          <input type="checkbox" id="qr-file-spoiler" title="Spoiler image">
-          <a class="checkbox-letter">S</a>
-        </label>
-      </span>
-    </span>
-    <span id="qr-actions-container" class="row space">
-      <span id="qr-actions" class="row">
-        <a href="javascript:;" id="qr-oekaki-button" class="qr-action-button" title="Edit in Tegaki">✎︎</a>
-        <a href="javascript:;" id="qr-jpg" class="qr-action-button" title="Compress to jpg">C</a>
-        <a href="javascript:;" id="qr-view" class="qr-action-button" title="Preview">V</a>
-        <a href="javascript:;" id="qr-randomize" class="qr-action-button" title="Randomize filename">R</a>
-        <a href="javascript:;" id="qr-restore-name" class="qr-action-button" title="Reset filename">U</a>
-        <a href="javascript:;" id="qr-filerm" class="qr-action-button" title="Remove file">✕</a>
-        <a href="javascript:;" id="url-button" class="qr-action-button" title="Post from URL">🔗︎</a>
-        <a href="javascript:;" hidden id="paste-area" class="qr-action-button" title="Select to paste images" tabindex="-1" contentEditable="true">📋︎</a>
-        <a href="javascript:;" id="custom-cooldown-button" class="qr-action-button" title="Toggle custom cooldown" class="disabled">🕒︎</a>
-        <a href="javascript:;" id="split-post" class="qr-action-button" title="Split into multiple posts" hidden>✂️</a>
-        <a href="javascript:;" id="dump-button" class="qr-action-button" title="Dump list">➕︎</a>
-      </span>
-      <input class="qr-button" type="submit">
-    </span>
-  </div>
-  <select data-default="4" name="filetag">
-    <option value="0">Hentai</option>
-    <option value="6">Porn</option>
-    <option value="1">Japanese</option>
-    <option value="2">Anime</option>
-    <option value="3">Game</option>
-    <option value="5">Loop</option>
-    <option value="4" selected>Other</option>
-  </select>
-  <input type="file" multiple>
-</form>
-<datalist id="list-name"></datalist>
-<datalist id="list-email"></datalist>
-<datalist id="list-sub"></datalist>`;
-
-  var ferongr_unreadDead = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAFVBMVEX///9zBQC/AADpDAP/gID/q6voCwJJTwpOAAAAAXRSTlMAQObYZgAAAFNJREFUeNptjQUCQCEIQ4XJ7n9ji/hpvj2D9tNIPoAicgdKt/4CYMHKgGfVTdurusm39Rl53x1jzZxPmNm8irmJelH9CKRACF2dvsWb1Ws7pvHaJi3gAk+U2XRGAAAAAElFTkSuQmCC';
-
-  var ferongr_unreadDeadY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAxElEQVR42q2TAQYCURCG//dWKQWyUICEAJQIoFN0kC6w6DaLjhCgI3SFOsVkX35+z06vaPhN+r/5mTcWf6vHJBr1E0PjNAClQJmhYU1j1rapK1BkFHhOqyQFZJh+//AVb+VQFk6uP4RSs+wL9OkSl1GwTURS9xteeQHdIAvAzR32VphBA3B3h/Mz8f91XRtrFZDv75+K3lZWmIfsEfVUXsB5GGwMJB2iE8D7smvAXt5gGeB/D9rVO1awXYQtgnNGguzfei/okTkjgCMZiwAAAABJRU5ErkJggg==';
-
-  var ferongr_unreadSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAFVBMVEX///8AcH4AtswA2PJ55fKi6fIA1/FtpPADAAAAAXRSTlMAQObYZgAAAFNJREFUeNptjQUCQCEIQ4XJ7n9ji/hpvj2D9tNIPoAicgdKt/4CYMHKgGfVTdurusm39Rl53x1jzZxPmNm8irmJelH9CKRACF2dvsWb1Ws7pvHaJi3gAk+U2XRGAAAAAElFTkSuQmCC';
-
-  var ferongr_unreadSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAv0lEQVR42mOgHrj+8T8Mk6IGIVFQB8MIBYTVICQqn376v+jlJxCNpoCwGoTpNz4BMZoChGaoPC7N286AMIYiNMNh6nAYgulHwvLIivDGxKJt/xn0TcAYzMYFcBkA0ggDQN5xXJpxe0FQGNmA67g0Y0QTTFxIWRVhgKIq1HDMeMYdC/qmCAMkpFFdiIgqPAZUdf5n4OCEYHt3HAZsOwOjMQ0ws0H2Au78gEyjyIXE/2cwNP/PICmLGY3ICmE0sXIAYT+TvkUROOYAAAAASUVORK5CYII=';
-
-  var ferongr_unreadNSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAFVBMVEX///8oeQBJ3ABV/wHM/7Lu/+ZU/gAqUP3dAAAAAXRSTlMAQObYZgAAAFNJREFUeNptjQUCQCEIQ4XJ7n9ji/hpvj2D9tNIPoAicgdKt/4CYMHKgGfVTdurusm39Rl53x1jzZxPmNm8irmJelH9CKRACF2dvsWb1Ws7pvHaJi3gAk+U2XRGAAAAAElFTkSuQmCC';
-
-  var ferongr_unreadNSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAw0lEQVR42mOgGgj5x/AfhklQg5DQqIRjhALCahASZ/5v+v/u/zMQjaqAsBqEgtD/jCCMogBJM0weu2bPO2CMoQjNcJg6bIbg8CNheYQifDFhf4Dhv5A5BIPYBKMTXRykEQaA3OM4NOP2ApsQigHXcWnGiCaYuIKGNNwAXnU0F+KLKpickAXCBRxSCBeipwOcBhhMZPjPzAXBYi44DPC8A6cxDBB1RLiAWwVPfkCmkeXkohn+C1sx/OeUxhqNCIUwmlg5ABb/Y7V8eEcdAAAAAElFTkSuQmCC';
-
-  var xat_unreadDead = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAG1BMVEX+AACLkZFub2yfaF3zZGIAAAD/AAD/iYr/zs8IPcF6AAAABXRSTlMAeprJ7xzg6IEAAABUSURBVHjaYiAGAOocCwMAgRCKUh/cf2L1Ot8FHQBYPhhAst0d+pGU5jGbbEfEJ6vnIz5QepCoRTxPhKncHLWkOBi1KZhOY+tmo+M7IklQAt+pYucFkFsDARa59ZMAAAAASUVORK5CYII=';
-
-  var xat_unreadDeadY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAPFBMVEUAAACEgoBva2ilamDxcG7IaWYgFBNOSEf//f0PDQwBAAA7LCwAAAD/AAD+hIX+m5z+zc5HAADPAAAGAADl032uAAAADHRSTlMAzNv0/vz+6v3+7ALrmfyXAAAAZUlEQVR42oxNxQHAIAzE9ZLa/rNW0V9xTsWfAUBKpaQE8P6JCPoe76Mhxkx/AjOoIffgZWGUDKG04WVdF+ucnwAXQnwBqYulAfhCtwrU2htAB7TGfhwVuKdSXSEg8F4J+RoWrwIAQKkGZfFYhZ4AAAAASUVORK5CYII=';
-
-  var xat_unreadSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAIVBMVEUAAACRjop4dXVpZ2tdcI9dfKdisfMAAAAumMN9xv+s2/+PADT2AAAAB3RSTlMAepGdv83v3HIc4QAAAFdJREFUeNqNTYUBAyEMjF/C/vu27244p/RlAGBRFQYw/DMT5m7DY0Eidv9E1XhPGajWClMGqUf375BwvQbEZovJADDmUDBd1E6A+xbopupw0YgQ5uti/AEjcAQde9z08gAAAABJRU5ErkJggg==';
-
-  var xat_unreadSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAMFBMVEUAAACAgYVlc4ljsu4AAAAAAAAAAAAumMODyP6b1P6e1f/g8v89msgSIiwNFxwbPU3tQYj5AAAABnRSTlMAxej+9VTmD9ciAAAAY0lEQVR42ozNUQ4DIQiEYRmbH6xde//bdkMsiW/Li/LFGduTAcwkMyB3d0f35KWk92N3IvASIMY72B1N6jHmHJ9r6YBrzpVg2pECspS1ob69IxQg8YU/kFAvGo08XvzGisWrAAQRBA+DRjP7AAAAAElFTkSuQmCC';
-
-  var xat_unreadNSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAHlBMVEUfJSCRi5Frbm9dn19082KR/30AAABmzDOq/5vZ/9Gt/vt2AAAABnRSTlMAe5rJ7/4vxEp4AAAAU0lEQVR42mIgBgDqHAsDCGIQgKGB7j/wy7mmggug9kOBya4q/MekbJ6Ik11kUpsHyO5k6SHmkT1GZ7i9OdaSxaGsTVF5GrtudnRQmE1CJhBW8cAXuLsDUS249XUAAAAASUVORK5CYII=';
-
-  var xat_unreadNSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAM1BMVEUAAACBj39tfm1qj2RepFlu2VQAAQAAAAAAAABmyzOX/oSr/pus/pzk/98PGgtatC4CBAI1ENblAAAACHRSTlMA09/p9v77ig0SBcQAAABkSURBVHjajE2FDQAhDKSWXIvuv+y7EX2c0/RnACDeBgE4/u4OUZXj8SBm098RAX+QbUQugSsjsVrkWrO1xhPQam0nIJflBghn6KO4azcAL6CKPsYNbJP5VSSkdRD3sHGwY/EqAIxSBSCMVsKoAAAAAElFTkSuQmCC';
-
-  var Mayhem_unreadDead = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABFklEQVR42p2SAYf0MBCGo/3UqlqVpqn1qarYOGtV63Dc//9fdzPrUbm4wIVHat73HZOkRlYjtEIvWPZOuAj/4EIt9bSvLIIXFiEIq3DD2IHVGlrA69GM0+JXssZx3Oq6VuMEi9ZSj2bImv9UTnQ553Y1SaOo3795NCuYWTgKhjfv/bOgHWTzCYoNihN44Z6er3iEZGmGrLlyw1HYGW3DMMOd2oEnkrka3tPxNA+Mz7wBtQ3PQqZNGwThHJVArKrqkR7BWvuux0obdIzz47Josmsgr3M/N7KmF9bCU330ff9Z0FayxgrhDw0C2VeX5TSxY9qGYTgK2kLWtLxnQDjYo7BCzLRARrOm4TIcf9bMPlFTpkxzZJpvFGg1bzaJAWwAAAAASUVORK5CYII=';
-
-  var Mayhem_unreadDeadY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABRklEQVR42oWSgWb0QBDHx+UTn4iKzSanKiKiEedEomg0r5AHKAV9pDxSXqDVAlB9lHT+/J3BxS0/O2bnNze3G9EVKpGSKI57rPxX/hHEsa2hEwoPcqVUaqVS7lkYE8dcxZoSDs/EI7mZlWVZFwQBCo+kRM7WwKErD8xcwPLe9yjSRg3iazVwFSmUYaegzfP8vHM20LUT3GiwM0GuPG527fwFu+DQlTvecKP0HK1jQUEQvyvf5I0OXIkUz6c5UT5fafBlfv2DTmQb1MplVDZpDofDCX+hbVs7/o9tEHMce1kMpXfOPSFumWP+Fw5dSZRq56mekyR5QTyaBuM4bnDoilPqWw0WzUVkWRZ+ieqyS4kiirZBl6bpgHg2E8zzvMGhKxHfs6Y0cG+UijTruiL3OU0T9lc4dCXkZXh+WQX3I3OesT3zdMI/nyk9ocCqsEIAAAAASUVORK5CYII=';
-
-  var Mayhem_unreadSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA/ElEQVR42p3RgWbEQBSF4Ytaa4yKiI2IGDEStSIS0EftA/XB2hP+rnEZ6PIZO/eckWRMv5sEaaRljXKXN9wlukyga1EekiTLLAPBiJa9mUyiE8U6yT/FT/+fhHokebpMpmvjtbF/fb8Q2CRjq2RGsUnOSuDjUpmddP0T1A+oPcFDlvL9Kq/g5wtde5dBVjl4tJ3AhIW9k8wqA10L0hlfmuDmD2BvJ5PohPKALId7hRVbsX9ILg+IMvireoXF73P4QNcamStX9XmpzGa61kr+xwGZrjWS/kLlykfbK7NE1wL3mRmcrKvMWN0s0wliN4nSySgTay8dejfr6Nx+ARmXRvbmqvoaAAAAAElFTkSuQmCC';
-
-  var Mayhem_unreadSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABP0lEQVR42oWTRVJEMRiEg8OrcXd3nw16hVnirLgAd3krroOs0S1ylUf/U50ilbFUfdHuP66QtoEDQiDC0gd2wabAus/SOFMvBxKgCKqgDNIU+kiEfWVqivT4gIqBqmcktDsUJYnUO5amSq/KSsfg/lmjBT1QJb0FmixQeTBeIGgJC8bG9NorWB3AXkEC1D0jLdqCNV6nVwV4wg0w4tIGFOQF1m/BJ7mhJ6B4nzF90jT35gT4MGZ/pccxA1TByNpCg/RarZa5/G8zgA+k7auicKSD7iQLZoBfenyKz7K84KoOBKk75f93dHh46ImHXhUB1VUBMmd33trWzhTXdfkS4WWUog5gljzQgdT9/WNPp8lk4omHXuXwPqs0jVk2QJk0Hh8fpe/t5OREykt6HP2dfTzVLMizTIIYSVpjMXq2/wDfYUr8wN0YOAAAAABJRU5ErkJggg==';
-
-  var Mayhem_unreadNSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA/ElEQVR42p3RAWfEMBjG8RdTJ2Kq6qqqoqIxp6o17Bvt0+47bU/570QI3PETl/d5om1Mv0actNKxernJG27ii4yja17uEiTKIiNBj469hUyg48V6ib/ZT/8fhAYEeRSZSNema+P75/OJwCYRWyUzic1yVgIfl8rspFs+Qf2A2hPcZc3fr/IK5Xyla+8ySpKDR9sJzFjZO8kkGemak9740gS38gD2djKBjssPiHIUr5CwZfuHxPwAL2N5Vc+wlPscPtK1VpbKVX1dKrOFrnUSXzgg0rVWwn8oX/loe2UW6JrjPiODkzXJglTMIh0n1oiXXiaZWQfpMRSznk7zB4RaQX4rJ6lsAAAAAElFTkSuQmCC';
-
-  var Mayhem_unreadNSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABP0lEQVR4AYWS0UqFQBCGhziImNRBRImDmUgiIaF0kWSP4AMEXXXTE/QiPpL3UdR19Crb/PAvLEtyFj5mmfn/cdxd0RUokbJXEsZYCZUd4D72NBG8wkKmlEqtVMoFhTFJmKuoKelBTVIkjbNE5IainJTIeZqaXjkg8fp+Z7GCjiLQbWgOihTKsCFowUZtoNef4HgDf4JMuTbe8n/Br8NDr5zxhBul52i3FBQE+xflmzzTA69ESmpPmubunwZfztc/6IncBrXSe7/QkK5tW3f8H7dBjHH8q6Kwt033V6Hb4JeeWPgsq42rugfYZ92psWscRwMPvZIo9bEGD2+F2YUnBizLwpeoXnYpbQM34kAB9peP58aueZ4NPPRKxPusaRoYG6UizbquyH1O04T4RA+8EvAwUr6sgjFnDuReLaUn+ANygUa7+9SCWgAAAABJRU5ErkJggg==';
-
-  var fourChanJS_unreadDead = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAD1BMVEUBAAAAAAD/AABnZ2f///8nFk05AAAAAXRSTlMAQObYZgAAAEFJREFUeNqNjgEKACAMAjvX/98cAkkxgmSgO8Bt/Ai4ApJ6KKhzF3OiEMDASrGB/QWgPEHsUpN+Ng9xAETMYhDrWmeHAMcmvycWAAAAAElFTkSuQmCC';
-
-  var fourChanJS_unreadDeadY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAD1BMVEUAAAAAAAD/AABmZmYA/wBD99DBAAAAAXRSTlMAQObYZgAAAERJREFUeNpiIAYA6pwDDApiGAig/yW9/5m/YEdXbGDSh2nwWlTVXpq+3+UcFcEApHhg8gtoWshTOrK/zUEuUBIzfhJ7/meHAMdsgg3zAAAAAElFTkSuQmCC';
-
-  var fourChanJS_unreadSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAD1BMVEUBAAAAAAAul8NnZ2f////82iC9AAAAAXRSTlMAQObYZgAAAEFJREFUeNqNjgEKACAMAjvX/98cAkkxgmSgO8Bt/Ai4ApJ6KKhzF3OiEMDASrGB/QWgPEHsUpN+Ng9xAETMYhDrWmeHAMcmvycWAAAAAElFTkSuQmCC';
-
-  var fourChanJS_unreadSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAD1BMVEUAAAAAAAAul8NnZ2f/AAD7B+mqAAAAAXRSTlMAQObYZgAAAERJREFUeNpiIAYA6pwDDApiGAig/yW9/5m/YEdXbGDSh2nwWlTVXpq+3+UcFcEApHhg8gtoWshTOrK/zUEuUBIzfhJ7/meHAMdsgg3zAAAAAElFTkSuQmCC';
-
-  var fourChanJS_unreadNSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAElBMVEUBAAAAAABmzDNlyjJnZ2f///+6o7dfAAAAAXRSTlMAQObYZgAAAERJREFUeF6NjkEKADEIA51o///lJZfQxUsHITogWi8AvwZJuxmYa25xDooBLEwOWFTYAsYVhdorLZt9Ng9xCUTCUCQ2H3F4ANrZ2WNiAAAAAElFTkSuQmCC';
-
-  var fourChanJS_unreadNSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAD1BMVEUAAAAAAABmzDNmZmb/AAC8/wCMAAAAAXRSTlMAQObYZgAAAERJREFUeNpiIAYA6pwDDApiGAig/yW9/5m/YEdXbGDSh2nwWlTVXpq+3+UcFcEApHhg8gtoWshTOrK/zUEuUBIzfhJ7/meHAMdsgg3zAAAAAElFTkSuQmCC';
-
-  var Original_unreadDead = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAADFBMVEX/////AAD///8AAABBZmS3AAAAAXRSTlMAQObYZgAAAEJJREFUeNp1jQEKwEAIwzT9/58Hk3ATbgVoG6jWRcAKJPkG0t23sLpA4tZjwPGRoOxOsHt0yH77AzIgbkLQXlEcewCo8AFNs8H5UAAAAABJRU5ErkJggg==';
-
-  var Original_unreadDeadY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAhElEQVR42q1RwQnAMAjMu5M4guAKXa4j5dUROo5tipSDcrFChUONd0di2m/hEGVOHDyIPufgwAFASDkpoSzmBrkJ2UMyR9LsJ3rvrqo3Rt1YMIMhhNnOxLMnoMFBxHyJAr2IOBFzA8U+6pLBdmEJTA0aMVjpDd6Loks0s5HZNwYx8tfZCZ0kll7ORffZAAAAAElFTkSuQmCC';
-
-  var Original_unreadSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAADFBMVEX///8ul8P///8AAACaqgkzAAAAAXRSTlMAQObYZgAAAEJJREFUeNp1jQEKwEAIwzT9/58Hk3ATbgVoG6jWRcAKJPkG0t23sLpA4tZjwPGRoOxOsHt0yH77AzIgbkLQXlEcewCo8AFNs8H5UAAAAABJRU5ErkJggg==';
-
-  var Original_unreadSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAALVBMVEUAAAAAAAAAAAAAAAABBQcHFx4KISoNLToaVW4oKCgul8M4ODg7OzvBwcH///8uS/CdAAAAA3RSTlMAx9dmesIgAAAAV0lEQVR42m2PgQqAIAxErVmV5vv/zw3arRQUwLsHe2Np8oAhYGZ9wEopszD2ACIx+8lkb7U2LXZQYVHXCKzqLt3gUnewg9GDM+cA9oID4gZcepvWkvi/BwR+Bfo8YGYaAAAAAElFTkSuQmCC';
-
-  var Original_unreadNSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAADFBMVEX///9mzDP///8AAACT0n1lAAAAAXRSTlMAQObYZgAAAEJJREFUeNp1jQEKwEAIwzT9/58Hk3ATbgVoG6jWRcAKJPkG0t23sLpA4tZjwPGRoOxOsHt0yH77AzIgbkLQXlEcewCo8AFNs8H5UAAAAABJRU5ErkJggg==';
-
-  var Original_unreadNSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAALVBMVEUAAAAAAAAAAAAAAAAECAIQIAgWLAsePA8oKCg4ODg6dB07OztmzDPBwcH///+rsf3XAAAAA3RSTlMAx9dmesIgAAAAV0lEQVR42m2PgQqAIAxErVll6fv/zw3arRQUwLsHe2Np8oAhYGZ9wGqtszD2ACIx+8lkb6U0LXZQYFHXCKzqLt3gVHewg9GDK+cA9oID4gZcepvWkvi/ByUyBjCqN1XpAAAAAElFTkSuQmCC';
-
-  var Metro_unreadDead = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEUAAAC/AABrZQDiAAAAAXRSTlMAQObYZgAAABJJREFUCB1jZGBgrMNAQEEc4gCSfAX5bRw/NQAAAABJRU5ErkJggg==';
-
-  var Metro_unreadDeadY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAJFBMVEUAAAAAAAAAAAC/AAD///8dAAApAABsAAAHAAA4AACQAAAsAABMCpCvAAAAA3RSTlMAPse+s4iwAAAAMklEQVQI12NggAFmY2MDECaNAQZCilAzVJyg5oS4GqAxUtygjIp2KGOKJ5SxepcB3BUAcdYRqxAtgFoAAAAASUVORK5CYII=';
-
-  var Metro_unreadSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEUAAAAA1/GhpCidAAAAAXRSTlMAQObYZgAAABJJREFUCB1jZGBgrMNAQEEc4gCSfAX5bRw/NQAAAABJRU5ErkJggg==';
-
-  var Metro_unreadSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAJFBMVEUAAAAAAAAAAAAA1/H///8AISUALzQAeokACAkAQEcAorYAMTcE9WFNAAAAA3RSTlMAPse+s4iwAAAAMklEQVQI12NggAFmY2MDECaNAQZCilAzVJyg5oS4GqAxUtygjIp2KGOKJ5SxepcB3BUAcdYRqxAtgFoAAAAASUVORK5CYII=';
-
-  var Metro_unreadNSFW = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEUAAABV/wErM5hwAAAAAXRSTlMAQObYZgAAABJJREFUCB1jZGBgrMNAQEEc4gCSfAX5bRw/NQAAAABJRU5ErkJggg==';
-
-  var Metro_unreadNSFWY = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAJFBMVEUAAAAAAAAAAABV/wH///8NKAASOAAwkQADCgAZTABAwQATOwC5e3VGAAAAA3RSTlMAPse+s4iwAAAAMklEQVQI12NggAFmY2MDECaNAQZCilAzVJyg5oS4GqAxUtygjIp2KGOKJ5SxepcB3BUAcdYRqxAtgFoAAAAASUVORK5CYII=';
-
-  var dead = 'R0lGODlhEAAQAKECAAAAAP8AAP///////yH5BAEKAAIALAAAAAAQABAAAAIslI+pq+D9DAgUoFnPrDLkHnxYJgFReTLqyqSpJn5w/HXx101ApyeWdfixGAUAOw==';
-
-  var empty = 'R0lGODlhEAAQAPD/AAAAANvb2yH5BAUAAAIALAAAAAAQABAAAAIslI+pq+D9DAgUoFnPrDLkHnxYJgFReTLqyqSpJn5w/HXx101ApyeWdfixGAUAOw==';
-
-  var Favicon = {
-      init() {
-          $.asap((() => d.head && (Favicon.el = $('link[rel="shortcut icon"]', d.head))), Favicon.initAsap);
-      },
-      set(status) {
-          Favicon.status = status;
-          if (Favicon.el) {
-              Favicon.el.href = Favicon[status];
-              // `favicon.href = href` doesn't work on Firefox.
-              $.add(d.head, Favicon.el);
-          }
-      },
-      initAsap() {
-          Favicon.el.type = 'image/x-icon';
-          const { href } = Favicon.el;
-          Favicon.isSFW = /ws\.ico$/.test(href);
-          Favicon.default = href;
-          Favicon.switch();
-          if (Favicon.status)
-              Favicon.set(Favicon.status);
-      },
-      switch() {
-          let items = {
-              ferongr: [
-                  ferongr_unreadDead,
-                  ferongr_unreadDeadY,
-                  ferongr_unreadSFW,
-                  ferongr_unreadSFWY,
-                  ferongr_unreadNSFW,
-                  ferongr_unreadNSFWY,
-              ],
-              'xat-': [
-                  xat_unreadDead,
-                  xat_unreadDeadY,
-                  xat_unreadSFW,
-                  xat_unreadSFWY,
-                  xat_unreadNSFW,
-                  xat_unreadNSFWY,
-              ],
-              Mayhem: [
-                  Mayhem_unreadDead,
-                  Mayhem_unreadDeadY,
-                  Mayhem_unreadSFW,
-                  Mayhem_unreadSFWY,
-                  Mayhem_unreadNSFW,
-                  Mayhem_unreadNSFWY,
-              ],
-              '4chanJS': [
-                  fourChanJS_unreadDead,
-                  fourChanJS_unreadDeadY,
-                  fourChanJS_unreadSFW,
-                  fourChanJS_unreadSFWY,
-                  fourChanJS_unreadNSFW,
-                  fourChanJS_unreadNSFWY,
-              ],
-              Original: [
-                  Original_unreadDead,
-                  Original_unreadDeadY,
-                  Original_unreadSFW,
-                  Original_unreadSFWY,
-                  Original_unreadNSFW,
-                  Original_unreadNSFWY,
-              ],
-              'Metro': [
-                  Metro_unreadDead,
-                  Metro_unreadDeadY,
-                  Metro_unreadSFW,
-                  Metro_unreadSFWY,
-                  Metro_unreadNSFW,
-                  Metro_unreadNSFWY,
-              ]
-          };
-          items = $.getOwn(items, Conf.favicon);
-          const f = Favicon;
-          const t = 'data:image/png;base64,';
-          let i = 0;
-          while (items[i]) {
-              items[i] = t + items[i++];
-          }
-          [f.unreadDead, f.unreadDeadY, f.unreadSFW, f.unreadSFWY, f.unreadNSFW, f.unreadNSFWY] = items;
-          f.update();
-      },
-      update() {
-          if (this.isSFW) {
-              this.unread = this.unreadSFW;
-              this.unreadY = this.unreadSFWY;
-          }
-          else {
-              this.unread = this.unreadNSFW;
-              this.unreadY = this.unreadNSFWY;
-          }
-      },
-      SFW: '//s.4cdn.org/image/favicon-ws.ico',
-      NSFW: '//s.4cdn.org/image/favicon.ico',
-      dead: `data:image/gif;base64,${dead}`,
-      logo: `data:image/png;base64,${empty}`,
-  };
-
-  var Menu = {
-      init() {
-          if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu)
-              return;
-          this.button = $.el('a', {
-              className: 'menu-button',
-              href: 'javascript:;'
-          });
-          Icon.set(this.button, 'caretDown');
-          this.menu = new UI.Menu('post');
-          Callbacks.Post.push({
-              name: 'Menu',
-              cb: this.node
-          });
-          Callbacks.CatalogThread.push({
-              name: 'Menu',
-              cb: this.catalogNode
-          });
-      },
-      node() {
-          if (this.isClone) {
-              const button = $('.menu-button', this.nodes.info);
-              $.rmClass(button, 'active');
-              $.rm($('.dialog', this.nodes.info));
-              Menu.makeButton(this, button);
-              return;
-          }
-          $.add(this.nodes.info, Menu.makeButton(this));
-      },
-      catalogNode() { $.after(this.nodes.icons, Menu.makeButton(this.thread.OP)); },
-      makeButton(post, button) {
-          button || (button = Menu.button.cloneNode(true));
-          $.on(button, 'click', function (e) { Menu.menu.toggle(e, this, post); });
-          return button;
-      }
-  };
-
-  var QR = {
-    postingIsEnabled: false,
-    // will be set at init
-    // captcha: undefined as typeof Captcha.v2 | typeof Captcha.t,
-    captcha: null,
-    min_width: 0,
-    min_height: 0,
-    max_width: 0,
-    max_height: 0,
-    max_size: 0,
-    max_size_video: 0,
-    max_comment: 0,
-    max_width_video: 0,
-    max_height_video: 0,
-    max_duration_video: 0,
-    forcedAnon: false,
-    spoiler: false,
-    link: undefined,
-    post: undefined,
-    posts: undefined,
-    nodes: undefined,
-    shortcut: undefined,
-    hasFocus: false,
-    req: undefined,
-    selected: undefined,
-    mimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'video/webm', 'video/mp4'],
-    validExtension: /\.(jpe?g|png|gif|pdf|webm|mp4)$/i,
-    typeFromExtension: {
-      'jpg': 'image/jpeg',
-      'jpeg': 'image/jpeg',
-      'png': 'image/png',
-      'gif': 'image/gif',
-      'pdf': 'application/pdf',
-      'webm': 'video/webm',
-      'mp4': 'video/mp4'
-    },
-    extensionFromType: {
-      'image/jpeg': 'jpg',
-      'image/png': 'png',
-      'image/gif': 'gif',
-      'application/pdf': 'pdf',
-      'video/webm': 'webm',
-      'video/mp4': 'mp4'
-    },
-    init() {
-      if (!Conf['Quick Reply'])
-        return;
-      this.posts = [];
-      $.on(d, '4chanXInitFinished', () => BoardConfig.ready(QR.initReady));
-      Callbacks.Post.push({
-        name: 'Quick Reply',
-        cb: this.node
-      });
-      let sc = $.el('a', {
-        className: 'disabled',
-        title: 'Quick Reply',
-        href: 'javascript:;',
-      });
-      this.shortcut = sc;
-      Icon.set(this.shortcut, 'comment', 'Quick Reply');
-      $.on(sc, 'click', () => {
-        if (!QR.postingIsEnabled)
-          return;
-        if (Conf['Persistent QR'] || !QR.nodes || QR.nodes.el.hidden) {
-          QR.open();
-          QR.nodes.com.focus();
-        } else {
-          QR.close();
-        }
-      });
-      Header.addShortcut('qr', sc, 540);
-      window.addEventListener('message', event => {
-        if (event.data?.twister?.error)
-          QR.error($.el('div', { innerHTML: event.data.twister.error }));
-      });
-    },
-    initReady() {
-      // const captchaVersion = $('#g-recaptcha, #captcha-forced-noscript') ? 'v2' : 't';
-      // QR.captcha = Captcha[captchaVersion];
-      QR.captcha = Captcha.t;
-      QR.postingIsEnabled = true;
-      const { config } = g.BOARD;
-      const prop = (key, def) => +(config[key] ?? def);
-      QR.min_width = prop('min_image_width', 1);
-      QR.min_height = prop('min_image_height', 1);
-      QR.max_width = (QR.max_height = 10000);
-      QR.max_size = prop('max_filesize', 4194304);
-      QR.max_size_video = prop('max_webm_filesize', QR.max_size);
-      QR.max_comment = prop('max_comment_chars', 2000);
-      QR.max_width_video = (QR.max_height_video = 2048);
-      QR.max_duration_video = prop('max_webm_duration', 120);
-      QR.forcedAnon = !!config.forced_anon;
-      QR.spoiler = !!config.spoilers;
-      let origToggle = $.id('togglePostFormLink');
-      if (origToggle) {
-        const link = $.el('h1', { className: "qr-link-container" });
-        $.extend(link, {
-          innerHTML: `<a href="javascript:;" class="qr-link">${g.VIEW === "thread" ? "Reply to Thread" : "Start a Thread"}</a>`
-        });
-        QR.link = link.firstElementChild;
-        $.on(link.firstChild, 'click', () => {
-          QR.open();
-          QR.nodes.com.focus();
-        });
-        $.before(origToggle, link);
-        origToggle.firstElementChild.textContent = 'Original Form';
-      }
-      if (g.VIEW === 'thread') {
-        const linkBot = $.el('div', { className: "brackets-wrap qr-link-container-bottom" });
-        $.extend(linkBot, { innerHTML: '<a href="javascript:;" class="qr-link-bottom">Reply to Thread</a>' });
-        $.on(linkBot.firstElementChild, 'click', () => {
-          QR.open();
-          QR.nodes.com.focus();
-        });
-        let navLinksBot = $('.navLinksBot');
-        if (navLinksBot)
-          $.prepend(navLinksBot, linkBot);
-      }
-      $.on(d, 'QRGetFile', QR.getFile);
-      $.on(d, 'QRDrawFile', QR.drawFile);
-      $.on(d, 'QRSetFile', QR.setFile);
-      $.on(d, 'paste', QR.paste);
-      $.on(d, 'dragover', QR.dragOver);
-      $.on(d, 'drop', QR.dropFile);
-      $.on(d, 'dragstart dragend', QR.drag);
-      $.on(d, 'IndexRefreshInternal', QR.generatePostableThreadsList);
-      $.on(d, 'ThreadUpdate', QR.statusCheck);
-      if (!Conf['Persistent QR'])
-        return;
-      QR.open();
-      if (Conf['Auto Hide QR'])
-        return QR.hide();
-    },
-    statusCheck() {
-      if (!QR.nodes)
-        return;
-      const { thread } = QR.posts[0];
-      if ((thread !== 'new') && g.threads.get(`${g.BOARD}.${thread}`).isDead) {
-        return QR.abort();
-      } else {
-        return QR.status();
-      }
-    },
-    node() {
-      $.on(this.nodes.quote, 'click', QR.quote);
-      if (this.isFetchedQuote)
-        return QR.generatePostableThreadsList();
-    },
-    open() {
-      if (QR.nodes) {
-        if (QR.nodes.el.hidden)
-          QR.captcha.setup();
-        QR.nodes.el.hidden = false;
-        QR.unhide();
-      } else {
-        try {
-          QR.dialog();
-        } catch (err) {
-          delete QR.nodes;
-          Main.handleErrors({
-            message: 'Quick Reply dialog creation crashed.',
-            error: err
-          });
-          return;
-        }
-      }
-      $.rmClass(QR.shortcut, 'disabled');
-    },
-    close() {
-      if (QR.req) {
-        QR.abort();
-        return;
-      }
-      QR.nodes.el.hidden = true;
-      QR.cleanNotifications();
-      QR.blur();
-      $.rmClass(QR.nodes.el, 'dump');
-      $.addClass(QR.shortcut, 'disabled');
-      new QR.post(true);
-      for (var post of QR.posts.splice(0, QR.posts.length - 1)) {
-        post.delete();
-      }
-      QR.cooldown.auto = false;
-      QR.status();
-      QR.captcha.destroy();
-    },
-    focus() {
-      return $.queueTask(() => {
-        // if (!QR.inBubble()) {
-        QR.hasFocus = d.activeElement && QR.nodes.el.contains(d.activeElement);
-        return QR.nodes.el.classList.toggle('focus', QR.hasFocus);
-        // }
-      });
-    },
-    // inBubble() {
-    //   const bubbles = $$('iframe[src^="https://www.google.com/recaptcha/api2/frame"]');
-    //   return bubbles.includes(d.activeElement) || bubbles.some(el => (getComputedStyle(el).visibility !== 'hidden') && (el.getBoundingClientRect().bottom > 0));
-    // },
-    hide() {
-      QR.blur();
-      $.addClass(QR.nodes.el, 'autohide');
-      return QR.nodes.autohide.checked = true;
-    },
-    unhide() {
-      $.rmClass(QR.nodes.el, 'autohide');
-      return QR.nodes.autohide.checked = false;
-    },
-    toggleHide() {
-      if (this.checked) {
-        return QR.hide();
-      } else {
-        return QR.unhide();
-      }
-    },
-    blur() {
-      if (QR.nodes.el.contains(d.activeElement))
-        d.activeElement.blur();
-    },
-    toggleSJIS(e) {
-      e.preventDefault();
-      Conf.sjisPreview = !Conf.sjisPreview;
-      $.set('sjisPreview', Conf.sjisPreview);
-      return QR.nodes.el.classList.toggle('sjis-preview', Conf.sjisPreview);
-    },
-    texPreviewShow() {
-      if ($.hasClass(QR.nodes.el, 'tex-preview'))
-        return QR.texPreviewHide();
-      $.addClass(QR.nodes.el, 'tex-preview');
-      QR.nodes.texPreview.textContent = QR.nodes.com.value;
-      $.event('mathjax', null, QR.nodes.texPreview);
-    },
-    texPreviewHide() { $.rmClass(QR.nodes.el, 'tex-preview'); },
-    addPost() {
-      QR.open();
-      const wasOpen = (QR.nodes && !QR.nodes.el.hidden);
-      if (wasOpen) {
-        $.addClass(QR.nodes.el, 'dump');
-        new QR.post(true);
-      }
-      QR.nodes.com.focus();
-    },
-    setCustomCooldown(enabled) {
-      Conf.customCooldownEnabled = enabled;
-      QR.cooldown.customCooldown = enabled;
-      return QR.nodes.customCooldown.classList.toggle('disabled', !enabled);
-    },
-    toggleCustomCooldown() {
-      const enabled = $.hasClass(QR.nodes.customCooldown, 'disabled');
-      QR.setCustomCooldown(enabled);
-      return $.set('customCooldownEnabled', enabled);
-    },
-    error(err, focusOverride) {
-      let el;
-      QR.open();
-      if (typeof err === 'string') {
-        el = $.tn(err);
-      } else {
-        el = err;
-        el.removeAttribute('style');
-      }
-      const notice = new Notice('warning', el);
-      QR.notifications.push(notice);
-      if (!Header.areNotificationsEnabled) {
-        if (d.hidden && !QR.cooldown.auto)
-          return alert(el.textContent);
-      } else if (d.hidden || !(focusOverride || d.hasFocus())) {
-        const notif = new Notification(el.textContent, {
-          body: el.textContent,
-          icon: Favicon.logo
-        });
-        notif.onclick = () => window.focus();
-        if ($.engine !== 'gecko') {
-          // Firefox automatically closes notifications
-          // so we can't control the onclose properly.
-          notif.onclose = () => notice.close();
-          return notif.onshow = () => setTimeout(() => {
-            notif.onclose = null;
-            notif.close();
-          }, 7 * SECOND);
-        }
-      }
-    },
-    connectionError() {
-      return $.el('span', { innerHTML: 'Connection error while posting. ' +
-          '[<a href="' + E(meta.upstreamFaq) + '#connection-errors" target="_blank">More info</a>]'
-      });
-    },
-    notifications: [],
-    cleanNotifications() {
-      for (var notification of QR.notifications) {
-        notification.close();
-      }
-      return QR.notifications = [];
-    },
-    /* Returns true if the QR is disabled. */
-    status() {
-      let disabled, value;
-      if (!QR.nodes)
-        return;
-      const { thread } = QR.posts[0];
-      if ((thread !== 'new') && g.threads.get(`${g.BOARD}.${thread}`).isDead) {
-        value = 'Dead';
-        disabled = true;
-        QR.cooldown.auto = false;
-      }
-      value = QR.req ? QR.req.progress : QR.cooldown.seconds || value;
-      const { status } = QR.nodes;
-      status.value = !value ? 'Submit' : QR.cooldown.auto ? `Auto ${value}` : value;
-      status.disabled = disabled || false;
-      return status.disabled;
-    },
-    openPost() {
-      QR.open();
-      if (QR.selected.isLocked) {
-        const index = QR.posts.indexOf(QR.selected);
-        (QR.posts[index + 1] || new QR.post()).select();
-        $.addClass(QR.nodes.el, 'dump');
-        return QR.cooldown.auto = true;
-      }
-    },
-    quote(e) {
-      e?.preventDefault();
-      if (!QR.postingIsEnabled)
-        return;
-      const sel = d.getSelection();
-      const post = Get.postFromNode(this);
-      const { root } = post.nodes;
-      const postRange = new Range();
-      postRange.selectNode(root);
-      let text = post.board.ID === g.BOARD.ID ? `>>${post}\n` : `>>>/${post.board}/${post}\n`;
-      let range;
-      for (let i = 0; i < sel.rangeCount; i++) {
-        try {
-          var insideCode, node;
-          range = sel.getRangeAt(i);
-          // Trim range to be fully inside post
-          if (range.compareBoundaryPoints(Range.START_TO_START, postRange) < 0)
-            range.setStartBefore(root);
-          if (range.compareBoundaryPoints(Range.END_TO_END, postRange) > 0)
-            range.setEndAfter(root);
-          if (!range.toString().trim())
-            continue;
-          var frag = range.cloneContents();
-          var ancestor = range.commonAncestorContainer;
-          // Quoting the insides of a spoiler/code tag.
-          if ($.x('ancestor-or-self::*[self::s or contains(@class,"removed-spoiler")]', ancestor)) {
-            $.prepend(frag, $.tn('[spoiler]'));
-            $.add(frag, $.tn('[/spoiler]'));
-          }
-          if (insideCode = $.x('ancestor-or-self::pre[contains(@class,"prettyprint")]', ancestor)) {
-            $.prepend(frag, $.tn('[code]'));
-            $.add(frag, $.tn('[/code]'));
-          }
-          for (node of $$((insideCode ? 'br' : '.prettyprint br'), frag)) {
-            $.replace(node, $.tn('\n'));
-          }
-          for (node of $$('br', frag)) {
-            if (node !== frag.lastChild)
-              $.replace(node, $.tn('\n>'));
-          }
-          g.SITE.insertTags?.(frag);
-          for (node of $$('.linkify[data-original]', frag)) {
-            $.replace(node, $.tn(node.dataset.original));
-          }
-          for (node of $$('.embedder', frag)) {
-            if (node.previousSibling?.nodeValue === ' ')
-              $.rm(node.previousSibling);
-            $.rm(node);
-          }
-          text += `>${frag.textContent.trim()}\n`;
-        } catch (error) { }
-      }
-      QR.openPost();
-      const { com, thread } = QR.nodes;
-      if (!com.value)
-        thread.value = Get.threadFromNode(this);
-      const wasOnlyQuotes = QR.selected.isOnlyQuotes();
-      const caretPos = com.selectionStart;
-      // Replace selection for text.
-      com.value = com.value.slice(0, caretPos) + text + com.value.slice(com.selectionEnd);
-      // Move the caret to the end of the new quote.
-      range = caretPos + text.length;
-      com.setSelectionRange(range, range);
-      com.focus();
-      // This allows us to determine if any text other than quotes has been typed.
-      if (wasOnlyQuotes)
-        QR.selected.quotedText = com.value;
-      QR.selected.save(com);
-      QR.selected.save(thread);
-    },
-    characterCount() {
-      const counter = QR.nodes.charCount;
-      const count = QR.nodes.com.value.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '_').length;
-      counter.textContent = count.toString();
-      counter.hidden = count < (QR.max_comment / 2);
-      const splitPost = QR.nodes.splitPost;
-      splitPost.hidden = count < QR.max_comment;
-      return (count > QR.max_comment ? $.addClass : $.rmClass)(counter, 'warning');
-    },
-    splitPost() {
-      if (QR.selected.isLocked)
-        return;
-      const count = QR.nodes.com.value.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '_').length;
-      if (count < QR.max_comment)
-        return;
-      const text = QR.nodes.com.value;
-      let lastPostLength = 0;
-      let splitCount = 0;
-      const idx = QR.posts.indexOf(QR.selected);
-      QR.selected.setComment("");
-      for (const line of text.split("\n")) {
-        const currentLength = line.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '_').length + 1; // +1 for newline at end
-        if (currentLength + lastPostLength > QR.max_comment) {
-          const post = new QR.post(true);
-          post.setComment(line);
-          lastPostLength = currentLength;
-          splitCount++;
-        } else {
-          const newComment = [QR.selected.com, line].filter(el => el !== null).join('\n');
-          QR.selected.setComment(newComment);
-          lastPostLength += currentLength;
-        }
-      }
-      const newPostIdx = QR.posts.length - splitCount;
-      const newPosts = QR.posts.splice(newPostIdx, splitCount);
-      QR.posts.splice(idx + 1, 0, ...newPosts);
-      const rearrangedDumpList = [...QR.nodes.dumpList.children];
-      const newDumps = rearrangedDumpList.splice(newPostIdx, splitCount);
-      rearrangedDumpList.splice(idx + 1, 0, ...newDumps);
-      for (const e of rearrangedDumpList) {
-        QR.nodes.dumpList.appendChild(e);
-      }
-      QR.nodes.el.classList.add('dump');
-    },
-    getFile() { $.event('QRFile', QR.selected?.file); },
-    drawFile(e) {
-      const file = QR.selected?.file;
-      if (!file || !/^(image|video)\//.test(file.type))
-        return;
-      const isVideo = /^video\//.test(file);
-      const el = $.el((isVideo ? 'video' : 'img'));
-      $.on(el, 'error', () => QR.openError());
-      $.on(el, (isVideo ? 'loadeddata' : 'load'), () => {
-        e.target.getContext('2d').drawImage(el, 0, 0);
-        URL.revokeObjectURL(el.src);
-        return $.event('QRImageDrawn', null, e.target);
-      });
-      return el.src = URL.createObjectURL(file);
-    },
-    openError() {
-      const div = $.el('div');
-      $.extend(div, {
-        innerHTML: 'Could not open file. [<a href="' + E(meta.upstreamFaq) + '#error-reading-metadata" target="_blank">More info</a>]'
-      });
-      return QR.error(div);
-    },
-    setFile(e) {
-      const { file, name, source } = e.detail;
-      if (name != null)
-        file.name = name;
-      if (source != null)
-        file.source = source;
-      QR.open();
-      return QR.handleFiles([file]);
-    },
-    drag(e) {
-      // Let it drag anything from the page.
-      const toggle = e.type === 'dragstart' ? $.off : $.on;
-      toggle(d, 'dragover', QR.dragOver);
-      toggle(d, 'drop', QR.dropFile);
-    },
-    dragOver(e) {
-      e.preventDefault();
-      return e.dataTransfer.dropEffect = 'copy';
-    }, // cursor feedback
-    dropFile(e) {
-      // Let it only handle files from the desktop.
-      if (!e.dataTransfer.files.length)
-        return;
-      e.preventDefault();
-      QR.open();
-      return QR.handleFiles(e.dataTransfer.files);
-    },
-    paste(e) {
-      if (!e.clipboardData.items)
-        return;
-      let file = null;
-      let score = -1;
-      for (var item of e.clipboardData.items) {
-        let file2 = item.getAsFile();
-        if ((item.kind === 'file') && file2) {
-          var score2 = (2 * +(file2.size <= QR.max_size)) + +(file2.type === 'image/png');
-          if (score2 > score) {
-            file = file2;
-            score = score2;
-          }
-        }
-      }
-      if (file) {
-        const { type } = file;
-        const blob = new Blob([file], { type });
-        blob.name = `${Conf.pastedname}.${$.getOwn(QR.extensionFromType, type) || 'jpg'}`;
-        QR.open();
-        QR.handleFiles([blob]);
-      }
-    },
-    handleUrl(urlDefault) {
-      QR.open();
-      const { selected } = QR;
-      selected.preventAutoPost();
-      CrossOrigin.permission(() => {
-        const url = prompt('Enter a URL:', urlDefault);
-        if (!url)
-          return;
-        QR.nodes.fileButton.focus();
-        CrossOrigin.file(url, (blob) => {
-          if (blob && !/^text\//.test(blob.type)) {
-            selected.setFile(blob);
-            $.addClass(QR.nodes.el, 'dump');
-          } else {
-            QR.error("Can't load file.");
-          }
-        });
-      });
-    },
-    handleFiles(files) {
-      if (this !== QR) { // file input
-        files = [...this.files];
-        this.value = null;
-      }
-      if (!files.length)
-        return;
-      QR.cleanNotifications();
-      for (var file of files) {
-        QR.handleFile(file, files.length);
-      }
-      $.addClass(QR.nodes.el, 'dump');
-      if ((d.activeElement === QR.nodes.fileButton) && $.hasClass(QR.nodes.fileSubmit, 'has-file')) {
-        return QR.nodes.filename.focus();
-      }
-    },
-    handleFile(file, nfiles) {
-      let post;
-      const isText = /^text\//.test(file.type);
-      if (nfiles === 1) {
-        post = QR.selected;
-      } else {
-        post = QR.posts[QR.posts.length - 1];
-        if (isText ? post.com || post.pasting : post.file)
-          post = new QR.post();
-      }
-      return post[isText ? 'pasteText' : 'setFile'](file);
-    },
-    openFileInput() {
-      if (QR.nodes.fileButton.disabled)
-        return;
-      QR.nodes.fileInput.click();
-      return QR.nodes.fileButton.focus();
-    },
-    generatePostableThreadsList() {
-      if (!QR.nodes)
-        return;
-      const list = QR.nodes.thread;
-      const options = [list.firstElementChild];
-      for (var thread of g.BOARD.threads.keys) {
-        options.push($.el('option', {
-          value: thread,
-          textContent: `Thread ${thread}`
-        }));
-      }
-      const val = list.value;
-      $.rmAll(list);
-      $.add(list, options);
-      list.value = val;
-      if (list.value === val)
-        return;
-      // Fix the value if the option disappeared.
-      list.value = g.VIEW === 'thread' ? g.THREADID : 'new';
-      return (g.VIEW === 'thread' ? $.addClass : $.rmClass)(QR.nodes.el, 'reply-to-thread');
-    },
-    dialog() {
-      let dialog, event, nodes;
-      QR.nodes = (nodes = {
-        el: (dialog = UI.dialog('qr', { innerHTML: QuickReplyPage }))
-      });
-      const setNode = (name, query) => nodes[name] = $(query, dialog);
-      setNode('move', '.move');
-      setNode('autohide', '#autohide');
-      setNode('close', '.close');
-      setNode('thread', 'select');
-      setNode('form', 'form');
-      setNode('sjisToggle', '#sjis-toggle');
-      setNode('texButton', '#tex-preview-button');
-      setNode('name', '[data-name=name]');
-      setNode('email', '[data-name=email]');
-      setNode('sub', '[data-name=sub]');
-      setNode('com', '[data-name=com]');
-      setNode('charCount', '#char-count');
-      setNode('texPreview', '#tex-preview');
-      setNode('dumpList', '#dump-list');
-      setNode('addPost', '#add-post');
-      setNode('oekaki', '.oekaki');
-      setNode('drawButton', '#qr-draw-button');
-      setNode('randomizeButton', '#qr-randomize');
-      setNode('compress', '#qr-jpg');
-      setNode('view', '#qr-view');
-      setNode('restoreNameButton', '#qr-restore-name');
-      setNode('fileSubmit', '#file-n-submit');
-      setNode('fileButton', '#qr-file-button');
-      setNode('noFile', '#qr-no-file');
-      setNode('filename', '#qr-filename');
-      setNode('spoiler', '#qr-file-spoiler');
-      setNode('oekakiButton', '#qr-oekaki-button');
-      setNode('fileRM', '#qr-filerm');
-      setNode('urlButton', '#url-button');
-      setNode('customCooldown', '#custom-cooldown-button');
-      setNode('dumpButton', '#dump-button');
-      setNode('status', '[type=submit]');
-      setNode('fileInput', '[type=file]');
-      setNode('splitPost', '#split-post');
-      const { config } = g.BOARD;
-      const { classList } = QR.nodes.el;
-      classList.toggle('forced-anon', QR.forcedAnon);
-      classList.toggle('has-spoiler', QR.spoiler);
-      classList.toggle('has-sjis', !!config.sjis_tags);
-      classList.toggle('has-math', !!config.math_tags);
-      classList.toggle('sjis-preview', !!config.sjis_tags && Conf.sjisPreview);
-      classList.toggle('show-new-thread-option', Conf['Show New Thread Option in Threads']);
-      if (parseInt(Conf.customCooldown, 10) > 0) {
-        $.addClass(QR.nodes.fileSubmit, 'custom-cooldown');
-        $.get('customCooldownEnabled', Conf.customCooldownEnabled, ({ customCooldownEnabled }) => {
-          QR.setCustomCooldown(customCooldownEnabled);
-          return $.sync('customCooldownEnabled', QR.setCustomCooldown);
-        });
-      }
-      QR.flagsInput();
-      $.on(nodes.autohide, 'change', QR.toggleHide);
-      $.on(nodes.close, 'click', QR.close);
-      $.on(nodes.status, 'click', QR.submit);
-      $.on(nodes.form, 'submit', QR.submit);
-      $.on(nodes.sjisToggle, 'click', QR.toggleSJIS);
-      $.on(nodes.texButton, 'mousedown', QR.texPreviewShow);
-      $.on(nodes.texButton, 'mouseup', QR.texPreviewHide);
-      $.on(nodes.addPost, 'click', () => new QR.post(true));
-      $.on(nodes.drawButton, 'click', QR.oekaki.draw);
-      $.on(nodes.fileButton, 'click', QR.openFileInput);
-      $.on(nodes.noFile, 'click', QR.openFileInput);
-      $.on(nodes.randomizeButton, 'click', () => { QR.selected.randomizeName(); });
-      $.on(nodes.compress, 'click', async () => { QR.handleFiles([await QR.convert(QR.selected.file)]); });
-      $.on(nodes.view, 'click', QR.preview);
-      $.on(nodes.restoreNameButton, 'click', () => { QR.selected.restoreName(); });
-      $.on(nodes.filename, 'focus', function () { return $.addClass(this.parentNode, 'focus'); });
-      $.on(nodes.filename, 'blur', function () { return $.rmClass(this.parentNode, 'focus'); });
-      $.on(nodes.spoiler, 'change', () => QR.selected.nodes.spoiler.click());
-      $.on(nodes.oekakiButton, 'click', QR.oekaki.button);
-      $.on(nodes.fileRM, 'click', () => QR.selected.rmFile());
-      $.on(nodes.urlButton, 'click', () => QR.handleUrl(''));
-      $.on(nodes.customCooldown, 'click', QR.toggleCustomCooldown);
-      $.on(nodes.dumpButton, 'click', () => nodes.el.classList.toggle('dump'));
-      $.on(nodes.fileInput, 'change', QR.handleFiles);
-      $.on(nodes.splitPost, 'click', QR.splitPost);
-      window.addEventListener('focus', QR.focus, true);
-      window.addEventListener('blur', QR.focus, true);
-      // We don't receive blur events from captcha iframe.
-      $.on(d, 'click', QR.focus);
-      // save selected post's data
-      const items = ['thread', 'name', 'email', 'sub', 'com', 'filename', 'flag'];
-      let i = 0;
-      const save = function () { QR.selected.save(this); };
-      while ((name = items[i++])) {
-        let node = nodes[name];
-        if (!node)
-          continue;
-        event = node.nodeName === 'SELECT' ? 'change' : 'input';
-        $.on(nodes[name], event, save);
-      }
-      if (Conf['Remember QR Size']) {
-        $.get('QR Size', '', item => nodes.com.style.cssText = item['QR Size']);
-        $.on(nodes.com, 'mouseup', function (e) {
-          if (e.button !== 0)
-            return;
-          $.set('QR Size', this.style.cssText);
-        });
-      }
-      QR.generatePostableThreadsList();
-      QR.persona.load();
-      new QR.post(true);
-      QR.status();
-      QR.cooldown.setup();
-      QR.captcha.init();
-      $.add(d.body, dialog);
-      QR.captcha.setup();
-      QR.oekaki.setup();
-      // Create a custom event when the QR dialog is first initialized.
-      // Use it to extend the QR's functionalities, or for XTRM RICE.
-      $.event('QRDialogCreation', null, dialog);
-      Icon.set(nodes.oekakiButton, 'pencil');
-      Icon.set(nodes.urlButton, 'link');
-      Icon.set(nodes.customCooldown, 'clock');
-      Icon.set(nodes.randomizeButton, 'shuffle');
-      Icon.set(nodes.compress, 'shrink');
-      Icon.set(nodes.view, 'eye');
-      Icon.set(nodes.restoreNameButton, 'undo');
-      Icon.set(nodes.splitPost, 'scissors');
-      Icon.set(nodes.fileRM, 'xmark');
-      Icon.set(nodes.close, 'xmark');
-      Icon.set(nodes.dumpButton, 'squarePlus');
-      Icon.set(nodes.addPost, 'plus');
-    },
-    flags() {
-      const select = $.el('select', {
-        name: 'flag',
-        className: 'flagSelector'
-      });
-      const addFlag = (value, textContent) => $.add(select, $.el('option', { value, textContent }));
-      addFlag('0', (g.BOARD.config.country_flags ? 'Geographic Location' : 'None'));
-      for (var value in g.BOARD.config.board_flags) {
-        var textContent = g.BOARD.config.board_flags[value];
-        addFlag(value, textContent);
-      }
-      return select;
-    },
-    flagsInput() {
-      const { nodes } = QR;
-      if (!nodes)
-        return;
-      if (nodes.flag) {
-        $.rm(nodes.flag);
-        delete nodes.flag;
-      }
-      if (g.BOARD.config.board_flags) {
-        const flag = QR.flags();
-        flag.dataset.name = 'flag';
-        flag.dataset.default = '0';
-        nodes.flag = flag;
-        return $.add(nodes.form, flag);
-      }
-    },
-    submit(e) {
-      let captcha, err, filetag;
-      e?.preventDefault();
-      const force = e?.shiftKey;
-      if (QR.req) {
-        QR.abort();
-        return;
-      }
-      $.forceSync('cooldowns');
-      if (QR.cooldown.seconds) {
-        if (force) {
-          QR.cooldown.clear();
-        } else {
-          QR.cooldown.auto = !QR.cooldown.auto;
-          QR.status();
-          return;
-        }
-      }
-      const post = QR.posts[0];
-      delete post.quotedText;
-      post.forceSave();
-      let threadID = post.thread;
-      const thread = g.BOARD.threads.get(threadID);
-      // prevent errors
-      if (threadID === 'new') {
-        threadID = null;
-        if (g.BOARD.config.require_subject && !post.sub) {
-          err = 'New threads require a subject.';
-        } else if (!g.BOARD.config.text_only && !post.file) {
-          err = 'No file selected.';
-        }
-      } else if (g.BOARD.threads.get(threadID).isClosed) {
-        err = 'You can\'t reply to this thread anymore.';
-      } else if (!post.com && !post.file) {
-        err = 'No comment or file.';
-      } else if (post.file && thread.fileLimit) {
-        err = 'Max limit of image replies has been reached.';
-      }
-      if ((g.BOARD.ID === 'r9k') && !post.com?.match(/[a-z-]/i))
-        err || (err = 'Original comment required.');
-      // if (QR.captcha.isEnabled && !((QR.captcha === Captcha.v2) && /\b_ct=/.test(d.cookie) && threadID) && !(err && !force)) {
-      if (QR.captcha.isEnabled && !(err && !force)) {
-        captcha = QR.captcha.getOne(!!threadID);
-        // if (QR.captcha === Captcha.v2) {
-        //   if (!captcha) { captcha = Captcha.cache.request(!!threadID); }
-        // }
-        if (!captcha) {
-          err = 'No valid captcha.';
-          QR.captcha.setup(!QR.cooldown.auto || (d.activeElement === QR.nodes.status));
-        }
-      }
-      QR.cleanNotifications();
-      if (err && !force) {
-        // stop auto-posting
-        QR.cooldown.auto = false;
-        QR.status();
-        QR.error(err);
-        return;
-      }
-      // Enable auto-posting if we have stuff to post, disable it otherwise.
-      QR.cooldown.auto = QR.posts.length > 1;
-      post.lock();
-      const formData = {
-        MAX_FILE_SIZE: QR.max_size,
-        mode: 'regist',
-        pwd: QR.persona.getPassword(),
-        resto: threadID,
-        name: (!QR.forcedAnon ? post.name : undefined),
-        email: post.email,
-        sub: (!QR.forcedAnon && !threadID ? post.sub : undefined),
-        com: post.com,
-        upfile: post.file,
-        filetag,
-        spoiler: post.spoiler,
-        flag: post.flag,
-      };
-      const options = {
-        responseType: 'document',
-        withCredentials: true,
-        onloadend: QR.response,
-        form: $.formData(formData)
-      };
-      if (Conf['Show Upload Progress']) {
-        options.onprogress = function (e) {
-          if (this !== QR.req?.upload)
-            return; // aborted
-          if (e.loaded < e.total) {
-            // Uploading...
-            QR.req.progress = `${Math.round((e.loaded / e.total) * 100)}%`;
-          } else {
-            // Upload done, waiting for server response.
-            QR.req.isUploadFinished = true;
-            QR.req.progress = '...';
-          }
-          return QR.status();
-        };
-      }
-      let cb = (response) => {
-        if (response != null) {
-          QR.currentCaptcha = response;
-          // if (QR.captcha === Captcha.v2) {
-          //   if (response.challenge != null) {
-          //     options.form.append('recaptcha_challenge_field', response.challenge);
-          //     options.form.append('recaptcha_response_field', response.response);
-          //   } else {
-          //     options.form.append('g-recaptcha-response', response.response);
-          //   }
-          // } else {
-          for (var key in response) {
-            var val = response[key];
-            options.form.append(key, val);
-          }
-          // }
-        }
-        QR.req = $.ajax(`https://sys.${location.hostname.split('.')[1]}.org/${g.BOARD}/post`, options);
-        QR.req.progress = '...';
-      };
-      if (typeof captcha === 'function') {
-        // Wait for captcha to be verified before submitting post.
-        QR.req = {
-          progress: '...',
-          abort() {
-            // if (QR.captcha === Captcha.v2) {
-            //   Captcha.cache.abort();
-            // }
-            cb = null;
-          }
-        };
-        captcha((response) => {
-          // if ((QR.captcha === Captcha.v2) && Captcha.cache.haveCookie()) {
-          //   cb?.();
-          //   if (response) { return Captcha.cache.save(response); }
-          // } else if (response) {
-          if (response) {
-            cb?.(response);
-          } else {
-            delete QR.req;
-            post.unlock();
-            QR.cooldown.auto = !!Captcha.cache.getCount();
-            QR.status();
-          }
-        });
-      } else {
-        cb(captcha);
-      }
-      // Starting to upload might take some time.
-      // Provide some feedback that we're starting to submit.
-      QR.status();
-    },
-    response() {
-      let connErr, err;
-      if (this !== QR.req)
-        return; // aborted
-      delete QR.req;
-      const post = QR.posts[0];
-      post.unlock();
-      if (err = this.response?.getElementById('errmsg')) { // error!
-        const el = $('a', err);
-        if (el)
-          el.target = '_blank'; // duplicate image link
-      } else if (connErr = (!this.response || (this.response.title !== 'Post successful!'))) {
-        err = QR.connectionError();
-        //   if ((QR.captcha === Captcha.v2) && QR.currentCaptcha) { Captcha.cache.save(QR.currentCaptcha); }
-      } else if (this.status !== 200) {
-        err = `Error ${this.statusText} (${this.status})`;
-      }
-      if (!connErr)
-        QR.captcha.setUsed?.();
-      delete QR.currentCaptcha;
-      if (err) {
-        let m;
-        QR.errorCount = (QR.errorCount || 0) + 1;
-        if (/captcha|verification/i.test(err.textContent)) {
-          // Remove the obnoxious 4chan Pass ad.
-          if (/mistyped/i.test(err.textContent)) {
-            err = 'You mistyped the CAPTCHA, or the CAPTCHA malfunctioned.';
-          } else if (/expired/i.test(err.textContent)) {
-            err = 'This CAPTCHA is no longer valid because it has expired.';
-          }
-          // Do not auto post with a wrong captcha.
-          QR.cooldown.auto = false;
-        } else if (connErr) {
-          if (QR.errorCount >= 5) {
-            // Too many posting errors can ban you. Stop autoposting after 5 errors.
-            QR.cooldown.auto = false;
-          } else {
-            // Something must've gone terribly wrong if you get captcha errors without captchas.
-            // Don't auto-post indefinitely in that case.
-            QR.cooldown.auto = QR.captcha.isEnabled || connErr;
-            // Too many frequent mistyped captchas will auto-ban you!
-            // On connection error, the post most likely didn't go through.
-            // If the post did go through, it should be stopped by the duplicate reply cooldown.
-            QR.cooldown.addDelay(post, 2);
-          }
-        } else if (err.textContent && (m = err.textContent.match(/\d+\s+(?:minute|second)/gi)) && !/duplicate|hour/i.test(err.textContent)) {
-          QR.cooldown.auto = !/have\s+been\s+muted/i.test(err.textContent);
-          let seconds = 0;
-          for (var mi of m) {
-            seconds += (/minute/i.test(mi) ? 60 : 1) * (+mi.match(/\d+/)[0]);
-          }
-          if (/muted/i.test(err.textContent)) {
-            QR.cooldown.addMute(seconds);
-          } else {
-            QR.cooldown.addDelay(post, seconds);
-          }
-        } else { // stop auto-posting
-          QR.cooldown.auto = false;
-        }
-        QR.captcha.setup(QR.cooldown.auto && [QR.nodes.status, d.body].includes(d.activeElement));
-        QR.status();
-        QR.error(err);
-        return;
-      }
-      delete QR.errorCount;
-      const h1 = $('h1', this.response);
-      let [_, threadID, postID] = h1.nextSibling.textContent.match(/thread:(\d+),no:(\d+)/);
-      postID = +postID;
-      threadID = +threadID || postID;
-      const isReply = threadID !== postID;
-      // Post/upload confirmed as successful.
-      $.event('QRPostSuccessful', {
-        boardID: g.BOARD.ID,
-        threadID,
-        postID
-      });
-      // XXX deprecated
-      $.event('QRPostSuccessful_', { boardID: g.BOARD.ID, threadID, postID });
-      // Enable auto-posting if we have stuff left to post, disable it otherwise.
-      const postsCount = QR.posts.length - 1;
-      QR.cooldown.auto = postsCount && isReply;
-      const lastPostToThread = !QR.posts.slice(1).some(p => p.thread === post.thread);
-      if (postsCount) {
-        post.rm();
-        QR.captcha.setup(d.activeElement === QR.nodes.status);
-      } else if (Conf['Persistent QR']) {
-        post.rm();
-        if (Conf['Auto Hide QR']) {
-          QR.hide();
-        } else {
-          QR.blur();
-        }
-      } else {
-        QR.close();
-      }
-      QR.cleanNotifications();
-      if (Conf['Posting Success Notifications'])
-        QR.notifications.push(new Notice('success', h1.textContent, 5));
-      QR.cooldown.add(threadID, postID);
-      const URL = threadID === postID
-        // new thread
-        ? `${window.location.origin}/${g.BOARD}/thread/${threadID}`
-        : threadID !== g.THREADID && lastPostToThread && Conf['Open Post in New Tab']
-          // replying from the index or a different thread
-          ? `${window.location.origin}/${g.BOARD}/thread/${threadID}#p${postID}`
-          : undefined;
-      if (URL) {
-        const open = Conf['Open Post in New Tab'] || postsCount
-          ? () => $.open(URL) : () => location.href = URL;
-        if (threadID === postID) {
-          // XXX 4chan sometimes responds before the thread exists.
-          QR.waitForThread(URL, open);
-        } else {
-          open();
-        }
-      }
-      QR.status();
-    },
-    waitForThread(url, cb) {
-      let attempts = 0;
-      var check = function () {
-        $.ajax(url, {
-          onloadend() {
-            attempts++;
-            if ((attempts >= 6) || (this.status === 200)) {
-              return cb();
-            } else {
-              return setTimeout(check, attempts * SECOND);
-            }
-          },
-          responseType: 'text',
-          type: 'HEAD'
-        });
-      };
-      check();
-    },
-    abort() {
-      let oldReq = QR.req;
-      if (oldReq && !QR.req.isUploadFinished) {
-        delete QR.req;
-        oldReq.abort();
-        // if ((QR.captcha === Captcha.v2) && QR.currentCaptcha) { Captcha.cache.save(QR.currentCaptcha); }
-        delete QR.currentCaptcha;
-        QR.posts[0].unlock();
-        QR.cooldown.auto = false;
-        QR.notifications.push(new Notice('info', 'QR upload aborted.', 5));
-      }
-      QR.status();
-    },
-    getMaxSize(file) {
-      let max = QR.max_size;
-      if (file.type.startsWith('video/'))
-        max = Math.min(max, QR.max_size_video);
-      return max;
-    },
-    async convert(file, type = 'jpeg', options) {
-      const maxSize = options?.maxSize || this.getMaxSize(file);
-      const img = options?.img || await createImageBitmap(file);
-      const width = options?.width || img.width;
-      const height = options?.height || img.height;
-      const newName = file.name.replace(/\.[a-z]+$/i, '.' + type);
-      const mime = 'image/' + type;
-      const canvas = new OffscreenCanvas(width, height);
-      const toBlob = (mime, quality) => canvas.convertToBlob({ type: mime, quality });
-      let newFile;
-      let quality = .9;
-      canvas.getContext("2d").drawImage(img, 0, 0, width, height);
-      do {
-        newFile = new File([await toBlob(mime, quality)], newName, { type: mime });
-        quality -= .1;
-      } while (type === 'jpeg' && newFile.size > maxSize && quality >= .1);
-      if (newFile.size >= file.size && newFile.type === file.type) {
-        new Notice('warning', "New jpeg file isn't smaller than the old one, so it won't be used.", 3);
-        return file;
-      }
-      return newFile;
-    },
-    previewUrl: undefined,
-    preview() {
-      if (!QR.selected.file)
-        return;
-      QR.nodes.preview = $.el('div', { id: 'overlay', className: 'media-preview' });
-      $.add(d.body, QR.nodes.preview);
-      QR.previewUrl = URL.createObjectURL(QR.selected.file);
-      if (QR.selected.file.type.startsWith('video/')) {
-        const video = $.el('video', { controls: true, src: QR.previewUrl, autoplay: true });
-        $.add(QR.nodes.preview, video);
-        video.focus();
-      } else {
-        $.add(QR.nodes.preview, $.el('img', { src: QR.previewUrl }));
-      }
-      QR.nodes.preview.addEventListener('click', (e) => {
-        if (e.target.tagName !== 'VIDEO')
-          QR.closePreview();
-      });
-    },
-    closePreview() {
-      QR.nodes.preview.remove();
-      URL.revokeObjectURL(QR.previewUrl);
-    },
-    cooldown: {
-      seconds: 0,
-      delays: {
-        deletion: 60
-      }, // cooldown for deleting posts/files
-      // set in setup
-      maxDelay: 0,
-      isSetup: false,
-      auto: false,
-      data: {},
-      // Called from Main
-      init() {
-        if (!Conf['Quick Reply'])
-          return;
-        this.data = Conf.cooldowns;
-        this.changes = dict();
-        $.sync('cooldowns', this.sync);
-      },
-      // Called from QR
-      setup() {
-        // Read cooldown times
-        $.extend(QR.cooldown.delays, g.BOARD.cooldowns());
-        // The longest reply cooldown, for use in pruning old reply data
-        QR.cooldown.maxDelay = 0;
-        for (var type in QR.cooldown.delays) {
-          var delay = QR.cooldown.delays[type];
-          if (!['thread', 'thread_global'].includes(type))
-            QR.cooldown.maxDelay = Math.max(QR.cooldown.maxDelay, delay);
-        }
-        QR.cooldown.isSetup = true;
-        QR.cooldown.start();
-      },
-      start() {
-        const { data } = QR.cooldown;
-        if (!Conf.Cooldown || !QR.cooldown.isSetup || QR.cooldown.isCounting || ((Object.keys(data[g.BOARD.ID] || {}).length + Object.keys(data.global || {}).length) <= 0))
-          return;
-        QR.cooldown.isCounting = true;
-        QR.cooldown.count();
-      },
-      sync(data) {
-        QR.cooldown.data = data || dict();
-        QR.cooldown.start();
-      },
-      add(threadID, postID) {
-        if (!Conf.Cooldown)
-          return;
-        const start = Date.now();
-        const boardID = g.BOARD.ID;
-        QR.cooldown.set(boardID, start, { threadID, postID });
-        if (threadID === postID)
-          QR.cooldown.set('global', start, { boardID, threadID, postID });
-        QR.cooldown.save();
-        QR.cooldown.start();
-      },
-      addDelay(post, delay) {
-        if (!Conf.Cooldown)
-          return;
-        const cooldown = QR.cooldown.categorize(post);
-        cooldown.delay = delay;
-        QR.cooldown.set(g.BOARD.ID, Date.now(), cooldown);
-        QR.cooldown.save();
-        QR.cooldown.start();
-      },
-      addMute(delay) {
-        if (!Conf.Cooldown)
-          return;
-        QR.cooldown.set(g.BOARD.ID, Date.now(), { type: 'mute', delay });
-        QR.cooldown.save();
-        QR.cooldown.start();
-      },
-      delete(post) {
-        if (!QR.cooldown.data)
-          return;
-        const cooldowns = (QR.cooldown.data[post.board.ID] || (QR.cooldown.data[post.board.ID] = dict()));
-        for (var id in cooldowns) {
-          let cooldown = cooldowns[id];
-          if ((cooldown.delay == null) && (cooldown.threadID === post.thread.ID) && (cooldown.postID === post.ID))
-            QR.cooldown.set(post.board.ID, id, null);
-        }
-        QR.cooldown.save();
-      },
-      secondsDeletion(post) {
-        if (!QR.cooldown.data || !Conf.Cooldown)
-          return 0;
-        const cooldowns = QR.cooldown.data[post.board.ID] || dict();
-        for (var start in cooldowns) {
-          var cooldown = cooldowns[start];
-          if ((cooldown.delay == null) && (cooldown.threadID === post.thread.ID) && (cooldown.postID === post.ID)) {
-            var seconds = QR.cooldown.delays.deletion - Math.floor((Date.now() - start) / SECOND);
-            return Math.max(seconds, 0);
-          }
-        }
-        return 0;
-      },
-      categorize(post) {
-        if (post.thread === 'new')
-          return { type: 'thread' };
-        return {
-          type: !!post.file ? 'image' : 'reply',
-          threadID: +post.thread
-        };
-      },
-      mergeChange(data, scope, id, value) {
-        if (value) {
-          (data[scope] || (data[scope] = dict()))[id] = value;
-        } else if (scope in data) {
-          delete data[scope][id];
-          if (Object.keys(data[scope]).length === 0)
-            delete data[scope];
-        }
-      },
-      set(scope, id, value) {
-        QR.cooldown.mergeChange(QR.cooldown.data, scope, id, value);
-        (QR.cooldown.changes[scope] || (QR.cooldown.changes[scope] = dict()))[id] = value;
-      },
-      save() {
-        const { changes } = QR.cooldown;
-        if (!Object.keys(changes).length)
-          return;
-        $.get('cooldowns', dict(), ({ cooldowns }) => {
-          for (var scope in QR.cooldown.changes) {
-            for (var id in QR.cooldown.changes[scope]) {
-              var value = QR.cooldown.changes[scope][id];
-              QR.cooldown.mergeChange(cooldowns, scope, id, value);
-            }
-            QR.cooldown.data = cooldowns;
-          }
-          $.set('cooldowns', cooldowns, () => QR.cooldown.changes = dict());
-        });
-      },
-      clear() {
-        QR.cooldown.data = dict();
-        QR.cooldown.changes = dict();
-        QR.cooldown.auto = false;
-        QR.cooldown.update();
-        $.queueTask($.delete, 'cooldowns');
-      },
-      update() {
-        let cooldown;
-        if (!QR.cooldown.isCounting)
-          return;
-        let save = false;
-        let nCooldowns = 0;
-        const now = Date.now();
-        const { type, threadID } = QR.cooldown.categorize(QR.posts[0]);
-        let seconds = 0;
-        if (Conf.Cooldown) {
-          for (var scope of [g.BOARD.ID, 'global']) {
-            var cooldowns = (QR.cooldown.data[scope] || (QR.cooldown.data[scope] = dict()));
-            for (var start in cooldowns) {
-              cooldown = cooldowns[start];
-              start = +start;
-              var elapsed = Math.floor((now - start) / SECOND);
-              if (elapsed < 0) { // clock changed since then?
-                QR.cooldown.set(scope, start, null);
-                save = true;
-                continue;
-              }
-              // Explicit delays from error messages
-              if (cooldown.delay != null) {
-                if (cooldown.delay <= elapsed) {
-                  QR.cooldown.set(scope, start, null);
-                  save = true;
-                } else if (((cooldown.type === type) && (cooldown.threadID === threadID)) || (cooldown.type === 'mute')) {
-                  // Delays only apply to the given post type and thread.
-                  seconds = Math.max(seconds, cooldown.delay - elapsed);
-                }
-                continue;
-              }
-              // Clean up expired cooldowns
-              var maxDelay = cooldown.threadID !== cooldown.postID
-                ? QR.cooldown.maxDelay : QR.cooldown.delays[scope === 'global'
-                ? 'thread_global' : 'thread'];
-              if (QR.cooldown.customCooldown) {
-                maxDelay = Math.max(maxDelay, parseInt(Conf.customCooldown, 10));
-              }
-              if (maxDelay <= elapsed) {
-                QR.cooldown.set(scope, start, null);
-                save = true;
-                continue;
-              }
-              if (((type === 'thread') === (cooldown.threadID === cooldown.postID)) && (cooldown.boardID !== g.BOARD.ID)) {
-                // Only cooldowns relevant to this post can set the seconds variable:
-                //   reply cooldown with a reply, thread cooldown with a thread.
-                // Inter-board thread cooldowns only apply on boards other than the one they were posted on.
-                var suffix = scope === 'global' ? '_global' : '';
-                seconds = Math.max(seconds, QR.cooldown.delays[type + suffix] - elapsed);
-                // If additional cooldown is enabled, add the configured seconds to the count.
-                if (QR.cooldown.customCooldown)
-                  seconds = Math.max(seconds, parseInt(Conf.customCooldown, 10) - elapsed);
-              }
-            }
-            nCooldowns += Object.keys(cooldowns).length;
-          }
-        }
-        if (save)
-          QR.cooldown.save;
-        if (nCooldowns) {
-          clearTimeout(QR.cooldown.timeout);
-          QR.cooldown.timeout = setTimeout(QR.cooldown.count, SECOND);
-        } else {
-          delete QR.cooldown.isCounting;
-        }
-        // Update the status when we change posting type.
-        // Don't get stuck at some random number.
-        // Don't interfere with progress status updates.
-        const update = seconds !== QR.cooldown.seconds;
-        QR.cooldown.seconds = seconds;
-        if (update)
-          QR.status();
-      },
-      count() {
-        QR.cooldown.update();
-        if ((QR.cooldown.seconds === 0) && QR.cooldown.auto && !QR.req)
-          QR.submit();
-      }
-    },
-    oekaki: {
-      menu: {
-        init() {
-          if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf['Edit Link'] || !Conf['Quick Reply'])
-            return;
-          const a = $.el('a', {
-            className: 'edit-link',
-            href: 'javascript:;',
-            textContent: 'Edit image'
-          });
-          $.on(a, 'click', this.editFile);
-          Menu.menu.addEntry({ el: a, order: 90, open(post) {
-              QR.oekaki.menu.post = post;
-              const { file } = post;
-              return QR.postingIsEnabled && !!file && (file.isImage || file.isVideo);
-            }
-          });
-        },
-        editFile() {
-          const { post } = QR.oekaki.menu;
-          QR.quote.call(post.nodes.post);
-          const { isVideo } = post.file;
-          const currentTime = post.file.fullImage?.currentTime || 0;
-          return CrossOrigin.file(post.file.url, (blob) => {
-            if (!blob) {
-              QR.error("Can't load file.");
-            } else if (isVideo) {
-              const video = $.el('video');
-              $.on(video, 'loadedmetadata', () => {
-                $.on(video, 'seeked', () => {
-                  const canvas = $.el('canvas', {
-                    width: video.videoWidth,
-                    height: video.videoHeight
-                  });
-                  canvas.getContext('2d').drawImage(video, 0, 0);
-                  canvas.toBlob((snapshot) => {
-                    snapshot.name = post.file.name.replace(/\.\w+$/, '') + '.png';
-                    QR.handleFiles([snapshot]);
-                    QR.oekaki.edit();
-                  });
-                });
-                video.currentTime = currentTime;
-              });
-              $.on(video, 'error', () => QR.openError());
-              video.src = URL.createObjectURL(blob);
-            } else {
-              blob.name = post.file.name;
-              QR.handleFiles([blob]);
-              QR.oekaki.edit();
-            }
-          });
-        }
-      },
-      setup() { $.global('setupQR'); },
-      load(cb) {
-        if ($('script[src^="//s.4cdn.org/js/tegaki"]', d.head)) {
-          cb();
-        } else {
-          const style = $.el('link', {
-            rel: 'stylesheet',
-            href: `//s.4cdn.org/css/tegaki.${Date.now()}.css`
-          });
-          const script = $.el('script', { src: `//s.4cdn.org/js/tegaki.min.${Date.now()}.js` });
-          let n = 0;
-          const onload = () => { if (++n === 2)
-            cb(); };
-          $.on(style, 'load', onload);
-          $.on(script, 'load', onload);
-          $.add(d.head, [style, script]);
-        }
-      },
-      draw: () => $.global('qrTegakiDraw'),
-      button() {
-        if (QR.selected.file) {
-          QR.oekaki.edit();
-        } else {
-          QR.oekaki.toggle();
-        }
-      },
-      edit() { QR.oekaki.load(() => $.global('qrTegakiLoad')); },
-      toggle() {
-        QR.oekaki.load(() => QR.nodes.oekaki.hidden = !QR.nodes.oekaki.hidden);
-      }
-    },
-    persona: {
-      always: {},
-      types: {
-        name: [],
-        email: [],
-        sub: []
-      },
-      init() {
-        if (!Conf['Quick Reply'] && (!Conf.Menu || !Conf['Delete Link']))
-          return;
-        for (var item of Conf['QR.personas'].split('\n')) {
-          QR.persona.parseItem(item.trim());
-        }
-      },
-      parseItem(item) {
-        if (item[0] === '#')
-          return;
-        const regexMatch = item.match(/(name|options|email|subject|password):"(.*)"/i);
-        if (!regexMatch)
-          return;
-        let [match, type, val] = regexMatch;
-        // Don't mix up item settings with val.
-        item = item.replace(match, '');
-        const boards = item.match(/boards:([^;]+)/i)?.[1].toLowerCase() || 'global';
-        let needle = g.BOARD.ID;
-        !boards.split(',').includes(needle);
-        if ((boards !== 'global') && needle)
-          return;
-        if (type === 'password') {
-          QR.persona.pwd = val;
-          return;
-        }
-        if (type === 'options')
-          type = 'email';
-        if (type === 'subject')
-          type = 'sub';
-        if (/always/i.test(item))
-          QR.persona.always[type] = val;
-        if (!QR.persona.types[type].includes(val))
-          QR.persona.types[type].push(val);
-      },
-      load() {
-        for (var type in QR.persona.types) {
-          var arr = QR.persona.types[type];
-          var list = $(`#list-${type}`, QR.nodes.el);
-          for (var val of arr) {
-            if (val)
-              $.add(list, $.el('option', { textContent: val }));
-          }
-        }
-      },
-      getPassword() {
-        let m;
-        if (QR.persona.pwd != null) {
-          return QR.persona.pwd;
-        } else if (m = d.cookie.match(/4chan_pass=([^;]+)/)) {
-          return decodeURIComponent(m[1]);
-        } else {
-          return '';
-        }
-      },
-      get(cb) {
-        $.get('QR.persona', {}, ({ 'QR.persona': persona }) => cb(persona));
-      },
-      set(post) {
-        $.get('QR.persona', {}, ({ 'QR.persona': persona }) => {
-          persona = {
-            name: post.name,
-            flag: post.flag
-          };
-          $.set('QR.persona', persona);
-        });
-      }
-    },
-  };
-  // moved outside QR for type inference
-  class post {
-    constructor(select) {
-      this.select = this.select.bind(this);
-      const el = $.el('a', {
-        className: 'qr-preview',
-        draggable: true,
-        href: 'javascript:;'
-      });
-      $.extend(el, {
-        innerHTML: `<a href="javascript:;" class="remove" title="Remove">${Icon.get('xmark')}</a>` +
-          '<label class="qr-preview-spoiler"><input type="checkbox"> Spoiler</label>' +
-          '<span id="qr-preview-comment"></span><br /><span id="qr-preview-name"></span>'
-      });
-      const [rm, spoiler, span, /*br*/ , spanFileName] = el.childNodes;
-      this.nodes = {
-        el,
-        rm,
-        spoiler: spoiler.firstChild,
-        span,
-        spanFileName,
-      };
-      $.on(el, 'click', this.select);
-      $.on(this.nodes.rm, 'click', e => { e.stopPropagation(); this.rm(); });
-      $.on(this.nodes.spoiler, 'change', e => {
-        this.spoiler = e.target.checked;
-        if (this === QR.selected)
-          QR.nodes.spoiler.checked = this.spoiler;
-        return this.preventAutoPost();
-      });
-      for (var label of $$('label', el)) {
-        $.on(label, 'click', e => e.stopPropagation());
-      }
-      $.add(QR.nodes.dumpList, el);
-      for (var event of ['dragStart', 'dragEnter', 'dragLeave', 'dragOver', 'dragEnd', 'drop']) {
-        $.on(el, event.toLowerCase(), this[event]);
-      }
-      this.thread = g.VIEW === 'thread' ? g.THREADID : 'new';
-      const prev = QR.posts[QR.posts.length - 1];
-      QR.posts.push(this);
-      this.nodes.spoiler.checked = (this.spoiler = prev && Conf['Remember Spoiler']
-        ? prev.spoiler : false);
-      QR.persona.get(persona => {
-        this.name = 'name' in QR.persona.always
-          ? QR.persona.always.name : prev
-          ? prev.name : persona.name;
-        this.email = 'email' in QR.persona.always
-          ? QR.persona.always.email : '';
-        this.sub = 'sub' in QR.persona.always
-          ? QR.persona.always.sub : '';
-        if (QR.nodes.flag) {
-          if (prev) {
-            this.flag = prev.flag;
-          } else if (persona.flag && persona.flag in g.BOARD.config.board_flags) {
-            this.flag = persona.flag;
-          }
-        }
-        if (QR.selected === this)
-          this.load();
-      }); // load persona
-      if (select)
-        this.select();
-      this.unlock();
-      QR.captcha.moreNeeded();
-    }
-    rm() {
-      this.delete();
-      const index = QR.posts.indexOf(this);
-      if (QR.posts.length === 1) {
-        new QR.post(true);
-        $.rmClass(QR.nodes.el, 'dump');
-      } else if (this === QR.selected) {
-        (QR.posts[index - 1] || QR.posts[index + 1]).select();
-      }
-      QR.posts.splice(index, 1);
-      QR.status();
-      QR.captcha.updateThread?.();
-    }
-    delete() {
-      $.rm(this.nodes.el);
-      URL.revokeObjectURL(this.URL);
-      this.dismissErrors();
-    }
-    lock(lock = true) {
-      this.isLocked = lock;
-      if (this !== QR.selected)
-        return;
-      for (const name of ['thread', 'name', 'email', 'sub', 'com', 'fileButton', 'filename', 'spoiler', 'flag']) {
-        let node = QR.nodes[name];
-        if (node)
-          node.disabled = lock;
-      }
-      this.nodes.rm.style.visibility = lock ? 'hidden' : '';
-      this.nodes.spoiler.disabled = lock;
-      this.nodes.el.draggable = !lock;
-    }
-    unlock() { this.lock(false); }
-    select() {
-      if (QR.selected) {
-        QR.selected.nodes.el.removeAttribute('id');
-        QR.selected.forceSave();
-      }
-      QR.selected = this;
-      this.lock(this.isLocked);
-      this.nodes.el.id = 'selected';
-      // Scroll the list to center the focused post.
-      const rectEl = this.nodes.el.getBoundingClientRect();
-      const rectList = this.nodes.el.parentNode.getBoundingClientRect();
-      this.nodes.el.parentNode.scrollLeft += (rectEl.left + (rectEl.width / 2)) - rectList.left - (rectList.width / 2);
-      this.load();
-    }
-    load() {
-      // Load this post's values.
-      for (const name of ['thread', 'name', 'email', 'sub', 'com', 'filename', 'flag']) {
-        let node = QR.nodes[name];
-        if (!node)
-          continue;
-        node.value = this[name] || node.dataset.default || '';
-      }
-      (this.thread !== 'new' ? $.addClass : $.rmClass)(QR.nodes.el, 'reply-to-thread');
-      this.showFileData();
-      QR.characterCount();
-    }
-    save(input, forced) {
-      if (input.type === 'checkbox') {
-        this.spoiler = input.checked;
-        return;
-      }
-      const { name } = input.dataset;
-      if (!['thread', 'name', 'email', 'sub', 'com', 'filename', 'flag'].includes(name))
-        return;
-      const prev = this[name] || input.dataset.default || null;
-      this[name] = input.value || input.dataset.default || null;
-      switch (name) {
-        case 'thread':
-          (this.thread !== 'new' ? $.addClass : $.rmClass)(QR.nodes.el, 'reply-to-thread');
-          QR.status();
-          QR.captcha.updateThread?.();
-          break;
-        case 'com':
-          this.updateComment();
-          break;
-        case 'filename':
-          if (!this.file)
-            return;
-          this.saveFilename();
-          this.updateFilename();
-          break;
-        case 'name':
-        case 'flag':
-          if (this[name] !== prev) { // only save manual changes, not values filled in by persona settings
-            QR.persona.set(this);
-          }
-          break;
-      }
-      if (!forced)
-        this.preventAutoPost();
-    }
-    forceSave() {
-      if (this !== QR.selected)
-        return;
-      // Do this in case people use extensions
-      // that do not trigger the `input` event.
-      for (const name of ['thread', 'name', 'email', 'sub', 'com', 'filename', 'spoiler', 'flag']) {
-        let node = QR.nodes[name];
-        if (!node)
-          continue;
-        this.save(node, true);
-      }
-    }
-    preventAutoPost() {
-      // Disable auto-posting if you're editing the first post
-      // during the last 5 seconds of the cooldown.
-      if (QR.cooldown.auto && (this === QR.posts[0])) {
-        QR.cooldown.update(); // adding/removing file can change cooldown
-        if (QR.cooldown.seconds <= 5)
-          QR.cooldown.auto = false;
-      }
-    }
-    setComment(com) {
-      this.com = com || null;
-      if (this === QR.selected)
-        QR.nodes.com.value = this.com;
-      return this.updateComment();
-    }
-    updateComment() {
-      if (this === QR.selected)
-        QR.characterCount();
-      this.nodes.span.textContent = this.com;
-      QR.captcha.moreNeeded();
-    }
-    isOnlyQuotes() {
-      return (this.com || '').trim() === (this.quotedText || '').trim();
-    }
-    static rmErrored(e) {
-      e.stopPropagation();
-      for (let i = QR.posts.length - 1; i >= 0; i--) {
-        const post = QR.posts[i];
-        if (post.errors?.some(error => doc.contains(error)))
-          post.rm();
-      }
-    }
-    error(className, message, link) {
-      const div = $.el('div', { className });
-      $.extend(div, {
-        innerHTML: message + (link ? ` [<a href="${E(link)}" target="_blank">More info</a>]` : '') +
-          `<br>[<a href="javascript:;">delete post</a>] [<a href="javascript:;">delete all</a>]`
-      });
-      (this.errors || (this.errors = [])).push(div);
-      const [rm, rmAll] = $$('a', div);
-      $.on(div, 'click', () => {
-        if (QR.posts.includes(this))
-          this.select();
-      });
-      $.on(rm, 'click', e => {
-        e.stopPropagation();
-        if (QR.posts.includes(this))
-          this.rm();
-      });
-      $.on(rmAll, 'click', QR.post.rmErrored);
-      QR.error(div, true);
-    }
-    fileError(message, link) {
-      this.error('file-error', `${this.filename}: ${message}`, link);
-    }
-    dismissErrors(test = () => true) {
-      if (this.errors) {
-        for (var error of this.errors) {
-          if (doc.contains(error) && test(error))
-            error.parentNode.previousElementSibling.click();
-        }
-      }
-    }
-    /**
-    * Checks if the mime type and file size are valid. For images, it will convert unsupported files to png, shrinks
-    * files with a resolution that is too big, and converts to jpeg if the file size is too big.
-    * It will not attempt to convert files that aren't images.
-    * @param file The old file.
-    * @returns A promise with the old file if it was valid, or a new file if it wasn't.
-    */
-    async validateFile(file) {
-      // Do not check on altchans, those might support types 4chan doesn't
-      if (location.hostname.endsWith('4chan.org') && !QR.mimeTypes.includes(file.type)) {
-        if (file.type.startsWith('image/')) {
-          const msg = `The ${file.type.slice(6)} image was converted to png.`;
-          file = await QR.convert(file, 'png');
-          new Notice('info', msg, 3);
-        } else {
-          throw new Error('Unsupported file type.');
-        }
-      }
-      const maxSize = QR.getMaxSize(file);
-      if (file.type.startsWith('image/')) {
-        let img = await createImageBitmap(file);
-        const { width: originalW, height: originalH } = img;
-        let width = originalW, height = originalH;
-        if (width > QR.max_width) {
-          height = Math.round(height * (QR.max_width / width));
-          width = QR.max_width;
-        }
-        if (height > QR.max_height) {
-          width = Math.round(width * (QR.max_height / height));
-          height = QR.max_height;
-        }
-        if (width !== originalW || height !== originalH) {
-          file = await QR.convert(file, file.type === 'image/jpeg' ? 'jpeg' : 'png', { width, height, img });
-          img = undefined; // just in case the file size shrinkage also needs to run using the new file
-          new Notice('warning', `Image was too large and shrank from ${originalW}x${originalH} to ${width}x${height}.` +
-            'It might have lost animation.');
-        }
-        if (file.size > maxSize) {
-          const originalSize = file.size;
-          file = await QR.convert(file, 'jpeg', { maxSize, img });
-          new Notice('warning', `Image was too large (${$.bytesToString(originalSize)}) and got converted to jpg (` +
-            `${$.bytesToString(file.size)}). It might have lost transparency or animation.`);
-        }
-      } else if (file.size > maxSize) {
-        throw new Error(`File too large (file: ${$.bytesToString(file.size)}, max: ${$.bytesToString(maxSize)}).`);
-      }
-      return file;
-    }
-    async setFile(file) {
-      try {
-        // Needs to be set before the validation for some error messages.
-        this.file = file;
-        this.filename = file.name;
-        this.originalName = file.name;
-        this.file = await this.validateFile(file);
-        this.originalName = file.name;
-        if (Conf['Randomize Filename'] && !this.file.name.toLowerCase().includes('[sound=')) {
-          this.randomizeName(false);
-        } else {
-          this.filename = this.file.name;
-        }
-        this.filesize = $.bytesToString(this.file.size);
-        $.addClass(this.nodes.el, 'has-file', 'has-' + this.file.type.split('/')[0]);
-        QR.captcha.moreNeeded();
-        URL.revokeObjectURL(this.URL);
-        this.saveFilename();
-        if (this === QR.selected) {
-          this.showFileData();
-        } else {
-          this.updateFilename();
-        }
-        this.rmMetadata();
-        this.nodes.el.dataset.type = this.file.type;
-        this.nodes.el.style.backgroundImage = '';
-        if (/^(image|video)\//.test(this.file.type)) {
-          this.nodes.spanFileName.textContent = '';
-          this.readFile();
-        } else {
-          this.nodes.spanFileName.textContent = this.file.name.match(/\.([^\.]+)$/)[1];
-        }
-      } catch (error) {
-        console.error(error);
-        this.fileError(error?.message || error || 'unknown error when setting a file');
-      }
-      this.preventAutoPost();
-    }
-    randomizeName(set = true) {
-      this.filename = `${Date.now() * 1000 - Math.floor(Math.random() * 365 * DAY * 1000)}`;
-      const ext = this.file.name.match(QR.validExtension);
-      if (ext)
-        this.filename += ext[0];
-      if (set)
-        QR.nodes.filename.value = this.filename;
-    }
-    restoreName() {
-      QR.nodes.filename.value = this.filename = this.originalName;
-    }
-    readFile() {
-      const isVideo = /^video\//.test(this.file.type);
-      const el = $.el(isVideo ? 'video' : 'img');
-      if (isVideo && !el.canPlayType(this.file.type))
-        return;
-      const event = isVideo ? 'loadeddata' : 'load';
-      var onload = () => {
-        $.off(el, event, onload);
-        $.off(el, 'error', onerror);
-        this.checkDimensions(el);
-        this.setThumbnail(el);
-        $.event('QRMetadata', null, this.nodes.el);
-      };
-      var onerror = () => {
-        $.off(el, event, onload);
-        $.off(el, 'error', onerror);
-        this.fileError(`Corrupt ${isVideo ? 'video' : 'image'} or error reading metadata.`, meta.upstreamFaq + '#error-reading-metadata');
-        URL.revokeObjectURL(el.src);
-        // XXX https://bugzilla.mozilla.org/show_bug.cgi?id=1021289
-        this.nodes.el.removeAttribute('data-height');
-        $.event('QRMetadata', null, this.nodes.el);
-      };
-      this.nodes.el.dataset.height = 'loading';
-      $.on(el, event, onload);
-      $.on(el, 'error', onerror);
-      el.src = URL.createObjectURL(this.file);
-    }
-    checkDimensions(el) {
-      let height, width;
-      if (el.tagName === 'IMG') {
-        ({ height, width } = el);
-        this.nodes.el.dataset.height = height;
-        this.nodes.el.dataset.width = width;
-        if ((height > QR.max_height) || (width > QR.max_width))
-          this.fileError(`Image too large (image: ${height}x${width}px, max: ${QR.max_height}x${QR.max_width}px)`);
-        if ((height < QR.min_height) || (width < QR.min_width))
-          this.fileError(`Image too small (image: ${height}x${width}px, min: ${QR.min_height}x${QR.min_width}px)`);
-      } else {
-        const { videoHeight, videoWidth, duration } = el;
-        this.nodes.el.dataset.height = videoHeight;
-        this.nodes.el.dataset.width = videoWidth;
-        this.nodes.el.dataset.duration = duration;
-        const max_height = Math.min(QR.max_height, QR.max_height_video);
-        const max_width = Math.min(QR.max_width, QR.max_width_video);
-        if ((videoHeight > max_height) || (videoWidth > max_width))
-          this.fileError(`Video too large (video: ${videoHeight}x${videoWidth}px, max: ${max_height}x${max_width}px)`);
-        if ((videoHeight < QR.min_height) || (videoWidth < QR.min_width))
-          this.fileError(`Video too small (video: ${videoHeight}x${videoWidth}px, min: ${QR.min_height}x${QR.min_width}px)`);
-        if (!isFinite(duration)) {
-          this.fileError('Video lacks duration metadata (try remuxing)');
-        } else if (duration > QR.max_duration_video) {
-          this.fileError(`Video too long (video: ${duration}s, max: ${QR.max_duration_video}s)`);
-        }
-        if (BoardConfig.noAudio(g.BOARD.ID) && $.hasAudio(el))
-          this.fileError('Audio not allowed');
-      }
-    }
-    setThumbnail(el) {
-      // Create a redimensioned thumbnail.
-      let height, width;
-      const isVideo = el.tagName === 'VIDEO';
-      // Generate thumbnails only if they're really big.
-      // Resized pictures through canvases look like ass,
-      // so we generate thumbnails `s` times bigger then expected
-      // to avoid crappy resized quality.
-      let s = 90 * 2 * window.devicePixelRatio;
-      if (this.file.type === 'image/gif')
-        s *= 3; // let them animate
-      if (isVideo) {
-        height = el.videoHeight;
-        width = el.videoWidth;
-      } else {
-        ({ height, width } = el);
-        if ((height < s) || (width < s)) {
-          this.URL = el.src;
-          this.nodes.el.style.backgroundImage = `url(${this.URL})`;
-          return;
-        }
-      }
-      if (height <= width) {
-        width = (s / height) * width;
-        height = s;
-      } else {
-        height = (s / width) * height;
-        width = s;
-      }
-      const cv = $.el('canvas');
-      cv.height = height;
-      cv.width = width;
-      const drawThumbNail = () => {
-        cv.getContext('2d').drawImage(el, 0, 0, width, height);
-        URL.revokeObjectURL(el.src);
-        cv.toBlob(blob => {
-          this.URL = URL.createObjectURL(blob);
-          this.nodes.el.style.backgroundImage = `url(${this.URL})`;
-        });
-      };
-      if (isVideo) {
-        el.currentTime = 0;
-        el.addEventListener("seeked", drawThumbNail);
-      } else {
-        drawThumbNail();
-      }
-    }
-    rmFile() {
-      if (this.isLocked)
-        return;
-      delete this.file;
-      delete this.filename;
-      delete this.filesize;
-      this.nodes.el.removeAttribute('title');
-      QR.nodes.filename.removeAttribute('title');
-      this.rmMetadata();
-      this.nodes.el.style.backgroundImage = '';
-      $.rmClass(this.nodes.el, 'has-file', 'has-image', 'has-video');
-      this.showFileData();
-      URL.revokeObjectURL(this.URL);
-      this.dismissErrors(error => $.hasClass(error, 'file-error'));
-      this.preventAutoPost();
-    }
-    rmMetadata() {
-      for (var attr of ['type', 'height', 'width', 'duration']) {
-        // XXX https://bugzilla.mozilla.org/show_bug.cgi?id=1021289
-        this.nodes.el.removeAttribute(`data-${attr}`);
-      }
-    }
-    saveFilename() {
-      this.file.newName = (this.filename || '').replace(/[/\\]/g, '-');
-      // 4chan will truncate the filename if it has no extension.
-      if (!QR.validExtension.test(this.filename))
-        this.file.newName += `.${$.getOwn(QR.extensionFromType, this.file.type) || 'jpg'}`;
-    }
-    updateFilename() {
-      const long = `${this.filename} (${this.filesize})`;
-      this.nodes.el.title = long;
-      if (this !== QR.selected)
-        return;
-      QR.nodes.filename.title = long;
-    }
-    showFileData() {
-      if (this.file) {
-        this.updateFilename();
-        QR.nodes.filename.value = this.filename;
-        $.addClass(QR.nodes.oekaki, 'has-file');
-        $.addClass(QR.nodes.fileSubmit, 'has-file', 'has-' + this.file.type.split('/')[0]);
-      } else {
-        $.rmClass(QR.nodes.oekaki, 'has-file');
-        $.rmClass(QR.nodes.fileSubmit, 'has-file', 'has-image', 'has-video');
-      }
-      if (this.file?.source != null) {
-        QR.nodes.fileSubmit.dataset.source = this.file.source;
-      } else {
-        QR.nodes.fileSubmit.removeAttribute('data-source');
-      }
-      QR.nodes.spoiler.checked = this.spoiler;
-    }
-    pasteText(file) {
-      this.pasting = true;
-      this.preventAutoPost();
-      const reader = new FileReader();
-      reader.onload = e => {
-        const { result } = e.target;
-        this.setComment((this.com ? `${this.com}\n${result}` : result));
-        delete this.pasting;
-      };
-      reader.readAsText(file);
-    }
-    dragStart(e) {
-      const { left, top } = this.getBoundingClientRect();
-      e.dataTransfer.setDragImage(this, e.clientX - left, e.clientY - top);
-      $.addClass(this, 'drag');
-    }
-    dragEnd() { $.rmClass(this, 'drag'); }
-    dragEnter() { $.addClass(this, 'over'); }
-    dragLeave() { $.rmClass(this, 'over'); }
-    dragOver(e) {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-    }
-    drop() {
-      $.rmClass(this, 'over');
-      if (!this.draggable)
-        return;
-      const el = $('.drag', this.parentNode);
-      const index = el => {
-        for (let i = 0; i < el.parentNode.children.length; i++) {
-          if (el.parentNode.children[i] === el)
-            return i;
-        }
-        return -1;
-      };
-      const oldIndex = index(el);
-      const newIndex = index(this);
-      if (QR.posts[oldIndex].isLocked || QR.posts[newIndex].isLocked)
-        return;
-      (oldIndex < newIndex ? $.after : $.before)(this, el);
-      const post = QR.posts.splice(oldIndex, 1)[0];
-      QR.posts.splice(newIndex, 0, post);
-      QR.status();
-      QR.captcha.updateThread?.();
-    }
-  }
-  QR.post = post;
-
-  const CaptchaT = {
-      init() {
-          if (d.cookie.indexOf('pass_enabled=1') >= 0)
-              return;
-          if (!(this.isEnabled = !!$('#t-root') || !$.id('postForm')))
-              return;
-          const root = $.el('div', { className: 'captcha-root' });
-          this.nodes = { root };
-          $.addClass(QR.nodes.el, 'has-captcha', 'captcha-t');
-          $.after(QR.nodes.com.parentNode, root);
-      },
-      moreNeeded() { },
-      getThread() {
-          return {
-              boardID: g.BOARD.ID,
-              threadID: QR.posts[0].thread === 'new' ? '0' : ('' + QR.posts[0].thread),
-          };
-      },
-      setup(focus) {
-          if (!this.isEnabled)
-              return;
-          if (!this.nodes.container) {
-              this.nodes.container = $.el('div', { className: 'captcha-container' });
-              $.prepend(this.nodes.root, this.nodes.container);
-              CaptchaT.currentThread = CaptchaT.getThread();
-              CaptchaT.currentThread.autoLoad = Conf['Auto-load captcha'] ? '1' : '0';
-              $.global('setupTCaptcha', CaptchaT.currentThread);
-          }
-          if (focus)
-              $('#t-resp').focus();
-      },
-      destroy() {
-          if (!this.isEnabled || !this.nodes.container)
-              return;
-          $.global('destroyTCaptcha');
-          $.rm(this.nodes.container);
-          delete this.nodes.container;
-      },
-      updateThread() {
-          if (!this.isEnabled)
-              return;
-          const { boardID, threadID } = (CaptchaT.currentThread || {});
-          const newThread = CaptchaT.getThread();
-          if ((newThread.boardID !== boardID) || (newThread.threadID !== threadID)) {
-              CaptchaT.destroy();
-              CaptchaT.setup();
-          }
-      },
-      getOne() {
-          let response = {};
-          if (this.nodes.container) {
-              for (var key of ['t-response', 't-challenge']) {
-                  response[key] = $(`[name='${key}']`, this.nodes.container).value;
-              }
-          }
-          let el = $('#t-msg, #t-task');
-          if (!response['t-response'] && !(el && /Verification not required/i.test(el.textContent)))
-              response = null;
-          return response;
-      },
-      setUsed() { if (this.isEnabled && this.nodes.container)
-          $.global('TCaptchaClearChallenge'); },
-      occupied() { return !!this.nodes.container; }
-  };
-
-  class CatalogThread {
-      toString() { return this.ID; }
-      constructor(root, thread) {
-          this.thread = thread;
-          this.ID = this.thread.ID;
-          this.board = this.thread.board;
-          const { post } = this.thread.OP.nodes;
-          this.nodes = {
-              root,
-              thumb: $('.catalog-thumb', post),
-              icons: $('.catalog-icons', post),
-              postCount: $('.post-count', post),
-              fileCount: $('.file-count', post),
-              pageCount: $('.page-count', post),
-              replies: null
-          };
-          this.thread.catalogView = this;
+  function shortFilename(filename) {
+      const ext = filename.match(/\.?[^\.]*$/)[0];
+      if ((filename.length - ext.length) > 30) {
+          return `${filename.match(/(?:[\uD800-\uDBFF][\uDC00-\uDFFF]|[^]){0,25}/)[0]}(...)${ext}`;
+      }
+      else {
+          return filename;
       }
   }
 
-  var Recursive = {
-    recursives: new Map(),
-    init() {
-      if (!['index', 'thread'].includes(g.VIEW))
-        return;
-      Callbacks.Post.push({
-        name: 'Recursive',
-        cb: this.node
-      });
-    },
-    node() {
-      if (this.isClone || this.isFetchedQuote)
-        return;
-      for (var quote of this.quotes) {
-        const obj = Recursive.recursives.get(quote);
-        if (obj) {
-          for (var i = 0; i < obj.recursives.length; i++) {
-            obj.recursives[i](this, ...obj.args[i]);
-          }
-        }
-      }
-    },
-    add(recursive, post, ...args) {
-      let obj = Recursive.recursives.get(post.fullID);
-      if (!obj) {
-        obj = { recursives: [], args: [] };
-        Recursive.recursives.set(post.fullID, obj);
-      }
-      obj.recursives.push(recursive);
-      obj.args.push(args);
-    },
-    rm(recursive, post) {
-      const obj = Recursive.recursives.get(post.fullID);
-      if (!obj)
-        return;
-      for (let i = obj.recursives.length - 1; i >= 0; --i) {
-        if (obj.recursives[i] === recursive) {
-          obj.recursives.splice(i, 1);
-          obj.args.splice(i, 1);
-        }
-      }
-    },
-    apply(recursive, post, ...args) {
-      const { fullID } = post;
-      g.posts.forEach((post) => {
-        if (post.quotes.includes(fullID))
-          recursive(post, ...args);
-      });
-    },
-    applyAndAdd(recursive, post, ...args) {
-      Recursive.apply(recursive, post, ...args);
-      this.add(recursive, post, ...args);
-    },
-  };
-
-  var PostHiding = {
-    db: undefined,
-    /** poster Ids to filter */
-    posterIdDb: undefined,
-    init() {
-      if (!['index', 'thread'].includes(g.VIEW) || (!Conf['Reply Hiding Buttons'] && !(Conf.Menu && Conf['Reply Hiding Link'])))
-        return;
-      if (Conf['Reply Hiding Buttons']) {
-        $.addClass(doc, "reply-hide");
-      }
-      this.db = new DataBoard('hiddenPosts');
-      this.posterIdDb = new DataBoard('hiddenPosterIds');
-      Callbacks.Post.push({
-        name: 'Reply Hiding',
-        cb: this.node
-      });
-    },
-    isHidden: (boardID, threadID, postID) => !!(PostHiding.db && PostHiding.db.get({ boardID, threadID, postID })),
-    node() {
-      if (!this.isReply || this.isClone || this.isFetchedQuote)
-        return;
-      let data = PostHiding.db.get({ boardID: this.board.ID, threadID: this.thread.ID, postID: this.ID });
-      if (!data && this.info.uniqueID) {
-        const hiddenPosterIds = PostHiding.posterIdDb.get({ boardID: this.board.ID, threadID: this.thread.ID });
-        if (hiddenPosterIds && this.info.uniqueID in hiddenPosterIds) {
-          data = hiddenPosterIds[this.info.uniqueID];
-          // thisPost is only on the first hidden posts, it shouldn't apply when hiding on poster ID
-          data.thisPost = true;
-        }
-      }
-      if (data) {
-        if (data.thisPost) {
-          PostHiding.hide(this, data.makeStub, data.hideRecursively, 'Hidden manually');
-        } else {
-          PostHiding.hideRecursive(this, data.makeStub);
-        }
-      }
-      if (!Conf['Reply Hiding Buttons'])
-        return;
-      const button = PostHiding.makeButton(this, 'hide');
-      const sa = g.SITE.selectors.sideArrows;
-      if (sa) {
-        const sideArrows = $(sa, this.nodes.root);
-        $.replace(sideArrows.firstChild, button);
-        sideArrows.className = 'replacedSideArrows';
-      } else {
-        $.prepend(this.nodes.info, button);
-      }
-    },
-    menu: {
-      post: undefined,
-      async init() {
-        if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf['Reply Hiding Link'])
-          return;
-        await new Promise(res => BoardConfig.ready(res));
-        // Hide
-        let applyHide = $.el('a', {
-          textContent: 'Apply',
-          href: 'javascript:;'
-        });
-        $.on(applyHide, 'click', PostHiding.menu.hide);
-        const hideOptions = [
-          { el: applyHide },
-          { el: UI.checkbox('thisPost', 'This post', true) },
-          { el: UI.checkbox('replies', 'Hide replies', Conf['Recursive Hiding']) },
-          { el: UI.checkbox('makeStub', 'Make stub', Conf.Stubs) },
-        ];
-        if (g.BOARD.config.user_ids)
-          hideOptions.push({ el: UI.checkbox('byId', 'By poster id', false) });
-        Menu.menu.addEntry({
-          el: $.el('div', {
-            className: 'hide-reply-link',
-            textContent: 'Hide'
-          }),
-          order: 20,
-          open(post) {
-            if (!post.isReply || post.isClone || post.isHidden) {
-              return false;
-            }
-            PostHiding.menu.post = post;
-            return true;
-          },
-          subEntries: hideOptions
-        });
-        // Show
-        const applyShow = $.el('a', {
-          textContent: 'Apply',
-          href: 'javascript:;'
-        });
-        $.on(applyShow, 'click', PostHiding.menu.show);
-        const thisPost = UI.checkbox('thisPost', 'This post', false);
-        const replies = UI.checkbox('replies', 'Show replies', false);
-        const hideStubLink = $.el('a', {
-          textContent: 'Hide stub',
-          href: 'javascript:;'
-        });
-        $.on(hideStubLink, 'click', PostHiding.menu.hideStub);
-        const showOptions = [
-          { el: applyShow },
-          { el: thisPost },
-          { el: replies },
-        ];
-        let byId;
-        if (g.BOARD.config.user_ids) {
-          byId = UI.checkbox('byId', 'By poster id', false);
-          showOptions.push({ el: byId });
-        }
-        Menu.menu.addEntry({
-          el: $.el('div', {
-            className: 'show-reply-link',
-            textContent: 'Show'
-          }),
-          order: 20,
-          open(post) {
-            if (!post.isReply || post.isClone || !post.isHidden)
-              return false;
-            const data = PostHiding.db.get({ boardID: post.board.ID, threadID: post.thread.ID, postID: post.ID });
-            if (!data)
-              return false;
-            PostHiding.menu.post = post;
-            thisPost.firstChild.checked = post.isHidden;
-            replies.firstChild.checked = data.hideRecursively ?? Conf['Recursive Hiding'];
-            if (byId)
-              byId.firstChild.checked = data.byId;
-            return true;
-          },
-          subEntries: showOptions
-        });
-        Menu.menu.addEntry({
-          el: hideStubLink,
-          order: 15,
-          open(post) {
-            if (!post.isReply || post.isClone || !post.isHidden)
-              return false;
-            let data = PostHiding.db.get({ boardID: post.board.ID, threadID: post.thread.ID, postID: post.ID });
-            if (!data)
-              return false;
-            return PostHiding.menu.post = post;
-          }
-        });
-      },
-      hide() {
-        const parent = this.parentNode;
-        const thisPost = $('input[name=thisPost]', parent).checked;
-        const replies = $('input[name=replies]', parent).checked;
-        const makeStub = $('input[name=makeStub]', parent).checked;
-        const byId = $('input[name=byId]', parent)?.checked;
-        const { post } = PostHiding.menu;
-        if (!thisPost && !replies && !byId)
-          return;
-        if (thisPost) {
-          PostHiding.hide(post, makeStub, replies, 'Hidden manually');
-        } else if (replies) {
-          PostHiding.hideRecursive(post, makeStub);
-        }
-        if (byId) {
-          const msg = `Hidden because of poster ID ${post.info.uniqueID}`;
-          g.posts.forEach((p) => {
-            if (p.info.uniqueID === post.info.uniqueID && p !== post) {
-              PostHiding.hide(p, makeStub, replies, msg);
-              PostHiding.saveHiddenState(p, true, thisPost, makeStub, replies, byId);
-            }
-          });
-          const data = PostHiding.posterIdDb.get({ boardID: post.boardID, threadID: post.threadID, defaultValue: dict() });
-          if (!(post.info.uniqueID in data)) {
-            data[post.info.uniqueID] = { makeStub, hideRecursively: replies };
-            PostHiding.posterIdDb.set({ boardID: post.boardID, threadID: post.threadID, val: data });
-          }
-        }
-        PostHiding.saveHiddenState(post, true, thisPost, makeStub, replies, byId);
-        $.event('CloseMenu');
-      },
-      show() {
-        const parent = this.parentNode;
-        const thisPost = $('input[name=thisPost]', parent).checked;
-        const replies = $('input[name=replies]', parent).checked;
-        const byId = $('input[name=byId]', parent)?.checked;
-        const { post } = PostHiding.menu;
-        const { boardID, threadID, postID } = post;
-        if (!thisPost && !replies && !byId)
-          return;
-        if (thisPost) {
-          PostHiding.show(post, replies);
-        } else if (replies) {
-          Recursive.apply(PostHiding.show, post, true);
-          Recursive.rm(PostHiding.hide, post);
-        }
-        if (byId) {
-          g.posts.forEach((p) => {
-            if (p.info.uniqueID === post.info.uniqueID && p !== post) {
-              PostHiding.show(p, replies);
-              const data = PostHiding.db.get({ boardID, threadID, postID });
-              if (data) {
-                PostHiding.saveHiddenState(post, !(thisPost && replies), !thisPost, data.makeStub, !replies, byId);
-              }
-            }
-          });
-          const byIdState = PostHiding.posterIdDb.get({ boardID, threadID });
-          if (byIdState && post.info.uniqueID in byIdState) {
-            delete byIdState[post.info.uniqueID];
-            PostHiding.posterIdDb.set({ boardID, threadID, val: byIdState });
-          }
-        }
-        const data = PostHiding.db.get({ boardID, threadID, postID });
-        if (data)
-          PostHiding.saveHiddenState(post, !(thisPost && replies), !thisPost, data.makeStub, !replies, byId);
-        $.event('CloseMenu');
-      },
-      hideStub() {
-        let data = PostHiding.db.get({ boardID: post.board.ID, threadID: post.thread.ID, postID: post.ID });
-        const { post } = PostHiding.menu;
-        if (data) {
-          PostHiding.show(post, data.hideRecursively);
-          PostHiding.hide(post, false, data.hideRecursively);
-          PostHiding.saveHiddenState(post, true, true, false, data.hideRecursively, data.byId);
-        }
-        $.event('CloseMenu');
-      }
-    },
-    makeButton(post, type) {
-      const span = $.el('span', { className: 'stub-icon', });
-      const a = $.el('a', {
-        className: `${type}-post-button ${type}-reply-button`,
-        href: 'javascript:;'
-      });
-      Icon.set(span, type === 'hide' ? 'squareMinus' : 'squarePlus');
-      $.add(a, span);
-      $.on(a, 'click', PostHiding.toggle);
-      return a;
-    },
-    saveHiddenState(post, isHiding, thisPost, makeStub, hideRecursively, byId) {
-      const data = {
-        boardID: post.board.ID,
-        threadID: post.thread.ID,
-        postID: post.ID
-      };
-      if (isHiding) {
-        data.val = {
-          thisPost: thisPost !== false, // undefined -> true
-          makeStub,
-          hideRecursively,
-          byId
-        };
-        PostHiding.db.set(data);
-      } else {
-        PostHiding.db.delete(data);
-      }
-    },
-    toggle() {
-      const post = Get.postFromNode(this);
-      post.isHidden ? PostHiding.show(post)
-        : PostHiding.hide(post, undefined, undefined, 'Hidden manually');
-      PostHiding.saveHiddenState(post, post.isHidden);
-    },
-    hide(post, makeStub = Conf.Stubs, hideRecursively = Conf['Recursive Hiding'], reason) {
-      if (post.isHidden)
-        return;
-      post.isHidden = true;
-      if (hideRecursively) {
-        PostHiding.hideRecursive(post, makeStub);
-      }
-      for (var quotelink of Get.allQuotelinksLinkingTo(post)) {
-        $.addClass(quotelink, 'filtered');
-      }
-      if (!makeStub) {
-        post.nodes.root.hidden = true;
-        return;
-      }
-      post.nodes.stub = $.el('div', { className: 'stub' });
-      const a = PostHiding.makeButton(post, 'show');
-      $.add(a, $.el('span', { className: 'stub-name', textContent: post.info.nameBlock }));
-      let reasons = post.filterResults?.reasons || [];
-      if (reason)
-        reasons = [...reasons, reason];
-      if (Conf['Filter Reason'] && reasons.length) {
-        const reasonsSpan = $.el('span', { className: 'stub-reasons' });
-        $.add(reasonsSpan, reasons.map(re => $.el('span', { className: 'stub-reason', textContent: re })));
-        a.appendChild(reasonsSpan);
-      }
-      $.add(post.nodes.stub, a);
-      if (!Conf['Filter Reason'] && reasons)
-        post.nodes.stub.title = reasons.join(' & ');
-      if (Conf.Menu)
-        $.add(post.nodes.stub, Menu.makeButton(post));
-      $.prepend(post.nodes.root, post.nodes.stub);
-    },
-    hideRecursive(post, makeStub) {
-      Recursive.applyAndAdd(PostHiding.hide, post, makeStub, true, `Hidden recursively from ${post.ID}`);
-    },
-    show(post, showRecursively = Conf['Recursive Hiding']) {
-      if (post.nodes.stub) {
-        $.rm(post.nodes.stub);
-        delete post.nodes.stub;
-      } else {
-        post.nodes.root.hidden = false;
-      }
-      post.isHidden = false;
-      if (showRecursively) {
-        Recursive.apply(PostHiding.show, post, true);
-        Recursive.rm(PostHiding.hide, post);
-      }
-      for (var quotelink of Get.allQuotelinksLinkingTo(post)) {
-        $.rmClass(quotelink, 'filtered');
-      }
-    }
-  };
-
-  const RelativeDates = {
-    INTERVAL: 30000,
-    init() {
-      if ((['index', 'thread', 'archive'].includes(g.VIEW)
-        && ['Show', 'Both', 'BothRelativeFirst'].includes(Conf.RelativeTime))
-        || Index.enabled) {
-        this.flush();
-        $.on(d, 'visibilitychange PostsInserted', this.flush);
-      }
-      if (Conf.RelativeTime !== 'No') {
-        Callbacks.Post.push({
-          name: 'Relative Post Dates',
-          cb: this.node
-        });
-      }
-    },
-    node() {
-      if (!this.info.date)
-        return;
-      const dateEl = this.nodes.date;
-      if (Conf.RelativeTime === 'Hover') {
-        $.on(dateEl, 'mouseover', () => RelativeDates.hover(this));
-        return;
-      }
-      if (this.isClone)
-        return;
-      // Show original absolute time as tooltip so users can still know exact times
-      // Since "Time Formatting" runs its `node` before us, the title tooltip will
-      // pick up the user-formatted time instead of 4chan time when enabled.
-      if (Conf.RelativeTime === 'Show') {
-        dateEl.dataset.fullTime = dateEl.textContent;
-        dateEl.title = dateEl.textContent;
-      }
-      RelativeDates.update(this);
-    },
-    /** @param diff is milliseconds from now. */
-    relative(diff, now, date, abbrev) {
-      let number = diff / DAY;
-      let unit;
-      if (number >= 1) {
-        const years = now.getFullYear() - date.getFullYear();
-        let months = now.getMonth() - date.getMonth();
-        const days = now.getDate() - date.getDate();
-        if (years > 1) {
-          number = years - ((months < 0) || ((months === 0) && (days < 0)));
-          unit = 'year';
-        } else if ((years === 1) && ((months > 0) || ((months === 0) && (days >= 0)))) {
-          number = years;
-          unit = 'year';
-        } else if ((months = months + (12 * years)) > 1) {
-          number = months - (days < 0);
-          unit = 'month';
-        } else if ((months === 1) && (days >= 0)) {
-          number = months;
-          unit = 'month';
-        } else {
-          unit = 'day';
-        }
-      } else if ((number = (diff / HOUR)) >= 1) {
-        unit = 'hour';
-      } else if ((number = (diff / MINUTE)) >= 1) {
-        unit = 'minute';
-      } else {
-        // prevent "-1 seconds ago"
-        number = Math.max(0, diff) / SECOND;
-        unit = 'second';
-      }
-      const rounded = Math.round(number);
-      if (abbrev) {
-        unit = unit === 'month' ? 'mo' : unit[0];
-      } else {
-        if (rounded !== 1) {
-          unit += 's';
-        } // pluralize
-      }
-      if (abbrev) {
-        return `${rounded}${unit}`;
-      } else {
-        return `${rounded} ${unit} ago`;
-      }
-    },
-    // Changing all relative dates as soon as possible incurs many annoying
-    // redraws and scroll stuttering. Thus, sacrifice accuracy for UX/CPU economy,
-    // and perform redraws when the DOM is otherwise being manipulated (and scroll
-    // stuttering won't be noticed), falling back to INTERVAL while the page
-    // is visible.
-    //
-    // Each individual dateTime element will add its update() function to the stale list
-    // when it is to be called.
-    stale: [],
-    timeout: undefined,
-    flush() {
-      // No point in changing the dates until the user sees them.
-      if (d.hidden)
-        return;
-      const now = new Date();
-      for (const data of RelativeDates.stale) {
-        RelativeDates.update(data, now);
-      }
-      RelativeDates.stale = [];
-      // Reset automatic flush.
-      clearTimeout(RelativeDates.timeout);
-      RelativeDates.timeout = setTimeout(RelativeDates.flush, RelativeDates.INTERVAL);
-    },
-    hover(post) {
-      const { date } = post.info;
-      const now = new Date();
-      const diff = now - date;
-      post.nodes.date.title = RelativeDates.relative(diff, now, date);
-    },
-    // `update()`, when called from `flush()`, updates the elements,
-    // and re-calls `setOwnTimeout()` to re-add `data` to the stale list later.
-    update(data, now = new Date()) {
-      let abbrev, date;
-      const isPost = data instanceof Post;
-      if (isPost) {
-        ({ date } = data.info);
-        abbrev = false;
-      } else {
-        date = new Date(+data.dataset.utc);
-        abbrev = !!data.dataset.abbrev;
-      }
-      const diff = now - date;
-      const relative = RelativeDates.relative(diff, now, date, abbrev);
-      if (isPost) {
-        for (const singlePost of [data].concat(data.clones)) {
-          const node = singlePost.nodes.date;
-          if (Conf.RelativeTime === 'Show') {
-            node.textContent = relative;
-          } else {
-            let full = node.dataset.fullTime;
-            if (!full) {
-              full = node.textContent;
-              node.dataset.fullTime = full;
-            }
-            node.textContent = Conf.RelativeTime === 'Both'
-              ? `${full}, ${relative}` : `${relative}, ${full}`;
-          }
-        }
-      } else {
-        data.firstChild.textContent = relative;
-      }
-      RelativeDates.setOwnTimeout(diff, data);
-    },
-    setOwnTimeout(diff, data) {
-      const delay = diff < MINUTE
-        ? SECOND - ((diff + (SECOND / 2)) % SECOND) : diff < HOUR
-        ? MINUTE - ((diff + (MINUTE / 2)) % MINUTE) : diff < DAY
-        ? HOUR - ((diff + (HOUR / 2)) % HOUR) : DAY - ((diff + (DAY / 2)) % DAY);
-      setTimeout(RelativeDates.markStale, delay, data);
-    },
-    markStale(data) {
-      if (RelativeDates.stale.includes(data))
-        return; // We can call RelativeDates.update() multiple times.
-      if (data instanceof Post && !g.posts.get(data.fullID))
-        return; // collected post.
-      if (data instanceof Element && !doc.contains(data))
-        return; // removed catalog reply.
-      RelativeDates.stale.push(data);
-    }
-  };
-
-  var ThreadWatcherPage = `<div class="move">
-  Thread Watcher <a class="refresh" title="Check threads" href="javascript:;" title="refresh"></a>
-  <span id="watcher-status"></span>
-  <a class="menu-button" href="javascript:;"></a>
-  <a class="close" href="javascript:;">×</a>
-</div>
-<div id="watched-threads"></div>`;
-
-  const PostRedirect = {
-      init() {
-          $.on(d, 'QRPostSuccessful', e => {
-              if (!e.detail.redirect)
-                  return;
-              this.event = e;
-              this.delays = 0;
-              $.queueTask(() => {
-                  if ((e === this.event) && (this.delays === 0))
-                      return location.href = e.detail.redirect;
-              });
-          });
-      },
-      delays: 0,
-      delay() {
-          if (!this.event)
-              return null;
-          const e = this.event;
-          this.delays++;
-          return () => {
-              if (e !== this.event)
-                  return;
-              this.delays--;
-              if (this.delays === 0)
-                  return location.href = e.detail.redirect;
-          };
-      }
-  };
-
-  const ExpandComment = {
-      init() {
-          if ((g.VIEW !== 'index') || !Conf['Comment Expansion'] || Conf['JSON Index'])
-              return;
-          Callbacks.Post.push({
-              name: 'Comment Expansion',
-              cb: this.node
-          });
-      },
-      node() {
-          let a = $('.abbr > a:not([onclick])', this.nodes.comment);
-          if (a)
-              $.on(a, 'click', ExpandComment.cb);
-      },
-      callbacks: [],
-      cb(e) {
-          e.preventDefault();
-          ExpandComment.expand(Get.postFromNode(this));
-      },
-      expand(post) {
-          if (post.nodes.longComment && !post.nodes.longComment.parentNode) {
-              $.replace(post.nodes.shortComment, post.nodes.longComment);
-              post.nodes.comment = post.nodes.longComment;
-              return;
-          }
-          let a = $('.abbr > a', post.nodes.comment);
-          if (!a)
-              return;
-          a.textContent = `Post No.${post} Loading...`;
-          $.cache(g.SITE.urls.threadJSON({ boardID: post.boardID, threadID: post.threadID }), function () { ExpandComment.parse(this, a, post); });
-      },
-      contract(post) {
-          if (!post.nodes.shortComment)
-              return;
-          const a = $('.abbr > a', post.nodes.shortComment);
-          a.textContent = 'here';
-          $.replace(post.nodes.longComment, post.nodes.shortComment);
-          return post.nodes.comment = post.nodes.shortComment;
-      },
-      parse(req, a, post) {
-          const { status } = req;
-          if (![200, 304].includes(status)) {
-              a.textContent = status ? `Error ${req.statusText} (${status})` : 'Connection Error';
-              return;
-          }
-          const { posts } = req.response;
-          let spoilerRange = posts[0].custom_spoiler;
-          if (spoilerRange)
-              g.SITE.Build.spoilerRange[g.BOARD] = spoilerRange;
-          const postObj = posts.find(p => p.no === post.ID);
-          if (!postObj) {
-              a.textContent = `Post No.${post.ID} not found.`;
-              return;
-          }
-          const { comment } = post.nodes;
-          const clone = comment.cloneNode(false);
-          clone.innerHTML = postObj.com;
-          const pathParts = a.pathname.split(/\/+/);
-          const threadBase = pathParts.slice(0, 4).join('/');
-          const boardBase = pathParts.slice(0, 3).join('/');
-          // Fix pathnames
-          for (const quote of $$('.quotelink', clone)) {
-              const href = quote.getAttribute('href');
-              if (!href || href[0] === '/')
-                  continue;
-              quote.href = href[0] === '#' ? `${threadBase}${href}` : `${boardBase}/${href}`;
-          }
-          post.nodes.shortComment = comment;
-          $.replace(comment, clone);
-          post.nodes.comment = (post.nodes.longComment = clone);
-          post.parseComment();
-          post.parseQuotes();
-          for (const callback of ExpandComment.callbacks) {
-              callback.call(post);
-          }
-      }
-  };
-
-  const ScrollMarkers = {
-    init() {
-      ScrollMarkers.container = $.el('div', { classList: 'scroll-marker-container' });
-      doc.insertAdjacentElement('afterbegin', ScrollMarkers.container);
-      $.on(ScrollMarkers.container, 'click', (e) => {
-        const { postId } = e.target.dataset;
-        if (postId)
-          Header.scrollTo(g.posts[postId].nodes.root);
-      });
-      new ResizeObserver(ScrollMarkers.markScroll).observe(doc);
-    },
-    container: undefined,
-    // Keep instead of redoing so renewing doesn't lose keyboard focus
-    markers: undefined,
-    markScroll: debounce(100, () => {
-      if (!Conf['Scroll Markers']) {
-        ScrollMarkers.container.innerText = '';
-        ScrollMarkers.markers = undefined;
-        return;
-      }
-      const newMarkers = new Map();
-      g.posts?.forEach((post) => {
-        const postEl = post.nodes.root;
-        let isReply = false;
-        if ($.hasClass(postEl, 'quotesYou')) {
-          isReply = true;
-        } else if (!$.hasClass(postEl, 'yourPost')) {
-          return;
-        }
-        const postPosition = postEl.getBoundingClientRect();
-        newMarkers.set(`${post.boardID}.${post.ID}`, {
-          classList: `post-scroll-marker ${isReply ? 'reply' : 'you'}-scroll-marker`,
-          ariaLabel: `Jump to ${isReply ? 'reply to ' : ''} my post`,
-          top: (((postPosition.top + window.scrollY) / doc.scrollHeight) * 100).toFixed(1),
-          height: Math.max(1, (postPosition.height / doc.scrollHeight) * 100).toFixed(1),
-        });
-      });
-      let previousEl;
-      for (const [key, marker] of newMarkers) {
-        const existing = ScrollMarkers.markers?.get(key);
-        let el = existing?.el;
-        if (!el) {
-          el = $.el('button', { type: 'button' });
-          if (previousEl) {
-            previousEl.insertAdjacentElement('afterend', el);
-          } else {
-            $.add(ScrollMarkers.container, el);
-          }
-        }
-        el.classList = marker.classList;
-        el.style.setProperty('--top', marker.top);
-        el.style.setProperty('--height', marker.height);
-        el.dataset.postId = key;
-        marker.el = el;
-        previousEl = el;
-        d.createElement('button');
-      }
-      // Remove those that don't exist anymore
-      if (ScrollMarkers.markers) {
-        for (const [key, { el }] of ScrollMarkers.markers) {
-          if (!newMarkers.has(key))
-            el.remove();
-        }
-      }
-      ScrollMarkers.markers = newMarkers;
-    }, false),
-  };
-
-  var QuoteYou = {
-      init() {
-          if (!Conf['Remember Your Posts'])
-              return;
-          this.db = new DataBoard('yourPosts');
-          $.sync('Remember Your Posts', enabled => Conf['Remember Your Posts'] = enabled);
-          $.on(d, 'QRPostSuccessful', function (e) {
-              const cb = PostRedirect.delay();
-              return $.get('Remember Your Posts', Conf['Remember Your Posts'], function (items) {
-                  if (!items['Remember Your Posts'])
-                      return;
-                  const { boardID, threadID, postID } = e.detail;
-                  return QuoteYou.db.set({ boardID, threadID, postID, val: true }, cb);
-              });
-          });
-          if (!['index', 'thread', 'archive'].includes(g.VIEW))
-              return;
-          if (Conf['Highlight Own Posts'])
-              $.addClass(doc, 'highlight-own');
-          if (Conf['Highlight Posts Quoting You'])
-              $.addClass(doc, 'highlight-you');
-          if (Conf['Comment Expansion'])
-              ExpandComment.callbacks.push(this.node);
-          // \u00A0 is nbsp
-          this.mark = $.el('span', {
-              textContent: '\u00A0(You)',
-              className: 'qmark-you'
-          });
-          Callbacks.Post.push({
-              name: 'Mark Quotes of You',
-              cb: this.node
-          });
-          QuoteYou.menu.init();
-      },
-      isYou(post) {
-          return !!QuoteYou.db?.get({
-              boardID: post.boardID,
-              threadID: post.threadID,
-              postID: post.ID
-          });
-      },
-      node() {
-          if (this.isClone)
-              return;
-          if (QuoteYou.isYou(this)) {
-              $.addClass(this.nodes.root, 'yourPost');
-              ScrollMarkers.markScroll();
-          }
-          // Stop there if there's no quotes in that post.
-          if (!this.quotes.length)
-              return;
-          for (var quotelink of this.nodes.quotelinks) {
-              if (QuoteYou.db.get(Get.postDataFromLink(quotelink))) {
-                  if (Conf['Mark Quotes of You']) {
-                      $.add(quotelink, QuoteYou.mark.cloneNode(true));
-                  }
-                  $.addClass(quotelink, 'you');
-                  $.addClass(this.nodes.root, 'quotesYou');
-              }
-          }
-      },
-      menu: {
-          init() {
-              const label = $.el('label', { className: 'toggle-you' }, { innerHTML: '<input type="checkbox"> You' });
-              const input = $('input', label);
-              $.on(input, 'change', QuoteYou.menu.toggle);
-              Menu.menu?.addEntry({
-                  el: label,
-                  order: 80,
-                  open(post) {
-                      QuoteYou.menu.post = (post.origin || post);
-                      input.checked = QuoteYou.isYou(post);
-                      return true;
-                  }
-              });
-          },
-          toggle() {
-              const { post } = QuoteYou.menu;
-              const data = { boardID: post.board.ID, threadID: post.thread.ID, postID: post.ID, val: true };
-              if (this.checked) {
-                  QuoteYou.db.set(data);
+  const FileInfoFormat = {
+      formatters: {
+          t() { return { innerHTML: E(this.file.url.slice(this.file.url.lastIndexOf('/') + 1)), [isEscaped]: true }; },
+          T() { return h("a", { href: this.file.url, target: "_blank" }, FileInfoFormat.formatters.t.call(this)); },
+          l() { return h("a", { href: this.file.url, target: "_blank" }, FileInfoFormat.formatters.n.call(this)); },
+          L() { return h("a", { href: this.file.url, target: "_blank" }, FileInfoFormat.formatters.N.call(this)); },
+          n() {
+              const fullname = this.file.name;
+              const shortname = shortFilename(this.file.name, this.isReply);
+              if (fullname === shortname) {
+                  return { innerHTML: E(fullname), [isEscaped]: true };
               }
               else {
-                  QuoteYou.db.delete(data);
-              }
-              for (var clone of [post].concat(post.clones)) {
-                  clone.nodes.root.classList.toggle('yourPost', this.checked);
-              }
-              for (var quotelink of Get.allQuotelinksLinkingTo(post)) {
-                  if (this.checked) {
-                      if (Conf['Mark Quotes of You'])
-                          $.add(quotelink, QuoteYou.mark.cloneNode(true));
-                  }
-                  else {
-                      $.rm($('.qmark-you', quotelink));
-                  }
-                  quotelink.classList.toggle('you', this.checked);
-                  if ($.hasClass(quotelink, 'quotelink')) {
-                      var quoter = Get.postFromNode(quotelink).nodes.root;
-                      quoter.classList.toggle('quotesYou', !!$('.quotelink.you', quoter));
-                  }
-              }
-              ScrollMarkers.markScroll();
-          }
-      },
-      cb: {
-          seek(type) {
-              let highlighted, post, result;
-              const { highlight } = g.SITE.classes;
-              if (highlighted = $(`.${highlight}`))
-                  $.rmClass(highlighted, highlight);
-              if (!QuoteYou.lastRead || !doc.contains(QuoteYou.lastRead) || !$.hasClass(QuoteYou.lastRead, 'quotesYou')) {
-                  if (!(post = (QuoteYou.lastRead = $('.quotesYou')))) {
-                      new Notice('warning', 'No posts are currently quoting you, loser.', 20);
-                      return;
-                  }
-                  if (QuoteYou.cb.scroll(post))
-                      return;
-              }
-              else {
-                  post = QuoteYou.lastRead;
-              }
-              const str = `${type}::div[contains(@class,'quotesYou')]`;
-              while (post = (result = $.X(str, post)).snapshotItem(type === 'preceding' ? result.snapshotLength - 1 : 0)) {
-                  if (QuoteYou.cb.scroll(post))
-                      return;
-              }
-              const posts = $$('.quotesYou');
-              QuoteYou.cb.scroll(posts[type === 'following' ? 0 : posts.length - 1]);
-          },
-          scroll(root) {
-              const post = Get.postFromRoot(root);
-              if (!post.nodes.post.getBoundingClientRect().height) {
-                  return false;
-              }
-              else {
-                  QuoteYou.lastRead = root;
-                  location.href = Get.url('post', post);
-                  Header.scrollTo(post.nodes.post);
-                  if (post.isReply) {
-                      const sel = `${g.SITE.selectors.postContainer}${g.SITE.selectors.highlightable.reply}`;
-                      let node = post.nodes.root;
-                      if (!node.matches(sel))
-                          node = $(sel, node);
-                      $.addClass(node, g.SITE.classes.highlight);
-                  }
-                  return true;
-              }
-          }
-      }
-  };
-
-  class RandomAccessList {
-      constructor(items) {
-          this.length = 0;
-          if (items) {
-              for (var item of items) {
-                  this.push(item);
-              }
-          }
-      }
-      push(data) {
-          let { ID } = data;
-          if (!ID)
-              ID = data.id;
-          if (this[ID])
-              return;
-          const { last } = this;
-          let item = {
-              prev: last,
-              next: null,
-              data,
-              ID
-          };
-          this[ID] = item;
-          item.prev = last;
-          this.last = last ? (last.next = item) : (this.first = item);
-          return this.length++;
-      }
-      before(root, item) {
-          if ((item.next === root) || (item === root))
-              return;
-          this.rmi(item);
-          const { prev } = root;
-          root.prev = item;
-          item.next = root;
-          item.prev = prev;
-          if (prev) {
-              return prev.next = item;
-          }
-          else {
-              return this.first = item;
-          }
-      }
-      after(root, item) {
-          if ((item.prev === root) || (item === root))
-              return;
-          this.rmi(item);
-          const { next } = root;
-          root.next = item;
-          item.prev = root;
-          item.next = next;
-          if (next) {
-              return next.prev = item;
-          }
-          else {
-              return this.last = item;
-          }
-      }
-      prepend(item) {
-          const { first } = this;
-          if ((item === first) || !this[item.ID])
-              return;
-          this.rmi(item);
-          item.next = first;
-          if (first) {
-              first.prev = item;
-          }
-          else {
-              this.last = item;
-          }
-          this.first = item;
-          delete item.prev;
-      }
-      shift() { return this.rm(this.first.ID); }
-      order() {
-          let item = this.first;
-          const order = [item];
-          while ((item = item.next)) {
-              order.push(item);
-          }
-          return order;
-      }
-      rm(ID) {
-          const item = this[ID];
-          if (!item)
-              return;
-          delete this[ID];
-          this.length--;
-          this.rmi(item);
-          delete item.next;
-          delete item.prev;
-      }
-      rmi(item) {
-          const { prev, next } = item;
-          if (prev) {
-              prev.next = next;
-          }
-          else {
-              this.first = next;
-          }
-          if (next) {
-              next.prev = prev;
-          }
-          else {
-              this.last = prev;
-          }
-      }
-  }
-
-  var Unread = {
-      init() {
-          if ((g.VIEW !== 'thread') || (!Conf['Unread Count'] &&
-              !Conf['Unread Favicon'] &&
-              !Conf['Unread Line'] &&
-              !Conf['Remember Last Read Post'] &&
-              !Conf['Desktop Notifications'] &&
-              !Conf['Quote Threading']))
-              return;
-          if (Conf['Remember Last Read Post']) {
-              $.sync('Remember Last Read Post', enabled => Conf['Remember Last Read Post'] = enabled);
-              this.db = new DataBoard('lastReadPosts', this.sync);
-          }
-          this.hr = $.el('hr', {
-              id: 'unread-line',
-              className: 'unread-line'
-          });
-          this.posts = new Set();
-          this.postsQuotingYou = new Set();
-          this.order = new RandomAccessList();
-          this.position = null;
-          Callbacks.Thread.push({
-              name: 'Unread',
-              cb: this.node
-          });
-          Callbacks.Post.push({
-              name: 'Unread',
-              cb: this.addPost
-          });
-      },
-      node() {
-          Unread.thread = this;
-          Unread.title = d.title;
-          Unread.lastReadPost = Unread.db?.get({
-              boardID: this.board.ID,
-              threadID: this.ID
-          }) || 0;
-          Unread.readCount = 0;
-          for (var ID of this.posts.keys) {
-              if (+ID <= Unread.lastReadPost) {
-                  Unread.readCount++;
-              }
-          }
-          $.one(d, '4chanXInitFinished', Unread.ready);
-          $.on(d, 'PostsInserted', Unread.onUpdate);
-          $.on(d, 'ThreadUpdate', (e) => { if (e.detail[404]) {
-              return Unread.update();
-          } });
-          const resetLink = $.el('a', {
-              href: 'javascript:;',
-              className: 'unread-reset',
-              textContent: 'Mark all unread'
-          });
-          $.on(resetLink, 'click', Unread.reset);
-          Header.menu.addEntry({
-              el: resetLink,
-              order: 70
-          });
-      },
-      ready() {
-          if (Conf['Remember Last Read Post'] && Conf['Scroll to Last Read Post'])
-              Unread.scroll();
-          Unread.setLine(true);
-          Unread.read();
-          Unread.update();
-          $.on(d, 'scroll visibilitychange', Unread.read);
-          if (Conf['Unread Line'])
-              $.on(d, 'visibilitychange', Unread.setLine);
-      },
-      positionPrev() {
-          if (Unread.position) {
-              return Unread.position.prev;
-          }
-          else {
-              return Unread.order.last;
-          }
-      },
-      scroll() {
-          // Let the header's onload callback handle it.
-          let hash = location.hash.match(/\d+/);
-          if (hash && hash[0] in Unread.thread.posts)
-              return;
-          let position = Unread.positionPrev();
-          while (position) {
-              var { bottom } = position.data.nodes;
-              if (!bottom.getBoundingClientRect().height) {
-                  // Don't try to scroll to posts with display: none
-                  position = position.prev;
-              }
-              else {
-                  Header.scrollToIfNeeded(bottom, true);
-                  break;
-              }
-          }
-      },
-      reset() {
-          if (Unread.lastReadPost == null)
-              return;
-          Unread.posts = new Set();
-          Unread.postsQuotingYou = new Set();
-          Unread.order = new RandomAccessList();
-          Unread.position = null;
-          Unread.lastReadPost = 0;
-          Unread.readCount = 0;
-          Unread.thread.posts.forEach(post => Unread.addPost.call(post));
-          $.forceSync('Remember Last Read Post');
-          if (Conf['Remember Last Read Post'] && (!Unread.thread.isDead || Unread.thread.isArchived)) {
-              Unread.db.set({
-                  boardID: Unread.thread.board.ID,
-                  threadID: Unread.thread.ID,
-                  val: 0
-              });
-          }
-          Unread.updatePosition();
-          Unread.setLine();
-          Unread.update();
-      },
-      sync() {
-          if (Unread.lastReadPost == null)
-              return;
-          const lastReadPost = Unread.db.get({
-              boardID: Unread.thread.board.ID,
-              threadID: Unread.thread.ID,
-              defaultValue: 0
-          });
-          if (Unread.lastReadPost >= lastReadPost)
-              return;
-          Unread.lastReadPost = lastReadPost;
-          const postIDs = Unread.thread.posts.keys;
-          for (let i = Unread.readCount, end = postIDs.length; i < end; i++) {
-              var ID = +postIDs[i];
-              if (!Unread.thread.posts.get(ID).isFetchedQuote) {
-                  if (ID > Unread.lastReadPost)
-                      break;
-                  Unread.posts.delete(ID);
-                  Unread.postsQuotingYou.delete(ID);
-              }
-              Unread.readCount++;
-          }
-          Unread.updatePosition();
-          Unread.setLine();
-          Unread.update();
-      },
-      addPost() {
-          if (this.isFetchedQuote || this.isClone)
-              return;
-          Unread.order.push(this);
-          if ((this.ID <= Unread.lastReadPost) || this.isHidden || QuoteYou.isYou(this))
-              return;
-          Unread.posts.add((Unread.posts.last = this.ID));
-          Unread.addPostQuotingYou(this);
-          return Unread.position != null ? Unread.position : (Unread.position = Unread.order[this.ID]);
-      },
-      addPostQuotingYou(post) {
-          for (var quotelink of post.nodes.quotelinks) {
-              if (QuoteYou.db?.get(Get.postDataFromLink(quotelink))) {
-                  Unread.postsQuotingYou.add((Unread.postsQuotingYou.last = post.ID));
-                  Unread.openNotification(post);
-                  return;
-              }
-          }
-      },
-      openNotification(post, predicate = ' replied to you') {
-          if (!Header.areNotificationsEnabled)
-              return;
-          const notif = new Notification(`${post.info.nameBlock}${predicate}`, {
-              body: post.commentDisplay(),
-              icon: Favicon.logo
-          });
-          notif.onclick = () => {
-              Header.scrollToIfNeeded(post.nodes.bottom, true);
-              window.focus();
-          };
-          notif.onshow = () => setTimeout(() => notif.close(), 7 * SECOND);
-      },
-      onUpdate() {
-          $.queueTask(() => {
-              Unread.setLine();
-              Unread.read();
-              Unread.update();
-          });
-      },
-      readSinglePost(post) {
-          const { ID } = post;
-          if (!Unread.posts.has(ID))
-              return;
-          Unread.posts.delete(ID);
-          Unread.postsQuotingYou.delete(ID);
-          Unread.updatePosition();
-          Unread.saveLastReadPost();
-          Unread.update();
-      },
-      read: debounce(100, function (e) {
-          // Update the lastReadPost when hidden posts are added to the thread.
-          if (!Unread.posts.size && (Unread.readCount !== Unread.thread.posts.keys.length))
-              Unread.saveLastReadPost();
-          if (d.hidden || !Unread.posts.size)
-              return;
-          let count = 0;
-          while (Unread.position) {
-              var { ID, data } = Unread.position;
-              var { bottom } = data.nodes;
-              if (bottom.getBoundingClientRect().height && // post has been hidden
-                  (Header.getBottomOf(bottom) <= -1))
-                  break; // post is completely read
-              count++;
-              Unread.posts.delete(ID);
-              Unread.postsQuotingYou.delete(ID);
-              Unread.position = Unread.position.next;
-          }
-          if (!count)
-              return;
-          Unread.updatePosition();
-          Unread.saveLastReadPost();
-          if (e)
-              return Unread.update();
-      }),
-      updatePosition() {
-          while (Unread.position && !Unread.posts.has(Unread.position.ID)) {
-              Unread.position = Unread.position.next;
-          }
-      },
-      saveLastReadPost: debounce(2 * SECOND, function () {
-          $.forceSync('Remember Last Read Post');
-          if (!Conf['Remember Last Read Post'] || !Unread.db)
-              return;
-          const postIDs = Unread.thread.posts.keys;
-          for (let i = Unread.readCount, end = postIDs.length; i < end; i++) {
-              let ID = +postIDs[i];
-              if (!Unread.thread.posts.get(ID).isFetchedQuote) {
-                  if (Unread.posts.has(ID))
-                      break;
-                  Unread.lastReadPost = ID;
-              }
-              Unread.readCount++;
-          }
-          if (Unread.thread.isDead && !Unread.thread.isArchived)
-              return;
-          return Unread.db.set({
-              boardID: Unread.thread.board.ID,
-              threadID: Unread.thread.ID,
-              val: Unread.lastReadPost
-          });
-      }),
-      setLine(force) {
-          if (!Conf['Unread Line'])
-              return;
-          if (Unread.hr.hidden || d.hidden || (force === true)) {
-              const oldPosition = Unread.linePosition;
-              if (Unread.linePosition = Unread.positionPrev()) {
-                  if (Unread.linePosition !== oldPosition) {
-                      let node = Unread.linePosition.data.nodes.bottom;
-                      if (node.nextSibling?.tagName === 'BR')
-                          node = node.nextSibling;
-                      $.after(node, Unread.hr);
-                  }
-              }
-              else {
-                  $.rm(Unread.hr);
-              }
-          }
-          return Unread.hr.hidden = Unread.linePosition === Unread.order.last;
-      },
-      update() {
-          const count = Unread.posts.size;
-          const countQuotingYou = Unread.postsQuotingYou.size;
-          if (Conf['Unread Count']) {
-              const titleQuotingYou = Conf['Quoted Title'] && countQuotingYou ? '(!) ' : '';
-              const titleCount = count || !Conf['Hide Unread Count at (0)'] ? `(${count}) ` : '';
-              const titleDead = Unread.thread.isDead
-                  ? Unread.title.replace('-', (Unread.thread.isArchived
-                      ? '- Archived -' : '- 404 -'))
-                  : Unread.title;
-              d.title = `${titleQuotingYou}${titleCount}${titleDead}`;
-          }
-          Unread.saveThreadWatcherCount();
-          if (Conf['Unread Favicon'] && (g.SITE.software === 'yotsuba')) {
-              const { isDead } = Unread.thread;
-              return Favicon.set((countQuotingYou ? (isDead ? 'unreadDeadY' : 'unreadY') : count
-                  ? (isDead ? 'unreadDead' : 'unread') : (isDead ? 'dead' : 'default')));
-          }
-      },
-      saveThreadWatcherCount: debounce(2 * SECOND, function () {
-          $.forceSync('Remember Last Read Post');
-          if (Conf['Remember Last Read Post'] && (!Unread.thread.isDead || Unread.thread.isArchived)) {
-              const quotingYou = !Conf['Require OP Quote Link'] && QuoteYou.isYou(Unread.thread.OP) ? Unread.posts : Unread.postsQuotingYou;
-              if (!quotingYou.size) {
-                  quotingYou.last = 0;
-              }
-              else if (!quotingYou.has(quotingYou.last)) {
-                  quotingYou.last = 0;
-                  let posts = Unread.thread.posts.keys;
-                  for (let i = posts.length - 1; i >= 0; i--) {
-                      if (quotingYou.has(+posts[i])) {
-                          quotingYou.last = posts[i];
-                          break;
-                      }
-                  }
-              }
-              ThreadWatcher.update(g.SITE.ID, Unread.thread.board.ID, Unread.thread.ID, {
-                  last: Unread.thread.lastPost,
-                  isDead: Unread.thread.isDead,
-                  isArchived: Unread.thread.isArchived,
-                  unread: Unread.posts.size,
-                  quotingYou: (quotingYou.last || 0)
-              });
-          }
-      })
-  };
-
-  let indexEnabled = false;
-  function setIndexEnabled(val) { indexEnabled = val; }
-
-  var ExpandThread = {
-      statuses: dict(),
-      init() {
-          if (!((g.VIEW === 'index') && Conf['Thread Expansion']))
-              return;
-          if (Conf['JSON Index']) {
-              $.on(d, 'IndexRefreshInternal', this.onIndexRefresh);
-          }
-          else {
-              Callbacks.Thread.push({
-                  name: 'Expand Thread',
-                  cb() { ExpandThread.setButton(this); }
-              });
-          }
-      },
-      setButton(thread) {
-          if (!thread.nodes.root)
-              return;
-          const a = $('a.summary', thread.nodes.root);
-          if (!a)
-              return;
-          a.textContent = g.SITE.Build.summaryText('+', ...a.textContent.match(/\d+/g));
-          a.style.cursor = 'pointer';
-          $.on(a, 'click', ExpandThread.cbToggle);
-      },
-      disconnect(refresh) {
-          if ((g.VIEW === 'thread') || !Conf['Thread Expansion'])
-              return;
-          for (var threadID in ExpandThread.statuses) {
-              let status = ExpandThread.statuses[threadID];
-              let oldReq = status.req;
-              if (oldReq) {
-                  delete status.req;
-                  oldReq.abort();
-              }
-              delete ExpandThread.statuses[threadID];
-          }
-          if (!refresh)
-              $.off(d, 'IndexRefreshInternal', this.onIndexRefresh);
-      },
-      onIndexRefresh() {
-          ExpandThread.disconnect(true);
-          g.BOARD.threads.forEach(thread => ExpandThread.setButton(thread));
-      },
-      cbToggle(e) {
-          if ($.modifiedClick(e))
-              return;
-          e.preventDefault();
-          ExpandThread.toggle(Get.threadFromNode(this));
-      },
-      cbToggleBottom(e) {
-          if ($.modifiedClick(e))
-              return;
-          e.preventDefault();
-          const thread = Get.threadFromNode(this);
-          $.rm(this); // remove before fixing bottom of thread position
-          const { bottom } = thread.nodes.root.getBoundingClientRect();
-          ExpandThread.toggle(thread);
-          window.scrollBy(0, (thread.nodes.root.getBoundingClientRect().bottom - bottom));
-      },
-      toggle(thread) {
-          if (!thread.nodes.root)
-              return;
-          const a = $('a.summary', thread.nodes.root);
-          if (!a)
-              return;
-          if (thread.ID in ExpandThread.statuses) {
-              ExpandThread.contract(thread, a, thread.nodes.root);
-          }
-          else {
-              ExpandThread.expand(thread, a);
-          }
-      },
-      expand(thread, a) {
-          let status = {};
-          ExpandThread.statuses[thread] = status;
-          a.textContent = g.SITE.Build.summaryText('...', ...a.textContent.match(/\d+/g));
-          status.req = $.cache(g.SITE.urls.threadJSON({ boardID: thread.board.ID, threadID: thread.ID }), function () {
-              if (this !== status.req)
-                  return; // aborted
-              delete status.req;
-              ExpandThread.parse(this, thread, a);
-          });
-          status.numReplies = $$(g.SITE.selectors.replyOriginal, thread.nodes.root).length;
-      },
-      contract(thread, a, threadRoot) {
-          const status = ExpandThread.statuses[thread];
-          delete ExpandThread.statuses[thread];
-          let oldReq = status.req;
-          if (oldReq) {
-              delete status.req;
-              oldReq.abort();
-              if (a)
-                  a.textContent = g.SITE.Build.summaryText('+', ...a.textContent.match(/\d+/g));
-              return;
-          }
-          let replies = $$('.thread > .replyContainer', threadRoot);
-          if (status.numReplies)
-              replies = replies.slice(0, (-status.numReplies));
-          let postsCount = 0;
-          let filesCount = 0;
-          for (var reply of replies) {
-              // rm clones
-              if (Conf['Quote Inlining']) {
-                  var inlined;
-                  while ((inlined = $('.inlined', reply))) {
-                      inlined.click();
-                  }
-              }
-              postsCount++;
-              if ('file' in Get.postFromRoot(reply))
-                  filesCount++;
-              $.rm(reply);
-          }
-          if (indexEnabled)
-              $.event('PostsRemoved', null, a.parentNode); // otherwise handled by Main.addPosts
-          a.textContent = g.SITE.Build.summaryText('+', postsCount, filesCount);
-          $.rm($('.summary-bottom', threadRoot));
-      },
-      parse(req, thread, a) {
-          if (![200, 304].includes(req.status)) {
-              a.textContent = req.status ? `Error ${req.statusText} (${req.status})` : 'Connection Error';
-              return;
-          }
-          g.SITE.Build.spoilerRange[thread.board] = req.response.posts[0].custom_spoiler;
-          const posts = [];
-          const postsRoot = [];
-          let filesCount = 0;
-          let root;
-          for (var postData of req.response.posts) {
-              if (postData.no === thread.ID) {
-                  continue;
-              }
-              let post = thread.posts.get(postData.no);
-              if (post && !post.isFetchedQuote) {
-                  if ('file' in post) {
-                      filesCount++;
-                  }
-                  ({ root } = post.nodes);
-                  postsRoot.push(root);
-                  continue;
-              }
-              root = g.SITE.Build.postFromObject(postData, thread.board.ID);
-              post = new Post(root, thread, thread.board);
-              if ('file' in post)
-                  filesCount++;
-              posts.push(post);
-              postsRoot.push(root);
-          }
-          Main.callbackNodes('Post', posts);
-          $.after(a, postsRoot);
-          $.event('PostsInserted', null, a.parentNode);
-          const postsCount = postsRoot.length;
-          a.textContent = g.SITE.Build.summaryText('-', postsCount, filesCount);
-          if (root) {
-              const a2 = a.cloneNode(true);
-              a2.classList.add('summary-bottom');
-              $.on(a2, 'click', ExpandThread.cbToggleBottom);
-              $.after(root, a2);
-          }
-      }
-  };
-
-  var UnreadIndex = {
-      lastReadPost: dict(),
-      hr: dict(),
-      markReadLink: dict(),
-      init() {
-          if ((g.VIEW !== 'index') || !Conf['Remember Last Read Post'] || !Conf['Unread Line in Index'])
-              return;
-          this.enabled = true;
-          this.db = new DataBoard('lastReadPosts', this.sync);
-          Callbacks.Thread.push({
-              name: 'Unread Line in Index',
-              cb: this.node
-          });
-          $.on(d, 'IndexRefreshInternal', this.onIndexRefresh);
-          $.on(d, 'PostsInserted PostsRemoved', this.onPostsInserted);
-      },
-      node() {
-          UnreadIndex.lastReadPost[this.fullID] = UnreadIndex.db.get({
-              boardID: this.board.ID,
-              threadID: this.ID
-          }) || 0;
-          if (!indexEnabled)
-              return UnreadIndex.update(this); // let onIndexRefresh handle JSON Index
-      },
-      onIndexRefresh(e) {
-          if (e.detail.isCatalog)
-              return;
-          const result = [];
-          for (const threadID of e.detail.threadIDs) {
-              const thread = g.threads.get(threadID);
-              result.push(UnreadIndex.update(thread));
-          }
-          return result;
-      },
-      onPostsInserted(e) {
-          if (e.target === Index.root)
-              return; // onIndexRefresh handles this case
-          const thread = Get.threadFromNode(e.target);
-          if (!thread || (thread.nodes.root !== e.target))
-              return;
-          const wasVisible = !!UnreadIndex.hr[thread.fullID]?.parentNode;
-          UnreadIndex.update(thread);
-          if (Conf['Scroll to Last Read Post'] && (e.type === 'PostsInserted') && !wasVisible && UnreadIndex.hr[thread.fullID]?.parentNode) {
-              Header.scrollToIfNeeded(UnreadIndex.hr[thread.fullID], true);
-          }
-      },
-      sync() {
-          return g.threads.forEach((thread) => {
-              const lastReadPost = UnreadIndex.db.get({
-                  boardID: thread.board.ID,
-                  threadID: thread.ID
-              }) || 0;
-              if (lastReadPost !== UnreadIndex.lastReadPost[thread.fullID]) {
-                  UnreadIndex.lastReadPost[thread.fullID] = lastReadPost;
-                  if (thread.nodes.root?.parentNode)
-                      UnreadIndex.update(thread);
-              }
-          });
-      },
-      update(thread) {
-          const lastReadPost = UnreadIndex.lastReadPost[thread.fullID];
-          let repliesShown = 0;
-          let repliesRead = 0;
-          let firstUnread = null;
-          thread.posts.forEach((post) => {
-              if (post.isReply && thread.nodes.root.contains(post.nodes.root)) {
-                  repliesShown++;
-                  if (post.ID <= lastReadPost) {
-                      return repliesRead++;
-                  }
-                  else if ((!firstUnread || (post.ID < firstUnread.ID)) && !post.isHidden && !QuoteYou.isYou(post)) {
-                      return firstUnread = post;
-                  }
-              }
-          });
-          let hr = UnreadIndex.hr[thread.fullID];
-          if (firstUnread && (repliesRead || ((lastReadPost === thread.OP.ID) && (!$(g.SITE.selectors.summary, thread.nodes.root) || thread.ID in ExpandThread.statuses)))) {
-              if (!hr) {
-                  hr = (UnreadIndex.hr[thread.fullID] = $.el('hr', { className: 'unread-line' }));
-              }
-              $.before(firstUnread.nodes.root, hr);
-          }
-          else {
-              $.rm(hr);
-          }
-          const hasUnread = repliesShown
-              ? firstUnread || !repliesRead : indexEnabled
-              ? thread.lastPost > lastReadPost : thread.OP.ID > lastReadPost;
-          thread.nodes.root.classList.toggle('unread-thread', hasUnread);
-          let link = UnreadIndex.markReadLink[thread.fullID];
-          if (!link) {
-              link = (UnreadIndex.markReadLink[thread.fullID] = $.el('a', {
-                  className: 'unread-mark-read brackets-wrap',
-                  href: 'javascript:;',
-                  textContent: 'Mark Read'
-              }));
-              $.on(link, 'click', UnreadIndex.markRead);
-          }
-          let divider = $(g.SITE.selectors.threadDivider, thread.nodes.root);
-          if (divider) { // divider inside thread as in Tinyboard
-              $.before(divider, link);
-          }
-          else {
-              $.add(thread.nodes.root, link);
-          }
-      },
-      markRead() {
-          const thread = Get.threadFromNode(this);
-          UnreadIndex.lastReadPost[thread.fullID] = thread.lastPost;
-          UnreadIndex.db.set({
-              boardID: thread.board.ID,
-              threadID: thread.ID,
-              val: thread.lastPost
-          });
-          $.rm(UnreadIndex.hr[thread.fullID]);
-          thread.nodes.root.classList.remove('unread-thread');
-          ThreadWatcher.update(g.SITE.ID, thread.board.ID, thread.ID, {
-              last: thread.lastPost,
-              unread: 0,
-              quotingYou: 0
-          });
-      }
-  };
-
-  var ThreadWatcher = {
-      init() {
-          if (!(this.enabled = Conf['Thread Watcher']))
-              return;
-          let sc = $.el('a', {
-              id: 'watcher-link',
-              title: 'Thread Watcher',
-              href: 'javascript:;',
-          });
-          this.shortcut = sc;
-          Icon.set(this.shortcut, 'eye', 'Watcher');
-          this.db = new DataBoard('watchedThreads', this.refresh, true);
-          this.dbLM = new DataBoard('watcherLastModified', null, true);
-          this.dialog = UI.dialog('thread-watcher', { innerHTML: ThreadWatcherPage });
-          this.status = $('#watcher-status', this.dialog);
-          this.list = this.dialog.lastElementChild;
-          this.refreshButton = $('.refresh', this.dialog);
-          this.menuButton = $('.menu-button', this.dialog);
-          this.closeButton = $('.move > .close', this.dialog);
-          this.unreaddb = Unread.db || UnreadIndex.db || new DataBoard('lastReadPosts');
-          this.unreadEnabled = Conf['Remember Last Read Post'];
-          Icon.set(this.refreshButton, 'refresh');
-          Icon.set(this.menuButton, 'caretDown');
-          Icon.set(this.closeButton, 'xmark');
-          $.on(d, 'QRPostSuccessful', this.cb.post);
-          $.on(sc, 'click', this.toggleWatcher);
-          $.on(this.refreshButton, 'click', this.buttonFetchAll);
-          $.on(this.closeButton, 'click', this.toggleWatcher);
-          this.menu.addHeaderMenuEntry();
-          $.onExists(doc, 'body', this.addDialog);
-          switch (g.VIEW) {
-              case 'index':
-                  $.on(d, 'IndexUpdate', this.cb.onIndexUpdate);
-                  break;
-              case 'thread':
-                  $.on(d, 'ThreadUpdate', this.cb.onThreadRefresh);
-                  break;
-          }
-          if (Conf['Fixed Thread Watcher'])
-              $.addClass(doc, 'fixed-watcher');
-          if (!Conf['Persistent Thread Watcher']) {
-              $.addClass(ThreadWatcher.shortcut, 'disabled');
-              this.dialog.hidden = true;
-          }
-          Header.addShortcut('watcher', sc, 510);
-          ThreadWatcher.initLastModified();
-          ThreadWatcher.fetchAuto();
-          $.on(window, 'visibilitychange focus', () => $.queueTask(ThreadWatcher.fetchAuto));
-          if (Conf.Menu && indexEnabled) {
-              Menu.menu.addEntry({
-                  el: $.el('a', {
-                      href: 'javascript:;',
-                      className: 'has-shortcut-text'
-                  }, { innerHTML: '<span></span><span class="shortcut-text">Alt+click</span>' }),
-                  order: 6,
-                  open({ thread }) {
-                      if (Conf['Index Mode'] !== 'catalog')
-                          return false;
-                      this.el.firstElementChild.textContent = ThreadWatcher.isWatched(thread)
-                          ? 'Unwatch' : 'Watch';
-                      if (this.cb)
-                          $.off(this.el, 'click', this.cb);
-                      this.cb = () => {
-                          $.event('CloseMenu');
-                          return ThreadWatcher.toggle(thread, true);
-                      };
-                      $.on(this.el, 'click', this.cb);
-                      return true;
-                  }
-              });
-          }
-          if (!['index', 'thread'].includes(g.VIEW))
-              return;
-          Callbacks.Post.push({
-              name: 'Thread Watcher',
-              cb: this.node
-          });
-          Callbacks.CatalogThread.push({
-              name: 'Thread Watcher',
-              cb: this.catalogNode
-          });
-      },
-      isWatched: (thread) => !!ThreadWatcher.db?.get({ boardID: thread.board.ID, threadID: thread.ID }),
-      isWatchedRaw: (boardID, threadID) => !!ThreadWatcher.db?.get({ boardID, threadID }),
-      setToggler(toggler, isWatched) {
-          toggler.classList.toggle('watched', isWatched);
-          return toggler.title = `${isWatched ? 'Unwatch' : 'Watch'} Thread`;
-      },
-      node() {
-          let toggler;
-          if (this.isReply)
-              return;
-          if (this.isClone) {
-              toggler = $('.watch-thread-link', this.nodes.info);
-          }
-          else {
-              toggler = $.el('button', {
-                  type: 'button',
-                  className: 'watch-thread-link'
-              });
-              Icon.set(toggler, 'heart');
-              $.before($('input', this.nodes.info), toggler);
-          }
-          const siteID = g.SITE.ID;
-          const boardID = this.board.ID;
-          const threadID = this.thread.ID;
-          const data = ThreadWatcher.db.get({ siteID, boardID, threadID });
-          ThreadWatcher.setToggler(toggler, !!data);
-          $.on(toggler, 'click', ThreadWatcher.cb.toggle);
-          // Add missing excerpt for threads added by Auto Watch
-          if (data && (data.excerpt == null)) {
-              return $.queueTask(() => {
-                  return ThreadWatcher.update(siteID, boardID, threadID, { excerpt: Get.threadExcerpt(this.thread) });
-              });
-          }
-      },
-      catalogNode() {
-          if (ThreadWatcher.isWatched(this.thread))
-              $.addClass(this.nodes.root, 'watched');
-          $.on(this.nodes.root, 'mousedown click', e => {
-              if ((e.button !== 0) || !e.altKey)
-                  return;
-              if (e.type === 'click')
-                  ThreadWatcher.toggle(this.thread, true);
-              e.preventDefault();
-          });
-      }, // Also on mousedown to prevent highlighting thumbnail in Firefox.
-      addDialog() {
-          if (!PageReady.isThisPageLegit())
-              return;
-          ThreadWatcher.build();
-          $.prepend(d.body, ThreadWatcher.dialog);
-      },
-      toggleWatcher() {
-          $.toggleClass(ThreadWatcher.shortcut, 'disabled');
-          return ThreadWatcher.dialog.hidden = !ThreadWatcher.dialog.hidden;
-      },
-      cb: {
-          openAll() {
-              if ($.hasClass(this, 'disabled'))
-                  return;
-              for (var a of $$('a.watcher-link', ThreadWatcher.list)) {
-                  $.open(a.href);
-              }
-              $.event('CloseMenu');
-          },
-          openUnread() {
-              if ($.hasClass(this, 'disabled'))
-                  return;
-              for (var a of $$('.replies-unread > a.watcher-link', ThreadWatcher.list)) {
-                  $.open(a.href);
-              }
-              $.event('CloseMenu');
-          },
-          openDeads() {
-              if ($.hasClass(this, 'disabled'))
-                  return;
-              for (var a of $$('.dead-thread.replies-unread > a.watcher-link', ThreadWatcher.list)) {
-                  $.open(a.href);
-              }
-              $.event('CloseMenu');
-          },
-          clear() {
-              if (!confirm("Delete ALL threads from watcher?"))
-                  return;
-              const ref = ThreadWatcher.getAll();
-              for (let i = 0, len = ref.length; i < len; i++) {
-                  const { siteID, boardID, threadID } = ref[i];
-                  ThreadWatcher.db.delete({ siteID, boardID, threadID });
-              }
-              ThreadWatcher.refresh(true);
-              $.event('CloseMenu');
-          },
-          pruneDeads() {
-              if ($.hasClass(this, 'disabled'))
-                  return;
-              for (var { siteID, boardID, threadID, data } of ThreadWatcher.getAll()) {
-                  if (data.isDead)
-                      ThreadWatcher.db.delete({ siteID, boardID, threadID });
-              }
-              ThreadWatcher.refresh(true);
-              $.event('CloseMenu');
-          },
-          pruneReadDeads() {
-              if ($.hasClass(this, 'disabled'))
-                  return;
-              for (var { siteID, boardID, threadID, data } of ThreadWatcher.getAll()) {
-                  if (data.isDead && !data.unread)
-                      ThreadWatcher.db.delete({ siteID, boardID, threadID });
-              }
-              ThreadWatcher.refresh(true);
-              $.event('CloseMenu');
-          },
-          dismiss() {
-              for (var { siteID, boardID, threadID, data } of ThreadWatcher.getAll()) {
-                  if (data.quotingYou)
-                      ThreadWatcher.update(siteID, boardID, threadID, { dismiss: data.quotingYou || 0 });
-              }
-              $.event('CloseMenu');
-          },
-          toggle() {
-              const { thread } = Get.postFromNode(this);
-              ThreadWatcher.toggle(thread, true);
-          },
-          rm() {
-              const { siteID } = this.parentNode.dataset;
-              const [boardID, threadID] = this.parentNode.dataset.fullID.split('.');
-              ThreadWatcher.rm(siteID, boardID, +threadID, undefined, true);
-          },
-          post(e) {
-              const { boardID, threadID, postID } = e.detail;
-              const cb = PostRedirect.delay();
-              if (postID === threadID) {
-                  if (Conf['Auto Watch'])
-                      ThreadWatcher.addRaw(boardID, threadID, {}, cb, true);
-              }
-              else if (Conf['Auto Watch Reply']) {
-                  ThreadWatcher.add((g.threads.get(boardID + '.' + threadID) || new Thread(threadID, g.boards[boardID] || new Board(boardID))), cb, true);
+                  return h("span", { class: "fnswitch" },
+                      h("span", { class: "fntrunc" }, shortname),
+                      h("span", { class: "fnfull" }, fullname));
               }
           },
-          onIndexUpdate(e) {
-              const { db } = ThreadWatcher;
-              const siteID = g.SITE.ID;
-              const boardID = g.BOARD.ID;
-              let nKilled = 0;
-              for (var threadID in db.data[siteID].boards[boardID]) {
-                  // Don't prune threads that have yet to appear in index.
-                  var data = db.data[siteID].boards[boardID][threadID];
-                  if (!data?.isDead && !e.detail.threads.includes(`${boardID}.${threadID}`)) {
-                      if (!e.detail.threads.some(fullID => +fullID.split('.')[1] > threadID))
-                          continue;
-                      if (Conf['Auto Prune'] || !(data && (typeof data === 'object'))) { // corrupt data
-                          db.delete({ boardID, threadID });
-                          nKilled++;
-                      }
-                      else {
-                          ThreadWatcher.fetchStatus({ siteID, boardID, threadID, data });
-                      }
-                  }
-              }
-              if (nKilled)
-                  return ThreadWatcher.refresh();
+          N() { return { innerHTML: E(this.file.name), [isEscaped]: true }; },
+          d() {
+              return h("a", { href: this.file.url, download: this.file.name, class: "download-button" }, Icon.raw('download'));
           },
-          onThreadRefresh(e) {
-              const thread = g.threads.get(e.detail.threadID);
-              if (!e.detail[404] || !ThreadWatcher.isWatched(thread))
-                  return;
-              // Update dead status.
-              ThreadWatcher.add(thread);
-          }
-      },
-      requests: [],
-      fetched: 0,
-      fetch(url, { siteID, force }, args, cb) {
-          if (ThreadWatcher.requests.length === 0) {
-              ThreadWatcher.status.textContent = '...';
-              $.addClass(ThreadWatcher.refreshButton, 'spin');
-          }
-          const onloadend = function () {
-              if (this.finished)
-                  return;
-              this.finished = true;
-              ThreadWatcher.fetched++;
-              if (ThreadWatcher.fetched === ThreadWatcher.requests.length) {
-                  ThreadWatcher.clearRequests();
-              }
-              else {
-                  ThreadWatcher.status.textContent = `${Math.round((ThreadWatcher.fetched / ThreadWatcher.requests.length) * 100)}%`;
-              }
-              return cb.apply(this, args);
-          };
-          const ajax = siteID === g.SITE.ID ? $.ajax : CrossOrigin.ajax;
-          if (force) {
-              delete $.lastModified.ThreadWatcher?.[url];
-          }
-          const req = $.whenModified(url, 'ThreadWatcher', onloadend, { timeout: MINUTE, ajax });
-          ThreadWatcher.requests.push(req);
-      },
-      clearRequests() {
-          ThreadWatcher.requests = [];
-          ThreadWatcher.fetched = 0;
-          ThreadWatcher.status.textContent = '';
-          $.rmClass(ThreadWatcher.refreshButton, 'spin');
-      },
-      abort() {
-          delete ThreadWatcher.syncing;
-          for (var req of ThreadWatcher.requests) {
-              if (!req.finished) {
-                  req.finished = true;
-                  req.abort();
-              }
-          }
-          ThreadWatcher.clearRequests();
-      },
-      initLastModified() {
-          const lm = ($.lastModified.ThreadWatcher || ($.lastModified.ThreadWatcher = dict()));
-          for (var siteID in ThreadWatcher.dbLM.data) {
-              var boards = ThreadWatcher.dbLM.data[siteID];
-              for (var boardID in boards.boards) {
-                  var data = boards.boards[boardID];
-                  if (ThreadWatcher.db.get({ siteID, boardID })) {
-                      for (var url in data) {
-                          var date = data[url];
-                          lm[url] = date;
-                      }
-                  }
-                  else {
-                      ThreadWatcher.dbLM.delete({ siteID, boardID });
-                  }
-              }
-          }
-      },
-      fetchAuto() {
-          clearTimeout(ThreadWatcher.timeout);
-          if (!Conf['Auto Update Thread Watcher'])
-              return;
-          const { db } = ThreadWatcher;
-          const interval = Conf['Show Page'] || (ThreadWatcher.unreadEnabled && Conf['Show Unread Count']) ? 5 * MINUTE : 2 * HOUR;
-          const now = Date.now();
-          let middle = db.data.lastChecked || 0;
-          if ((now - interval >= middle || middle > now) && !d.hidden && d.hasFocus())
-              ThreadWatcher.fetchAllStatus(interval);
-          return ThreadWatcher.timeout = setTimeout(ThreadWatcher.fetchAuto, interval);
-      },
-      buttonFetchAll() {
-          if (ThreadWatcher.syncing || ThreadWatcher.requests.length) {
-              ThreadWatcher.abort();
-          }
-          else {
-              ThreadWatcher.fetchAllStatus();
-          }
-      },
-      fetchAllStatus(interval = 0) {
-          ThreadWatcher.status.textContent = '...';
-          $.addClass(ThreadWatcher.refreshButton, 'spin');
-          ThreadWatcher.syncing = true;
-          const dbs = [ThreadWatcher.db, ThreadWatcher.unreaddb, QuoteYou.db].filter(x => x);
-          let n = 0;
-          return dbs.map((dbi) => dbi.forceSync(function () {
-              if ((++n) === dbs.length) {
-                  if (!ThreadWatcher.syncing)
-                      return; // aborted
-                  delete ThreadWatcher.syncing;
-                  let middle = Date.now() - (ThreadWatcher.db.data.lastChecked || 0);
-                  if (0 > middle || middle >= interval) { // not checked in another tab
-                      // XXX On vichan boards, last_modified field of threads.json does not account for sage posts.
-                      // Occasionally check replies field of catalog.json to find these posts.
-                      const { db } = ThreadWatcher;
-                      const now = Date.now();
-                      let middle1 = db.data.lastChecked2 || 0;
-                      const deep = !(now - (2 * HOUR) < middle1 && middle1 <= now);
-                      const boards = ThreadWatcher.getAll(true);
-                      for (var board of boards) {
-                          ThreadWatcher.fetchBoard(board, deep);
-                      }
-                      db.setLastChecked();
-                      if (deep)
-                          db.setLastChecked('lastChecked2');
-                  }
-                  if (ThreadWatcher.fetched === ThreadWatcher.requests.length)
-                      return ThreadWatcher.clearRequests();
-              }
-          }));
-      },
-      fetchBoard(board, deep) {
-          if (!board.some(thread => !thread.data.isDead))
-              return;
-          let force = false;
-          for (var thread of board) {
-              var { data } = thread;
-              if (!data.isDead && (data.last !== -1)) {
-                  if (Conf['Show Page'] && (data.page == null))
-                      force = true;
-                  if ((data.modified == null))
-                      force = (thread.force = true);
-              }
-          }
-          const { siteID, boardID } = board[0];
-          const site = g.sites[siteID];
-          if (!site)
-              return;
-          const urlF = deep && site.threadModTimeIgnoresSage ? 'catalogJSON' : 'threadsListJSON';
-          const url = site.urls[urlF]?.({ siteID, boardID });
-          if (!url)
-              return;
-          return ThreadWatcher.fetch(url, { siteID, force }, [board, url], ThreadWatcher.parseBoard);
-      },
-      parseBoard(board, url) {
-          let page, thread;
-          if (this.status !== 200)
-              return;
-          const { siteID, boardID } = board[0];
-          const lmDate = this.getResponseHeader('Last-Modified');
-          ThreadWatcher.dbLM.extend({ siteID, boardID, val: $.item(url, lmDate) });
-          const threads = dict();
-          let pageLength = 0;
-          let nThreads = 0;
-          let oldest = null;
-          try {
-              pageLength = this.response[0]?.threads.length || 0;
-              for (let i = 0; i < this.response.length; i++) {
-                  page = this.response[i];
-                  for (var item of page.threads) {
-                      threads[item.no] = {
-                          page: i + 1,
-                          index: nThreads,
-                          modified: item.last_modified,
-                          replies: item.replies
-                      };
-                      nThreads++;
-                      if ((oldest == null) || (item.no < oldest))
-                          oldest = item.no;
-                  }
-              }
-          }
-          catch (error) {
-              for (thread of board) {
-                  ThreadWatcher.fetchStatus(thread);
-              }
-          }
-          for (thread of board) {
-              var { threadID, data } = thread;
-              if (threads[threadID]) {
-                  var index, modified, replies;
-                  ({ page, index, modified, replies } = threads[threadID]);
-                  if (Conf['Show Page']) {
-                      const lastPage = index >= (nThreads - pageLength);
-                      ThreadWatcher.update(siteID, boardID, threadID, { page, lastPage });
-                  }
-                  if (ThreadWatcher.unreadEnabled && Conf['Show Unread Count']) {
-                      if ((modified !== data.modified) || ((replies != null) && (replies !== data.replies))) {
-                          (thread.newData || (thread.newData = {})).modified = modified;
-                          ThreadWatcher.fetchStatus(thread);
-                      }
-                  }
-              }
-              else {
-                  ThreadWatcher.fetchStatus(thread);
-              }
-          }
-      },
-      fetchStatus(thread) {
-          const { siteID, boardID, threadID, data, force } = thread;
-          const url = g.sites[siteID]?.urls.threadJSON?.({ siteID, boardID, threadID });
-          if (!url)
-              return;
-          if (data.isDead && !force)
-              return;
-          if (data.last === -1)
-              return; // 404 or no JSON API
-          ThreadWatcher.fetch(url, { siteID, force }, [thread], ThreadWatcher.parseStatus);
-      },
-      parseStatus(thread, isArchiveURL) {
-          let isDead, last;
-          let { siteID, boardID, threadID, data, newData, force } = thread;
-          const site = g.sites[siteID];
-          if ((this.status === 200) && this.response) {
-              last = this.response.posts[this.response.posts.length - 1].no;
-              const replies = this.response.posts.length - 1;
-              let isArchived = !!(this.response.posts[0].archived || isArchiveURL);
-              isDead = isArchived;
-              if (isDead && Conf['Auto Prune']) {
-                  ThreadWatcher.rm(siteID, boardID, threadID);
-                  return;
-              }
-              if ((last === data.last) && (isDead === data.isDead) && (isArchived === data.isArchived))
-                  return;
-              const lastReadPost = ThreadWatcher.unreaddb.get({ siteID, boardID, threadID, defaultValue: 0 });
-              let unread = data.unread || 0;
-              let quotingYou = data.quotingYou || 0;
-              const youOP = !!QuoteYou.db?.get({ siteID, boardID, threadID, postID: threadID });
-              for (var postObj of this.response.posts) {
-                  if ((postObj.no <= (data.last || 0)) || (postObj.no <= lastReadPost))
-                      continue;
-                  if (QuoteYou.db?.get({ siteID, boardID, threadID, postID: postObj.no }))
-                      continue;
-                  var quotesYou = false;
-                  if (!Conf['Require OP Quote Link'] && youOP) {
-                      quotesYou = true;
-                  }
-                  else if (QuoteYou.db && postObj.com) {
-                      var match;
-                      var regexp = site.regexp.quotelinkHTML;
-                      regexp.lastIndex = 0;
-                      while (match = regexp.exec(postObj.com)) {
-                          if (QuoteYou.db.get({
-                              siteID,
-                              boardID: match[1] ? encodeURIComponent(match[1]) : boardID,
-                              threadID: match[2] || threadID,
-                              postID: match[3] || match[2] || threadID
-                          })) {
-                              quotesYou = true;
-                              break;
-                          }
-                      }
-                  }
-                  if ((!unread || (!quotingYou && quotesYou)) && Filter.isHidden(site.Build.parseJSON(postObj, { siteID, boardID })))
-                      continue;
-                  unread++;
-                  if (quotesYou)
-                      quotingYou = postObj.no;
-              }
-              if (!newData)
-                  newData = {};
-              $.extend(newData, { last, replies, isDead, isArchived, unread, quotingYou });
-              ThreadWatcher.update(siteID, boardID, threadID, newData);
-          }
-          else if (this.status === 404) {
-              const archiveURL = g.sites[siteID]?.urls.archivedThreadJSON?.({ siteID, boardID, threadID });
-              if (!isArchiveURL && archiveURL) {
-                  ThreadWatcher.fetch(archiveURL, { siteID, force }, [thread, true], ThreadWatcher.parseStatus);
-              }
-              else if (site.mayLackJSON && (data.last == null)) {
-                  ThreadWatcher.update(siteID, boardID, threadID, { last: -1 });
-              }
-              else {
-                  ThreadWatcher.update(siteID, boardID, threadID, { isDead: true });
-              }
-          }
-      },
-      getAll(groupByBoard) {
-          const all = [];
-          for (var siteID in ThreadWatcher.db.data) {
-              var boards = ThreadWatcher.db.data[siteID];
-              for (var boardID in boards.boards) {
-                  var cont;
-                  var threads = boards.boards[boardID];
-                  if (Conf['Current Board'] && ((siteID !== g.SITE.ID) || (boardID !== g.BOARD.ID)))
-                      continue;
-                  if (groupByBoard)
-                      all.push((cont = []));
-                  for (var threadID in threads) {
-                      var data = threads[threadID];
-                      if (data && (typeof data === 'object'))
-                          (groupByBoard ? cont : all).push({ siteID, boardID, threadID, data });
-                  }
-              }
-          }
-          return all;
-      },
-      makeLine(siteID, boardID, threadID, data) {
-          const x = $.el('a', {
-              textContent: '✕',
-              href: 'javascript:;'
-          });
-          Icon.set(x, 'xmark');
-          $.on(x, 'click', ThreadWatcher.cb.rm);
-          let { excerpt, isArchived } = data;
-          if (!excerpt)
-              excerpt = `/${boardID}/ - No.${threadID}`;
-          if (Conf['Show Site Prefix'])
-              excerpt = ThreadWatcher.prefixes[siteID] + excerpt;
-          const link = $.el('a', {
-              href: g.sites[siteID]?.urls.thread({ siteID, boardID, threadID }, isArchived) || '',
-              title: excerpt,
-              className: 'watcher-link'
-          });
-          if (Conf['Show Page'] && (data.page != null)) {
-              let page = $.el('span', {
-                  textContent: `[${data.page}]`,
-                  className: 'watcher-page'
-              });
-              $.add(link, page);
-          }
-          if (ThreadWatcher.unreadEnabled && Conf['Show Unread Count'] && (data.unread != null)) {
-              const count = $.el('span', {
-                  textContent: `(${data.unread})`,
-                  className: 'watcher-unread'
-              });
-              $.add(link, count);
-          }
-          const title = $.el('span', {
-              textContent: excerpt,
-              className: 'watcher-title'
-          });
-          $.add(link, title);
-          const div = $.el('div');
-          const fullID = `${boardID}.${threadID}`;
-          div.dataset.fullID = fullID;
-          div.dataset.siteID = siteID;
-          if ((g.VIEW === 'thread') && (fullID === `${g.BOARD}.${g.THREADID}`))
-              $.addClass(div, 'current');
-          if (data.isDead)
-              $.addClass(div, 'dead-thread');
-          if (Conf['Show Page']) {
-              if (data.lastPage)
-                  $.addClass(div, 'last-page');
-              if (data.page != null)
-                  div.dataset.page = data.page;
-          }
-          if (ThreadWatcher.unreadEnabled && Conf['Show Unread Count']) {
-              if (data.unread === 0)
-                  $.addClass(div, 'replies-read');
-              if (data.unread)
-                  $.addClass(div, 'replies-unread');
-              if ((data.quotingYou || 0) > (data.dismiss || 0))
-                  $.addClass(div, 'replies-quoting-you');
-          }
-          $.add(div, [x, $.tn(' '), link]);
-          return div;
-      },
-      setPrefixes(threads) {
-          const prefixes = dict();
-          for (var { siteID } of threads) {
-              if (siteID in prefixes)
-                  continue;
-              var len = 0;
-              var prefix = '';
-              var conflicts = Object.keys(prefixes);
-              while (conflicts.length > 0) {
-                  len++;
-                  prefix = siteID.slice(0, len);
-                  var conflicts2 = [];
-                  for (var siteID2 of conflicts) {
-                      if (siteID2.slice(0, len) === prefix) {
-                          conflicts2.push(siteID2);
-                      }
-                      else if (prefixes[siteID2].length < len) {
-                          prefixes[siteID2] = siteID2.slice(0, len);
-                      }
-                  }
-                  conflicts = conflicts2;
-              }
-              prefixes[siteID] = prefix;
-          }
-          return ThreadWatcher.prefixes = prefixes;
-      },
-      build() {
-          const nodes = [];
-          const threads = ThreadWatcher.getAll();
-          ThreadWatcher.setPrefixes(threads);
-          for (var { siteID, boardID, threadID, data } of threads) {
-              // Add missing excerpt for threads added by Auto Watch
-              let thread = g.threads.get(`${boardID}.${threadID}`);
-              if ((data.excerpt == null) && (siteID === g.SITE.ID) && thread && thread.OP) {
-                  ThreadWatcher.db.extend({ boardID, threadID, val: { excerpt: Get.threadExcerpt(thread) } });
-              }
-              nodes.push(ThreadWatcher.makeLine(siteID, boardID, threadID, data));
-          }
-          const { list } = ThreadWatcher;
-          $.rmAll(list);
-          $.add(list, nodes);
-          ThreadWatcher.refreshIcon();
-      },
-      refresh(manual) {
-          ThreadWatcher.build();
-          g.threads.forEach((thread) => {
-              const isWatched = ThreadWatcher.isWatched(thread);
-              if (thread.OP) {
-                  for (var post of [thread.OP, ...thread.OP.clones]) {
-                      let toggler = $('.watch-thread-link', post.nodes.info);
-                      if (toggler)
-                          ThreadWatcher.setToggler(toggler, isWatched);
-                  }
-              }
-              if (thread.catalogView)
-                  return thread.catalogView.nodes.root.classList.toggle('watched', isWatched);
-          });
-          if (Conf['Pin Watched Threads'])
-              return $.event('SortIndex', { deferred: !(manual && Conf['Index Mode'] === 'catalog') });
-      },
-      refreshIcon() {
-          for (var className of ['replies-unread', 'replies-quoting-you']) {
-              ThreadWatcher.shortcut.classList.toggle(className, !!$(`.${className}`, ThreadWatcher.dialog));
-          }
-      },
-      update(siteID, boardID, threadID, newData) {
-          let data, key, line, val;
-          if (!(data = ThreadWatcher.db?.get({ siteID, boardID, threadID })))
-              return;
-          if (newData.isDead && Conf['Auto Prune']) {
-              ThreadWatcher.rm(siteID, boardID, threadID);
-              return;
-          }
-          if (newData.isDead || (newData.last === -1)) {
-              for (key of ['isArchived', 'page', 'lastPage', 'unread', 'quotingyou']) {
-                  if (!(key in newData))
-                      newData[key] = undefined;
-              }
-          }
-          if ((newData.last != null) && (newData.last < data.last))
-              newData.modified = undefined;
-          let n = 0;
-          for (key in newData) {
-              val = newData[key];
-              if (data[key] !== val) {
-                  n++;
-              }
-          }
-          if (!n)
-              return;
-          ThreadWatcher.db.extend({ siteID, boardID, threadID, val: newData });
-          if (line = $(`#watched-threads > [data-site-i-d='${siteID}'][data-full-i-d='${boardID}.${threadID}']`, ThreadWatcher.dialog)) {
-              const newLine = ThreadWatcher.makeLine(siteID, boardID, threadID, data);
-              $.replace(line, newLine);
-              ThreadWatcher.refreshIcon();
-          }
-          else {
-              ThreadWatcher.refresh();
-          }
-      },
-      set404(boardID, threadID, cb) {
-          let data = ThreadWatcher.db?.get({ boardID, threadID });
-          if (!data)
-              return cb();
-          if (Conf['Auto Prune']) {
-              ThreadWatcher.db.delete({ boardID, threadID });
-              return cb();
-          }
-          if (data.isDead && data.isArchived == null && data.page == null && data.lastPage == null && data.unread == null && data.quotingYou == null)
-              return cb();
-          return ThreadWatcher.db.extend({ boardID, threadID, val: { isDead: true, isArchived: undefined, page: undefined, lastPage: undefined, unread: undefined, quotingYou: undefined } }, cb);
-      },
-      toggle(thread, manual) {
-          const siteID = g.SITE.ID;
-          const boardID = thread.board.ID;
-          const threadID = thread.ID;
-          if (ThreadWatcher.db.get({ boardID, threadID })) {
-              ThreadWatcher.rm(siteID, boardID, threadID, undefined, manual);
-          }
-          else {
-              ThreadWatcher.add(thread, undefined, manual);
-          }
-      },
-      add(thread, cb, manual) {
-          const data = {};
-          const siteID = g.SITE.ID;
-          const boardID = thread.board.ID;
-          const threadID = thread.ID;
-          if (thread.isDead) {
-              if (Conf['Auto Prune'] && ThreadWatcher.db.get({ boardID, threadID })) {
-                  ThreadWatcher.rm(siteID, boardID, threadID, cb);
-                  return;
-              }
-              data.isDead = true;
-          }
-          if (thread.OP)
-              data.excerpt = Get.threadExcerpt(thread);
-          ThreadWatcher.addRaw(boardID, threadID, data, cb, manual);
-      },
-      addRaw(boardID, threadID, data, cb, manual) {
-          const oldData = ThreadWatcher.db.get({ boardID, threadID, defaultValue: dict() });
-          delete oldData.last;
-          delete oldData.modified;
-          $.extend(oldData, data);
-          ThreadWatcher.db.set({ boardID, threadID, val: oldData }, cb);
-          ThreadWatcher.refresh(manual);
-          const thread = { siteID: g.SITE.ID, boardID, threadID, data, force: true };
-          if (Conf['Show Page'] && !data.isDead) {
-              ThreadWatcher.fetchBoard([thread]);
-          }
-          else if (ThreadWatcher.unreadEnabled && Conf['Show Unread Count']) {
-              ThreadWatcher.fetchStatus(thread);
-          }
-      },
-      rm(siteID, boardID, threadID, cb, manual) {
-          ThreadWatcher.db.delete({ siteID, boardID, threadID }, cb);
-          ThreadWatcher.refresh(manual);
-      },
-      menu: {
-          init() {
-              if (!Conf['Thread Watcher'])
-                  return;
-              const menu = (this.menu = new UI.Menu('thread watcher'));
-              $.on($('.menu-button', ThreadWatcher.dialog), 'click', function (e) {
-                  menu.toggle(e, this, ThreadWatcher);
-              });
-              this.addMenuEntries();
-          },
-          addHeaderMenuEntry() {
-              if (g.VIEW !== 'thread')
-                  return;
-              const entryEl = $.el('a', { href: 'javascript:;' });
-              Header.menu.addEntry({
-                  el: entryEl,
-                  order: 60,
-                  open() {
-                      const [addClass, rmClass, text] = !!ThreadWatcher.db.get({ boardID: g.BOARD.ID, threadID: g.THREADID })
-                          ? ['unwatch-thread', 'watch-thread', 'Unwatch thread']
-                          : ['watch-thread', 'unwatch-thread', 'Watch thread'];
-                      $.addClass(entryEl, addClass);
-                      $.rmClass(entryEl, rmClass);
-                      entryEl.textContent = text;
-                      return true;
-                  }
-              });
-              $.on(entryEl, 'click', () => ThreadWatcher.toggle(g.threads.get(`${g.BOARD}.${g.THREADID}`), true));
-          },
-          addMenuEntries() {
-              const toggleDisabledDead = function () {
-                  this.el.classList.toggle('disabled', !$('.dead-thread', ThreadWatcher.list));
-                  return true;
+          f() {
+              return {
+                  innerHTML: `<a href="javascript:;" class="quick-filter-md5">${Icon.get('xmark')}</a>`,
+                  [isEscaped]: true,
               };
-              const entries = [
-                  // `Open all` entry
-                  {
-                      text: 'Open all threads',
-                      cb: ThreadWatcher.cb.openAll,
-                      open() {
-                          this.el.classList.toggle('disabled', !ThreadWatcher.list.firstElementChild);
-                          return true;
-                      }
-                  },
-                  {
-                      text: 'Clear all threads',
-                      cb: ThreadWatcher.cb.clear,
-                      open() {
-                          this.el.classList.toggle('disabled', !ThreadWatcher.list.firstElementChild);
-                          return true;
-                      }
-                  },
-                  // `Open Unread` entry
-                  {
-                      text: 'Open unread threads',
-                      cb: ThreadWatcher.cb.openUnread,
-                      open() {
-                          this.el.classList.toggle('disabled', !$('.replies-unread', ThreadWatcher.list));
-                          return true;
-                      }
-                  },
-                  // `Open unread dead threads` entry
-                  {
-                      text: 'Open unread dead threads',
-                      cb: ThreadWatcher.cb.openDeads,
-                      open: toggleDisabledDead,
-                  },
-                  // `Prune all dead threads` entry
-                  {
-                      text: 'Prune all dead threads',
-                      cb: ThreadWatcher.cb.pruneDeads,
-                      open: toggleDisabledDead,
-                  },
-                  // `Prune read dead threads` entry
-                  {
-                      text: 'Prune read dead threads',
-                      cb: ThreadWatcher.cb.pruneReadDeads,
-                      open: toggleDisabledDead,
-                  },
-                  // `Dismiss posts quoting you` entry
-                  {
-                      text: 'Dismiss posts quoting you',
-                      title: 'Unhighlight the thread watcher icon and threads until there are new replies quoting you.',
-                      cb: ThreadWatcher.cb.dismiss,
-                      open() {
-                          this.el.classList.toggle('disabled', !$.hasClass(ThreadWatcher.shortcut, 'replies-quoting-you'));
-                          return true;
-                      }
-                  },
-              ];
-              for (var { text, title, cb, open } of entries) {
-                  var entry = {
-                      el: $.el('a', {
-                          textContent: text,
-                          href: 'javascript:;'
-                      })
-                  };
-                  if (title)
-                      entry.el.title = title;
-                  $.on(entry.el, 'click', cb);
-                  entry.open = open.bind(entry);
-                  this.menu.addEntry(entry);
-              }
-              // Settings checkbox entries:
-              for (var name in Config.threadWatcher) {
-                  var conf = Config.threadWatcher[name];
-                  this.addCheckbox(name, conf[1]);
-              }
           },
-          addCheckbox(name, desc) {
-              const entry = {
-                  type: 'thread watcher',
-                  el: UI.checkbox(name, name.replace(' Thread Watcher', ''))
-              };
-              entry.el.title = desc;
-              const input = entry.el.firstElementChild;
-              if ((name === 'Show Unread Count') && !ThreadWatcher.unreadEnabled) {
-                  input.disabled = true;
-                  $.addClass(entry.el, 'disabled');
-                  entry.el.title += '\n[Remember Last Read Post is disabled.]';
-              }
-              $.on(input, 'change', $.cb.checked);
-              if (['Current Board', 'Show Page', 'Show Unread Count', 'Show Site Prefix'].includes(name))
-                  $.on(input, 'change', () => ThreadWatcher.refresh());
-              if (['Show Page', 'Show Unread Count', 'Auto Update Thread Watcher'].includes(name))
-                  $.on(input, 'change', ThreadWatcher.fetchAuto);
-              return this.menu.addEntry(entry);
-          }
-      }
-  };
-
-  const parseArchivePost = (data) => {
-    // https://github.com/eksopl/asagi/blob/v0.4.0b74/src/main/java/net/easymodo/asagi/YotsubaAbstract.java#L82-L129
-    // https://github.com/FoolCode/FoolFuuka/blob/800bd090835489e7e24371186db6e336f04b85c0/src/Model/Comment.php#L368-L428
-    // https://github.com/bstats/b-stats/blob/6abe7bffaf6e5f523498d760e54b110df5331fbb/inc/classes/Yotsuba.php#L157-L168
-    let comment = (data.comment || '').split(/(\n|\[\/?(?:b|spoiler|code|moot|banned|fortune(?: color="#\w+")?|i|red|green|blue)\])/);
-    comment = comment.map((text, i) => {
-      if ((i % 2) === 1) {
-        var tag = Fetcher.archiveTags[text.replace(/\ .*\]/, ']')];
-        return (typeof tag === 'function') ? tag(text) : tag;
-      } else {
-        var greentext = text[0] === '>';
-        text = text
-          .replace(/(\[\/?[a-z]+):lit(\])/g, '$1$2')
-          .split(/(>>(?:>\/[a-z\d]+\/)?\d+)/g)
-          .map((text2, j) => ((j % 2) ? `<span class="deadlink">${E(text2)}</span>` : E(text2)))
-          .join('');
-        return { innerHTML: (greentext ? `<span class="quote">${text}</span>` : text) };
-      }
-    });
-    comment = { innerHTML: E.cat(comment), [isEscaped]: true };
-    // https://github.com/pleebe/FoolFuuka/blob/bf4224eed04637a4d0bd4411c2bf5f9945dfec0b/assets/themes/foolz/foolfuuka-theme-fuuka/src/Partial/Board.php#L77
-    const CAPCODES = {
-      M: 'Mod',
-      A: 'Admin',
-      D: 'Developer',
-      V: 'Verified',
-      F: 'Founder',
-      G: 'Manager',
-    };
-    const o = {
-      ID: data.num,
-      threadID: data.thread_num,
-      boardID: data.board.shortname,
-      isReply: data.num !== data.thread_num,
-      fileDeleted: false,
-      info: {
-        subject: data.title,
-        email: data.email,
-        name: data.name || '',
-        tripcode: data.trip,
-        capcode: CAPCODES[data.capcode],
-        uniqueID: data.poster_hash,
-        flagCode: data.poster_country,
-        flagCodeTroll: data.troll_country_code,
-        flag: data.poster_country_name || data.troll_country_name,
-        dateUTC: data.timestamp,
-        dateText: data.fourchan_date,
-        commentHTML: comment,
+          p() { return { innerHTML: ((this.file.isSpoiler) ? "Spoiler, " : ""), [isEscaped]: true }; },
+          s() { return { innerHTML: E(this.file.size), [isEscaped]: true }; },
+          B() { return { innerHTML: Math.round(this.file.sizeInBytes) + " Bytes", [isEscaped]: true }; },
+          K() { return { innerHTML: (Math.round(this.file.sizeInBytes / 1024)) + " KB", [isEscaped]: true }; },
+          M() { return { innerHTML: (Math.round(this.file.sizeInBytes / 1048576 * 100) / 100) + " MB", [isEscaped]: true }; },
+          r() { return { innerHTML: E(this.file.dimensions || "PDF"), [isEscaped]: true }; },
+          g() { return { innerHTML: ((this.file.tag) ? ", " + E(this.file.tag) : ""), [isEscaped]: true }; },
+          '%'() { return { innerHTML: "%", [isEscaped]: true }; }
       },
-      file: null,
-      extra: null,
-    };
-    if (o.info.capcode)
-      delete o.info.uniqueID;
-    if (data.media && +data.media.banned) {
-      o.fileDeleted = true;
-    } else if (data.media?.media_filename) {
-      let { thumb_link } = data.media;
-      // Fix URLs missing origin
-      if (thumb_link?.[0] === '/')
-        thumb_link = url.split('/', 3).join('/') + thumb_link;
-      if (!Redirect.securityCheck(thumb_link))
-        thumb_link = '';
-      let media_link = Redirect.to('file', { boardID: o.boardID, filename: data.media.media_orig });
-      if (!Redirect.securityCheck(media_link))
-        media_link = '';
-      o.file = {
-        name: data.media.media_filename,
-        url: media_link || `${location.protocol}//${ImageHost.host()}/${o.boardID}/${data.media.media_orig}`,
-        height: data.media.media_h,
-        width: data.media.media_w,
-        MD5: data.media.media_hash,
-        size: $.bytesToString(data.media.media_size),
-        thumbURL: thumb_link || `${location.protocol}//${ImageHost.thumbHost()}/${o.boardID}/${data.media.preview_orig}`,
-        theight: data.media.preview_h,
-        twidth: data.media.preview_w,
-        isSpoiler: data.media.spoiler === '1'
-      };
-      if (!/\.pdf$/.test(o.file.url))
-        o.file.dimensions = `${o.file.width}x${o.file.height}`;
-    }
-    o.extra = dict();
-    const board = g.boards[o.boardID] || new Board(o.boardID);
-    const thread = g.threads.get(`${o.boardID}.${o.threadID}`) ||
-      new Thread(o.threadID, board);
-    const post = new Post(g.SITE.Build.post(o), thread, board);
-    post.resurrect();
-    post.markAsFromArchive();
-    if (post.file)
-      post.file.thumbURL = o.file.thumbURL;
-    Main.callbackNodes('Post', [post]);
-    return post;
-  };
-
-  var ReplyPruning = {
-      init() {
-          if ((g.VIEW !== 'thread') || !Conf['Reply Pruning'])
-              return;
-          this.container = $.frag();
-          this.summary = $.el('span', {
-              hidden: true,
-              className: 'summary'
+      getTokens(formatString) {
+          if (FileInfoFormat._tokensKey === formatString)
+              return FileInfoFormat._tokens;
+          const tokens = [];
+          const FORMAT_REGEX = /%(.)|[^%]+/g;
+          formatString.replace(FORMAT_REGEX, (s, c) => {
+              tokens.push($.hasOwn(FileInfoFormat.formatters, c) ? FileInfoFormat.formatters[c] : { innerHTML: E(s) });
+              return '';
           });
-          this.summary.style.cursor = 'pointer';
-          $.on(this.summary, 'click', () => {
-              this.inputs.enabled.checked = !this.inputs.enabled.checked;
-              $.event('change', null, this.inputs.enabled);
-          });
-          const label = UI.checkbox('Prune Replies', 'Show Last', Conf['Prune All Threads']);
-          const el = $.el('span', { title: 'Maximum number of replies to show.' }, { innerHTML: " <input type=\"number\" name=\"Max Replies\" min=\"0\" step=\"1\" value=\"" + E(Conf["Max Replies"]) + "\" class=\"field\">" });
-          $.prepend(el, label);
-          this.inputs = {
-              enabled: label.firstElementChild,
-              replies: el.lastElementChild
-          };
-          this.setEnabled.call(this.inputs.enabled);
-          $.on(this.inputs.enabled, 'change', this.setEnabled);
-          $.on(this.inputs.replies, 'change', $.cb.value);
-          Header.menu.addEntry({ el, order: 190 });
-          Callbacks.Thread.push({
-              name: 'Reply Pruning',
-              cb: this.node
-          });
+          FileInfoFormat._tokensKey = formatString;
+          FileInfoFormat._tokens = tokens;
+          return tokens;
       },
-      position: 0,
-      hidden: 0,
-      hiddenFiles: 0,
-      total: 0,
-      totalFiles: 0,
-      setEnabled() {
-          const other = QuoteThreading.input;
-          if (this.checked && other?.checked) {
-              other.checked = false;
-              $.event('change', null, other);
-          }
-          return ReplyPruning.active = this.checked;
-      },
-      node() {
-          ReplyPruning.thread = this;
-          if (this.isSticky) {
-              ReplyPruning.active = (ReplyPruning.inputs.enabled.checked = true);
-              if (QuoteThreading.input) {
-                  // Disable Quote Threading for this thread but don't save the setting.
-                  Conf['Thread Quotes'] = (QuoteThreading.input.checked = false);
+      // onQuickFilterMD5 is injected so this module never needs to import Filter.
+      bindFileButtons(container, onQuickFilterMD5) {
+          for (const a of $$('.download-button, .quick-filter-md5', container)) {
+              if (a.classList.contains('download-button')) {
+                  $.on(a, 'click', ImageCommon.download);
               }
-          }
-          this.posts.forEach((post) => {
-              if (post.isReply) {
-                  ReplyPruning.total++;
-                  if (post.file)
-                      return ReplyPruning.totalFiles++;
-              }
-          });
-          // If we're linked to a post that we would hide, don't hide the posts in the first place.
-          let middle = this.posts.keys.indexOf(location.hash.slice(2));
-          if (ReplyPruning.active && /^#p\d+$/.test(location.hash) &&
-              (1 <= middle && middle < 1 + Math.max(ReplyPruning.total - +Conf["Max Replies"], 0))) {
-              ReplyPruning.active = (ReplyPruning.inputs.enabled.checked = false);
-          }
-          $.after(this.OP.nodes.root, ReplyPruning.summary);
-          $.on(ReplyPruning.inputs.enabled, 'change', ReplyPruning.update);
-          $.on(ReplyPruning.inputs.replies, 'change', ReplyPruning.update);
-          $.on(d, 'ThreadUpdate', ReplyPruning.updateCount);
-          $.on(d, 'ThreadUpdate', ReplyPruning.update);
-          ReplyPruning.update();
-      },
-      updateCount(e) {
-          if (e.detail[404])
-              return;
-          for (var fullID of e.detail.newPosts) {
-              ReplyPruning.total++;
-              if (g.posts.get(fullID).file)
-                  ReplyPruning.totalFiles++;
-          }
-      },
-      update() {
-          let boardTop, node, post;
-          const hidden1 = ReplyPruning.hidden;
-          const hidden2 = ReplyPruning.active ?
-              Math.max(ReplyPruning.total - +Conf["Max Replies"], 0) : 0;
-          // Record position from bottom of document
-          const oldPos = d.body.clientHeight - window.scrollY;
-          const { posts } = ReplyPruning.thread;
-          if (ReplyPruning.hidden < hidden2) {
-              while ((ReplyPruning.hidden < hidden2) && (ReplyPruning.position < posts.keys.length)) {
-                  post = posts.get(posts.keys[ReplyPruning.position++]);
-                  if (post.isReply && !post.isFetchedQuote) {
-                      while ((node = ReplyPruning.summary.nextSibling) && (node !== post.nodes.root)) {
-                          $.add(ReplyPruning.container, node);
-                      }
-                      $.add(ReplyPruning.container, post.nodes.root);
-                      ReplyPruning.hidden++;
-                      if (post.file)
-                          ReplyPruning.hiddenFiles++;
-                  }
-              }
-          }
-          else if (ReplyPruning.hidden > hidden2) {
-              const frag = $.frag();
-              while ((ReplyPruning.hidden > hidden2) && (ReplyPruning.position > 0)) {
-                  post = posts.get(posts.keys[--ReplyPruning.position]);
-                  if (post.isReply && !post.isFetchedQuote) {
-                      while ((node = ReplyPruning.container.lastChild) && (node !== post.nodes.root)) {
-                          $.prepend(frag, node);
-                      }
-                      $.prepend(frag, post.nodes.root);
-                      ReplyPruning.hidden--;
-                      if (post.file)
-                          ReplyPruning.hiddenFiles--;
-                  }
-              }
-              $.after(ReplyPruning.summary, frag);
-              $.event('PostsInserted', null, ReplyPruning.summary.parentNode);
-          }
-          ReplyPruning.summary.textContent = ReplyPruning.active
-              ? g.SITE.Build.summaryText('+', ReplyPruning.hidden, ReplyPruning.hiddenFiles)
-              : g.SITE.Build.summaryText('-', ReplyPruning.total, ReplyPruning.totalFiles);
-          ReplyPruning.summary.hidden = (ReplyPruning.total <= +Conf["Max Replies"]);
-          // Maintain position in thread when posts are added/removed above
-          if ((hidden1 !== hidden2) && ((boardTop = Header.getTopOf($('.board'))) < 0)) {
-              window.scrollBy(0, Math.max(d.body.clientHeight - oldPos, window.scrollY + boardTop) - window.scrollY);
-          }
-      }
-  };
-
-  /*
-    <3 aeosynth
-  */
-  var QuoteThreading = {
-    init() {
-      if (!Conf['Quote Threading'] || (g.VIEW !== 'thread'))
-        return;
-      this.controls = $.el('label', { innerHTML: "<input id=\"threadingControl\" name=\"Thread Quotes\" type=\"checkbox\"> Threading" });
-      this.threadNewLink = $.el('span', {
-        className: 'brackets-wrap threadnewlink',
-        hidden: true
-      });
-      $.extend(this.threadNewLink, { innerHTML: "<a href=\"javascript:;\">Thread New Posts</a>" });
-      this.input = $('input', this.controls);
-      this.input.checked = Conf['Thread Quotes'];
-      $.on(this.input, 'change', this.setEnabled);
-      $.on(this.input, 'change', this.rethread);
-      $.on(this.threadNewLink.firstElementChild, 'click', this.rethread);
-      $.on(d, '4chanXInitFinished', () => { this.ready = true; });
-      Header.menu.addEntry(this.entry = { el: this.controls, order: 99 });
-      Callbacks.Thread.push({
-        name: 'Quote Threading',
-        cb: this.setThread
-      });
-      Callbacks.Post.push({
-        name: 'Quote Threading',
-        cb: this.node
-      });
-    },
-    parent: dict(),
-    children: dict(),
-    inserted: dict(),
-    toggleThreading() { this.setThreadingState(!Conf['Thread Quotes']); },
-    setThreadingState(enabled) {
-      this.input.checked = enabled;
-      this.setEnabled.call(this.input);
-      this.rethread.call(this.input);
-    },
-    setEnabled() {
-      if (this.checked) {
-        $.set('Prune All Threads', false);
-        const other = ReplyPruning.inputs?.enabled;
-        if (other?.checked) {
-          other.checked = false;
-          $.event('change', null, other);
-        }
-      }
-      $.cb.checked.call(this);
-    },
-    setThread() {
-      QuoteThreading.thread = this;
-      $.asap((() => !Conf['Thread Updater'] || $('.navLinksBot > .updatelink')), function () {
-        let navLinksBot = $('.navLinksBot');
-        if (navLinksBot) {
-          $.add(navLinksBot, [$.tn(' '), QuoteThreading.threadNewLink]);
-        }
-      });
-    },
-    node() {
-      if (this.isFetchedQuote || this.isClone || !this.isReply)
-        return;
-      const parents = new Set();
-      let lastParent = null;
-      for (var quote of this.quotes) {
-        let parent = g.posts.get(quote);
-        if (parent) {
-          if (!parent.isFetchedQuote && parent.isReply && (parent.ID < this.ID)) {
-            parents.add(parent.ID);
-            if (!lastParent || (parent.ID > lastParent.ID))
-              lastParent = parent;
-          }
-        }
-      }
-      if (!lastParent)
-        return;
-      let ancestor = lastParent;
-      while ((ancestor = QuoteThreading.parent[ancestor.fullID])) {
-        parents.delete(ancestor.ID);
-      }
-      if (parents.size === 1)
-        QuoteThreading.parent[this.fullID] = lastParent;
-    },
-    descendants(post) {
-      let posts = [post];
-      let children = QuoteThreading.children[post.fullID];
-      if (children) {
-        for (var child of children) {
-          posts = posts.concat(QuoteThreading.descendants(child));
-        }
-      }
-      return posts;
-    },
-    insert(post) {
-      let parent, x;
-      if (!Conf['Thread Quotes'] ||
-        !(parent = QuoteThreading.parent[post.fullID]) ||
-        QuoteThreading.inserted[post.fullID])
-        return false;
-      const descendants = QuoteThreading.descendants(post);
-      if (!Unread.posts.has(parent.ID)) {
-        if (descendants.some(x => Unread.posts.has(x.ID))) {
-          QuoteThreading.threadNewLink.hidden = false;
-          return false;
-        }
-      }
-      const { order } = Unread;
-      const children = (QuoteThreading.children[parent.fullID] || (QuoteThreading.children[parent.fullID] = []));
-      const threadContainer = parent.nodes.threadContainer || $.el('div', { className: 'threadContainer' });
-      const nodes = [post.nodes.root];
-      if (post.nodes.threadContainer) {
-        nodes.push(post.nodes.threadContainer);
-      }
-      let i = children.length;
-      for (let j = children.length - 1; j >= 0; j--) {
-        var child = children[j];
-        if (child.ID >= post.ID) {
-          i--;
-        }
-      }
-      if (i !== children.length) {
-        const next = children[i];
-        for (x of descendants) {
-          order.before(order[next.ID], order[x.ID]);
-        }
-        children.splice(i, 0, post);
-        $.before(next.nodes.root, nodes);
-      } else {
-        let prev2;
-        let prev = parent;
-        while ((prev2 = QuoteThreading.children[prev.fullID]) && prev2.length) {
-          prev = prev2[prev2.length - 1];
-        }
-        for (let k = descendants.length - 1; k >= 0; k--) {
-          x = descendants[k];
-          order.after(order[prev.ID], order[x.ID]);
-        }
-        children.push(post);
-        $.add(threadContainer, nodes);
-      }
-      QuoteThreading.inserted[post.fullID] = true;
-      if (!parent.nodes.threadContainer) {
-        parent.nodes.threadContainer = threadContainer;
-        $.addClass(parent.nodes.root, 'threadOP');
-        $.after(parent.nodes.root, threadContainer);
-      }
-      return true;
-    },
-    rethread() {
-      if (!QuoteThreading.ready)
-        return;
-      const { thread } = QuoteThreading;
-      const { posts } = thread;
-      QuoteThreading.threadNewLink.hidden = true;
-      if (Conf['Thread Quotes']) {
-        posts.forEach(QuoteThreading.insert);
-      } else {
-        const nodes = [];
-        Unread.order = new RandomAccessList();
-        QuoteThreading.inserted = dict();
-        posts.forEach(function (post) {
-          if (post.isFetchedQuote)
-            return;
-          Unread.order.push(post);
-          if (post.isReply) {
-            nodes.push(post.nodes.root);
-          }
-          if (QuoteThreading.children[post.fullID]) {
-            delete QuoteThreading.children[post.fullID];
-            $.rmClass(post.nodes.root, 'threadOP');
-            $.rm(post.nodes.threadContainer);
-            delete post.nodes.threadContainer;
-          }
-        });
-        $.add(thread.nodes.root, nodes);
-      }
-      Unread.position = Unread.order.first;
-      Unread.updatePosition();
-      Unread.setLine(true);
-      Unread.read();
-      Unread.update();
-    },
-  };
-
-  const RestoreDeletedFromArchive = {
-    restore() {
-      const url = Redirect.to('threadJSON', { boardID: g.boardID, threadID: g.threadID });
-      if (!url) {
-        new Notice('warning', 'No archive found', 3);
-        return;
-      }
-      const encryptionOK = url.startsWith('https://');
-      if (encryptionOK || Conf['Exempt Archives from Encryption']) {
-        CrossOrigin.ajax(url, { onloadend() {
-            if (this.status < 200 || this.status >= 400 || !this.response) {
-              const domain = E(new URL(url).origin);
-              new Notice('error', $.el('div', {
-                innerHTML: 'There was an error while fetching from the archive. See the console for details.<br />' +
-                  'Some archives check the browser first before checking content, you might need to open the archive ' +
-                  `first to get past the browser check: <a href="${domain}" target="_blank">${domain}</a><br />` +
-                  'If that doesn\'t work, try a different archive under Settings > Advanced > Archives > Thread fetching.'
-              }));
-              console.error(this);
-              return;
-            }
-            let nrRestored = 0;
-            const archivePosts = this.response[g.threadID.toString()].posts;
-            for (const [postID, raw] of Object.entries(archivePosts)) {
-              if (RestoreDeletedFromArchive.insert(raw)[1])
-                ++nrRestored;
-            }
-            let msg;
-            if (nrRestored === 0) {
-              msg = 'No removed posts found';
-            } else if (nrRestored === 1) {
-              msg = '1 post restored';
-            } else {
-              msg = `${nrRestored} posts restored`;
-            }
-            new Notice('info', msg, 3);
-          } });
-      }
-    },
-    init() {
-      if (g.VIEW !== 'thread')
-        return;
-      const menuEntry = $.el('a', {
-        href: 'javascript:;',
-        textContent: 'Restore from archive',
-      });
-      $.on(menuEntry, 'click', () => {
-        RestoreDeletedFromArchive.restore();
-        Header.menu.close();
-      });
-      Header.menu.addEntry({ el: menuEntry, order: 10, });
-    },
-    /**
-    * Inserts a post from the archive in the thread. Will automatically skip posts from other threads and posts already
-    * in the thread.
-    * @param raw The raw data returned from the archive
-    * @returns A tuple with as first value the new post, and the second value a boolean whether is was inserted into the
-    * page.
-    */
-    insert(raw) {
-      const key = `${raw.board.shortname}.${raw.num}`;
-      if (g.posts.keys.includes(key))
-        return [undefined, false];
-      let inserted = false;
-      const post = parseArchivePost(raw);
-      post.resurrect();
-      post.markAsFromArchive();
-      if (post.threadID === g.threadID && g.VIEW === 'thread') {
-        const newPostIndex = g.posts.insert(key, post, key => +(key.split('.')[1]) < post.ID);
-        if (Conf['Thread Quotes']) {
-          post.thread.nodes.root.insertAdjacentElement('beforeend', post.root);
-        } else {
-          g.posts.get(g.posts.keys[newPostIndex - 1]).root.insertAdjacentElement('afterend', post.root);
-        }
-        QuoteThreading.insert(post);
-        inserted = true;
-        for (const quotelink of Get.allQuotelinksLinkingTo(post)) {
-          quotelink.href = `#p${post.ID}`;
-        }
-      }
-      return [post, inserted];
-    },
-  };
-
-  class Fetcher {
-    constructor(boardID, threadID, postID, root, quoter) {
-      let post, thread;
-      this.boardID = boardID;
-      this.threadID = threadID;
-      this.postID = postID;
-      this.root = root;
-      this.quoter = quoter;
-      if (post = g.posts.get(`${this.boardID}.${this.postID}`)) {
-        this.insert(post);
-        return;
-      }
-      // 4chan X catalog data
-      if ((post = Index.replyData?.[`${this.boardID}.${this.postID}`]) && (thread = g.threads.get(`${this.boardID}.${this.threadID}`))) {
-        const board = g.boards[this.boardID];
-        post = new Post(g.SITE.Build.postFromObject(post, this.boardID), thread, board, { isFetchedQuote: true });
-        Main.callbackNodes('Post', [post]);
-        this.insert(post);
-        return;
-      }
-      this.root.textContent = `Loading post No.${this.postID}...`;
-      if (this.threadID) {
-        const that = this;
-        $.cache(g.SITE.urls.threadJSON({ boardID: this.boardID, threadID: this.threadID }), function ({ isCached }) {
-          return that.fetchedPost(this, isCached);
-        });
-      } else {
-        this.archivedPost();
-      }
-    }
-    insert(post) {
-      // Stop here if the container has been removed while loading.
-      if (!this.root.parentNode)
-        return;
-      if (!this.quoter)
-        this.quoter = post;
-      const clone = post.addClone(this.quoter.context, ($.hasClass(this.root, 'dialog')));
-      Main.callbackNodes('Post', [clone]);
-      // Get rid of the side arrows/stubs.
-      const { nodes } = clone;
-      $.rmAll(nodes.root);
-      $.add(nodes.root, nodes.post);
-      // Indicate links to the containing post.
-      const quotes = [...clone.nodes.quotelinks, ...clone.nodes.backlinks];
-      for (var quote of quotes) {
-        var { boardID, postID } = Get.postDataFromLink(quote);
-        if ((postID === this.quoter.ID) && (boardID === this.quoter.board.ID))
-          $.addClass(quote, 'forwardlink');
-      }
-      // Set up flag CSS for cross-board links to boards with flags
-      if (clone.nodes.flag && !(Fetcher.flagCSS || (Fetcher.flagCSS = $('link[href^="//s.4cdn.org/css/flags."]')))) {
-        const cssVersion = $('link[href^="//s.4cdn.org/css/"]')?.href.match(/\d+(?=\.css$)|$/)[0] || Date.now();
-        Fetcher.flagCSS = $.el('link', {
-          rel: 'stylesheet',
-          href: `//s.4cdn.org/css/flags.${cssVersion}.css`
-        });
-        $.add(d.head, Fetcher.flagCSS);
-      }
-      $.rmAll(this.root);
-      $.add(this.root, nodes.root);
-      $.event('PostsInserted', null, this.root);
-    }
-    fetchedPost(req, isCached) {
-      // In case of multiple callbacks for the same request,
-      // don't parse the same original post more than once.
-      const cachedPost = g.posts.get(`${this.boardID}.${this.postID}`);
-      if (cachedPost) {
-        this.insert(cachedPost);
-        return;
-      }
-      const { status } = req;
-      if (status !== 200) {
-        // The thread can die by the time we check a quote.
-        if (status && this.archivedPost())
-          return;
-        $.addClass(this.root, 'warning');
-        this.root.textContent =
-          status === 404
-            ? `Thread No.${this.threadID} 404'd.` : !status
-            ? 'Connection Error' : `Error ${req.statusText} (${req.status}).`;
-        return;
-      }
-      const { posts } = req.response;
-      g.SITE.Build.spoilerRange[this.boardID] = posts[0].custom_spoiler;
-      const foundPost = posts.find(p => p.no === this.postID); // we found it!
-      if (!foundPost) {
-        // Cached requests can be stale and must be rechecked.
-        if (isCached) {
-          const api = g.SITE.urls.threadJSON({ boardID: this.boardID, threadID: this.threadID });
-          $.cleanCache(url => url === api);
-          $.cache(api, (req) => this.fetchedPost(req, false));
-          return;
-        }
-        // The post can be deleted by the time we check a quote.
-        if (this.archivedPost())
-          return;
-        $.addClass(this.root, 'warning');
-        this.root.textContent = `Post No.${this.postID} was not found.`;
-        return;
-      }
-      const board = g.boards[this.boardID] || new Board(this.boardID);
-      const thread = g.threads.get(`${this.boardID}.${this.threadID}`) || new Thread(this.threadID, board);
-      const newPost = new Post(g.SITE.Build.postFromObject(foundPost, this.boardID), thread, board, { isFetchedQuote: true });
-      Main.callbackNodes('Post', [newPost]);
-      this.insert(newPost);
-    }
-    archivedPost() {
-      if (!Conf['Resurrect Quotes'])
-        return false;
-      let url = Redirect.to('post', { boardID: this.boardID, postID: this.postID });
-      if (!url)
-        return false;
-      const archive = Redirect.data.post.get(this.boardID);
-      const encryptionOK = /^https:\/\//.test(url) || (location.protocol === 'http:');
-      if (encryptionOK || Conf['Exempt Archives from Encryption']) {
-        const that = this;
-        CrossOrigin.cache(url, function () {
-          if (!encryptionOK && this.response?.media) {
-            const { media } = this.response;
-            for (var key in media) {
-              // Image/thumbnail URLs loaded over HTTP can be modified in transit.
-              // Require them to be from an HTTP host so that no referrer is sent to them from an HTTPS page.
-              if (/_link$/.test(key) && !$.getOwn(media, key)?.match(/^http:\/\//))
-                delete media[key];
-            }
-          }
-          return that.parseArchivedPost(this.response, url, archive);
-        });
-        return true;
-      }
-      return false;
-    }
-    parseArchivedPost(data, url, archive) {
-      // In case of multiple callbacks for the same request,
-      // don't parse the same original post more than once.
-      let post = g.posts.get(`${this.boardID}.${this.postID}`);
-      if (post) {
-        this.insert(post);
-        return;
-      }
-      if (data == null) {
-        $.addClass(this.root, 'warning');
-        this.root.textContent = archive?.name
-          ? `Error fetching Post No.${this.postID} from ${archive.name}.`
-          : `Error fetching Post No.${this.postID} from the archive.`;
-        return;
-      }
-      if (data.error) {
-        $.addClass(this.root, 'warning');
-        this.root.textContent = data.error;
-        return;
-      }
-      return this.insert(RestoreDeletedFromArchive.insert(data)[0]);
-    }
-  }
-  Fetcher.archiveTags = {
-    '\n': { innerHTML: "<br>" },
-    '[b]': { innerHTML: "<b>" },
-    '[/b]': { innerHTML: "</b>" },
-    '[spoiler]': { innerHTML: "<s>" },
-    '[/spoiler]': { innerHTML: "</s>" },
-    '[code]': { innerHTML: "<pre class=\"prettyprint\">" },
-    '[/code]': { innerHTML: "</pre>" },
-    '[moot]': { innerHTML: "<div style=\"padding:5px;margin-left:.5em;border-color:#faa;border:2px dashed rgba(255,0,0,.1);border-radius:2px\">" },
-    '[/moot]': { innerHTML: "</div>" },
-    '[banned]': { innerHTML: "<strong style=\"color: red;\">" },
-    '[/banned]': { innerHTML: "</strong>" },
-    '[fortune]'(text) { return { innerHTML: "<span class=\"fortune\" style=\"color:" + E(text.match(/#\w+|$/)[0]) + "\"><b>" }; },
-    '[/fortune]': { innerHTML: "</b></span>" },
-    '[i]': { innerHTML: "<span class=\"mu-i\">" },
-    '[/i]': { innerHTML: "</span>" },
-    '[red]': { innerHTML: "<span class=\"mu-r\">" },
-    '[/red]': { innerHTML: "</span>" },
-    '[green]': { innerHTML: "<span class=\"mu-g\">" },
-    '[/green]': { innerHTML: "</span>" },
-    '[blue]': { innerHTML: "<span class=\"mu-b\">" },
-    '[/blue]': { innerHTML: "</span>" }
-  };
-
-  var QuotePreview = {
-      init() {
-          if (!Conf['Quote Previewing'])
-              return;
-          if (g.VIEW === 'archive') {
-              $.on(d, 'mouseover', function (e) {
-                  if ((e.target.nodeName === 'A') && $.hasClass(e.target, 'quotelink')) {
-                      return QuotePreview.mouseover.call(e.target, e);
-                  }
-              });
-          }
-          if (!['index', 'thread'].includes(g.VIEW))
-              return;
-          if (Conf['Comment Expansion'])
-              ExpandComment.callbacks.push(this.node);
-          Callbacks.Post.push({ name: 'Quote Previewing', cb: this.node });
-      },
-      node() {
-          for (var link of this.nodes.quotelinks.concat([...this.nodes.backlinks], this.nodes.archivelinks)) {
-              $.on(link, 'mouseover', QuotePreview.mouseover);
-          }
-      },
-      mouseover(e) {
-          if (($.hasClass(this, 'inlined') && !$.hasClass(doc, 'catalog-mode')) || !d.contains(this))
-              return;
-          const { boardID, threadID, postID } = Get.postDataFromLink(this);
-          const qp = $.el('div', { id: 'qp', className: 'dialog' });
-          $.add(Header.hover, qp);
-          new Fetcher(boardID, threadID, postID, qp, Get.postFromNode(this));
-          UI.hover({
-              root: this,
-              el: qp,
-              latestEvent: e,
-              endEvents: 'mouseout click',
-              cb: QuotePreview.mouseout
-          });
-          let origin = g.posts.get(`${boardID}.${postID}`);
-          if (Conf['Quote Highlighting'] && origin) {
-              const posts = [origin].concat(origin.clones);
-              // Remove the clone that's in the qp from the array.
-              posts.pop();
-              for (var post of posts) {
-                  $.addClass(post.nodes.post, 'qphl');
+              else if (onQuickFilterMD5) {
+                  $.on(a, 'click', onQuickFilterMD5);
               }
           }
       },
-      mouseout() {
-          // Stop if it only contains text.
-          let root = this.el.firstElementChild;
-          if (!root)
-              return;
-          $.event('PostsRemoved', null, Header.hover);
-          const clone = Get.postFromRoot(root);
-          let post = clone.origin;
-          post.rmClone(root.dataset.clone);
-          if (!Conf['Quote Highlighting'])
-              return;
-          for (post of [post].concat(post.clones)) {
-              $.rmClass(post.nodes.post, 'qphl');
-          }
-      }
-  };
-
-  var NavLinksPage = `<span class="brackets-wrap indexlink"><a href="#index">Index</a></span> 
-<span class="brackets-wrap cataloglink"><a href="#catalog">Catalog</a></span> 
-<span class="brackets-wrap archlistlink"><a href="./archive">Archive</a></span> 
-<span class="brackets-wrap bottomlink"><a href="#bottom">Bottom</a></span> 
-<span class="brackets-wrap" id="index-last-refresh"><a href="javascript:;"><time title="Last index refresh">...</time></a></span> 
-<input type="search" id="index-search" class="field" placeholder="Search">
-<a id="index-search-clear" href="javascript:;" title="Clear search">×</a>
-<span id="hidden-label" hidden> &mdash; <span id="hidden-count"></span> <span id="hidden-toggle">[<a href="javascript:;">Show</a>]</span></span>
-<span id="index-options">
-  <input type="checkbox" id="index-rev" name="Reverse Sort" title="Reverse sort order">
-  <span id="lastlong-options" hidden>
-    <input type="text" title="Minimum letter count (without image)">
-    <input type="text" title="Minimum letter count (with image)">
-  </span>
-  <select id="index-sort" name="Index Sort">
-    <option disabled>Index Sort</option>
-    <option value="bump">Bump order</option>
-    <option value="lastreply">Last reply</option>
-    <option value="lastlong">Last long reply</option>
-    <option value="birth">Creation date</option>
-    <option value="replycount">Reply count</option>
-    <option value="filecount">File count</option>
-    <option value="activity">Posts per minute</option>
-  </select>
-  <select id="index-size" name="Index Size">
-    <option disabled>Image Size</option>
-    <option value="small">Small</option>
-    <option value="large">Large</option>
-  </select>
-  <select id="index-mode" name="Index Mode">
-    <option disabled>Index Mode</option>
-    <option value="paged">Paged</option>
-    <option value="infinite">Infinite scrolling</option>
-    <option value="all pages">All threads</option>
-    <option value="catalog">Catalog</option>
-  </select>
-</span>`;
-
-  var PageList = `<div class="prev">
-  <a>
-    <button disabled>Previous</button>
-  </a>
-</div>
-<div class="pages"></div>
-<div class="next">
-  <a>
-    <button disabled>Next</button>
-  </a>
-</div>
-<div class="pages cataloglink">
-  <a href="./catalog">Catalog</a>
-</div>`;
-
-  var Index = {
-      showHiddenThreads: false,
-      changed: {},
-      enabledOn: ({ siteID }) => Conf['JSON Index'] && g.sites[siteID].software === 'yotsuba',
-      init() {
-          let input, inputs, name;
-          if (g.VIEW !== 'index')
-              return;
-          // For IndexRefresh events
-          $.one(d, '4chanXInitFinished', this.cb.initFinished);
-          $.on(d, 'PostsInserted', this.cb.postsInserted);
-          if (!this.enabledOn(g.BOARD))
-              return;
-          setIndexEnabled(true);
-          Callbacks.Post.push({
-              name: 'Index Page Numbers',
-              cb: this.node
-          });
-          Callbacks.CatalogThread.push({
-              name: 'Catalog Features',
-              cb: this.catalogNode
-          });
-          this.search = history.state?.searched || '';
-          if (history.state?.mode)
-              Conf['Index Mode'] = history.state?.mode;
-          this.currentSort = history.state?.sort;
-          if (!this.currentSort) {
-              this.currentSort = typeof Conf['Index Sort'] === 'object'
-                  ? Conf['Index Sort'][g.BOARD.ID] || 'bump' : Conf['Index Sort'];
-          }
-          this.currentPage = this.getCurrentPage();
-          this.processHash();
-          $.addClass(doc, 'index-loading', `${Conf['Index Mode'].replace(/\ /g, '-')}-mode`);
-          $.on(window, 'popstate', this.cb.popstate);
-          $.on(d, 'scroll', this.scroll);
-          $.on(d, 'SortIndex', this.cb.resort);
-          // Header refresh button
-          this.button = $.el('a', {
-              title: 'Refresh',
-              href: 'javascript:;',
-          });
-          Icon.set(this.button, 'refresh', 'Refresh');
-          $.on(this.button, 'click', () => Index.update());
-          Header.addShortcut('index-refresh', this.button, 590);
-          // Header "Index Navigation" submenu
-          const entries = [];
-          this.inputs = (inputs = dict());
-          for (name in Config.Index) {
-              var arr = Config.Index[name];
-              if (arr instanceof Array) {
-                  var label = UI.checkbox(name, `${name[0]}${name.slice(1).toLowerCase()}`);
-                  label.title = arr[1];
-                  entries.push({ el: label });
-                  input = label.firstChild;
-                  $.on(input, 'change', $.cb.checked);
-                  inputs[name] = input;
-              }
-          }
-          $.on(inputs['Show Replies'], 'change', this.cb.replies);
-          $.on(inputs['Catalog Hover Expand'], 'change', this.cb.hover);
-          $.on(inputs['Pin Watched Threads'], 'change', this.cb.resort);
-          $.on(inputs['Anchor Hidden Threads'], 'change', this.cb.resort);
-          const watchSettings = (e) => {
-              if (input = $.getOwn(inputs, e.target.name)) {
-                  input.checked = e.target.checked;
-                  $.event('change', null, input);
-              }
-          };
-          $.on(d, 'OpenSettings', () => $.on($.id('fourchanx-settings'), 'change', watchSettings));
-          const sortEntry = UI.checkbox('Per-Board Sort Type', 'Per-board sort type', (typeof Conf['Index Sort'] === 'object'));
-          sortEntry.title = 'Set the sorting order of each board independently.';
-          $.on(sortEntry.firstChild, 'change', this.cb.perBoardSort);
-          entries.splice(3, 0, { el: sortEntry });
-          Header.menu.addEntry({
-              el: $.el('span', { textContent: 'Index Navigation' }),
-              order: 100,
-              subEntries: entries
-          });
-          // Navigation links at top of index
-          this.navLinks = $.el('div', { className: 'navLinks json-index' });
-          $.extend(this.navLinks, { innerHTML: NavLinksPage });
-          $('.cataloglink a', this.navLinks).href = CatalogLinks.catalog();
-          if (!BoardConfig.isArchived(g.BOARD.ID))
-              $('.archlistlink', this.navLinks).hidden = true;
-          $.on($('#index-last-refresh a', this.navLinks), 'click', this.cb.refreshFront);
-          // Search field
-          this.searchInput = $('#index-search', this.navLinks);
-          this.setupSearch();
-          $.on(this.searchInput, 'input', this.onSearchInput);
-          $.on($('#index-search-clear', this.navLinks), 'click', this.clearSearch);
-          Icon.set($('#index-search-clear', this.navLinks), 'xmark');
-          // Hidden threads toggle
-          this.hideLabel = $('#hidden-label', this.navLinks);
-          $.on($('#hidden-toggle a', this.navLinks), 'click', this.cb.toggleHiddenThreads);
-          // Drop-down menus and reverse sort toggle
-          this.selectRev = $('#index-rev', this.navLinks);
-          this.selectMode = $('#index-mode', this.navLinks);
-          this.selectSort = $('#index-sort', this.navLinks);
-          this.selectSize = $('#index-size', this.navLinks);
-          $.on(this.selectRev, 'change', this.cb.sort);
-          $.on(this.selectMode, 'change', this.cb.mode);
-          $.on(this.selectSort, 'change', this.cb.sort);
-          $.on(this.selectSize, 'change', $.cb.value);
-          $.on(this.selectSize, 'change', this.cb.size);
-          for (var select of [this.selectMode, this.selectSize]) {
-              select.value = Conf[select.name];
-          }
-          this.selectRev.checked = /-rev$/.test(Index.currentSort);
-          this.selectSort.value = Index.currentSort.replace(/-rev$/, '');
-          // Last Long Reply options
-          this.lastLongOptions = $('#lastlong-options', this.navLinks);
-          this.lastLongInputs = $$('input', this.lastLongOptions);
-          this.lastLongThresholds = [0, 0];
-          this.lastLongOptions.hidden = (this.selectSort.value !== 'lastlong');
-          for (let i = 0; i < this.lastLongInputs.length; i++) {
-              input = this.lastLongInputs[i];
-              $.on(input, 'change', this.cb.lastLongThresholds);
-              var tRaw = Conf[`Last Long Reply Thresholds ${i}`];
-              input.value = (this.lastLongThresholds[i] =
-                  typeof tRaw === 'object' ? (tRaw[g.BOARD.ID] ?? 100) : tRaw);
-          }
-          // Thread container
-          this.root = $.el('div', { className: 'board json-index' });
-          $.on(this.root, 'click', this.cb.hoverToggle);
-          this.cb.size();
-          this.cb.hover();
-          // Page list
-          this.pagelist = $.el('div', { className: 'pagelist json-index' });
-          $.extend(this.pagelist, { innerHTML: PageList });
-          $('.cataloglink a', this.pagelist).href = CatalogLinks.catalog();
-          $.on(this.pagelist, 'click', this.cb.pageNav);
-          this.update(true);
-          $.onExists(doc, 'title + *', () => d.title = d.title.replace(/\ -\ Page\ \d+/, ''));
-          $.onExists(doc, '.board > .thread > .postContainer, .board + *', () => {
-              g.SITE.Build.hat = $('.board > .thread > img:first-child');
-              if (g.SITE.Build.hat) {
-                  g.BOARD.threads.forEach((thread) => {
-                      if (thread.nodes.root)
-                          return $.prepend(thread.nodes.root, g.SITE.Build.hat.cloneNode(false));
-                  });
-                  $.addClass(doc, 'hats-enabled');
-                  $.addStyle(`.catalog-thread::after {background-image: url(${g.SITE.Build.hat.src});}`);
-              }
-              const board = $('.board');
-              $.replace(board, Index.root);
-              if (Index.loaded)
-                  $.event('PostsInserted', null, Index.root);
-              // Hacks:
-              // - When removing an element from the document during page load,
-              //   its ancestors will still be correctly created inside of it.
-              // - Creating loadable elements inside of an origin-less document
-              //   will not download them.
-              // - Combine the two and you get a download canceller!
-              //   Does not work on Firefox unfortunately. bugzil.la/939713
-              let el;
-              try {
-                  d.implementation.createDocument(null, null, null).appendChild(board);
-              }
-              catch (error) { }
-              for (el of $$('.navLinks')) {
-                  $.rm(el);
-              }
-              $.rm($.id('ctrl-top'));
-              const topNavPos = $.id('delform').previousElementSibling;
-              $.before(topNavPos, $.el('hr'));
-              $.before(topNavPos, Index.navLinks);
-              const timeEl = $('#index-last-refresh time', Index.navLinks);
-              if (timeEl.dataset.utc)
-                  return RelativeDates.update(timeEl);
-          });
-          PageReady.ready(() => {
-              let pagelist = $('.pagelist');
-              if (pagelist)
-                  $.replace(pagelist, Index.pagelist);
-              $.rmClass(doc, 'index-loading');
-          });
+      format(formatString, post, outputNode, onQuickFilterMD5) {
+          const tokens = FileInfoFormat.getTokens(formatString);
+          const output = tokens.map(t => typeof t === 'function' ? t.call(post) : t);
+          $.extend(outputNode, { innerHTML: E.cat(output) });
+          FileInfoFormat.bindFileButtons(outputNode, onQuickFilterMD5);
       },
-      scroll() {
-          if (Index.req || !Index.liveThreadData || (Conf['Index Mode'] !== 'infinite')
-              || (window.scrollY <= (doc.scrollHeight - (300 + window.innerHeight))))
-              return;
-          Index.pageNum ?? (Index.pageNum = Index.currentPage); // Avoid having to pushState to keep track of the current page
-          const pageNum = ++Index.pageNum;
-          if (pageNum > Index.pagesNum)
-              return Index.endNotice();
-          const threadIDs = Index.threadsOnPage(pageNum);
-          Index.buildStructure(threadIDs);
-      },
-      endNotice: (function () {
-          let notify = false;
-          const reset = () => notify = false;
-          return () => {
-              if (notify)
-                  return;
-              notify = true;
-              new Notice('info', "Last page reached.", 2);
-              setTimeout(reset, 3 * SECOND);
-          };
-      })(),
-      menu: {
-          init() {
-              if ((g.VIEW !== 'index') || !Conf.Menu || !Conf['Thread Hiding Link'] || !Index.enabledOn(g.BOARD))
-                  return;
-              Menu.menu.addEntry({
-                  el: $.el('a', {
-                      href: 'javascript:;',
-                      className: 'has-shortcut-text'
-                  }, { innerHTML: "<span></span><span class=\"shortcut-text\">Shift+click</span>" }),
-                  order: 20,
-                  open({ thread }) {
-                      if (Conf['Index Mode'] !== 'catalog')
-                          return false;
-                      this.el.firstElementChild.textContent = thread.isHidden
-                          ? 'Unhide' : 'Hide';
-                      if (this.cb)
-                          $.off(this.el, 'click', this.cb);
-                      this.cb = () => {
-                          $.event('CloseMenu');
-                          Index.toggleHide(thread);
-                      };
-                      $.on(this.el, 'click', this.cb);
-                      return true;
-                  }
-              });
-          }
-      },
-      node() {
-          if (this.isReply || this.isClone || !Index.threadPosition[this.ID])
-              return;
-          this.thread.setPage(Math.floor(Index.threadPosition[this.ID] / Index.threadsNumPerPage) + 1);
-      },
-      catalogNode() {
-          $.on(this.nodes.root, 'click', e => {
-              if ((e.button !== 0) || !e.shiftKey)
-                  return;
-              e.preventDefault();
-              getSelection().removeAllRanges();
-              if (Conf['MD5 Quick Filter in the Catalog'] && e.target.classList.contains('catalog-thumb')) {
-                  Filter.quickFilterMD5.call(this.thread.OP);
-              }
-              else {
-                  Index.toggleHide(this.thread);
-              }
-          });
-      },
-      toggleHide(thread) {
-          if (Index.showHiddenThreads) {
-              ThreadHiding.show(thread);
-              if (!ThreadHiding.db.get({ boardID: thread.board.ID, threadID: thread.ID }))
-                  return;
-              // Don't save when un-hiding filtered threads.
-          }
-          else {
-              ThreadHiding.hide(thread);
-          }
-          ThreadHiding.saveHiddenState(thread);
-      },
-      cycleSortType() {
-          const types = Index.selectSort.options.filter(option => !option.disabled);
-          let i;
-          for (i = 0; i < types.length; i++) {
-              var type = types[i];
-              if (type.selected)
-                  break;
-          }
-          types[(i + 1) % types.length].selected = true;
-          $.event('change', null, Index.selectSort);
-      },
-      cb: {
-          initFinished() {
-              Index.initFinishedFired = true;
-              return $.queueTask(() => Index.cb.postsInserted());
-          },
-          postsInserted() {
-              if (!Index.initFinishedFired)
-                  return;
-              let n = 0;
-              g.posts.forEach((post) => {
-                  if (!post.isFetchedQuote && !post.indexRefreshSeen && doc.contains(post.nodes.root)) {
-                      post.indexRefreshSeen = true;
-                      return n++;
-                  }
-              });
-              if (n)
-                  return $.event('IndexRefresh');
-          },
-          toggleHiddenThreads() {
-              $('#hidden-toggle a', Index.navLinks).textContent = (Index.showHiddenThreads = !Index.showHiddenThreads) ? 'Hide' : 'Show';
-              Index.sort();
-              Index.buildIndex();
-          },
-          mode() {
-              Index.pushState({ mode: this.value });
-              Index.pageLoad(false);
-          },
-          sort() {
-              const value = Index.selectRev.checked ? Index.selectSort.value + "-rev" : Index.selectSort.value;
-              Index.pushState({ sort: value });
-              Index.pageLoad(false);
-          },
-          resort(e) {
-              Index.changed.order = true;
-              if (!e?.detail?.deferred)
-                  Index.pageLoad(false);
-          },
-          perBoardSort() {
-              Conf['Index Sort'] = this.checked ? dict() : '';
-              Index.saveSort();
-              for (let i = 0; i < 2; i++) {
-                  Conf[`Last Long Reply Thresholds ${i}`] = this.checked ? dict() : '';
-                  Index.saveLastLongThresholds(i);
-              }
-          },
-          lastLongThresholds() {
-              const i = [...this.parentNode.children].indexOf(this);
-              const value = +this.value;
-              if (!Number.isFinite(value)) {
-                  this.value = Index.lastLongThresholds[i];
-                  return;
-              }
-              Index.lastLongThresholds[i] = value;
-              Index.saveLastLongThresholds(i);
-              Index.changed.order = true;
-              Index.pageLoad(false);
-          },
-          size(e) {
-              if (Conf['Index Mode'] !== 'catalog') {
-                  $.rmClass(Index.root, 'catalog-small');
-                  $.rmClass(Index.root, 'catalog-large');
-              }
-              else if (Conf['Index Size'] === 'small') {
-                  $.addClass(Index.root, 'catalog-small');
-                  $.rmClass(Index.root, 'catalog-large');
-              }
-              else {
-                  $.addClass(Index.root, 'catalog-large');
-                  $.rmClass(Index.root, 'catalog-small');
-              }
-              if (e)
-                  Index.buildIndex();
-          },
-          replies() { Index.buildIndex(); },
-          hover: () => doc.classList.toggle('catalog-hover-expand', Conf['Catalog Hover Expand']),
-          hoverToggle(e) {
-              if (Conf['Catalog Hover Toggle'] && $.hasClass(doc, 'catalog-mode') && !$.modifiedClick(e) && !$.x('ancestor-or-self::a', e.target)) {
-                  let thread;
-                  const input = Index.inputs['Catalog Hover Expand'];
-                  input.checked = !input.checked;
-                  $.event('change', null, input);
-                  if (thread = Get.threadFromNode(e.target)) {
-                      Index.cb.catalogReplies.call(thread);
-                      Index.cb.hoverAdjust.call(thread.OP.nodes);
-                  }
-              }
-          },
-          popstate(e) {
-              if (e?.state) {
-                  const { searched, mode, sort } = e.state;
-                  const page = Index.getCurrentPage();
-                  Index.setState({ search: searched, mode, sort, page });
-                  Index.pageLoad(false);
-              }
-              else {
-                  // page load or hash change
-                  const nCommands = Index.processHash();
-                  if (Conf['Refreshed Navigation'] && nCommands) {
-                      Index.update();
-                  }
-                  else {
-                      Index.pageLoad();
-                  }
-              }
-          },
-          pageNav(e) {
-              let a;
-              if ($.modifiedClick(e))
-                  return;
-              switch (e.target.nodeName) {
-                  case 'BUTTON':
-                      e.target.blur();
-                      a = e.target.parentNode;
-                      break;
-                  case 'A':
-                      a = e.target;
-                      break;
-                  default:
-                      return;
-              }
-              if (a.textContent === 'Catalog')
-                  return;
-              e.preventDefault();
-              Index.userPageNav(+a.pathname.split(/\/+/)[2] || 1);
-          },
-          refreshFront() {
-              Index.pushState({ page: 1 });
-              Index.update();
-          },
-          catalogReplies() {
-              if (Conf['Show Replies'] && $.hasClass(doc, 'catalog-hover-expand') && !this.catalogView.nodes.replies)
-                  return Index.buildCatalogReplies(this);
-          },
-          hoverAdjust() {
-              // Prevent hovered catalog threads from going offscreen.
-              if (!$.hasClass(doc, 'catalog-hover-expand'))
-                  return;
-              const rect = this.post.getBoundingClientRect();
-              let x = $.minmax(0, -rect.left, doc.clientWidth - rect.right);
-              if (x) {
-                  const { style } = this.post;
-                  style.left = `${x}px`;
-                  style.right = `${-x}px`;
-                  $.one(this.root, 'mouseleave', () => style.left = (style.right = null));
-              }
-          }
-      },
-      // Scroll to navlinks, or top of board if navlinks are hidden.
-      scrollToIndex: () => Header.scrollToIfNeeded((Index.navLinks.getBoundingClientRect().height ? Index.navLinks : Index.root)),
-      getCurrentPage: () => +window.location.pathname.split(/\/+/)[2] || 1,
-      userPageNav(page) {
-          Index.pushState({ page });
-          if (Conf['Refreshed Navigation']) {
-              Index.update();
-          }
-          else {
-              Index.pageLoad();
-          }
-      },
-      hashCommands: {
-          mode: {
-              'paged': 'paged',
-              'infinite-scrolling': 'infinite',
-              'infinite': 'infinite',
-              'all-threads': 'all pages',
-              'all-pages': 'all pages',
-              'catalog': 'catalog'
-          },
-          sort: {
-              'bump-order': 'bump',
-              'last-reply': 'lastreply',
-              'last-long-reply': 'lastlong',
-              'creation-date': 'birth',
-              'reply-count': 'replycount',
-              'file-count': 'filecount',
-              'posts-per-minute': 'activity'
-          }
-      },
-      processHash() {
-          // XXX https://bugzilla.mozilla.org/show_bug.cgi?id=483304
-          let hash = location.href.match(/#.*/)?.[0] || '';
-          const state = { replace: true };
-          const commands = hash.slice(1).split('/');
-          const leftover = [];
-          for (var command of commands) {
-              let mode, sort;
-              if (mode = $.getOwn(Index.hashCommands.mode, command)) {
-                  state.mode = mode;
-              }
-              else if (command === 'index') {
-                  state.mode = Conf['Previous Index Mode'];
-                  state.page = 1;
-              }
-              else if (sort = $.getOwn(Index.hashCommands.sort, command.replace(/-rev$/, ''))) {
-                  state.sort = sort;
-                  if (/-rev$/.test(command))
-                      state.sort += '-rev';
-              }
-              else if (/^s=/.test(command)) {
-                  state.search = decodeURIComponent(command.slice(2)).replace(/\+/g, ' ').trim();
-              }
-              else {
-                  leftover.push(command);
-              }
-          }
-          hash = leftover.join('/');
-          if (hash)
-              state.hash = `#${hash}`;
-          Index.pushState(state);
-          return commands.length - leftover.length;
-      },
-      pushState(state) {
-          let { search, hash, replace } = state;
-          let pageBeforeSearch = history.state?.oldpage;
-          if ((search != null) && (search !== Index.search)) {
-              state.page = search ? 1 : (pageBeforeSearch || 1);
-              if (!search) {
-                  pageBeforeSearch = undefined;
-              }
-              else if (!Index.search) {
-                  pageBeforeSearch = Index.currentPage;
-              }
-          }
-          Index.setState(state);
-          const pathname = Index.currentPage === 1 ? `/${g.BOARD}/` : `/${g.BOARD}/${Index.currentPage}`;
-          hash || (hash = '');
-          return history[replace ? 'replaceState' : 'pushState']({
-              mode: Conf['Index Mode'],
-              sort: Index.currentSort,
-              searched: Index.search,
-              oldpage: pageBeforeSearch
-          }, '', `${location.protocol}//${location.host}${pathname}${hash}`);
-      },
-      setState({ search, mode, sort, page, hash }) {
-          if ((search != null) && (search !== Index.search)) {
-              Index.changed.search = true;
-              Index.search = search;
-          }
-          if ((mode != null) && (mode !== Conf['Index Mode'])) {
-              Index.changed.mode = true;
-              Conf['Index Mode'] = mode;
-              $.set('Index Mode', mode);
-              if ((mode !== 'catalog') && (Conf['Previous Index Mode'] !== mode)) {
-                  Conf['Previous Index Mode'] = mode;
-                  $.set('Previous Index Mode', mode);
-              }
-          }
-          if ((sort != null) && (sort !== Index.currentSort)) {
-              Index.changed.sort = true;
-              Index.currentSort = sort;
-              Index.saveSort();
-          }
-          if (['all pages', 'catalog'].includes(Conf['Index Mode']))
-              page = 1;
-          if ((page != null) && (page !== Index.currentPage)) {
-              Index.changed.page = true;
-              Index.currentPage = page;
-          }
-          if (hash != null)
-              return Index.changed.hash = true;
-      },
-      savePerBoard(key, value) {
-          typeof Conf[key] === 'object'
-              ? (Conf[key][g.BOARD.ID] = value) : (Conf[key] = value);
-          $.set(key, Conf[key]);
-      },
-      saveSort() { Index.savePerBoard('Index Sort', Index.currentSort); },
-      saveLastLongThresholds(i) {
-          Index.savePerBoard(`Last Long Reply Thresholds ${i}`, Index.lastLongThresholds[i]);
-      },
-      pageLoad(scroll = true) {
-          if (!Index.liveThreadData)
-              return;
-          let { threads, order, search, mode, sort, page, hash } = Index.changed;
-          threads || (threads = search);
-          order || (order = sort);
-          if (threads || order)
-              Index.sort();
-          if (threads)
-              Index.buildPagelist();
-          if (search)
-              Index.setupSearch();
-          if (mode)
-              Index.setupMode();
-          if (sort)
-              Index.setupSort();
-          if (threads || mode || page || order)
-              Index.buildIndex();
-          if (threads || page)
-              Index.setPage();
-          if (scroll && !hash)
-              Index.scrollToIndex();
-          Index.changed = {};
-      },
-      setupMode() {
-          for (var mode of ['paged', 'infinite', 'all pages', 'catalog']) {
-              $[mode === Conf['Index Mode'] ? 'addClass' : 'rmClass'](doc, `${mode.replace(/\ /g, '-')}-mode`);
-          }
-          Index.selectMode.value = Conf['Index Mode'];
-          Index.cb.size();
-          Index.showHiddenThreads = false;
-          $('#hidden-toggle a', Index.navLinks).textContent = 'Show';
-      },
-      setupSort() {
-          Index.selectRev.checked = /-rev$/.test(Index.currentSort);
-          Index.selectSort.value = Index.currentSort.replace(/-rev$/, '');
-          Index.lastLongOptions.hidden = (Index.selectSort.value !== 'lastlong');
-      },
-      getPagesNum: () => Index.search ? Math.ceil(Index.sortedThreadIDs.length / Index.threadsNumPerPage) : Index.pagesNum,
-      getMaxPageNum: () => Math.max(1, Index.getPagesNum()),
-      buildPagelist() {
-          const pagesRoot = $('.pages', Index.pagelist);
-          const maxPageNum = Index.getMaxPageNum();
-          if (pagesRoot.childElementCount !== maxPageNum) {
-              const nodes = [];
-              for (let i = 1, end = maxPageNum; i <= end; i++) {
-                  var a = $.el('a', {
-                      textContent: i,
-                      href: i === 1 ? './' : i
-                  });
-                  nodes.push($.tn('['), a, $.tn('] '));
-              }
-              $.rmAll(pagesRoot);
-              $.add(pagesRoot, nodes);
-          }
-      },
-      setPage() {
-          let a, strong;
-          const pageNum = Index.currentPage;
-          const maxPageNum = Index.getMaxPageNum();
-          const pagesRoot = $('.pages', Index.pagelist);
-          // Previous/Next buttons
-          const prev = pagesRoot.previousElementSibling.firstElementChild;
-          const next = pagesRoot.nextElementSibling.firstElementChild;
-          let href = Math.max(pageNum - 1, 1);
-          prev.href = href === 1 ? './' : href;
-          prev.firstElementChild.disabled = href === pageNum;
-          href = Math.min(pageNum + 1, maxPageNum);
-          next.href = href === 1 ? './' : href;
-          next.firstElementChild.disabled = href === pageNum;
-          // <strong> current page
-          if (strong = $('strong', pagesRoot)) {
-              if (+strong.textContent === pageNum)
-                  return;
-              $.replace(strong, strong.firstChild);
-          }
-          else {
-              strong = $.el('strong');
-          }
-          if (a = pagesRoot.children[pageNum - 1]) {
-              $.before(a, strong);
-              $.add(strong, a);
-          }
-      },
-      updateHideLabel() {
-          if (!Index.hideLabel)
-              return;
-          let hiddenCount = 0;
-          for (var threadID of Index.liveThreadIDs) {
-              if (Index.isHidden(threadID))
-                  hiddenCount++;
-          }
-          if (!hiddenCount) {
-              Index.hideLabel.hidden = true;
-              if (Index.showHiddenThreads)
-                  Index.cb.toggleHiddenThreads();
-              return;
-          }
-          Index.hideLabel.hidden = false;
-          return $('#hidden-count', Index.navLinks).textContent = hiddenCount === 1 ?
-              '1 hidden thread' : `${hiddenCount} hidden threads`;
-      },
-      update(firstTime) {
-          let oldReq = Index.req;
-          if (oldReq) {
-              delete Index.req;
-              oldReq.abort();
-          }
-          if (Conf['Index Refresh Notifications']) {
-              // Optional notification for manual refreshes
-              if (!Index.notice)
-                  Index.notice = new Notice('info', 'Refreshing index...');
-              if (!Index.nTimeout) {
-                  Index.nTimeout = setTimeout(() => {
-                      if (Index.notice)
-                          Index.notice.el.lastElementChild.textContent += ' (disable JSON Index if this takes too long)';
-                  }, 3 * SECOND);
-              }
-          }
-          else {
-              // Also display notice if Index Refresh is taking too long
-              if (!Index.nTimeout)
-                  Index.nTimeout = setTimeout(() => Index.notice || (Index.notice = new Notice('info', 'Refreshing index... (disable JSON Index if this takes too long)')), 3 * SECOND);
-          }
-          // Hard refresh in case of incomplete page load.
-          if (!firstTime && (d.readyState !== 'loading') && !$('.board + *')) {
-              location.reload();
-              return;
-          }
-          Index.req = $.whenModified(g.SITE.urls.catalogJSON({ boardID: g.BOARD.ID }), 'Index', Index.load);
-          $.addClass(Index.button, 'spin');
-      },
-      load() {
-          if (this !== Index.req)
-              return; // aborted
-          $.rmClass(Index.button, 'spin');
-          const { notice, nTimeout } = Index;
-          if (nTimeout)
-              clearTimeout(nTimeout);
-          delete Index.nTimeout;
-          delete Index.req;
-          delete Index.notice;
-          if (![200, 304].includes(this.status)) {
-              let err = `Index refresh failed. ${this.status ? `Error ${this.statusText} (${this.status})` : 'Connection Error'}`;
-              if (notice) {
-                  notice.setType('warning');
-                  notice.el.lastElementChild.textContent = err;
-                  setTimeout(notice.close, SECOND);
-              }
-              else {
-                  new Notice('warning', err, 1);
-              }
-              return;
-          }
-          try {
-              if (this.status === 200) {
-                  Index.parse(this.response);
-              }
-              else if (this.status === 304) {
-                  Index.pageLoad();
-              }
-          }
-          catch (error) {
-              c.error(`Index failure: ${error.message}`, error.stack);
-              if (notice) {
-                  notice.setType('error');
-                  notice.el.lastElementChild.textContent = 'Index refresh failed.';
-                  setTimeout(notice.close, SECOND);
-              }
-              else {
-                  new Notice('error', 'Index refresh failed.', 1);
-              }
-              return;
-          }
-          if (notice) {
-              if (Conf['Index Refresh Notifications']) {
-                  notice.setType('success');
-                  notice.el.lastElementChild.textContent = 'Index refreshed!';
-                  setTimeout(notice.close, SECOND);
-              }
-              else {
-                  notice.close();
-              }
-          }
-          const timeEl = $('#index-last-refresh time', Index.navLinks);
-          timeEl.dataset.utc = Date.parse(this.getResponseHeader('Last-Modified'));
-          RelativeDates.update(timeEl);
-      },
-      parse(pages) {
-          $.cleanCache(url => /^https?:\/\/a\.4cdn\.org\//.test(url));
-          Index.parseThreadList(pages);
-          Index.changed.threads = true;
-          Index.pageLoad();
-      },
-      parseThreadList(pages) {
-          Index.pagesNum = pages.length;
-          Index.threadsNumPerPage = pages[0]?.threads.length || 1;
-          Index.liveThreadData = pages.reduce(((arr, next) => arr.concat(next.threads)), []);
-          Index.liveThreadIDs = Index.liveThreadData.map(data => data.no);
-          Index.liveThreadDict = dict();
-          Index.threadPosition = dict();
-          Index.parsedThreads = dict();
-          Index.replyData = dict();
-          for (let i = 0; i < Index.liveThreadData.length; i++) {
-              var obj, results;
-              var data = Index.liveThreadData[i];
-              Index.liveThreadDict[data.no] = data;
-              Index.threadPosition[data.no] = i;
-              Index.parsedThreads[data.no] = (obj = g.SITE.Build.parseJSON(data, g.BOARD));
-              results = Filter.test(obj);
-              obj.isOnTop = results.top;
-              obj.isHidden = results.hide || ThreadHiding.isHidden(obj.boardID, obj.threadID);
-              if (data.last_replies) {
-                  for (var reply of data.last_replies) {
-                      Index.replyData[`${g.BOARD}.${reply.no}`] = reply;
-                  }
-              }
-          }
-          if (Index.liveThreadData[0])
-              g.SITE.Build.spoilerRange[g.BOARD.ID] = Index.liveThreadData[0].custom_spoiler;
-          g.BOARD.threads.forEach((thread) => {
-              if (!Index.liveThreadIDs.includes(thread.ID))
-                  return thread.collect();
-          });
-          $.event('IndexUpdate', { threads: ((Index.liveThreadIDs.map((ID) => `${g.BOARD}.${ID}`))) });
-      },
-      isHidden(threadID) {
-          let thread = g.BOARD.threads.get(threadID);
-          if (thread && thread.OP && !thread.OP.isFetchedQuote) {
-              return thread.isHidden;
-          }
-          else {
-              return Index.parsedThreads[threadID].isHidden;
-          }
-      },
-      isHiddenReply: (threadID, replyData) => PostHiding.isHidden(g.BOARD.ID, threadID, replyData.no) || Filter.isHidden(g.SITE.Build.parseJSON(replyData, g.BOARD)),
-      buildThreads(threadIDs, isCatalog, withReplies) {
-          let errors;
-          const threads = [];
-          const newThreads = [];
-          let newPosts = [];
-          for (var ID of threadIDs) {
-              var opRoot, thread;
-              try {
-                  var OP;
-                  var threadData = Index.liveThreadDict[ID];
-                  if (thread = g.BOARD.threads.get(ID)) {
-                      var isStale = (thread.json !== threadData) && (JSON.stringify(thread.json) !== JSON.stringify(threadData));
-                      if (isStale) {
-                          thread.setCount('post', threadData.replies + 1, threadData.bumplimit);
-                          thread.setCount('file', threadData.images + !!threadData.ext, threadData.imagelimit);
-                          thread.setStatus('Sticky', !!threadData.sticky);
-                          thread.setStatus('Closed', !!threadData.closed);
-                      }
-                      if (thread.catalogView) {
-                          $.rm(thread.catalogView.nodes.replies);
-                          thread.catalogView.nodes.replies = null;
-                      }
-                  }
-                  else {
-                      thread = new Thread(ID, g.BOARD);
-                      newThreads.push(thread);
-                  }
-                  var lastPost = threadData.last_replies && threadData.last_replies.length
-                      ? threadData.last_replies[threadData.last_replies.length - 1].no : ID;
-                  if (lastPost > thread.lastPost)
-                      thread.lastPost = lastPost;
-                  thread.json = threadData;
-                  threads.push(thread);
-                  if ((OP = thread.OP) && !OP.isFetchedQuote) {
-                      OP.setCatalogOP(isCatalog);
-                      thread.setPage(Math.floor(Index.threadPosition[ID] / Index.threadsNumPerPage) + 1);
-                  }
-                  else {
-                      var obj = Index.parsedThreads[ID];
-                      opRoot = g.SITE.Build.post(obj);
-                      OP = new Post(opRoot, thread, g.BOARD);
-                      OP.filterResults = obj.filterResults;
-                      newPosts.push(OP);
-                  }
-                  if (!isCatalog || !thread.nodes.root)
-                      g.SITE.Build.thread(thread, threadData, withReplies);
-              }
-              catch (err) {
-                  // Skip posts that we failed to parse.
-                  if (!errors)
-                      errors = [];
-                  errors.push({
-                      message: `Parsing of Thread No.${thread} failed. Thread will be skipped.`,
-                      error: err,
-                      html: opRoot?.outerHTML
-                  });
-              }
-          }
-          if (errors)
-              Main.handleErrors(errors);
-          if (withReplies)
-              newPosts = newPosts.concat(Index.buildReplies(threads));
-          Main.callbackNodes('Thread', newThreads);
-          Main.callbackNodes('Post', newPosts);
-          Index.updateHideLabel();
-          $.event('IndexRefreshInternal', { threadIDs: (threads.map((t) => t.fullID)), isCatalog });
-          return threads;
-      },
-      buildReplies(threads) {
-          let errors;
-          const posts = [];
-          for (var thread of threads) {
-              let lastReplies = Index.liveThreadDict[thread.ID].last_replies;
-              if (!lastReplies)
-                  continue;
-              var nodes = [];
-              for (var data of lastReplies) {
-                  var node, post;
-                  if ((post = thread.posts.get(data.no)) && !post.isFetchedQuote) {
-                      nodes.push(post.nodes.root);
-                      continue;
-                  }
-                  nodes.push(node = g.SITE.Build.postFromObject(data, thread.board.ID));
-                  try {
-                      posts.push(new Post(node, thread, thread.board));
-                  }
-                  catch (err) {
-                      // Skip posts that we failed to parse.
-                      errors || (errors = []);
-                      errors.push({
-                          message: `Parsing of Post No.${data.no} failed. Post will be skipped.`,
-                          error: err,
-                          html: node?.outerHTML
-                      });
-                  }
-              }
-              $.add(thread.nodes.root, nodes);
-          }
-          if (errors)
-              Main.handleErrors(errors);
-          return posts;
-      },
-      buildCatalogViews(threads) {
-          const catalogThreads = [];
-          for (var thread of threads) {
-              if (!thread.catalogView) {
-                  var { ID } = thread;
-                  var page = Math.floor(Index.threadPosition[ID] / Index.threadsNumPerPage) + 1;
-                  var root = g.SITE.Build.catalogThread(thread, Index.liveThreadDict[ID], page);
-                  catalogThreads.push(new CatalogThread(root, thread));
-              }
-          }
-          Main.callbackNodes('CatalogThread', catalogThreads);
-      },
-      sizeCatalogViews(threads) {
-          // XXX When browsers support CSS3 attr(), use it instead.
-          const size = Conf['Index Size'] === 'small' ? 150 : 250;
-          for (var thread of threads) {
-              var { thumb } = thread.catalogView.nodes;
-              var { width, height } = thumb.dataset;
-              if (!width)
-                  continue;
-              var ratio = size / Math.max(width, height);
-              thumb.style.width = (width * ratio) + 'px';
-              thumb.style.height = (height * ratio) + 'px';
-          }
-      },
-      buildCatalogReplies(thread) {
-          const { nodes } = thread.catalogView;
-          let lastReplies = Index.liveThreadDict[thread.ID].last_replies;
-          if (!lastReplies)
-              return;
-          const replies = [];
-          for (var data of lastReplies) {
-              if (Index.isHiddenReply(thread.ID, data))
-                  continue;
-              var reply = g.SITE.Build.catalogReply(thread, data);
-              RelativeDates.update($('time', reply));
-              $.on($('.catalog-reply-preview', reply), 'mouseover', QuotePreview.mouseover);
-              replies.push(reply);
-          }
-          nodes.replies = $.el('div', { className: 'catalog-replies' });
-          $.add(nodes.replies, replies);
-          $.add(thread.OP.nodes.post, nodes.replies);
-      },
-      sort() {
-          const { liveThreadIDs, liveThreadData } = Index;
-          if (!liveThreadData)
-              return;
-          const tmp_time = new Date().getTime() / 1000;
-          const sortType = Index.currentSort.replace(/-rev$/, '');
-          Index.sortedThreadIDs = (() => {
-              switch (sortType) {
-                  case 'lastreply':
-                  case 'lastlong':
-                      var repliesAvailable = liveThreadData.some(thread => thread.last_replies?.length);
-                      var lastlong = (thread) => {
-                          if (!repliesAvailable)
-                              return thread.last_modified;
-                          const iterable = thread.last_replies || [];
-                          for (let i = iterable.length - 1; i >= 0; i--) {
-                              var r = iterable[i];
-                              if (Index.isHiddenReply(thread.no, r))
-                                  continue;
-                              if (sortType === 'lastreply')
-                                  return r;
-                              var len = r.com ? g.SITE.Build.parseComment(r.com).replace(/[^a-z]/ig, '').length : 0;
-                              if (len >= Index.lastLongThresholds[+!!r.ext])
-                                  return r;
-                          }
-                          if (thread.omitted_posts && thread.last_replies?.length) {
-                              return thread.last_replies[0];
-                          }
-                          else {
-                              return thread;
-                          }
-                      };
-                      var lastlongD = dict();
-                      for (var thread of liveThreadData) {
-                          lastlongD[thread.no] = lastlong(thread).no;
-                      }
-                      return [...liveThreadData].sort((a, b) => lastlongD[b.no] - lastlongD[a.no]).map(post => post.no);
-                  case 'birth': return [...liveThreadIDs].sort((a, b) => b - a);
-                  case 'replycount': return [...liveThreadData].sort((a, b) => b.replies - a.replies).map(post => post.no);
-                  case 'filecount': return [...liveThreadData].sort((a, b) => b.images - a.images).map(post => post.no);
-                  case 'activity': return [...liveThreadData].sort((a, b) => ((tmp_time - a.time) / (a.replies + 1)) - ((tmp_time - b.time) / (b.replies + 1))).map(post => post.no);
-                  case 'bump':
-                  default: return liveThreadIDs;
-              }
-          })();
-          if (/-rev$/.test(Index.currentSort))
-              Index.sortedThreadIDs.reverse();
-          let threadIDs = Index.querySearch(Index.search);
-          if (Index.search && threadIDs)
-              Index.sortedThreadIDs = threadIDs;
-          // Sticky threads
-          Index.sortOnTop(obj => obj.isSticky);
-          // Highlighted threads
-          Index.sortOnTop(obj => obj.isOnTop || (Conf['Pin Watched Threads'] && ThreadWatcher.isWatchedRaw(obj.boardID, obj.threadID)));
-          // Non-hidden threads
-          if (Conf['Anchor Hidden Threads'])
-              Index.sortOnTop(obj => !Index.isHidden(obj.threadID));
-      },
-      sortOnTop(match) {
-          const topThreads = [];
-          const bottomThreads = [];
-          for (var ID of Index.sortedThreadIDs) {
-              (match(Index.parsedThreads[ID]) ? topThreads : bottomThreads).push(ID);
-          }
-          Index.sortedThreadIDs = topThreads.concat(bottomThreads);
-      },
-      buildIndex() {
-          let threadIDs;
-          if (!Index.liveThreadData)
-              return;
-          switch (Conf['Index Mode']) {
-              case 'all pages':
-                  threadIDs = Index.sortedThreadIDs;
-                  break;
-              case 'catalog':
-                  threadIDs = Index.sortedThreadIDs.filter(ID => !Index.isHidden(ID) !== Index.showHiddenThreads);
-                  break;
-              default:
-                  threadIDs = Index.threadsOnPage(Index.currentPage);
-          }
-          delete Index.pageNum;
-          $.rmAll(Index.root);
-          $.rmAll(Header.hover);
-          if (Index.loaded && Index.root.parentNode)
-              $.event('PostsRemoved', null, Index.root);
-          if (Conf['Index Mode'] === 'catalog') {
-              Index.buildCatalog(threadIDs);
-          }
-          else {
-              Index.buildStructure(threadIDs);
-          }
-      },
-      threadsOnPage(pageNum) {
-          const nodesPerPage = Index.threadsNumPerPage;
-          const offset = nodesPerPage * (pageNum - 1);
-          return Index.sortedThreadIDs.slice(offset, offset + nodesPerPage);
-      },
-      buildStructure(threadIDs) {
-          const threads = Index.buildThreads(threadIDs, false, Conf['Show Replies']);
-          const nodes = [];
-          for (var thread of threads) {
-              nodes.push(thread.nodes.root, $.el('hr'));
-          }
-          $.add(Index.root, nodes);
-          if (Index.root.parentNode)
-              $.event('PostsInserted', null, Index.root);
-          Index.loaded = true;
-      },
-      buildCatalog(threadIDs) {
-          let i = 0;
-          const n = threadIDs.length;
-          let node0 = null;
-          var fn = () => {
-              if (node0 && !node0.parentNode)
-                  return; // Index.root cleared
-              const j = (i > 0) && Index.root.parentNode ? n : i + 30;
-              node0 = Index.buildCatalogPart(threadIDs.slice(i, j))[0];
-              i = j;
-              if (i < n) {
-                  return $.queueTask(fn);
-              }
-              else {
-                  if (Index.root.parentNode)
-                      $.event('PostsInserted', null, Index.root);
-                  return Index.loaded = true;
-              }
-          };
-          fn();
-      },
-      buildCatalogPart(threadIDs) {
-          const threads = Index.buildThreads(threadIDs, true);
-          Index.buildCatalogViews(threads);
-          Index.sizeCatalogViews(threads);
-          const nodes = [];
-          for (var thread of threads) {
-              thread.OP.setCatalogOP(true);
-              $.add(thread.catalogView.nodes.root, thread.OP.nodes.root);
-              nodes.push(thread.catalogView.nodes.root);
-              $.on(thread.catalogView.nodes.root, 'mouseenter', Index.cb.catalogReplies.bind(thread));
-              $.on(thread.OP.nodes.root, 'mouseenter', Index.cb.hoverAdjust.bind(thread.OP.nodes));
-          }
-          $.add(Index.root, nodes);
-          return nodes;
-      },
-      clearSearch() {
-          Index.searchInput.value = '';
-          Index.onSearchInput();
-          Index.searchInput.focus();
-      },
-      setupSearch() {
-          Index.searchInput.value = Index.search;
-          if (Index.search) {
-              Index.searchInput.dataset.searching = 1;
-          }
-          else {
-              // XXX https://bugzilla.mozilla.org/show_bug.cgi?id=1021289
-              Index.searchInput.removeAttribute('data-searching');
-          }
-      },
-      onSearchInput() {
-          const search = Index.searchInput.value.trim();
-          if (search === Index.search)
-              return;
-          Index.pushState({
-              search,
-              replace: !!search === !!Index.search
-          });
-          Index.pageLoad(false);
-      },
-      querySearch(query) {
-          let keywords, match;
-          if (match = query.match(/^([\w+]+):\/(.*)\/(\w*)$/)) {
-              let regexp;
-              try {
-                  regexp = RegExp(match[2], match[3]);
-              }
-              catch (error) {
-                  return [];
-              }
-              return Index.sortedThreadIDs.filter(ID => regexp.test(Filter.values(match[1], Index.parsedThreads[ID]).join('\n')));
-          }
-          if (!(keywords = query.toLowerCase().match(/\S+/g)))
-              return;
-          return Index.sortedThreadIDs.filter(ID => Index.searchMatch(Index.parsedThreads[ID], keywords));
-      },
-      searchMatch(obj, keywords) {
-          const { info, file } = obj;
-          info.comment ?? (info.comment = g.SITE.Build.parseComment(info.commentHTML.innerHTML));
-          let text = [];
-          for (var key of ['comment', 'subject', 'name', 'tripcode']) {
-              if (key in info)
-                  text.push(info[key]);
-          }
-          if (file)
-              text.push(file.name);
-          text = text.join(' ').toLowerCase();
-          for (var keyword of keywords) {
-              if (-1 === text.indexOf(keyword))
-                  return false;
-          }
-          return true;
-      }
-  };
-
-  var ThreadHiding = {
-      init() {
-          if (!['index', 'catalog'].includes(g.VIEW) || (!Conf['Thread Hiding Buttons'] && !(Conf.Menu && Conf['Thread Hiding Link']) && !Conf['JSON Index']))
-              return;
-          this.db = new DataBoard('hiddenThreads');
-          if (g.VIEW === 'catalog')
-              return this.catalogWatch();
-          this.catalogSet(g.BOARD);
-          $.on(d, 'IndexRefreshInternal', this.onIndexRefresh);
-          if (Conf['Thread Hiding Buttons'])
-              $.addClass(doc, 'thread-hide');
-          Callbacks.Post.push({
-              name: 'Thread Hiding',
-              cb: this.node
-          });
-      },
-      catalogSet(board) {
-          if (!$.hasStorage || (g.SITE.software !== 'yotsuba'))
-              return;
-          const hiddenThreads = ThreadHiding.db.get({
-              boardID: board.ID,
-              defaultValue: dict()
-          });
-          for (var threadID in hiddenThreads) {
-              hiddenThreads[threadID] = true;
-          }
-          return localStorage.setItem(`4chan-hide-t-${board}`, JSON.stringify(hiddenThreads));
-      },
-      catalogWatch() {
-          if (!$.hasStorage || (g.SITE.software !== 'yotsuba'))
-              return;
-          this.hiddenThreads = JSON.parse(localStorage.getItem(`4chan-hide-t-${g.BOARD}`)) || {};
-          return PageReady.ready(() => // 4chan's catalog sets the style to "display: none;" when hiding or unhiding a thread.
-           new MutationObserver(ThreadHiding.catalogSave).observe($.id('threads'), {
-              attributes: true,
-              subtree: true,
-              attributeFilter: ['style']
-          }));
-      },
-      catalogSave() {
-          let threadID;
-          const hiddenThreads2 = JSON.parse(localStorage.getItem(`4chan-hide-t-${g.BOARD}`)) || {};
-          for (threadID in hiddenThreads2) {
-              if (!$.hasOwn(ThreadHiding.hiddenThreads, threadID)) {
-                  ThreadHiding.db.set({
-                      boardID: g.BOARD.ID,
-                      threadID,
-                      val: { makeStub: Conf.Stubs }
-                  });
-              }
-          }
-          for (threadID in ThreadHiding.hiddenThreads) {
-              if (!$.hasOwn(hiddenThreads2, threadID)) {
-                  ThreadHiding.db.delete({
-                      boardID: g.BOARD.ID,
-                      threadID
-                  });
-              }
-          }
-          return ThreadHiding.hiddenThreads = hiddenThreads2;
-      },
-      isHidden: (boardID, threadID) => !!(ThreadHiding.db && ThreadHiding.db.get({ boardID, threadID })),
-      node() {
-          if (this.isReply || this.isClone || this.isFetchedQuote)
-              return;
-          if (Conf['Thread Hiding Buttons'])
-              $.prepend(this.nodes.root, ThreadHiding.makeButton(this.thread, 'hide'));
-          let data = ThreadHiding.db.get({ boardID: this.board.ID, threadID: this.ID });
-          if (data)
-              ThreadHiding.hide(this.thread, data.makeStub, 'Hidden manually');
-      },
-      onIndexRefresh() {
-          return g.BOARD.threads.forEach((thread) => {
-              const { root } = thread.nodes;
-              if (thread.isHidden && thread.stub && !root.contains(thread.stub))
-                  ThreadHiding.makeStub(thread, root);
-          });
-      },
-      menu: {
-          init() {
-              if ((g.VIEW !== 'index') || !Conf.Menu || !Conf['Thread Hiding Link'])
-                  return;
-              let div = $.el('div', {
-                  className: 'hide-thread-link',
-                  textContent: 'Hide'
-              });
-              const apply = $.el('a', {
-                  textContent: 'Apply',
-                  href: 'javascript:;'
-              });
-              $.on(apply, 'click', ThreadHiding.menu.hide);
-              const makeStub = UI.checkbox('Stubs', 'Make stub');
-              Menu.menu.addEntry({ el: div, order: 20, open({ thread, isReply }) {
-                      if (isReply || thread.isHidden || (Conf['JSON Index'] && (Conf['Index Mode'] === 'catalog')))
-                          return false;
-                      ThreadHiding.menu.thread = thread;
-                      return true;
-                  },
-                  subEntries: [{ el: apply }, { el: makeStub }] });
-              div = $.el('a', {
-                  className: 'show-thread-link',
-                  textContent: 'Show',
-                  href: 'javascript:;'
-              });
-              $.on(div, 'click', ThreadHiding.menu.show);
-              Menu.menu.addEntry({ el: div, order: 20, open({ thread, isReply }) {
-                      if (isReply || !thread.isHidden || (Conf['JSON Index'] && (Conf['Index Mode'] === 'catalog')))
-                          return false;
-                      ThreadHiding.menu.thread = thread;
-                      return true;
-                  }
-              });
-              const hideStubLink = $.el('a', {
-                  textContent: 'Hide stub',
-                  href: 'javascript:;'
-              });
-              $.on(hideStubLink, 'click', ThreadHiding.menu.hideStub);
-              Menu.menu.addEntry({ el: hideStubLink, order: 15, open({ thread, isReply }) {
-                      if (isReply || !thread.isHidden || (Conf['JSON Index'] && (Conf['Index Mode'] === 'catalog')))
-                          return false;
-                      return ThreadHiding.menu.thread = thread;
-                  }
-              });
-          },
-          hide() {
-              if (thread.isHighlighted && Conf['Always Show Highlighted Threads'])
-                  return;
-              const makeStub = $('input', this.parentNode).checked;
-              const { thread } = ThreadHiding.menu;
-              ThreadHiding.hide(thread, makeStub, 'Hidden manually');
-              ThreadHiding.saveHiddenState(thread, makeStub);
-              $.event('CloseMenu');
-          },
-          show() {
-              const { thread } = ThreadHiding.menu;
-              ThreadHiding.show(thread);
-              ThreadHiding.saveHiddenState(thread);
-              $.event('CloseMenu');
-          },
-          hideStub() {
-              const { thread } = ThreadHiding.menu;
-              ThreadHiding.show(thread);
-              ThreadHiding.hide(thread, false);
-              ThreadHiding.saveHiddenState(thread, false);
-              $.event('CloseMenu');
-          }
-      },
-      makeButton(thread, type) {
-          const span = $.el('span', { className: 'stub-icon', });
-          const a = $.el('a', {
-              className: `${type}-post-button ${type}-thread-button`,
-              href: 'javascript:;'
-          });
-          Icon.set(span, type === 'hide' ? 'squareMinus' : 'squarePlus');
-          $.add(a, span);
-          a.dataset.fullID = thread.fullID;
-          $.on(a, 'click', ThreadHiding.toggle);
-          return a;
-      },
-      makeStub(thread, root, reason) {
-          let summary, threadDivider;
-          let numReplies = $$(g.SITE.selectors.replyOriginal, root).length;
-          if (summary = $(g.SITE.selectors.summary, root))
-              numReplies += +summary.textContent.match(/\d+/);
-          const a = ThreadHiding.makeButton(thread, 'show');
-          const { nameBlock, subject } = thread.OP.info;
-          if (subject) {
-              $.add(a, $.el('span', {
-                  className: 'stub-subject',
-                  textContent: subject
-              }));
-          }
-          $.add(a, $.el('span', {
-              className: 'stub-name',
-              textContent: nameBlock
-          }));
-          $.add(a, $.el('span', {
-              className: 'stub-replies',
-              textContent: `(${numReplies} repl${numReplies === 1 ? 'y' : 'ies'})`
-          }));
-          let reasons = thread.OP.filterResults?.reasons || [];
-          if (reason)
-              reasons = [...reasons, reason];
-          if (Conf['Filter Reason'] && reasons.length) {
-              const reasonsSpan = $.el('span', { className: 'stub-reasons' });
-              $.add(reasonsSpan, reasons.map(re => $.el('span', { className: 'stub-reason', textContent: re })));
-              a.appendChild(reasonsSpan);
-          }
-          thread.stub = $.el('div', { className: 'stub' });
-          if (Conf.Menu) {
-              $.add(thread.stub, [a, Menu.makeButton(thread.OP)]);
-          }
-          else {
-              $.add(thread.stub, a);
-          }
-          if (!Conf['Filter Reason'] && reasons)
-              thread.stub.title = reasons.join(' & ');
-          $.prepend(root, thread.stub);
-          // Prevent hiding of thread divider on sites that put it inside the thread
-          if (threadDivider = $(g.SITE.selectors.threadDivider, root)) {
-              $.addClass(threadDivider, 'threadDivider');
-          }
-      },
-      saveHiddenState(thread, makeStub) {
-          if (thread.isHidden) {
-              ThreadHiding.db.set({
-                  boardID: thread.board.ID,
-                  threadID: thread.ID,
-                  val: { makeStub }
-              });
-          }
-          else {
-              ThreadHiding.db.delete({
-                  boardID: thread.board.ID,
-                  threadID: thread.ID
-              });
-          }
-          ThreadHiding.catalogSet(thread.board);
-      },
-      toggle(thread) {
-          if (!(thread instanceof Thread))
-              thread = g.threads.get(this.dataset.fullID);
-          if (thread.isHidden) {
-              ThreadHiding.show(thread);
-          }
-          else {
-              ThreadHiding.hide(thread, undefined, 'Hidden manually');
-          }
-          ThreadHiding.saveHiddenState(thread);
-      },
-      hide(thread, makeStub = Conf.Stubs, reason) {
-          if (thread.isHidden)
-              return;
-          const threadRoot = thread.nodes.root;
-          thread.isHidden = true;
-          Index.updateHideLabel();
-          if (thread.catalogView && !Index.showHiddenThreads) {
-              $.rm(thread.catalogView.nodes.root);
-              $.event('PostsRemoved', null, Index.root);
-          }
-          if (!makeStub)
-              return threadRoot.hidden = true;
-          ThreadHiding.makeStub(thread, threadRoot, reason);
-      },
-      show(thread) {
-          if (thread.stub) {
-              $.rm(thread.stub);
-              delete thread.stub;
-          }
-          const threadRoot = thread.nodes.root;
-          threadRoot.hidden = (thread.isHidden = false);
-          Index.updateHideLabel();
-          if (thread.catalogView && Conf['Index Mode'] === 'catalog') {
-              const { root } = thread.catalogView.nodes;
-              if (Index.showHiddenThreads) {
-                  $.rm(root);
-                  $.event('PostsRemoved', null, Index.root);
-              }
-              else {
-                  let i = Index.sortedThreadIDs.indexOf(thread.ID) - 1;
-                  while (true) {
-                      if (i < 0) {
-                          $('.board').insertAdjacentElement('afterbegin', root);
-                          break;
-                      }
-                      const rootPrevious = d.getElementById(`t${Index.sortedThreadIDs[i]}`);
-                      if (rootPrevious) {
-                          rootPrevious.insertAdjacentElement('afterend', root);
-                          break;
-                      }
-                      --i;
-                  }
-                  $.event('PostsInserted', null, Index.root);
-              }
-          }
-      }
   };
 
   const FappeTyme = {
@@ -16900,17 +17092,14 @@ svg.icon {
     },
   };
 
-  var Beep = 'UklGRjQDAABXQVZFZm10IBAAAAABAAEAgD4AAIA+AAABAAgAc21wbDwAAABBAAADAAAAAAAAAAA8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABkYXRhzAIAAGMms8em0tleMV4zIpLVo8nhfSlcPR102Ki+5JspVEkdVtKzs+K1NEhUIT7DwKrcy0g6WygsrM2k1NpiLl0zIY/WpMrjgCdbPhxw2Kq+5Z4qUkkdU9K1s+K5NkVTITzBwqnczko3WikrqM+l1NxlLF0zIIvXpsnjgydZPhxs2ay95aIrUEkdUdC3suK8N0NUIjq+xKrcz002WioppdGm091pK1w0IIjYp8jkhydXPxxq2K295aUrTkoeTs65suK+OUFUIzi7xqrb0VA0WSoootKm0t5tKlo1H4TYqMfkiydWQBxm16+85actTEseS8y7seHAPD9TIza5yKra01QyWSson9On0d5wKVk2H4DYqcfkjidUQB1j1rG75KsvSkseScu8seDCPz1TJDW2yara1FYxWSwnm9Sn0N9zKVg2H33ZqsXkkihSQR1g1bK65K0wSEsfR8i+seDEQTxUJTOzy6rY1VowWC0mmNWoz993KVc3H3rYq8TklSlRQh1d1LS647AyR0wgRMbAsN/GRDpTJTKwzKrX1l4vVy4lldWpzt97KVY4IXbUr8LZljVPRCxhw7W3z6ZISkw1VK+4sMWvXEhSPk6buay9sm5JVkZNiLWqtrJ+TldNTnquqbCwilZXU1BwpKirrpNgWFhTaZmnpquZbFlbVmWOpaOonHZcXlljhaGhpZ1+YWBdYn2cn6GdhmdhYGN3lp2enIttY2Jjco+bnJuOdGZlZXCImJqakHpoZ2Zug5WYmZJ/bGlobX6RlpeSg3BqaW16jZSVkoZ0bGtteImSk5KIeG5tbnaFkJKRinxxbm91gY2QkIt/c3BwdH6Kj4+LgnZxcXR8iI2OjIR5c3J0e4WLjYuFe3VzdHmCioyLhn52dHR5gIiKioeAeHV1eH+GiYqHgXp2dnh9hIiJh4J8eHd4fIKHiIeDfXl4eHyBhoeHhH96eHmA';
-
   var ThreadUpdater = {
     init() {
       // Chromium won't play audio created in an inactive tab until the tab has been focused, so set it up now.
       // XXX Sometimes the loading stalls in Firefox, esp. when opening in private browsing window followed by normal window.
       // Don't let it keep the loading icon on indefinitely.
       this.audio = $.el('audio');
-      if ($.engine !== 'gecko') {
+      if ($.engine !== 'gecko')
         this.audio.src = this.beep;
-      }
       $.on(this.audio, 'error', () => {
         new Notice('error', this.audio.error.message || 'Error when trying to play thread updater beep.', 15);
       });
@@ -16988,8 +17177,7 @@ svg.icon {
       $.on(d, 'visibilitychange', ThreadUpdater.cb.visibility);
       ThreadUpdater.setInterval();
     },
-    // http://freesound.org/people/pierrecartoons1979/sounds/90112/ cc-by-nc-3.0
-    beep: `data:audio/wav;base64,${Beep}`,
+    beep: `https://s.4cdn.org/media/beep.ogg`,
     playBeep(repeatIfPlaying = true) {
       const { audio } = ThreadUpdater;
       const source = Conf.beepSource || ThreadUpdater.beep;
@@ -17281,524 +17469,146 @@ svg.icon {
     }
   };
 
-  var Nav = {
-      init() {
-          const navConf = { index: 'Index Navigation', thread: 'Reply Navigation' }[g.VIEW];
-          if (!navConf || !Conf[navConf])
-              return;
-          const span = $.el('span', { id: 'navlinks' });
-          const prev = $.el('a', {
-              textContent: '▲',
-              className: 'navlinks-navlink navlink-prev',
-              href: 'javascript:;'
-          });
-          const next = $.el('a', {
-              textContent: '▼',
-              className: 'navlinks-navlink navlink-next',
-              href: 'javascript:;'
-          });
-          Icon.set(prev, 'arrowUpLong');
-          Icon.set(next, 'arrowDownLong');
-          $.on(prev, 'click', this.prev);
-          $.on(next, 'click', this.next);
-          $.add(span, [prev, $.tn(' '), next]);
-          const append = () => {
-              $.off(d, '4chanXInitFinished', append);
-              return $.add(d.body, span);
-          };
-          $.on(d, '4chanXInitFinished', append);
-      },
-      prev() {
-          if (g.VIEW === 'thread') {
-              window.scrollTo(0, 0);
-          }
-          else {
-              Nav.scroll(-1);
-          }
-      },
-      next() {
-          if (g.VIEW === 'thread') {
-              window.scrollTo(0, d.body.scrollHeight);
-          }
-          else {
-              Nav.scroll(1);
-          }
-      },
-      getThread() {
-          if (g.VIEW === 'thread')
-              return g.threads.get(`${g.BOARD}.${g.THREADID}`).nodes.root;
-          if ($.hasClass(doc, 'catalog-mode'))
-              return;
-          for (var threadRoot of $$(g.SITE.selectors.thread)) {
-              var thread = Get.threadFromRoot(threadRoot);
-              if (thread.isHidden && !thread.stub)
-                  continue;
-              if (Header.getTopOf(threadRoot) >= -threadRoot.getBoundingClientRect().height)
-                  return threadRoot; // not scrolled past
-          }
-      },
-      scroll(delta) {
-          d.activeElement?.blur();
-          let thread = Nav.getThread();
-          if (!thread)
-              return;
-          const axis = delta === 1 ? 'following' : 'preceding';
-          const next = $.x(`${axis}-sibling::${g.SITE.xpath.thread}[not(@hidden)][1]`, thread);
-          if (next) {
-              // Unless we're not at the beginning of the current thread, and thus wanting to move to beginning,
-              // or we're above the first thread and don't want to skip it.
-              const top = Header.getTopOf(thread);
-              if (((delta === 1) && (top < 5)) || ((delta === -1) && (top > -5)))
-                  thread = next;
-          }
-          // Add extra space to the end of the page if necessary so that all threads can be selected by keybinds.
-          const extra = (Header.getTopOf(thread) + doc.clientHeight) - d.body.getBoundingClientRect().bottom;
-          if (extra > 0)
-              d.body.style.marginBottom = `${extra}px`;
-          Header.scrollTo(thread);
-          if ((extra > 0) && !Nav.haveExtra) {
-              Nav.haveExtra = true;
-              $.on(d, 'scroll', Nav.removeExtra);
-          }
-      },
-      removeExtra() {
-          const extra = doc.clientHeight - d.body.getBoundingClientRect().bottom;
-          if (extra > 0) {
-              d.body.style.marginBottom = `${extra}px`;
-          }
-          else {
-              d.body.style.marginBottom = '';
-              delete Nav.haveExtra;
-              $.off(d, 'scroll', Nav.removeExtra);
-          }
-      }
-  };
+  var QuickReplyPage = `<div class="move">
+  <label>
+    <input type="checkbox" id="autohide" title="Auto-hide">
+    Quick Reply
+  </label>
+  <a href="javascript:;" class="close" title="Close">✕</a>
+  <select data-name="thread" title="Create a new thread / Reply">
+    <option value="new">New thread</option>
+  </select>
+</div>
+<form>
+  <div class="persona">
+    <button type="button" id="sjis-toggle" class="qr-button" title="Toggle Mona font">∀</button>
+    <button type="button" id="tex-preview-button" class="qr-button" title="Preview TeX">T<sub>E</sub>X</button>
+    <input name="name" data-name="name" list="list-name" placeholder="Name" class="field" size="1">
+    <input name="email" data-name="email" list="list-email" placeholder="Options" class="field" size="1">
+    <input name="sub" data-name="sub" list="list-sub" placeholder="Subject" class="field" size="1" maxlength="100">
+  </div>
+  <div class="textarea">
+    <textarea data-name="com" placeholder="Comment" class="field"></textarea>
+    <span id="char-count"></span>
+    <div id="tex-preview"></div>
+  </div>
+  <div id="dump-list-container">
+    <div id="dump-list"></div>
+    <a id="add-post" href="javascript:;" title="Add a post">+</a>
+  </div>
+  <div class="oekaki" hidden>
+    <input type="button" id="qr-draw-button" class="qr-button" value="Draw">
+    <label><span>Width:</span><input name="oekaki-width" value="400" type="number" class="field" size="1"></label>
+    <label><span>Height:</span><input name="oekaki-height" value="400" type="number" class="field" size="1"></label>
+    <span class="oekaki-bg" title="Background Color"><input name="oekaki-bg" type="checkbox" checked><input name="oekaki-bgcolor" type="color" value="#ffffff"></span>
+  </div>
+  <div id="file-n-submit">
+    <span id="qr-file" class="row">
+      <input type="button" id="qr-file-button" class="qr-button" value="Files">
+      <span id="qr-filename-container" class="field">
+        <span id="qr-no-file">No selected file</span>
+        <input id="qr-filename" data-name="filename" spellcheck="false">
+        <label id="qr-spoiler-label">
+          <input type="checkbox" id="qr-file-spoiler" title="Spoiler image">
+          <a class="checkbox-letter">S</a>
+        </label>
+      </span>
+    </span>
+    <span id="qr-actions-container" class="row space">
+      <span id="qr-actions" class="row">
+        <a href="javascript:;" id="qr-oekaki-button" class="qr-action-button" title="Edit in Tegaki">✎︎</a>
+        <a href="javascript:;" id="qr-jpg" class="qr-action-button" title="Compress to jpg">C</a>
+        <a href="javascript:;" id="qr-view" class="qr-action-button" title="Preview">V</a>
+        <a href="javascript:;" id="qr-randomize" class="qr-action-button" title="Randomize filename">R</a>
+        <a href="javascript:;" id="qr-restore-name" class="qr-action-button" title="Reset filename">U</a>
+        <a href="javascript:;" id="qr-filerm" class="qr-action-button" title="Remove file">✕</a>
+        <a href="javascript:;" id="url-button" class="qr-action-button" title="Post from URL">🔗︎</a>
+        <a href="javascript:;" hidden id="paste-area" class="qr-action-button" title="Select to paste images" tabindex="-1" contentEditable="true">📋︎</a>
+        <a href="javascript:;" id="custom-cooldown-button" class="qr-action-button" title="Toggle custom cooldown" class="disabled">🕒︎</a>
+        <a href="javascript:;" id="split-post" class="qr-action-button" title="Split into multiple posts" hidden>✂️</a>
+        <a href="javascript:;" id="dump-button" class="qr-action-button" title="Dump list">➕︎</a>
+      </span>
+      <input class="qr-button" type="submit">
+    </span>
+  </div>
+  <select data-default="4" name="filetag">
+    <option value="0">Hentai</option>
+    <option value="6">Porn</option>
+    <option value="1">Japanese</option>
+    <option value="2">Anime</option>
+    <option value="3">Game</option>
+    <option value="5">Loop</option>
+    <option value="4" selected>Other</option>
+  </select>
+  <input type="file" multiple>
+</form>
+<datalist id="list-name"></datalist>
+<datalist id="list-email"></datalist>
+<datalist id="list-sub"></datalist>`;
 
-  const KEY_NAMES = {
-      8: '', // return
-      13: 'Enter',
-      27: 'Esc',
-      32: 'Space',
-      37: 'Left',
-      38: 'Up',
-      39: 'Right',
-      40: 'Down',
-      59: 'Semicolon',
-      186: 'Semicolon',
-      188: 'Comma',
-      190: 'Period',
-      191: 'Slash',
-  };
-  var Keybinds = {
+  const CaptchaT = {
       init() {
-          if (!Conf.Keybinds)
+          if (d.cookie.indexOf('pass_enabled=1') >= 0)
               return;
-          for (var hotkey in Config.hotkeys) {
-              $.sync(hotkey, Keybinds.sync);
-          }
-          var init = () => {
-              $.off(d, '4chanXInitFinished', init);
-              $.on(d, 'keydown', Keybinds.keydown);
-              for (var node of $$('[accesskey]')) {
-                  node.removeAttribute('accesskey');
-              }
+          if (!(this.isEnabled = !!$('#t-root') || !$.id('postForm')))
+              return;
+          const root = $.el('div', { className: 'captcha-root' });
+          this.nodes = { root };
+          $.addClass(QR.nodes.el, 'has-captcha', 'captcha-t');
+          $.after(QR.nodes.com.parentNode, root);
+      },
+      moreNeeded() { },
+      getThread() {
+          return {
+              boardID: g.BOARD.ID,
+              threadID: QR.posts[0].thread === 'new' ? '0' : ('' + QR.posts[0].thread),
           };
-          $.on(d, '4chanXInitFinished', init);
       },
-      sync(key, hotkey) { return Conf[hotkey] = key; },
-      keydown(e) {
-          let key, thread, threadRoot, catalog, notifications;
-          if (!(key = Keybinds.keyCode(e)))
+      setup(focus) {
+          if (!this.isEnabled)
               return;
-          const tag = {
-              [Conf['Spoiler tags']]: 'spoiler',
-              [Conf['Code tags']]: 'code',
-              [Conf['Eqn tags']]: 'eqn',
-              [Conf['Math tags']]: 'math',
-              [Conf['SJIS tags']]: 'sjis',
-          }[key];
-          const mode = {
-              [Conf['Paged mode']]: 'paged',
-              [Conf['Infinite scrolling mode']]: 'infinite',
-              [Conf['All pages mode']]: 'all-pages'
-          }[key];
-          const dir = {
-              [Conf['Next reply']]: 1,
-              [Conf['Previous reply']]: -1,
-              [Conf['Deselect reply']]: 0
-          }[key];
-          const { target } = e;
-          if (['INPUT', 'TEXTAREA'].includes(target.nodeName)) {
-              if (!/(Esc|Alt|Ctrl|Meta|Shift\+\w{2,})/.test(key) || /^Alt\+(\d|Up|Down|Left|Right)$/.test(key))
-                  return;
+          if (!this.nodes.container) {
+              this.nodes.container = $.el('div', { className: 'captcha-container' });
+              $.prepend(this.nodes.root, this.nodes.container);
+              CaptchaT.currentThread = CaptchaT.getThread();
+              CaptchaT.currentThread.autoLoad = Conf['Auto-load captcha'] ? '1' : '0';
+              $.global('setupTCaptcha', CaptchaT.currentThread);
           }
-          if (['index', 'thread'].includes(g.VIEW)) {
-              threadRoot = Nav.getThread();
-              thread = Get.threadFromRoot(threadRoot);
-          }
-          let hasAction = false;
-          // QR & Options
-          if (QR.postingIsEnabled) {
-              if (key === Conf['Open empty QR']) {
-                  Keybinds.qr();
-                  hasAction = true;
-              }
-              else if (key === Conf['Post from URL']) {
-                  QR.handleUrl('');
-                  hasAction = true;
-              }
-              else if (key === Conf['Add new post']) {
-                  QR.addPost();
-                  hasAction = true;
-              }
-              else if (key === Conf['Open QR'] && threadRoot) {
-                  Keybinds.qr(threadRoot);
-                  hasAction = true;
-              }
-          }
-          if (key === Conf['Toggle board list'] && Conf['Custom Board Navigation']) {
-              Header.toggleBoardList();
-              hasAction = true;
-          }
-          if (key === Conf['Toggle header']) {
-              Header.toggleBarVisibility();
-              hasAction = true;
-          }
-          if (key === Conf['Open settings']) {
-              Settings.open();
-              hasAction = true;
-          }
-          if (key === Conf.Close) {
-              if (Settings.dialog) {
-                  Settings.close();
-              }
-              else if ((notifications = $$('.notification')).length) {
-                  for (var notification of notifications) {
-                      $('.close', notification).click();
-                  }
-              }
-              else if (QR.nodes?.preview) {
-                  QR.closePreview();
-              }
-              else if (QR.nodes && !(QR.nodes.el.hidden || (window.getComputedStyle(QR.nodes.form).display === 'none'))) {
-                  if (Conf['Persistent QR']) {
-                      QR.hide();
-                  }
-                  else {
-                      QR.close();
-                  }
-              }
-              else if (Embedding.lastEmbed) {
-                  Embedding.closeFloat();
-              }
-              hasAction = true;
-          }
-          if (target.nodeName === 'TEXTAREA' && tag) {
-              Keybinds.tags(tag, target);
-              hasAction = true;
-          }
-          if (QR.nodes && !QR.nodes.el.hidden) {
-              if (key === Conf['Toggle sage']) {
-                  Keybinds.sage();
-                  hasAction = true;
-              }
-              if (key === Conf['Toggle Cooldown'] && $.hasClass(QR.nodes.fileSubmit, 'custom-cooldown')) {
-                  QR.toggleCustomCooldown();
-                  hasAction = true;
-              }
-              if (key === Conf['Submit QR'] && !QR.status()) {
-                  QR.submit();
-                  hasAction = true;
-              }
-          }
-          // Index/Thread related
-          if (key === Conf.Update) {
-              switch (g.VIEW) {
-                  case 'thread':
-                      if (ThreadUpdater.enabled)
-                          ThreadUpdater.update();
-                      hasAction = true;
-                      break;
-                  case 'index':
-                      if (indexEnabled)
-                          Index.update();
-                      hasAction = true;
-              }
-          }
-          if (ThreadWatcher.enabled) {
-              if (key === Conf.Watch && thread) {
-                  ThreadWatcher.toggle(thread);
-                  hasAction = true;
-              }
-              if (key === Conf['Update thread watcher']) {
-                  ThreadWatcher.buttonFetchAll();
-                  hasAction = true;
-              }
-              if (key === Conf['Toggle thread watcher']) {
-                  ThreadWatcher.toggleWatcher();
-                  hasAction = true;
-              }
-          }
-          if (key === Conf['Toggle threading'] && QuoteThreading.ready) {
-              QuoteThreading.toggleThreading();
-              hasAction = true;
-          }
-          // Images
-          if (ImageExpand.enabled) {
-              if (key === Conf['Expand image'] && threadRoot) {
-                  var post = Get.postFromNode(Keybinds.post(threadRoot));
-                  if (post.file) {
-                      ImageExpand.toggle(post);
-                      hasAction = true;
-                  }
-              }
-              if (key === Conf['Expand images']) {
-                  ImageExpand.cb.toggleAll();
-                  hasAction = true;
-              }
-          }
-          if (key === Conf['Open Gallery'] && Gallery.enabled) {
-              Gallery.cb.toggle();
-              hasAction = true;
-          }
-          if (key === Conf.fappeTyme && FappeTyme.nodes?.fappe) {
-              FappeTyme.toggle('fappe');
-              hasAction = true;
-          }
-          if (key === Conf.werkTyme && FappeTyme.nodes?.werk) {
-              FappeTyme.toggle('werk');
-              hasAction = true;
-          }
-          // Board Navigation
-          if (key === Conf['Front page']) {
-              if (indexEnabled) {
-                  Index.userPageNav(1);
-              }
-              else {
-                  location.href = `/${g.BOARD}/`;
-              }
-              hasAction = true;
-          }
-          if (key === Conf['Open front page']) {
-              $.open(`${location.origin}/${g.BOARD}/`);
-              hasAction = true;
-          }
-          if (g.VIEW === 'index') {
-              if (key === Conf['Next page']) {
-                  if (indexEnabled) {
-                      if (!['paged', 'infinite'].includes(Conf['Index Mode']))
-                          return;
-                      $('.next button', Index.pagelist).click();
-                  }
-                  else {
-                      $(g.SITE.selectors.nav.next)?.click();
-                  }
-                  hasAction = true;
-              }
-              if (key === Conf['Previous page']) {
-                  if (indexEnabled) {
-                      if (!['paged', 'infinite'].includes(Conf['Index Mode']))
-                          return;
-                      $('.prev button', Index.pagelist).click();
-                  }
-                  else {
-                      $(g.SITE.selectors.nav.prev)?.click();
-                  }
-                  hasAction = true;
-              }
-              if (key === Conf['Search form']) {
-                  var searchInput = indexEnabled
-                      ? Index.searchInput : g.SITE.selectors.searchBox
-                      ? $(g.SITE.selectors.searchBox) : undefined;
-                  if (searchInput) {
-                      Header.scrollToIfNeeded(searchInput);
-                      searchInput.focus();
-                      hasAction = true;
-                  }
-              }
-              if (key === Conf['Mark thread read'] && thread && UnreadIndex.enabled) {
-                  UnreadIndex.markRead.call(threadRoot);
-                  hasAction = true;
-              }
-          }
-          if (mode && Index.enabledOn(g.BOARD)) {
-              location.href = g.VIEW === 'index' ? `#${mode}` : `/${g.BOARD}/#${mode}`;
-          }
-          if (key === Conf['Open catalog'] && (catalog = CatalogLinks.catalog())) {
-              location.href = catalog;
-          }
-          if (key === Conf['Cycle sort type'] && indexEnabled) {
-              Index.cycleSortType();
-              hasAction = true;
-          }
-          // Thread Navigation
-          if (threadRoot) {
-              if (g.VIEW === 'index') {
-                  if (key === Conf['Next thread']) {
-                      Nav.scroll(1);
-                      hasAction = true;
-                  }
-                  else if (key === Conf['Previous thread']) {
-                      Nav.scroll(-1);
-                      hasAction = true;
-                  }
-                  else if (key === Conf['Expand thread']) {
-                      ExpandThread.toggle(thread);
-                      // Keep thread from moving off screen when contracted.
-                      Header.scrollTo(threadRoot);
-                      hasAction = true;
-                  }
-                  else if (key === Conf['Open thread']) {
-                      Keybinds.open(thread);
-                      hasAction = true;
-                  }
-                  else if (key === Conf['Open thread tab']) {
-                      Keybinds.open(thread, true);
-                      hasAction = true;
-                  }
-              }
-              // Reply Navigation
-              if (dir !== undefined) {
-                  Keybinds.hl(dir, threadRoot);
-                  hasAction = true;
-              }
-              if (key === Conf['Quick Filter MD5']) {
-                  post = Keybinds.post(threadRoot);
-                  Keybinds.hl(1, threadRoot);
-                  Filter.quickFilterMD5.call(post, e);
-                  hasAction = true;
-              }
-              if (QuoteYou.db) {
-                  if (key === Conf['Previous Post Quoting You']) {
-                      QuoteYou.cb.seek('preceding');
-                      hasAction = true;
-                  }
-                  if (key === Conf['Next Post Quoting You']) {
-                      QuoteYou.cb.seek('following');
-                      hasAction = true;
-                  }
-              }
-          }
-          if (key === Conf.Hide && thread && ThreadHiding.db) {
-              Header.scrollTo(threadRoot);
-              ThreadHiding.toggle(thread);
-              hasAction = true;
-          }
-          if (hasAction) {
-              e.preventDefault();
-              e.stopPropagation();
-          }
+          if (focus)
+              $('#t-resp').focus();
       },
-      keyCode(e) {
-          function keyName(kc) {
-              if (kc in KEY_NAMES)
-                  return KEY_NAMES[kc];
-              if ((48 <= kc && kc <= 57) || (65 <= kc && kc <= 90))
-                  return String.fromCharCode(kc).toLowerCase(); // 0-9, A-Z
-              if (96 <= kc && kc <= 105)
-                  return String.fromCharCode(kc - 48); // numpad 0-9
-              return null;
-          }
-          let key = keyName(e.keyCode);
-          if (key) {
-              if (e.altKey)
-                  key = 'Alt+' + key;
-              if (e.ctrlKey)
-                  key = 'Ctrl+' + key;
-              if (e.metaKey)
-                  key = 'Meta+' + key;
-              if (e.shiftKey)
-                  key = 'Shift+' + key;
-          }
-          return key;
-      },
-      post(thread) {
-          const s = g.SITE.selectors;
-          return $(`${s.postContainer}${s.highlightable.reply}.${g.SITE.classes.highlight}`, thread)
-              || $(`${g.SITE.isOPContainerThread ? s.thread : s.postContainer}${s.highlightable.op}`, thread);
-      },
-      qr(thread) {
-          QR.open();
-          if (thread)
-              QR.quote.call(Keybinds.post(thread));
-          QR.nodes.com.focus();
-      },
-      tags(tag, ta) {
-          BoardConfig.ready(() => {
-              const { config } = g.BOARD;
-              const TAG_SUPPORT = {
-                  spoiler: 'spoilers',
-                  code: 'code_tags',
-                  math: 'math_tags',
-                  eqn: 'math_tags',
-                  sjis: 'sjis_tags',
-              };
-              const supported = !!config[TAG_SUPPORT[tag]];
-              if (!supported)
-                  new Notice('warning', `[${tag}] tags are not supported on /${g.BOARD}/.`, 20);
-          });
-          const { value } = ta;
-          const selStart = ta.selectionStart;
-          const selEnd = ta.selectionEnd;
-          ta.value =
-              value.slice(0, selStart) +
-                  `[${tag}]` + value.slice(selStart, selEnd) + `[/${tag}]` +
-                  value.slice(selEnd);
-          // Move the caret to the end of the selection.
-          const range = (`[${tag}]`).length + selEnd;
-          ta.setSelectionRange(range, range);
-          // Fire the 'input' event
-          $.event('input', null, ta);
-      },
-      sage: () => QR.nodes.email.value = /sage/i.test(QR.nodes.email.value) ? "" : "sage",
-      open(thread, tab) {
-          if (g.VIEW !== 'index')
+      destroy() {
+          if (!this.isEnabled || !this.nodes.container)
               return;
-          const url = Get.url('thread', thread);
-          if (tab) {
-              return $.open(url);
-          }
-          else {
-              return location.href = url;
+          $.global('destroyTCaptcha');
+          $.rm(this.nodes.container);
+          delete this.nodes.container;
+      },
+      updateThread() {
+          if (!this.isEnabled)
+              return;
+          const { boardID, threadID } = (CaptchaT.currentThread || {});
+          const newThread = CaptchaT.getThread();
+          if ((newThread.boardID !== boardID) || (newThread.threadID !== threadID)) {
+              CaptchaT.destroy();
+              CaptchaT.setup();
           }
       },
-      hl(delta, thread) {
-          const replySelector = `${g.SITE.selectors.postContainer}${g.SITE.selectors.highlightable.reply}`;
-          const { highlight } = g.SITE.classes;
-          const postEl = $(`${replySelector}.${highlight}`, thread);
-          if (!delta) {
-              if (postEl) {
-                  $.rmClass(postEl, highlight);
-              }
-              return;
-          }
-          if (postEl) {
-              const { height } = postEl.getBoundingClientRect();
-              if ((Header.getTopOf(postEl) >= -height) && (Header.getBottomOf(postEl) >= -height)) { // We're at least partially visible
-                  const { root } = Get.postFromNode(postEl).nodes;
-                  const axis = delta === 1 ? 'following' : 'preceding';
-                  let next = $.x(`${axis}-sibling::${g.SITE.xpath.replyContainer}[not(@hidden) and not(child::div[@class='stub'])][1]`, root);
-                  if (!next)
-                      return;
-                  if (!next.matches(replySelector))
-                      next = $(replySelector, next);
-                  Header.scrollToIfNeeded(next, delta === 1);
-                  $.addClass(next, highlight);
-                  $.rmClass(postEl, highlight);
-                  return;
-              }
-              $.rmClass(postEl, highlight);
-          }
-          const replies = $$(replySelector, thread);
-          if (delta === -1)
-              replies.reverse();
-          for (var reply of replies) {
-              if (((delta === 1) && (Header.getTopOf(reply) > 0)) || ((delta === -1) && (Header.getBottomOf(reply) > 0))) {
-                  $.addClass(reply, highlight);
-                  return;
+      getOne() {
+          let response = {};
+          if (this.nodes.container) {
+              for (var key of ['t-response', 't-challenge']) {
+                  response[key] = $(`[name='${key}']`, this.nodes.container).value;
               }
           }
-      }
+          let el = $('#t-msg, #t-task');
+          if (!response['t-response'] && !(el && /Verification not required/i.test(el.textContent)))
+              response = null;
+          return response;
+      },
+      setUsed() { if (this.isEnabled && this.nodes.container)
+          $.global('TCaptchaClearChallenge'); },
+      occupied() { return !!this.nodes.container; }
   };
 
   const Captcha = {
@@ -18132,1174 +17942,2427 @@ svg.icon {
       // }
   };
 
-  const Report = {
-      init() {
-          let match = location.search.match(/\bno=(\d+)/);
-          if (!match)
-              return;
-          Captcha.replace.init();
-          this.postID = +match[1];
-          $.ready(this.ready);
-      },
-      ready() {
-          $.addStyle(CSS$1.report);
-          if (Conf['Archive Report'])
-              Report.archive();
-          new MutationObserver(function () {
-              Report.fit('iframe[src^="https://www.google.com/recaptcha/api2/frame"]');
-              return Report.fit('body');
-          }).observe(d.body, {
-              childList: true,
-              attributes: true,
-              subtree: true
-          });
-          Report.fit('body');
-      },
-      fit(selector) {
-          let el = $(selector, doc);
-          if (!(el && (getComputedStyle(el).visibility !== 'hidden')))
-              return;
-          const dy = (el.getBoundingClientRect().bottom - doc.clientHeight) + 8;
-          if (dy > 0)
-              window.resizeBy(0, dy);
-      },
-      archive() {
-          let match, urls;
-          if (!(urls = Redirect.report(g.BOARD.ID)).length)
-              return;
-          const form = $('form');
-          const types = $.id('reportTypes');
-          const message = $('h3');
-          const fieldset = $.el('fieldset', {
-              id: 'archive-report',
-              hidden: true
-          }, { innerHTML: ReportPage });
-          const enabled = $('#archive-report-enabled', fieldset);
-          const reason = $('#archive-report-reason', fieldset);
-          const submit = $('#archive-report-submit', fieldset);
-          $.on(enabled, 'change', function () {
-              return reason.disabled = !this.checked;
-          });
-          if (form && types) {
-              fieldset.hidden = !$('[value="31"]', types).checked;
-              $.on(types, 'change', (e) => {
-                  fieldset.hidden = (e.target.value !== '31');
-                  Report.fit('body');
-              });
-              $.after(types, fieldset);
-              Report.fit('body');
-              $.one(form, 'submit', function (e) {
-                  if (!fieldset.hidden && enabled.checked) {
-                      e.preventDefault();
-                      return Report.archiveSubmit(urls, reason.value, results => {
-                          this.action = '#archiveresults=' + encodeURIComponent(JSON.stringify(results));
-                          return this.submit();
-                      });
-                  }
-              });
-          }
-          else if (message) {
-              fieldset.hidden = /Report submitted!/.test(message.textContent);
-              $.on(enabled, 'change', function () {
-                  return submit.hidden = !this.checked;
-              });
-              $.after(message, fieldset);
-              $.on(submit, 'click', () => Report.archiveSubmit(urls, reason.value, Report.archiveResults));
-          }
-          if (match = location.hash.match(/^#archiveresults=(.*)$/)) {
-              try {
-                  return Report.archiveResults(JSON.parse(decodeURIComponent(match[1])));
-              }
-              catch (error) { }
-          }
-      },
-      archiveSubmit(urls, reason, cb) {
-          const form = $.formData({
-              board: g.BOARD.ID,
-              num: Report.postID,
-              reason
-          });
-          const results = [];
-          for (const [name, url] of urls) {
-              (function (name, url) {
-                  return $.ajax(url, {
-                      onloadend() {
-                          results.push([name, this.response || { error: '' }]);
-                          if (results.length === urls.length) {
-                              return cb(results);
-                          }
-                      },
-                      form
-                  });
-              })(name, url);
-          }
-      },
-      archiveResults(results) {
-          const fieldset = $.id('archive-report');
-          for (const [name, response] of results) {
-              const line = $.el('h3', { className: 'archive-report-response' });
-              if ('success' in response) {
-                  $.addClass(line, 'archive-report-success');
-                  line.textContent = `${name}: ${response.success}`;
-              }
-              else {
-                  $.addClass(line, 'archive-report-error');
-                  line.textContent = `${name}: ${response.error || 'Error reporting post.'}`;
-              }
-              if (fieldset) {
-                  $.before(fieldset, line);
-              }
-              else {
-                  $.add(d.body, line);
-              }
-          }
-      }
-  };
-
-  const PostSuccessful = {
-      init() {
-          if (!Conf['Remember Your Posts'])
-              return;
-          $.ready(this.ready);
-      },
-      ready() {
-          if (d.title !== 'Post successful!')
-              return;
-          let [_, threadID, postID] = $('h1').nextSibling.textContent.match(/thread:(\d+),no:(\d+)/);
-          postID = +postID;
-          threadID = +threadID || postID;
-          const db = new DataBoard('yourPosts');
-          return db.set({
-              boardID: g.BOARD.ID,
-              threadID,
-              postID,
-              val: true
-          });
-      }
-  };
-
-  function generatePostInfoHtml(ID, o, subject, capcode, email, name, tripcode, pass, capcodeLC, capcodePlural, staticPath, gifIcon, capcodeDescription, uniqueID, flag, flagCode, flagCodeTroll, dateUTC, dateText, postLink, quoteLink, boardID, threadID) {
-    const nameHtml = [h("span", { class: `name${capcode ? ' capcode' : ''}` }, name)];
-    if (tripcode)
-      nameHtml.push(' ', h("span", { class: "postertrip" }, tripcode));
-    if (pass)
-      nameHtml.push(' ', h("span", { title: `Pass user since ${pass}`, class: "n-pu" }));
-    if (capcode) {
-      nameHtml.push(' ', h("strong", { class: `capcode hand id_${capcodeLC}`, title: `Highlight posts by ${capcodePlural}` },
-        "## ",
-        capcode));
-    }
-    const nameBlockContent = email ? [' ', h("a", { href: `mailto:${email}`, class: "useremail" }, ...nameHtml)] : nameHtml;
-    if (capcodeDescription) {
-      nameBlockContent.push(h("img", { src: `${staticPath}${capcodeLC}icon${gifIcon}`, alt: `${capcode} Icon`, title: `This user is ${capcodeDescription}.`, class: "identityIcon retina" }));
-    } else {
-      nameBlockContent.push(' ');
-    }
-    if (uniqueID && !capcode) {
-      nameBlockContent.push(h("span", { class: `posteruid id_${uniqueID}` },
-        "(ID: ",
-        h("span", { class: "hand", title: "Highlight posts by this ID" }, uniqueID),
-        ")"));
-    }
-    if (flagCode)
-      nameBlockContent.push(' ', h("span", { title: flag, class: `flag flag-${flagCode.toLowerCase()}` }));
-    if (flagCodeTroll)
-      nameBlockContent.push(' ', h("span", { title: flag, class: `bfl bfl-${flagCodeTroll.toLowerCase()}` }));
-    const postNumContent = [
-      h("a", { href: postLink, title: "Link to this post" }, "No."),
-      h("a", { href: quoteLink, title: "Reply to this post" }, ID),
-    ];
-    if (o.isSticky) {
-      const src = `${staticPath}sticky${gifIcon}`;
-      postNumContent.push(' ');
-      postNumContent.push(h("img", { src: src, alt: "Sticky", title: "Sticky", class: "stickyIcon retina" }));
-    }
-    if (o.isClosed && !o.isArchived) {
-      postNumContent.push(' ');
-      const src = `${staticPath}closed${gifIcon}`;
-      postNumContent.push(h("img", { src: src, alt: "Closed", title: "Closed", class: "closedIcon retina" }));
-    }
-    if (o.isArchived) {
-      postNumContent.push(' ', h("img", { src: `${staticPath}archived${gifIcon}`, alt: "Archived", title: "Archived", class: "archivedIcon retina" }));
-    }
-    if (!o.isReply && g.VIEW === "index") {
-      postNumContent.push(' \u00A0 ', // \u00A0 is nbsp
-      h("span", null,
-        "[",
-        h("a", { href: `/${boardID}/thread/${threadID}`, class: "replylink" }, "Reply"),
-        "]"));
-    }
-    return h("div", { class: "postInfo desktop", id: `pi${ID}` },
-      h("input", { type: "checkbox", name: ID, value: "delete" }),
-      ' ',
-      ...((!o.isReply || subject) ? [h("span", { class: "subject" }, subject), ' '] : []),
-      h("span", { class: `nameBlock${capcode ? ` capcode${capcode}` : ''}` }, ...nameBlockContent),
-      ' ',
-      h("span", { class: "dateTime", "data-utc": dateUTC }, dateText),
-      ' ',
-      h("span", { class: `postNum${!(boardID === " f" && !o.isReply) ? ' desktop' : ''}` }, ...postNumContent));
-  }
-
-  function generateFileHtml(file, ID, boardID, fileURL, shortFilename, fileThumb, o, staticPath, gifIcon) {
-    if (file) {
-      const fileContent = [];
-      fileContent.push(h("div", { class: "fileText", id: `fT${ID}`, title: file.isSpoiler ? file.name : null },
-        'File: ',
-        h("a", { title: file.name === shortFilename || file.isSpoiler ? null : file.name, href: fileURL, target: "_blank" }, file.isSpoiler ? 'Spoiler Image' : shortFilename),
-        ` (${file.size}, ${file.dimensions || "PDF"})`), h("a", { class: `fileThumb${file.isSpoiler ? ' imgspoiler' : ''}`, href: fileURL, target: "_blank", "data-m": file.hasDownscale ? '' : null },
-        h("img", { src: fileThumb, alt: file.size, "data-md5": file.MD5, style: `height: ${file.isSpoiler ? '100' : file.theight}px; width: ${file.isSpoiler ? '100' : file.twidth}px;`, loading: "lazy" })));
-      return h("div", { class: "file", id: `f${ID}` }, ...fileContent);
-    } else if (o.fileDeleted) {
-      return h("div", { class: "file", id: `f${ID}` },
-        h("span", { class: "fileThumb" },
-          h("img", { src: `${staticPath}filedeleted-res${gifIcon}`, alt: "File deleted.", class: "fileDeletedRes retina" })));
-    }
-    return { innerHTML: '', [isEscaped]: true };
-  }
-
-  function generateCatalogThreadHtml(thread, src, imgClass, data, postCount, fileCount, pageCount, staticPath, gifIcon) {
-    return h(hFragment, null,
-      h("a", { class: "catalog-link", href: `/${thread.board}/thread/${thread.ID}` }, imgClass ?
-        h("img", { src: src, class: `catalog-thumb ${imgClass}` }) :
-        h("img", { src: src, class: "catalog-thumb", "data-width": data.tn_w, "data-height": data.tn_h })),
-      h("div", { class: "catalog-stats" },
-        h("span", { title: "Posts / Files / Page" },
-          h("span", { class: `post-count${data.bumplimit ? ' warning' : ''}` }, postCount),
-          ' / ',
-          h("span", { class: `file-count${data.imagelimit ? ' warning' : ''}` }, fileCount),
-          ' / ',
-          h("span", { class: "page-count" }, pageCount)),
-        h("span", { class: "catalog-icons" },
-          thread.isSticky ? h("img", { src: `${staticPath}sticky${gifIcon}`, class: "stickyIcon", title: "Sticky" }) : '',
-          thread.isClosed ? h("img", { src: `${staticPath}closed${gifIcon}`, class: "closedIcon", title: "Closed" }) : '')));
-  }
-
-  const boardOrigin = () => `${location.protocol}//boards.4chan.org`;
-  const cdnOrigin = () => `${location.protocol}//a.4cdn.org`;
-  const SWYotsuba = {
-    isOPContainerThread: false,
-    hasIPCount: true,
-    archivedBoardsKnown: true,
-    urls: {
-      post: ({ postID }) => `#p${postID}`,
-      index: ({ boardID }) => `${boardOrigin()}/${boardID}/`,
-      thread: ({ boardID, threadID }) => `${boardOrigin()}/${boardID}/thread/${threadID}`,
-      threadJSON: ({ boardID, threadID }) => `${cdnOrigin()}/${boardID}/thread/${threadID}.json`,
-      threadsListJSON: ({ boardID }) => `${cdnOrigin()}/${boardID}/threads.json`,
-      catalogJSON: ({ boardID }) => `${cdnOrigin()}/${boardID}/catalog.json`,
-      thumb: ({ boardID }, filename) => `${location.protocol}//${ImageHost.thumbHost()}/${boardID}/${filename}`,
-      catalog: ({ boardID }) => `${boardOrigin()}/${boardID}/catalog`,
-      archive: ({ boardID }) => BoardConfig.isArchived(boardID) ? `${boardOrigin()}/${boardID}/archive` : undefined,
-      archiveListJSON: ({ boardID }) => BoardConfig.isArchived(boardID) ? `${cdnOrigin()}/${boardID}/archive.json` : '',
-      file: ({ boardID }, filename) => `${location.protocol}//${ImageHost.host()}/${boardID}/${filename}`,
+  var QR = {
+    postingIsEnabled: false,
+    // will be set at init
+    // captcha: undefined as typeof Captcha.v2 | typeof Captcha.t,
+    captcha: null,
+    min_width: 0,
+    min_height: 0,
+    max_width: 0,
+    max_height: 0,
+    max_size: 0,
+    max_size_video: 0,
+    max_comment: 0,
+    max_width_video: 0,
+    max_height_video: 0,
+    max_duration_video: 0,
+    forcedAnon: false,
+    spoiler: false,
+    link: undefined,
+    post: undefined,
+    posts: undefined,
+    nodes: undefined,
+    shortcut: undefined,
+    hasFocus: false,
+    req: undefined,
+    selected: undefined,
+    mimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'video/webm', 'video/mp4'],
+    validExtension: /\.(jpe?g|png|gif|pdf|webm|mp4)$/i,
+    typeFromExtension: {
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'png': 'image/png',
+      'gif': 'image/gif',
+      'pdf': 'application/pdf',
+      'webm': 'video/webm',
+      'mp4': 'video/mp4'
     },
-    noAudio: ({ boardID }) => BoardConfig.noAudio(boardID),
-    selectors: {
-      board: '.board',
-      thread: '.thread',
-      threadDivider: '.board > hr',
-      summary: 'a.summary',
-      postContainer: '.postContainer',
-      replyOriginal: '.replyContainer:not([data-clone])',
-      sideArrows: 'div.sideArrows',
-      post: '.post',
-      infoRoot: '.postInfo',
-      info: {
-        subject: '.subject',
-        name: '.name',
-        email: '.useremail',
-        tripcode: '.postertrip',
-        uniqueIDRoot: '.posteruid',
-        uniqueID: '.posteruid > .hand',
-        capcode: '.capcode.hand',
-        pass: '.n-pu',
-        flag: '.flag, .bfl',
-        date: '.dateTime',
-        nameBlock: '.nameBlock',
-        quote: '.postNum > a:nth-of-type(2)',
-        reply: '.replylink'
-      },
-      icons: {
-        isSticky: '.stickyIcon',
-        isClosed: '.closedIcon',
-        isArchived: '.archivedIcon'
-      },
-      file: {
-        text: '.file > .fileText',
-        link: '.fileText > a',
-        thumb: 'a.fileThumb > [data-md5]'
-      },
-      thumbLink: 'a.fileThumb',
-      highlightable: {
-        op: '.opContainer',
-        reply: ' > .reply',
-        catalog: ''
-      },
-      comment: '.postMessage',
-      spoiler: 's',
-      quotelink: ':not(pre) > .quotelink', // XXX https://github.com/4chan/4chan-JS/issues/77: 4chan currently creates quote links inside [code] tags; ignore them
-      catalog: {
-        board: '#threads',
-        thread: '.thread',
-        thumb: '.thumb'
-      },
-      boardList: '#boardNavDesktop > .boardList',
-      boardListBottom: '#boardNavDesktopFoot > .boardList',
-      styleSheet: 'link[title=switch]',
-      psa: '#globalMessage',
-      psaTop: '#globalToggle',
-      searchBox: '#search-box',
-      nav: {
-        prev: '.prev > form > [type=submit]',
-        next: '.next > form > [type=submit]'
-      }
+    extensionFromType: {
+      'image/jpeg': 'jpg',
+      'image/png': 'png',
+      'image/gif': 'gif',
+      'application/pdf': 'pdf',
+      'video/webm': 'webm',
+      'video/mp4': 'mp4'
     },
-    classes: {
-      highlight: 'highlight'
-    },
-    xpath: {
-      thread: 'div[contains(concat(" ",@class," ")," thread ")]',
-      postContainer: 'div[contains(@class,"postContainer")]',
-      replyContainer: 'div[contains(@class,"replyContainer")]'
-    },
-    // ^https?://boards\\.4chan(?:nel)?\\.org/+\
-    regexp: {
-      quotelink: new RegExp(`\
-^https?://boards\\.4chan\\.org/+\
-([^/]+)\
-/+thread/+\
-(\\d+)\
-(?:[/?][^#]*)?\
-(?:#p(\\d+))?$\
-`),
-      // /<a [^>]*\bhref="(?:(?:\/\/boards\.4chan(?:nel)?\.org)?\/([^\/]+)\/thread\/)?(\d+)?(?:#p(\d+))?"/g,
-      // /^https?:\/\/www\.4chan(?:nel)?\.org\/+pass(?:$|[?#])/,
-      // /^https?:\/\/sys\.4chan(?:nel)?\.org\/+captcha(?:$|[?#])/,
-      quotelinkHTML: /<a [^>]*\bhref="(?:(?:\/\/boards\.4chan\.org)?\/([^\/]+)\/thread\/)?(\d+)?(?:#p(\d+))?"/g,
-      pass: /^https?:\/\/www\.4chan\.org\/+pass(?:$|[?#])/,
-      captcha: /^https?:\/\/sys\.4chan\.org\/+captcha(?:$|[?#])/,
-    },
-    bgColoredEl: () => $.el('div', { className: 'reply' }),
-    isThisPageLegit() {
-      // not 404 error page or similar.
-      // return ['boards.4chan.org', 'boards.4channel.org'].includes(location.hostname) &&
-      return location.hostname === 'boards.4chan.org' &&
-        d.doctype &&
-        !$('link[href*="favicon-status.ico"]', d.head) &&
-        !['4chan - Temporarily Offline', '4chan - Error', '504 Gateway Time-out', 'MathJax Equation Source'].includes(d.title);
-    },
-    // XXX Sometimes threads don't 404 but are left over as stubs containing one garbage reply post.
-    is404: () => ['4chan - Temporarily Offline', '4chan - 404 Not Found'].includes(d.title) || ((g.VIEW === 'thread') && $('.board') && !$('.opContainer')),
-    isIncomplete: () => ['index', 'thread'].includes(g.VIEW) && !$('.board + *'),
-    // ['www.4chan.org', 'www.4channel.org'].includes(url.hostname);
-    isBoardlessPage: (url) => url.hostname === 'www.4chan.org',
-    // !['boards.4chan.org', 'boards.4channel.org'].includes(url.hostname);
-    isAuxiliaryPage: (url) => url.hostname !== 'boards.4chan.org',
-    isFileURL: (url) => ImageHost.test(url.hostname),
-    initAuxiliary() {
-      switch (location.hostname) {
-        // case 'www.4chan.org': case 'www.4channel.org':
-        case 'www.4chan.org':
-          $.onExists(doc, 'body', () => $.addStyle(CSS$1.www));
-          Captcha.replace.init();
-          return;
-        // case 'sys.4chan.org': case 'sys.4channel.org':
-        case 'sys.4chan.org':
-          var pathname = location.pathname.split(/\/+/);
-          if (pathname[2] === 'imgboard.php') {
-            let match;
-            if (/\bmode=report\b/.test(location.search)) {
-              Report.init();
-            } else if (match = location.search.match(/\bres=(\d+)/)) {
-              $.ready(function () {
-                if (Conf['404 Redirect'] && ($.id('errmsg')?.textContent === 'Error: Specified thread does not exist.')) {
-                  return Redirect.navigate('thread', {
-                    boardID: g.BOARD.ID,
-                    postID: +match[1]
-                  });
-                }
-              });
-            }
-          } else if (pathname[2] === 'post') {
-            PostSuccessful.init();
-          }
-          return;
-      }
-    },
-    scriptData() {
-      for (var script of $$('script:not([src])', d.head)) {
-        if (/\bcooldowns *=/.test(script.textContent))
-          return script.textContent;
-      }
-      return '';
-    },
-    parseThreadMetadata(thread) {
-      const scriptData = this.scriptData();
-      thread.postLimit = /\bbumplimit *= *1\b/.test(scriptData);
-      thread.fileLimit = /\bimagelimit *= *1\b/.test(scriptData);
-      let m = scriptData.match(/\bunique_ips *= *(\d+)\b/);
-      thread.ipCount = m ? +m[1] : undefined;
-    },
-    parseInfo(post) {
-      if (post.info.tripcode == null && /!/.test(post.info.name))
-        [, post.info.name, post.info.tripcode] = post.info.name.match(/(.*?) ?(!.*)/);
-    },
-    parseDate: (node) => new Date(node.dataset.utc * 1000),
-    parseFile(post, file) {
-      const { text, link, thumb } = file;
-      let info = link.nextSibling?.textContent.match(/\(([\d.]+ [KMG]?B).*\)/);
-      if (!info)
-        return false;
-      $.extend(file, {
-        name: text.title || link.title || link.textContent,
-        size: info[1],
-        dimensions: info[0].match(/\d+x\d+/)?.[0],
-        tag: info[0].match(/,[^,]*, ([a-z]+)\)/i)?.[1],
-        MD5: text.dataset.md5
+    init() {
+      if (!Conf['Quick Reply'])
+        return;
+      this.posts = [];
+      $.on(d, '4chanXInitFinished', () => BoardConfig.ready(QR.initReady));
+      Callbacks.Post.push({
+        name: 'Quick Reply',
+        cb: this.node
       });
-      if (thumb) {
-        $.extend(file, {
-          thumbURL: thumb.src,
-          MD5: thumb.dataset.md5,
-          isSpoiler: $.hasClass(thumb.parentNode, 'imgspoiler')
+      let sc = $.el('a', {
+        className: 'disabled',
+        title: 'Quick Reply',
+        href: 'javascript:;',
+      });
+      this.shortcut = sc;
+      Icon.set(this.shortcut, 'comment', 'Quick Reply');
+      $.on(sc, 'click', () => {
+        if (!QR.postingIsEnabled)
+          return;
+        if (Conf['Persistent QR'] || !QR.nodes || QR.nodes.el.hidden) {
+          QR.open();
+          QR.nodes.com.focus();
+        } else {
+          QR.close();
+        }
+      });
+      Header.addShortcut('qr', sc, 540);
+      window.addEventListener('message', event => {
+        if (event.data?.twister?.error)
+          QR.error($.el('div', { innerHTML: event.data.twister.error }));
+      });
+    },
+    initReady() {
+      // const captchaVersion = $('#g-recaptcha, #captcha-forced-noscript') ? 'v2' : 't';
+      // QR.captcha = Captcha[captchaVersion];
+      QR.captcha = Captcha.t;
+      QR.postingIsEnabled = true;
+      const { config } = g.BOARD;
+      const prop = (key, def) => +(config[key] ?? def);
+      QR.min_width = prop('min_image_width', 1);
+      QR.min_height = prop('min_image_height', 1);
+      QR.max_width = (QR.max_height = 10000);
+      QR.max_size = prop('max_filesize', 4194304);
+      QR.max_size_video = prop('max_webm_filesize', QR.max_size);
+      QR.max_comment = prop('max_comment_chars', 2000);
+      QR.max_width_video = (QR.max_height_video = 2048);
+      QR.max_duration_video = prop('max_webm_duration', 120);
+      QR.forcedAnon = !!config.forced_anon;
+      QR.spoiler = !!config.spoilers;
+      let origToggle = $.id('togglePostFormLink');
+      if (origToggle) {
+        const link = $.el('h1', { className: "qr-link-container" });
+        $.extend(link, {
+          innerHTML: `<a href="javascript:;" class="qr-link">${g.VIEW === "thread" ? "Reply to Thread" : "Start a Thread"}</a>`
         });
-        if (file.isSpoiler) {
-          let m = link.href.match(/\d+(?=\.\w+$)/);
-          file.thumbURL = m ? `${location.protocol}//${ImageHost.thumbHost()}/${post.board}/${m[0]}s.jpg` : undefined;
+        QR.link = link.firstElementChild;
+        $.on(link.firstChild, 'click', () => {
+          QR.open();
+          QR.nodes.com.focus();
+        });
+        $.before(origToggle, link);
+        origToggle.firstElementChild.textContent = 'Original Form';
+      }
+      if (g.VIEW === 'thread') {
+        const linkBot = $.el('div', { className: "brackets-wrap qr-link-container-bottom" });
+        $.extend(linkBot, { innerHTML: '<a href="javascript:;" class="qr-link-bottom">Reply to Thread</a>' });
+        $.on(linkBot.firstElementChild, 'click', () => {
+          QR.open();
+          QR.nodes.com.focus();
+        });
+        let navLinksBot = $('.navLinksBot');
+        if (navLinksBot)
+          $.prepend(navLinksBot, linkBot);
+      }
+      $.on(d, 'QRGetFile', QR.getFile);
+      $.on(d, 'QRDrawFile', QR.drawFile);
+      $.on(d, 'QRSetFile', QR.setFile);
+      $.on(d, 'paste', QR.paste);
+      $.on(d, 'dragover', QR.dragOver);
+      $.on(d, 'drop', QR.dropFile);
+      $.on(d, 'dragstart dragend', QR.drag);
+      $.on(d, 'IndexRefreshInternal', QR.generatePostableThreadsList);
+      $.on(d, 'ThreadUpdate', QR.statusCheck);
+      if (!Conf['Persistent QR'])
+        return;
+      QR.open();
+      if (Conf['Auto Hide QR'])
+        return QR.hide();
+    },
+    statusCheck() {
+      if (!QR.nodes)
+        return;
+      const { thread } = QR.posts[0];
+      if ((thread !== 'new') && g.threads.get(`${g.BOARD}.${thread}`).isDead) {
+        return QR.abort();
+      } else {
+        return QR.status();
+      }
+    },
+    node() {
+      $.on(this.nodes.quote, 'click', QR.quote);
+      if (this.isFetchedQuote)
+        return QR.generatePostableThreadsList();
+    },
+    open() {
+      if (QR.nodes) {
+        if (QR.nodes.el.hidden)
+          QR.captcha.setup();
+        QR.nodes.el.hidden = false;
+        QR.unhide();
+      } else {
+        try {
+          QR.dialog();
+        } catch (err) {
+          delete QR.nodes;
+          Main.handleErrors({
+            message: 'Quick Reply dialog creation crashed.',
+            error: err
+          });
+          return;
         }
       }
-      return true;
+      $.rmClass(QR.shortcut, 'disabled');
     },
-    cleanComment(bq) {
-      let abbr = $('.abbr', bq);
-      if (abbr) { // 'Comment too long' or 'EXIF data available'
-        for (var node of $$('.abbr + br, .exif', bq)) {
-          $.rm(node);
+    close() {
+      if (QR.req) {
+        QR.abort();
+        return;
+      }
+      QR.nodes.el.hidden = true;
+      QR.cleanNotifications();
+      QR.blur();
+      $.rmClass(QR.nodes.el, 'dump');
+      $.addClass(QR.shortcut, 'disabled');
+      new QR.post(true);
+      for (var post of QR.posts.splice(0, QR.posts.length - 1)) {
+        post.delete();
+      }
+      QR.cooldown.auto = false;
+      QR.status();
+      QR.captcha.destroy();
+    },
+    focus() {
+      return $.queueTask(() => {
+        // if (!QR.inBubble()) {
+        QR.hasFocus = d.activeElement && QR.nodes.el.contains(d.activeElement);
+        return QR.nodes.el.classList.toggle('focus', QR.hasFocus);
+        // }
+      });
+    },
+    // inBubble() {
+    //   const bubbles = $$('iframe[src^="https://www.google.com/recaptcha/api2/frame"]');
+    //   return bubbles.includes(d.activeElement) || bubbles.some(el => (getComputedStyle(el).visibility !== 'hidden') && (el.getBoundingClientRect().bottom > 0));
+    // },
+    hide() {
+      QR.blur();
+      $.addClass(QR.nodes.el, 'autohide');
+      return QR.nodes.autohide.checked = true;
+    },
+    unhide() {
+      $.rmClass(QR.nodes.el, 'autohide');
+      return QR.nodes.autohide.checked = false;
+    },
+    toggleHide() {
+      if (this.checked) {
+        return QR.hide();
+      } else {
+        return QR.unhide();
+      }
+    },
+    blur() {
+      if (QR.nodes.el.contains(d.activeElement))
+        d.activeElement.blur();
+    },
+    toggleSJIS(e) {
+      e.preventDefault();
+      Conf.sjisPreview = !Conf.sjisPreview;
+      $.set('sjisPreview', Conf.sjisPreview);
+      return QR.nodes.el.classList.toggle('sjis-preview', Conf.sjisPreview);
+    },
+    texPreviewShow() {
+      if ($.hasClass(QR.nodes.el, 'tex-preview'))
+        return QR.texPreviewHide();
+      $.addClass(QR.nodes.el, 'tex-preview');
+      QR.nodes.texPreview.textContent = QR.nodes.com.value;
+      $.event('mathjax', null, QR.nodes.texPreview);
+    },
+    texPreviewHide() { $.rmClass(QR.nodes.el, 'tex-preview'); },
+    addPost() {
+      QR.open();
+      const wasOpen = (QR.nodes && !QR.nodes.el.hidden);
+      if (wasOpen) {
+        $.addClass(QR.nodes.el, 'dump');
+        new QR.post(true);
+      }
+      QR.nodes.com.focus();
+    },
+    setCustomCooldown(enabled) {
+      Conf.customCooldownEnabled = enabled;
+      QR.cooldown.customCooldown = enabled;
+      return QR.nodes.customCooldown.classList.toggle('disabled', !enabled);
+    },
+    toggleCustomCooldown() {
+      const enabled = $.hasClass(QR.nodes.customCooldown, 'disabled');
+      QR.setCustomCooldown(enabled);
+      return $.set('customCooldownEnabled', enabled);
+    },
+    error(err, focusOverride) {
+      let el;
+      QR.open();
+      if (typeof err === 'string') {
+        el = $.tn(err);
+      } else {
+        el = err;
+        el.removeAttribute('style');
+      }
+      const notice = new Notice('warning', el);
+      QR.notifications.push(notice);
+      if (!Header.areNotificationsEnabled) {
+        if (d.hidden && !QR.cooldown.auto)
+          return alert(el.textContent);
+      } else if (d.hidden || !(focusOverride || d.hasFocus())) {
+        const notif = new Notification(el.textContent, {
+          body: el.textContent,
+          icon: Favicon.logo
+        });
+        notif.onclick = () => window.focus();
+        if ($.engine !== 'gecko') {
+          // Firefox automatically closes notifications
+          // so we can't control the onclose properly.
+          notif.onclose = () => notice.close();
+          return notif.onshow = () => setTimeout(() => {
+            notif.onclose = null;
+            notif.close();
+          }, 7 * SECOND);
         }
-        for (let i = 0; i < 2; i++) {
-          let br = abbr.previousSibling;
-          if (br && (br.nodeName === 'BR'))
-            $.rm(br);
+      }
+    },
+    connectionError() {
+      return $.el('span', { innerHTML: 'Connection error while posting. ' +
+          '[<a href="' + E(meta.upstreamFaq) + '#connection-errors" target="_blank">More info</a>]'
+      });
+    },
+    notifications: [],
+    cleanNotifications() {
+      for (var notification of QR.notifications) {
+        notification.close();
+      }
+      return QR.notifications = [];
+    },
+    /* Returns true if the QR is disabled. */
+    status() {
+      let disabled, value;
+      if (!QR.nodes)
+        return;
+      const { thread } = QR.posts[0];
+      if ((thread !== 'new') && g.threads.get(`${g.BOARD}.${thread}`).isDead) {
+        value = 'Dead';
+        disabled = true;
+        QR.cooldown.auto = false;
+      }
+      value = QR.req ? QR.req.progress : QR.cooldown.seconds || value;
+      const { status } = QR.nodes;
+      status.value = !value ? 'Submit' : QR.cooldown.auto ? `Auto ${value}` : value;
+      status.disabled = disabled || false;
+      return status.disabled;
+    },
+    openPost() {
+      QR.open();
+      if (QR.selected.isLocked) {
+        const index = QR.posts.indexOf(QR.selected);
+        (QR.posts[index + 1] || new QR.post()).select();
+        $.addClass(QR.nodes.el, 'dump');
+        return QR.cooldown.auto = true;
+      }
+    },
+    quote(e) {
+      e?.preventDefault();
+      if (!QR.postingIsEnabled)
+        return;
+      const sel = d.getSelection();
+      const post = Get.postFromNode(this);
+      const { root } = post.nodes;
+      const postRange = new Range();
+      postRange.selectNode(root);
+      let text = post.board.ID === g.BOARD.ID ? `>>${post}\n` : `>>>/${post.board}/${post}\n`;
+      let range;
+      for (let i = 0; i < sel.rangeCount; i++) {
+        try {
+          var insideCode, node;
+          range = sel.getRangeAt(i);
+          // Trim range to be fully inside post
+          if (range.compareBoundaryPoints(Range.START_TO_START, postRange) < 0)
+            range.setStartBefore(root);
+          if (range.compareBoundaryPoints(Range.END_TO_END, postRange) > 0)
+            range.setEndAfter(root);
+          if (!range.toString().trim())
+            continue;
+          var frag = range.cloneContents();
+          var ancestor = range.commonAncestorContainer;
+          // Quoting the insides of a spoiler/code tag.
+          if ($.x('ancestor-or-self::*[self::s or contains(@class,"removed-spoiler")]', ancestor)) {
+            $.prepend(frag, $.tn('[spoiler]'));
+            $.add(frag, $.tn('[/spoiler]'));
+          }
+          if (insideCode = $.x('ancestor-or-self::pre[contains(@class,"prettyprint")]', ancestor)) {
+            $.prepend(frag, $.tn('[code]'));
+            $.add(frag, $.tn('[/code]'));
+          }
+          for (node of $$((insideCode ? 'br' : '.prettyprint br'), frag)) {
+            $.replace(node, $.tn('\n'));
+          }
+          for (node of $$('br', frag)) {
+            if (node !== frag.lastChild)
+              $.replace(node, $.tn('\n>'));
+          }
+          g.SITE.insertTags?.(frag);
+          for (node of $$('.linkify[data-original]', frag)) {
+            $.replace(node, $.tn(node.dataset.original));
+          }
+          for (node of $$('.embedder', frag)) {
+            if (node.previousSibling?.nodeValue === ' ')
+              $.rm(node.previousSibling);
+            $.rm(node);
+          }
+          text += `>${frag.textContent.trim()}\n`;
+        } catch (error) { }
+      }
+      QR.openPost();
+      const { com, thread } = QR.nodes;
+      if (!com.value)
+        thread.value = Get.threadFromNode(this);
+      const wasOnlyQuotes = QR.selected.isOnlyQuotes();
+      const caretPos = com.selectionStart;
+      // Replace selection for text.
+      com.value = com.value.slice(0, caretPos) + text + com.value.slice(com.selectionEnd);
+      // Move the caret to the end of the new quote.
+      range = caretPos + text.length;
+      com.setSelectionRange(range, range);
+      com.focus();
+      // This allows us to determine if any text other than quotes has been typed.
+      if (wasOnlyQuotes)
+        QR.selected.quotedText = com.value;
+      QR.selected.save(com);
+      QR.selected.save(thread);
+    },
+    characterCount() {
+      const counter = QR.nodes.charCount;
+      const count = QR.nodes.com.value.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '_').length;
+      counter.textContent = count.toString();
+      counter.hidden = count < (QR.max_comment / 2);
+      const splitPost = QR.nodes.splitPost;
+      splitPost.hidden = count < QR.max_comment;
+      return (count > QR.max_comment ? $.addClass : $.rmClass)(counter, 'warning');
+    },
+    splitPost() {
+      if (QR.selected.isLocked)
+        return;
+      const count = QR.nodes.com.value.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '_').length;
+      if (count < QR.max_comment)
+        return;
+      const text = QR.nodes.com.value;
+      let lastPostLength = 0;
+      let splitCount = 0;
+      const idx = QR.posts.indexOf(QR.selected);
+      QR.selected.setComment("");
+      for (const line of text.split("\n")) {
+        const currentLength = line.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '_').length + 1; // +1 for newline at end
+        if (currentLength + lastPostLength > QR.max_comment) {
+          const post = new QR.post(true);
+          post.setComment(line);
+          lastPostLength = currentLength;
+          splitCount++;
+        } else {
+          const newComment = [QR.selected.com, line].filter(el => el !== null).join('\n');
+          QR.selected.setComment(newComment);
+          lastPostLength += currentLength;
         }
-        $.rm(abbr);
+      }
+      const newPostIdx = QR.posts.length - splitCount;
+      const newPosts = QR.posts.splice(newPostIdx, splitCount);
+      QR.posts.splice(idx + 1, 0, ...newPosts);
+      const rearrangedDumpList = [...QR.nodes.dumpList.children];
+      const newDumps = rearrangedDumpList.splice(newPostIdx, splitCount);
+      rearrangedDumpList.splice(idx + 1, 0, ...newDumps);
+      for (const e of rearrangedDumpList) {
+        QR.nodes.dumpList.appendChild(e);
+      }
+      QR.nodes.el.classList.add('dump');
+    },
+    getFile() { $.event('QRFile', QR.selected?.file); },
+    drawFile(e) {
+      const file = QR.selected?.file;
+      if (!file || !/^(image|video)\//.test(file.type))
+        return;
+      const isVideo = /^video\//.test(file);
+      const el = $.el((isVideo ? 'video' : 'img'));
+      $.on(el, 'error', () => QR.openError());
+      $.on(el, (isVideo ? 'loadeddata' : 'load'), () => {
+        e.target.getContext('2d').drawImage(el, 0, 0);
+        URL.revokeObjectURL(el.src);
+        return $.event('QRImageDrawn', null, e.target);
+      });
+      return el.src = URL.createObjectURL(file);
+    },
+    openError() {
+      const div = $.el('div');
+      $.extend(div, {
+        innerHTML: 'Could not open file. [<a href="' + E(meta.upstreamFaq) + '#error-reading-metadata" target="_blank">More info</a>]'
+      });
+      return QR.error(div);
+    },
+    setFile(e) {
+      const { file, name, source } = e.detail;
+      if (name != null)
+        file.name = name;
+      if (source != null)
+        file.source = source;
+      QR.open();
+      return QR.handleFiles([file]);
+    },
+    drag(e) {
+      // Let it drag anything from the page.
+      const toggle = e.type === 'dragstart' ? $.off : $.on;
+      toggle(d, 'dragover', QR.dragOver);
+      toggle(d, 'drop', QR.dropFile);
+    },
+    dragOver(e) {
+      e.preventDefault();
+      return e.dataTransfer.dropEffect = 'copy';
+    }, // cursor feedback
+    dropFile(e) {
+      // Let it only handle files from the desktop.
+      if (!e.dataTransfer.files.length)
+        return;
+      e.preventDefault();
+      QR.open();
+      return QR.handleFiles(e.dataTransfer.files);
+    },
+    paste(e) {
+      if (!e.clipboardData.items)
+        return;
+      let file = null;
+      let score = -1;
+      for (var item of e.clipboardData.items) {
+        let file2 = item.getAsFile();
+        if ((item.kind === 'file') && file2) {
+          var score2 = (2 * +(file2.size <= QR.max_size)) + +(file2.type === 'image/png');
+          if (score2 > score) {
+            file = file2;
+            score = score2;
+          }
+        }
+      }
+      if (file) {
+        const { type } = file;
+        const blob = new Blob([file], { type });
+        blob.name = `${Conf.pastedname}.${$.getOwn(QR.extensionFromType, type) || 'jpg'}`;
+        QR.open();
+        QR.handleFiles([blob]);
       }
     },
-    cleanCommentDisplay(bq) {
-      let b = $('b', bq);
-      if (b && /^Rolled /.test(b.textContent))
-        $.rm(b);
-      $.rm($('.fortune', bq));
+    handleUrl(urlDefault) {
+      QR.open();
+      const { selected } = QR;
+      selected.preventAutoPost();
+      CrossOrigin.permission(() => {
+        const url = prompt('Enter a URL:', urlDefault);
+        if (!url)
+          return;
+        QR.nodes.fileButton.focus();
+        CrossOrigin.file(url, (blob) => {
+          if (blob && !/^text\//.test(blob.type)) {
+            selected.setFile(blob);
+            $.addClass(QR.nodes.el, 'dump');
+          } else {
+            QR.error("Can't load file.");
+          }
+        });
+      });
     },
-    insertTags(bq) {
-      let node;
-      for (node of $$('s, .removed-spoiler', bq)) {
-        $.replace(node, [$.tn('[spoiler]'), ...node.childNodes, $.tn('[/spoiler]')]);
+    handleFiles(files) {
+      if (this !== QR) { // file input
+        files = [...this.files];
+        this.value = null;
       }
-      for (node of $$('.prettyprint', bq)) {
-        $.replace(node, [$.tn('[code]'), ...node.childNodes, $.tn('[/code]')]);
+      if (!files.length)
+        return;
+      QR.cleanNotifications();
+      for (var file of files) {
+        QR.handleFile(file, files.length);
+      }
+      $.addClass(QR.nodes.el, 'dump');
+      if ((d.activeElement === QR.nodes.fileButton) && $.hasClass(QR.nodes.fileSubmit, 'has-file')) {
+        return QR.nodes.filename.focus();
       }
     },
-    hasCORS: (url) => url.split('/').slice(0, 3).join('/') === (location.protocol + '//a.4cdn.org'),
-    sfwBoards: (sfw) => BoardConfig.sfwBoards(sfw),
-    uidColor(uid) {
-      let msg = 0;
+    handleFile(file, nfiles) {
+      let post;
+      const isText = /^text\//.test(file.type);
+      if (nfiles === 1) {
+        post = QR.selected;
+      } else {
+        post = QR.posts[QR.posts.length - 1];
+        if (isText ? post.com || post.pasting : post.file)
+          post = new QR.post();
+      }
+      return post[isText ? 'pasteText' : 'setFile'](file);
+    },
+    openFileInput() {
+      if (QR.nodes.fileButton.disabled)
+        return;
+      QR.nodes.fileInput.click();
+      return QR.nodes.fileButton.focus();
+    },
+    generatePostableThreadsList() {
+      if (!QR.nodes)
+        return;
+      const list = QR.nodes.thread;
+      const options = [list.firstElementChild];
+      for (var thread of g.BOARD.threads.keys) {
+        options.push($.el('option', {
+          value: thread,
+          textContent: `Thread ${thread}`
+        }));
+      }
+      const val = list.value;
+      $.rmAll(list);
+      $.add(list, options);
+      list.value = val;
+      if (list.value === val)
+        return;
+      // Fix the value if the option disappeared.
+      list.value = g.VIEW === 'thread' ? g.THREADID : 'new';
+      return (g.VIEW === 'thread' ? $.addClass : $.rmClass)(QR.nodes.el, 'reply-to-thread');
+    },
+    dialog() {
+      let dialog, event, nodes;
+      QR.nodes = (nodes = {
+        el: (dialog = UI.dialog('qr', { innerHTML: QuickReplyPage }))
+      });
+      const setNode = (name, query) => nodes[name] = $(query, dialog);
+      setNode('move', '.move');
+      setNode('autohide', '#autohide');
+      setNode('close', '.close');
+      setNode('thread', 'select');
+      setNode('form', 'form');
+      setNode('sjisToggle', '#sjis-toggle');
+      setNode('texButton', '#tex-preview-button');
+      setNode('name', '[data-name=name]');
+      setNode('email', '[data-name=email]');
+      setNode('sub', '[data-name=sub]');
+      setNode('com', '[data-name=com]');
+      setNode('charCount', '#char-count');
+      setNode('texPreview', '#tex-preview');
+      setNode('dumpList', '#dump-list');
+      setNode('addPost', '#add-post');
+      setNode('oekaki', '.oekaki');
+      setNode('drawButton', '#qr-draw-button');
+      setNode('randomizeButton', '#qr-randomize');
+      setNode('compress', '#qr-jpg');
+      setNode('view', '#qr-view');
+      setNode('restoreNameButton', '#qr-restore-name');
+      setNode('fileSubmit', '#file-n-submit');
+      setNode('fileButton', '#qr-file-button');
+      setNode('noFile', '#qr-no-file');
+      setNode('filename', '#qr-filename');
+      setNode('spoiler', '#qr-file-spoiler');
+      setNode('oekakiButton', '#qr-oekaki-button');
+      setNode('fileRM', '#qr-filerm');
+      setNode('urlButton', '#url-button');
+      setNode('customCooldown', '#custom-cooldown-button');
+      setNode('dumpButton', '#dump-button');
+      setNode('status', '[type=submit]');
+      setNode('fileInput', '[type=file]');
+      setNode('splitPost', '#split-post');
+      const { config } = g.BOARD;
+      const { classList } = QR.nodes.el;
+      classList.toggle('forced-anon', QR.forcedAnon);
+      classList.toggle('has-spoiler', QR.spoiler);
+      classList.toggle('has-sjis', !!config.sjis_tags);
+      classList.toggle('has-math', !!config.math_tags);
+      classList.toggle('sjis-preview', !!config.sjis_tags && Conf.sjisPreview);
+      classList.toggle('show-new-thread-option', Conf['Show New Thread Option in Threads']);
+      if (parseInt(Conf.customCooldown, 10) > 0) {
+        $.addClass(QR.nodes.fileSubmit, 'custom-cooldown');
+        $.get('customCooldownEnabled', Conf.customCooldownEnabled, ({ customCooldownEnabled }) => {
+          QR.setCustomCooldown(customCooldownEnabled);
+          return $.sync('customCooldownEnabled', QR.setCustomCooldown);
+        });
+      }
+      QR.flagsInput();
+      $.on(nodes.autohide, 'change', QR.toggleHide);
+      $.on(nodes.close, 'click', QR.close);
+      $.on(nodes.status, 'click', QR.submit);
+      $.on(nodes.form, 'submit', QR.submit);
+      $.on(nodes.sjisToggle, 'click', QR.toggleSJIS);
+      $.on(nodes.texButton, 'mousedown', QR.texPreviewShow);
+      $.on(nodes.texButton, 'mouseup', QR.texPreviewHide);
+      $.on(nodes.addPost, 'click', () => new QR.post(true));
+      $.on(nodes.drawButton, 'click', QR.oekaki.draw);
+      $.on(nodes.fileButton, 'click', QR.openFileInput);
+      $.on(nodes.noFile, 'click', QR.openFileInput);
+      $.on(nodes.randomizeButton, 'click', () => { QR.selected.randomizeName(); });
+      $.on(nodes.compress, 'click', async () => { QR.handleFiles([await QR.convert(QR.selected.file)]); });
+      $.on(nodes.view, 'click', QR.preview);
+      $.on(nodes.restoreNameButton, 'click', () => { QR.selected.restoreName(); });
+      $.on(nodes.filename, 'focus', function () { return $.addClass(this.parentNode, 'focus'); });
+      $.on(nodes.filename, 'blur', function () { return $.rmClass(this.parentNode, 'focus'); });
+      $.on(nodes.spoiler, 'change', () => QR.selected.nodes.spoiler.click());
+      $.on(nodes.oekakiButton, 'click', QR.oekaki.button);
+      $.on(nodes.fileRM, 'click', () => QR.selected.rmFile());
+      $.on(nodes.urlButton, 'click', () => QR.handleUrl(''));
+      $.on(nodes.customCooldown, 'click', QR.toggleCustomCooldown);
+      $.on(nodes.dumpButton, 'click', () => nodes.el.classList.toggle('dump'));
+      $.on(nodes.fileInput, 'change', QR.handleFiles);
+      $.on(nodes.splitPost, 'click', QR.splitPost);
+      window.addEventListener('focus', QR.focus, true);
+      window.addEventListener('blur', QR.focus, true);
+      // We don't receive blur events from captcha iframe.
+      $.on(d, 'click', QR.focus);
+      // save selected post's data
+      const items = ['thread', 'name', 'email', 'sub', 'com', 'filename', 'flag'];
       let i = 0;
-      while (i < 8) {
-        msg = ((msg << 5) - msg) + uid.charCodeAt(i++);
+      const save = function () { QR.selected.save(this); };
+      while ((name = items[i++])) {
+        let node = nodes[name];
+        if (!node)
+          continue;
+        event = node.nodeName === 'SELECT' ? 'change' : 'input';
+        $.on(nodes[name], event, save);
       }
-      return (msg >> 8) & 0xFFFFFF;
+      if (Conf['Remember QR Size']) {
+        $.get('QR Size', '', item => nodes.com.style.cssText = item['QR Size']);
+        $.on(nodes.com, 'mouseup', function (e) {
+          if (e.button !== 0)
+            return;
+          $.set('QR Size', this.style.cssText);
+        });
+      }
+      QR.generatePostableThreadsList();
+      QR.persona.load();
+      new QR.post(true);
+      QR.status();
+      QR.cooldown.setup();
+      QR.captcha.init();
+      $.add(d.body, dialog);
+      QR.captcha.setup();
+      QR.oekaki.setup();
+      // Create a custom event when the QR dialog is first initialized.
+      // Use it to extend the QR's functionalities, or for XTRM RICE.
+      $.event('QRDialogCreation', null, dialog);
+      Icon.set(nodes.oekakiButton, 'pencil');
+      Icon.set(nodes.urlButton, 'link');
+      Icon.set(nodes.customCooldown, 'clock');
+      Icon.set(nodes.randomizeButton, 'shuffle');
+      Icon.set(nodes.compress, 'shrink');
+      Icon.set(nodes.view, 'eye');
+      Icon.set(nodes.restoreNameButton, 'undo');
+      Icon.set(nodes.splitPost, 'scissors');
+      Icon.set(nodes.fileRM, 'xmark');
+      Icon.set(nodes.close, 'xmark');
+      Icon.set(nodes.dumpButton, 'squarePlus');
+      Icon.set(nodes.addPost, 'plus');
     },
-    isLinkified: (link) => ImageHost.test(link.hostname),
-    testNativeExtension: () => $.global('testNativeExtension', {}),
-    transformBoardList() {
-      let node;
-      const nodes = [];
-      const spacer = () => $.el('span', { className: 'spacer' });
-      const items = $.X('.//a|.//text()[not(ancestor::a)]', $(SWYotsuba.selectors.boardList));
-      let i = 0;
-      while ((node = items.snapshotItem(i++))) {
-        switch (node.nodeName) {
-          case '#text':
-            for (var chr of node.nodeValue) {
-              var span = $.el('span', { textContent: chr });
-              if (chr === ' ')
-                span.className = 'space';
-              if (chr === ']')
-                nodes.push(spacer());
-              nodes.push(span);
-              if (chr === '[')
-                nodes.push(spacer());
+    flags() {
+      const select = $.el('select', {
+        name: 'flag',
+        className: 'flagSelector'
+      });
+      const addFlag = (value, textContent) => $.add(select, $.el('option', { value, textContent }));
+      addFlag('0', (g.BOARD.config.country_flags ? 'Geographic Location' : 'None'));
+      for (var value in g.BOARD.config.board_flags) {
+        var textContent = g.BOARD.config.board_flags[value];
+        addFlag(value, textContent);
+      }
+      return select;
+    },
+    flagsInput() {
+      const { nodes } = QR;
+      if (!nodes)
+        return;
+      if (nodes.flag) {
+        $.rm(nodes.flag);
+        delete nodes.flag;
+      }
+      if (g.BOARD.config.board_flags) {
+        const flag = QR.flags();
+        flag.dataset.name = 'flag';
+        flag.dataset.default = '0';
+        nodes.flag = flag;
+        return $.add(nodes.form, flag);
+      }
+    },
+    submit(e) {
+      let captcha, err, filetag;
+      e?.preventDefault();
+      const force = e?.shiftKey;
+      if (QR.req) {
+        QR.abort();
+        return;
+      }
+      $.forceSync('cooldowns');
+      if (QR.cooldown.seconds) {
+        if (force) {
+          QR.cooldown.clear();
+        } else {
+          QR.cooldown.auto = !QR.cooldown.auto;
+          QR.status();
+          return;
+        }
+      }
+      const post = QR.posts[0];
+      delete post.quotedText;
+      post.forceSave();
+      let threadID = post.thread;
+      const thread = g.BOARD.threads.get(threadID);
+      // prevent errors
+      if (threadID === 'new') {
+        threadID = null;
+        if (g.BOARD.config.require_subject && !post.sub) {
+          err = 'New threads require a subject.';
+        } else if (!g.BOARD.config.text_only && !post.file) {
+          err = 'No file selected.';
+        }
+      } else if (g.BOARD.threads.get(threadID).isClosed) {
+        err = 'You can\'t reply to this thread anymore.';
+      } else if (!post.com && !post.file) {
+        err = 'No comment or file.';
+      } else if (post.file && thread.fileLimit) {
+        err = 'Max limit of image replies has been reached.';
+      }
+      if ((g.BOARD.ID === 'r9k') && !post.com?.match(/[a-z-]/i))
+        err || (err = 'Original comment required.');
+      // if (QR.captcha.isEnabled && !((QR.captcha === Captcha.v2) && /\b_ct=/.test(d.cookie) && threadID) && !(err && !force)) {
+      if (QR.captcha.isEnabled && !(err && !force)) {
+        captcha = QR.captcha.getOne(!!threadID);
+        // if (QR.captcha === Captcha.v2) {
+        //   if (!captcha) { captcha = Captcha.cache.request(!!threadID); }
+        // }
+        if (!captcha) {
+          err = 'No valid captcha.';
+          QR.captcha.setup(!QR.cooldown.auto || (d.activeElement === QR.nodes.status));
+        }
+      }
+      QR.cleanNotifications();
+      if (err && !force) {
+        // stop auto-posting
+        QR.cooldown.auto = false;
+        QR.status();
+        QR.error(err);
+        return;
+      }
+      // Enable auto-posting if we have stuff to post, disable it otherwise.
+      QR.cooldown.auto = QR.posts.length > 1;
+      post.lock();
+      const formData = {
+        MAX_FILE_SIZE: QR.max_size,
+        mode: 'regist',
+        pwd: QR.persona.getPassword(),
+        resto: threadID,
+        name: (!QR.forcedAnon ? post.name : undefined),
+        email: post.email,
+        sub: (!QR.forcedAnon && !threadID ? post.sub : undefined),
+        com: post.com,
+        upfile: post.file,
+        filetag,
+        spoiler: post.spoiler,
+        flag: post.flag,
+      };
+      const options = {
+        responseType: 'document',
+        withCredentials: true,
+        onloadend: QR.response,
+        form: $.formData(formData)
+      };
+      if (Conf['Show Upload Progress']) {
+        options.onprogress = function (e) {
+          if (this !== QR.req?.upload)
+            return; // aborted
+          if (e.loaded < e.total) {
+            // Uploading...
+            QR.req.progress = `${Math.round((e.loaded / e.total) * 100)}%`;
+          } else {
+            // Upload done, waiting for server response.
+            QR.req.isUploadFinished = true;
+            QR.req.progress = '...';
+          }
+          return QR.status();
+        };
+      }
+      let cb = (response) => {
+        if (response != null) {
+          QR.currentCaptcha = response;
+          // if (QR.captcha === Captcha.v2) {
+          //   if (response.challenge != null) {
+          //     options.form.append('recaptcha_challenge_field', response.challenge);
+          //     options.form.append('recaptcha_response_field', response.response);
+          //   } else {
+          //     options.form.append('g-recaptcha-response', response.response);
+          //   }
+          // } else {
+          for (var key in response) {
+            var val = response[key];
+            options.form.append(key, val);
+          }
+          // }
+        }
+        QR.req = $.ajax(`https://sys.${location.hostname.split('.')[1]}.org/${g.BOARD}/post`, options);
+        QR.req.progress = '...';
+      };
+      if (typeof captcha === 'function') {
+        // Wait for captcha to be verified before submitting post.
+        QR.req = {
+          progress: '...',
+          abort() {
+            // if (QR.captcha === Captcha.v2) {
+            //   Captcha.cache.abort();
+            // }
+            cb = null;
+          }
+        };
+        captcha((response) => {
+          // if ((QR.captcha === Captcha.v2) && Captcha.cache.haveCookie()) {
+          //   cb?.();
+          //   if (response) { return Captcha.cache.save(response); }
+          // } else if (response) {
+          if (response) {
+            cb?.(response);
+          } else {
+            delete QR.req;
+            post.unlock();
+            QR.cooldown.auto = !!Captcha.cache.getCount();
+            QR.status();
+          }
+        });
+      } else {
+        cb(captcha);
+      }
+      // Starting to upload might take some time.
+      // Provide some feedback that we're starting to submit.
+      QR.status();
+    },
+    response() {
+      let connErr, err;
+      if (this !== QR.req)
+        return; // aborted
+      delete QR.req;
+      const post = QR.posts[0];
+      post.unlock();
+      if (err = this.response?.getElementById('errmsg')) { // error!
+        const el = $('a', err);
+        if (el)
+          el.target = '_blank'; // duplicate image link
+      } else if (connErr = (!this.response || (this.response.title !== 'Post successful!'))) {
+        err = QR.connectionError();
+        //   if ((QR.captcha === Captcha.v2) && QR.currentCaptcha) { Captcha.cache.save(QR.currentCaptcha); }
+      } else if (this.status !== 200) {
+        err = `Error ${this.statusText} (${this.status})`;
+      }
+      if (!connErr)
+        QR.captcha.setUsed?.();
+      delete QR.currentCaptcha;
+      if (err) {
+        let m;
+        QR.errorCount = (QR.errorCount || 0) + 1;
+        if (/captcha|verification/i.test(err.textContent)) {
+          // Remove the obnoxious 4chan Pass ad.
+          if (/mistyped/i.test(err.textContent)) {
+            err = 'You mistyped the CAPTCHA, or the CAPTCHA malfunctioned.';
+          } else if (/expired/i.test(err.textContent)) {
+            err = 'This CAPTCHA is no longer valid because it has expired.';
+          }
+          // Do not auto post with a wrong captcha.
+          QR.cooldown.auto = false;
+        } else if (connErr) {
+          if (QR.errorCount >= 5) {
+            // Too many posting errors can ban you. Stop autoposting after 5 errors.
+            QR.cooldown.auto = false;
+          } else {
+            // Something must've gone terribly wrong if you get captcha errors without captchas.
+            // Don't auto-post indefinitely in that case.
+            QR.cooldown.auto = QR.captcha.isEnabled || connErr;
+            // Too many frequent mistyped captchas will auto-ban you!
+            // On connection error, the post most likely didn't go through.
+            // If the post did go through, it should be stopped by the duplicate reply cooldown.
+            QR.cooldown.addDelay(post, 2);
+          }
+        } else if (err.textContent && (m = err.textContent.match(/\d+\s+(?:minute|second)/gi)) && !/duplicate|hour/i.test(err.textContent)) {
+          QR.cooldown.auto = !/have\s+been\s+muted/i.test(err.textContent);
+          let seconds = 0;
+          for (var mi of m) {
+            seconds += (/minute/i.test(mi) ? 60 : 1) * (+mi.match(/\d+/)[0]);
+          }
+          if (/muted/i.test(err.textContent)) {
+            QR.cooldown.addMute(seconds);
+          } else {
+            QR.cooldown.addDelay(post, seconds);
+          }
+        } else { // stop auto-posting
+          QR.cooldown.auto = false;
+        }
+        QR.captcha.setup(QR.cooldown.auto && [QR.nodes.status, d.body].includes(d.activeElement));
+        QR.status();
+        QR.error(err);
+        return;
+      }
+      delete QR.errorCount;
+      const h1 = $('h1', this.response);
+      let [_, threadID, postID] = h1.nextSibling.textContent.match(/thread:(\d+),no:(\d+)/);
+      postID = +postID;
+      threadID = +threadID || postID;
+      const isReply = threadID !== postID;
+      // Post/upload confirmed as successful.
+      $.event('QRPostSuccessful', {
+        boardID: g.BOARD.ID,
+        threadID,
+        postID
+      });
+      // XXX deprecated
+      $.event('QRPostSuccessful_', { boardID: g.BOARD.ID, threadID, postID });
+      // Enable auto-posting if we have stuff left to post, disable it otherwise.
+      const postsCount = QR.posts.length - 1;
+      QR.cooldown.auto = postsCount && isReply;
+      const lastPostToThread = !QR.posts.slice(1).some(p => p.thread === post.thread);
+      if (postsCount) {
+        post.rm();
+        QR.captcha.setup(d.activeElement === QR.nodes.status);
+      } else if (Conf['Persistent QR']) {
+        post.rm();
+        if (Conf['Auto Hide QR']) {
+          QR.hide();
+        } else {
+          QR.blur();
+        }
+      } else {
+        QR.close();
+      }
+      QR.cleanNotifications();
+      if (Conf['Posting Success Notifications'])
+        QR.notifications.push(new Notice('success', h1.textContent, 5));
+      QR.cooldown.add(threadID, postID);
+      const URL = threadID === postID
+        // new thread
+        ? `${window.location.origin}/${g.BOARD}/thread/${threadID}`
+        : threadID !== g.THREADID && lastPostToThread && Conf['Open Post in New Tab']
+          // replying from the index or a different thread
+          ? `${window.location.origin}/${g.BOARD}/thread/${threadID}#p${postID}`
+          : undefined;
+      if (URL) {
+        const open = Conf['Open Post in New Tab'] || postsCount
+          ? () => $.open(URL) : () => location.href = URL;
+        if (threadID === postID) {
+          // XXX 4chan sometimes responds before the thread exists.
+          QR.waitForThread(URL, open);
+        } else {
+          open();
+        }
+      }
+      QR.status();
+    },
+    waitForThread(url, cb) {
+      let attempts = 0;
+      var check = function () {
+        $.ajax(url, {
+          onloadend() {
+            attempts++;
+            if ((attempts >= 6) || (this.status === 200)) {
+              return cb();
+            } else {
+              return setTimeout(check, attempts * SECOND);
             }
-            break;
-          case 'A':
-            var a = node.cloneNode(true);
-            nodes.push(a);
-            break;
-        }
-      }
-      return nodes;
+          },
+          responseType: 'text',
+          type: 'HEAD'
+        });
+      };
+      check();
     },
-    Build: {
-      staticPath: '//s.4cdn.org/image/',
-      gifIcon: window.devicePixelRatio >= 2 ? '@2x.gif' : '.gif',
-      spoilerRange: Object.create(null),
-      shortFilename(filename) {
-        const ext = filename.match(/\.?[^\.]*$/)[0];
-        if ((filename.length - ext.length) > 30) {
-          return `${filename.match(/(?:[\uD800-\uDBFF][\uDC00-\uDFFF]|[^]){0,25}/)[0]}(...)${ext}`;
-        } else {
-          return filename;
+    abort() {
+      let oldReq = QR.req;
+      if (oldReq && !QR.req.isUploadFinished) {
+        delete QR.req;
+        oldReq.abort();
+        // if ((QR.captcha === Captcha.v2) && QR.currentCaptcha) { Captcha.cache.save(QR.currentCaptcha); }
+        delete QR.currentCaptcha;
+        QR.posts[0].unlock();
+        QR.cooldown.auto = false;
+        QR.notifications.push(new Notice('info', 'QR upload aborted.', 5));
+      }
+      QR.status();
+    },
+    getMaxSize(file) {
+      let max = QR.max_size;
+      if (file.type.startsWith('video/'))
+        max = Math.min(max, QR.max_size_video);
+      return max;
+    },
+    async convert(file, type = 'jpeg', options) {
+      const maxSize = options?.maxSize || this.getMaxSize(file);
+      const img = options?.img || await createImageBitmap(file);
+      const width = options?.width || img.width;
+      const height = options?.height || img.height;
+      const newName = file.name.replace(/\.[a-z]+$/i, '.' + type);
+      const mime = 'image/' + type;
+      const canvas = new OffscreenCanvas(width, height);
+      const toBlob = (mime, quality) => canvas.convertToBlob({ type: mime, quality });
+      let newFile;
+      let quality = .9;
+      canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+      do {
+        newFile = new File([await toBlob(mime, quality)], newName, { type: mime });
+        quality -= .1;
+      } while (type === 'jpeg' && newFile.size > maxSize && quality >= .1);
+      if (newFile.size >= file.size && newFile.type === file.type) {
+        new Notice('warning', "New jpeg file isn't smaller than the old one, so it won't be used.", 3);
+        return file;
+      }
+      return newFile;
+    },
+    previewUrl: undefined,
+    preview() {
+      if (!QR.selected.file)
+        return;
+      QR.nodes.preview = $.el('div', { id: 'overlay', className: 'media-preview' });
+      $.add(d.body, QR.nodes.preview);
+      QR.previewUrl = URL.createObjectURL(QR.selected.file);
+      if (QR.selected.file.type.startsWith('video/')) {
+        const video = $.el('video', { controls: true, src: QR.previewUrl, autoplay: true });
+        $.add(QR.nodes.preview, video);
+        video.focus();
+      } else {
+        $.add(QR.nodes.preview, $.el('img', { src: QR.previewUrl }));
+      }
+      QR.nodes.preview.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'VIDEO')
+          QR.closePreview();
+      });
+    },
+    closePreview() {
+      QR.nodes.preview.remove();
+      URL.revokeObjectURL(QR.previewUrl);
+    },
+    cooldown: {
+      seconds: 0,
+      delays: {
+        deletion: 60
+      }, // cooldown for deleting posts/files
+      // set in setup
+      maxDelay: 0,
+      isSetup: false,
+      auto: false,
+      data: {},
+      // Called from Main
+      init() {
+        if (!Conf['Quick Reply'])
+          return;
+        this.data = Conf.cooldowns;
+        this.changes = dict();
+        $.sync('cooldowns', this.sync);
+      },
+      // Called from QR
+      setup() {
+        // Read cooldown times
+        $.extend(QR.cooldown.delays, g.BOARD.cooldowns());
+        // The longest reply cooldown, for use in pruning old reply data
+        QR.cooldown.maxDelay = 0;
+        for (var type in QR.cooldown.delays) {
+          var delay = QR.cooldown.delays[type];
+          if (!['thread', 'thread_global'].includes(type))
+            QR.cooldown.maxDelay = Math.max(QR.cooldown.maxDelay, delay);
+        }
+        QR.cooldown.isSetup = true;
+        QR.cooldown.start();
+      },
+      start() {
+        const { data } = QR.cooldown;
+        if (!Conf.Cooldown || !QR.cooldown.isSetup || QR.cooldown.isCounting || ((Object.keys(data[g.BOARD.ID] || {}).length + Object.keys(data.global || {}).length) <= 0))
+          return;
+        QR.cooldown.isCounting = true;
+        QR.cooldown.count();
+      },
+      sync(data) {
+        QR.cooldown.data = data || dict();
+        QR.cooldown.start();
+      },
+      add(threadID, postID) {
+        if (!Conf.Cooldown)
+          return;
+        const start = Date.now();
+        const boardID = g.BOARD.ID;
+        QR.cooldown.set(boardID, start, { threadID, postID });
+        if (threadID === postID)
+          QR.cooldown.set('global', start, { boardID, threadID, postID });
+        QR.cooldown.save();
+        QR.cooldown.start();
+      },
+      addDelay(post, delay) {
+        if (!Conf.Cooldown)
+          return;
+        const cooldown = QR.cooldown.categorize(post);
+        cooldown.delay = delay;
+        QR.cooldown.set(g.BOARD.ID, Date.now(), cooldown);
+        QR.cooldown.save();
+        QR.cooldown.start();
+      },
+      addMute(delay) {
+        if (!Conf.Cooldown)
+          return;
+        QR.cooldown.set(g.BOARD.ID, Date.now(), { type: 'mute', delay });
+        QR.cooldown.save();
+        QR.cooldown.start();
+      },
+      delete(post) {
+        if (!QR.cooldown.data)
+          return;
+        const cooldowns = (QR.cooldown.data[post.board.ID] || (QR.cooldown.data[post.board.ID] = dict()));
+        for (var id in cooldowns) {
+          let cooldown = cooldowns[id];
+          if ((cooldown.delay == null) && (cooldown.threadID === post.thread.ID) && (cooldown.postID === post.ID))
+            QR.cooldown.set(post.board.ID, id, null);
+        }
+        QR.cooldown.save();
+      },
+      secondsDeletion(post) {
+        if (!QR.cooldown.data || !Conf.Cooldown)
+          return 0;
+        const cooldowns = QR.cooldown.data[post.board.ID] || dict();
+        for (var start in cooldowns) {
+          var cooldown = cooldowns[start];
+          if ((cooldown.delay == null) && (cooldown.threadID === post.thread.ID) && (cooldown.postID === post.ID)) {
+            var seconds = QR.cooldown.delays.deletion - Math.floor((Date.now() - start) / SECOND);
+            return Math.max(seconds, 0);
+          }
+        }
+        return 0;
+      },
+      categorize(post) {
+        if (post.thread === 'new')
+          return { type: 'thread' };
+        return {
+          type: !!post.file ? 'image' : 'reply',
+          threadID: +post.thread
+        };
+      },
+      mergeChange(data, scope, id, value) {
+        if (value) {
+          (data[scope] || (data[scope] = dict()))[id] = value;
+        } else if (scope in data) {
+          delete data[scope][id];
+          if (Object.keys(data[scope]).length === 0)
+            delete data[scope];
         }
       },
-      spoilerThumb(boardID) {
-        let spoilerRange = this.spoilerRange[boardID];
-        if (spoilerRange) {
-          // Randomize the spoiler image.
-          return `${this.staticPath}spoiler-${boardID}${Math.floor(1 + (spoilerRange * Math.random()))}.png`;
+      set(scope, id, value) {
+        QR.cooldown.mergeChange(QR.cooldown.data, scope, id, value);
+        (QR.cooldown.changes[scope] || (QR.cooldown.changes[scope] = dict()))[id] = value;
+      },
+      save() {
+        const { changes } = QR.cooldown;
+        if (!Object.keys(changes).length)
+          return;
+        $.get('cooldowns', dict(), ({ cooldowns }) => {
+          for (var scope in QR.cooldown.changes) {
+            for (var id in QR.cooldown.changes[scope]) {
+              var value = QR.cooldown.changes[scope][id];
+              QR.cooldown.mergeChange(cooldowns, scope, id, value);
+            }
+            QR.cooldown.data = cooldowns;
+          }
+          $.set('cooldowns', cooldowns, () => QR.cooldown.changes = dict());
+        });
+      },
+      clear() {
+        QR.cooldown.data = dict();
+        QR.cooldown.changes = dict();
+        QR.cooldown.auto = false;
+        QR.cooldown.update();
+        $.queueTask($.delete, 'cooldowns');
+      },
+      update() {
+        let cooldown;
+        if (!QR.cooldown.isCounting)
+          return;
+        let save = false;
+        let nCooldowns = 0;
+        const now = Date.now();
+        const { type, threadID } = QR.cooldown.categorize(QR.posts[0]);
+        let seconds = 0;
+        if (Conf.Cooldown) {
+          for (var scope of [g.BOARD.ID, 'global']) {
+            var cooldowns = (QR.cooldown.data[scope] || (QR.cooldown.data[scope] = dict()));
+            for (var start in cooldowns) {
+              cooldown = cooldowns[start];
+              start = +start;
+              var elapsed = Math.floor((now - start) / SECOND);
+              if (elapsed < 0) { // clock changed since then?
+                QR.cooldown.set(scope, start, null);
+                save = true;
+                continue;
+              }
+              // Explicit delays from error messages
+              if (cooldown.delay != null) {
+                if (cooldown.delay <= elapsed) {
+                  QR.cooldown.set(scope, start, null);
+                  save = true;
+                } else if (((cooldown.type === type) && (cooldown.threadID === threadID)) || (cooldown.type === 'mute')) {
+                  // Delays only apply to the given post type and thread.
+                  seconds = Math.max(seconds, cooldown.delay - elapsed);
+                }
+                continue;
+              }
+              // Clean up expired cooldowns
+              var maxDelay = cooldown.threadID !== cooldown.postID
+                ? QR.cooldown.maxDelay : QR.cooldown.delays[scope === 'global'
+                ? 'thread_global' : 'thread'];
+              if (QR.cooldown.customCooldown) {
+                maxDelay = Math.max(maxDelay, parseInt(Conf.customCooldown, 10));
+              }
+              if (maxDelay <= elapsed) {
+                QR.cooldown.set(scope, start, null);
+                save = true;
+                continue;
+              }
+              if (((type === 'thread') === (cooldown.threadID === cooldown.postID)) && (cooldown.boardID !== g.BOARD.ID)) {
+                // Only cooldowns relevant to this post can set the seconds variable:
+                //   reply cooldown with a reply, thread cooldown with a thread.
+                // Inter-board thread cooldowns only apply on boards other than the one they were posted on.
+                var suffix = scope === 'global' ? '_global' : '';
+                seconds = Math.max(seconds, QR.cooldown.delays[type + suffix] - elapsed);
+                // If additional cooldown is enabled, add the configured seconds to the count.
+                if (QR.cooldown.customCooldown)
+                  seconds = Math.max(seconds, parseInt(Conf.customCooldown, 10) - elapsed);
+              }
+            }
+            nCooldowns += Object.keys(cooldowns).length;
+          }
+        }
+        if (save)
+          QR.cooldown.save;
+        if (nCooldowns) {
+          clearTimeout(QR.cooldown.timeout);
+          QR.cooldown.timeout = setTimeout(QR.cooldown.count, SECOND);
         } else {
-          return `${this.staticPath}spoiler.png`;
+          delete QR.cooldown.isCounting;
+        }
+        // Update the status when we change posting type.
+        // Don't get stuck at some random number.
+        // Don't interfere with progress status updates.
+        const update = seconds !== QR.cooldown.seconds;
+        QR.cooldown.seconds = seconds;
+        if (update)
+          QR.status();
+      },
+      count() {
+        QR.cooldown.update();
+        if ((QR.cooldown.seconds === 0) && QR.cooldown.auto && !QR.req)
+          QR.submit();
+      }
+    },
+    oekaki: {
+      menu: {
+        init() {
+          if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf['Edit Link'] || !Conf['Quick Reply'])
+            return;
+          const a = $.el('a', {
+            className: 'edit-link',
+            href: 'javascript:;',
+            textContent: 'Edit image'
+          });
+          $.on(a, 'click', this.editFile);
+          Menu.menu.addEntry({ el: a, order: 90, open(post) {
+              QR.oekaki.menu.post = post;
+              const { file } = post;
+              return QR.postingIsEnabled && !!file && (file.isImage || file.isVideo);
+            }
+          });
+        },
+        editFile() {
+          const { post } = QR.oekaki.menu;
+          QR.quote.call(post.nodes.post);
+          const { isVideo } = post.file;
+          const currentTime = post.file.fullImage?.currentTime || 0;
+          return CrossOrigin.file(post.file.url, (blob) => {
+            if (!blob) {
+              QR.error("Can't load file.");
+            } else if (isVideo) {
+              const video = $.el('video');
+              $.on(video, 'loadedmetadata', () => {
+                $.on(video, 'seeked', () => {
+                  const canvas = $.el('canvas', {
+                    width: video.videoWidth,
+                    height: video.videoHeight
+                  });
+                  canvas.getContext('2d').drawImage(video, 0, 0);
+                  canvas.toBlob((snapshot) => {
+                    snapshot.name = post.file.name.replace(/\.\w+$/, '') + '.png';
+                    QR.handleFiles([snapshot]);
+                    QR.oekaki.edit();
+                  });
+                });
+                video.currentTime = currentTime;
+              });
+              $.on(video, 'error', () => QR.openError());
+              video.src = URL.createObjectURL(blob);
+            } else {
+              blob.name = post.file.name;
+              QR.handleFiles([blob]);
+              QR.oekaki.edit();
+            }
+          });
         }
       },
-      sameThread: (boardID, threadID) => (g.VIEW === 'thread') && (g.BOARD.ID === boardID) && (g.THREADID === +threadID),
-      threadURL(boardID, threadID) {
-        if (boardID !== g.BOARD.ID) {
-          return `//boards.4chan.org/${boardID}/thread/${threadID}`;
-        } else if ((g.VIEW !== 'thread') || (+threadID !== g.THREADID)) {
-          return `/${boardID}/thread/${threadID}`;
+      setup() { $.global('setupQR'); },
+      load(cb) {
+        if ($('script[src^="//s.4cdn.org/js/tegaki"]', d.head)) {
+          cb();
+        } else {
+          const style = $.el('link', {
+            rel: 'stylesheet',
+            href: `//s.4cdn.org/css/tegaki.${Date.now()}.css`
+          });
+          const script = $.el('script', { src: `//s.4cdn.org/js/tegaki.min.${Date.now()}.js` });
+          let n = 0;
+          const onload = () => { if (++n === 2)
+            cb(); };
+          $.on(style, 'load', onload);
+          $.on(script, 'load', onload);
+          $.add(d.head, [style, script]);
+        }
+      },
+      draw: () => $.global('qrTegakiDraw'),
+      button() {
+        if (QR.selected.file) {
+          QR.oekaki.edit();
+        } else {
+          QR.oekaki.toggle();
+        }
+      },
+      edit() { QR.oekaki.load(() => $.global('qrTegakiLoad')); },
+      toggle() {
+        QR.oekaki.load(() => QR.nodes.oekaki.hidden = !QR.nodes.oekaki.hidden);
+      }
+    },
+    persona: {
+      always: {},
+      types: {
+        name: [],
+        email: [],
+        sub: []
+      },
+      init() {
+        if (!Conf['Quick Reply'] && (!Conf.Menu || !Conf['Delete Link']))
+          return;
+        for (var item of Conf['QR.personas'].split('\n')) {
+          QR.persona.parseItem(item.trim());
+        }
+      },
+      parseItem(item) {
+        if (item[0] === '#')
+          return;
+        const regexMatch = item.match(/(name|options|email|subject|password):"(.*)"/i);
+        if (!regexMatch)
+          return;
+        let [match, type, val] = regexMatch;
+        // Don't mix up item settings with val.
+        item = item.replace(match, '');
+        const boards = item.match(/boards:([^;]+)/i)?.[1].toLowerCase() || 'global';
+        const needle = !boards.split(',').includes(g.BOARD.ID);
+        if ((boards !== 'global') && needle)
+          return;
+        if (type === 'password') {
+          QR.persona.pwd = val;
+          return;
+        }
+        if (type === 'options')
+          type = 'email';
+        if (type === 'subject')
+          type = 'sub';
+        if (/always/i.test(item))
+          QR.persona.always[type] = val;
+        if (!QR.persona.types[type].includes(val))
+          QR.persona.types[type].push(val);
+      },
+      load() {
+        for (var type in QR.persona.types) {
+          var arr = QR.persona.types[type];
+          var list = $(`#list-${type}`, QR.nodes.el);
+          for (var val of arr) {
+            if (val)
+              $.add(list, $.el('option', { textContent: val }));
+          }
+        }
+      },
+      getPassword() {
+        let m;
+        if (QR.persona.pwd != null) {
+          return QR.persona.pwd;
+        } else if (m = d.cookie.match(/4chan_pass=([^;]+)/)) {
+          return decodeURIComponent(m[1]);
         } else {
           return '';
         }
       },
-      postURL(boardID, threadID, postID) {
-        return `${this.threadURL(boardID, threadID)}#p${postID}`;
+      get(cb) {
+        $.get('QR.persona', {}, ({ 'QR.persona': persona }) => cb(persona));
       },
-      parseJSON(data, { siteID, boardID }) {
-        const o = {
-          // id
-          ID: data.no,
-          postID: data.no,
-          threadID: data.resto || data.no,
-          boardID,
-          siteID,
-          isReply: !!data.resto,
-          // thread status
-          isSticky: !!data.sticky,
-          isClosed: !!data.closed,
-          isArchived: !!data.archived,
-          threadReplies: data.replies,
-          threadImages: data.images,
-          // file status
-          fileDeleted: !!data.filedeleted,
-          filesDeleted: data.filedeleted ? [0] : []
-        };
-        o.info = {
-          subject: $.unescape(data.sub),
-          email: $.unescape(data.email),
-          name: $.unescape(data.name) || '',
-          tripcode: data.trip,
-          pass: (data.since4pass != null) ? `${data.since4pass}` : undefined,
-          uniqueID: data.id,
-          flagCode: data.country,
-          flagCodeTroll: data.board_flag,
-          flag: $.unescape((data.country_name || data.flag_name)),
-          dateUTC: data.time,
-          dateText: data.now,
-          // Yes, we use the raw string here
-          commentHTML: { innerHTML: data.com || '', [isEscaped]: true }
-        };
-        if (data.capcode) {
-          o.info.capcode = data.capcode.replace(/_highlight$/, '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-          o.capcodeHighlight = /_highlight$/.test(data.capcode);
-          delete o.info.uniqueID;
-        }
-        o.files = [];
-        if (data.ext) {
-          o.file = this.parseJSONFile(data, { siteID, boardID });
-          o.files.push(o.file);
-        }
-        // Temporary JSON properties for events such as April 1 / Halloween
-        o.extra = dict();
-        for (var key in data) {
-          if (key[0] === 'x')
-            o.extra[key] = data[key];
-        }
-        return o;
-      },
-      parseJSONFile(data, { siteID, boardID }) {
-        const site = g.sites[siteID];
-        const filename = `${data.tim}${data.ext}`;
-        const o = {
-          name: ($.unescape(data.filename)) + data.ext,
-          url: site.urls.file({ siteID, boardID }, filename),
-          height: data.h,
-          width: data.w,
-          MD5: data.md5,
-          size: $.bytesToString(data.fsize),
-          thumbURL: site.urls.thumb({ siteID, boardID }, `${data.tim}s.jpg`),
-          theight: data.tn_h,
-          twidth: data.tn_w,
-          isSpoiler: !!data.spoiler,
-          tag: data.tag,
-          hasDownscale: !!data.m_img
-        };
-        if ((data.h != null) && !/\.pdf$/.test(o.url))
-          o.dimensions = `${o.width}x${o.height}`;
-        return o;
-      },
-      parseComment(html) {
-        html = html
-          .replace(/<br\b[^<]*>/gi, '\n')
-          .replace(/\n\n<span\b[^<]* class="abbr"[^]*$/i, '') // EXIF data (/p/)
-          .replace(/<[^>]*>/g, '');
-        return $.unescape(html);
-      },
-      parseCommentDisplay(html) {
-        // Hide spoilers.
-        if (!Conf['Remove Spoilers'] && !Conf['Reveal Spoilers']) {
-          let html2;
-          while ((html2 = html.replace(/<s>(?:(?!<\/?s>).)*<\/s>/g, '[spoiler]')) !== html) {
-            html = html2;
+      set(post) {
+        $.get('QR.persona', {}, ({ 'QR.persona': persona }) => {
+          persona = {
+            name: post.name,
+            flag: post.flag
+          };
+          $.set('QR.persona', persona);
+        });
+      }
+    },
+  };
+  // moved outside QR for type inference
+  class post {
+    constructor(select) {
+      this.select = this.select.bind(this);
+      const el = $.el('a', {
+        className: 'qr-preview',
+        draggable: true,
+        href: 'javascript:;'
+      });
+      $.extend(el, {
+        innerHTML: `<a href="javascript:;" class="remove" title="Remove">${Icon.get('xmark')}</a>` +
+          '<label class="qr-preview-spoiler"><input type="checkbox"> Spoiler</label>' +
+          '<span id="qr-preview-comment"></span><br /><span id="qr-preview-name"></span>'
+      });
+      const [rm, spoiler, span, /*br*/ , spanFileName] = el.childNodes;
+      this.nodes = {
+        el,
+        rm,
+        spoiler: spoiler.firstChild,
+        span,
+        spanFileName,
+      };
+      $.on(el, 'click', this.select);
+      $.on(this.nodes.rm, 'click', e => { e.stopPropagation(); this.rm(); });
+      $.on(this.nodes.spoiler, 'change', e => {
+        this.spoiler = e.target.checked;
+        if (this === QR.selected)
+          QR.nodes.spoiler.checked = this.spoiler;
+        return this.preventAutoPost();
+      });
+      for (var label of $$('label', el)) {
+        $.on(label, 'click', e => e.stopPropagation());
+      }
+      $.add(QR.nodes.dumpList, el);
+      for (var event of ['dragStart', 'dragEnter', 'dragLeave', 'dragOver', 'dragEnd', 'drop']) {
+        $.on(el, event.toLowerCase(), this[event]);
+      }
+      this.thread = g.VIEW === 'thread' ? g.THREADID : 'new';
+      const prev = QR.posts[QR.posts.length - 1];
+      QR.posts.push(this);
+      this.nodes.spoiler.checked = (this.spoiler = prev && Conf['Remember Spoiler']
+        ? prev.spoiler : false);
+      QR.persona.get(persona => {
+        this.name = 'name' in QR.persona.always
+          ? QR.persona.always.name : prev
+          ? prev.name : persona.name;
+        this.email = 'email' in QR.persona.always
+          ? QR.persona.always.email : '';
+        this.sub = 'sub' in QR.persona.always
+          ? QR.persona.always.sub : '';
+        if (QR.nodes.flag) {
+          if (prev) {
+            this.flag = prev.flag;
+          } else if (persona.flag && persona.flag in g.BOARD.config.board_flags) {
+            this.flag = persona.flag;
           }
         }
-        html = html
-          .replace(/^<b\b[^<]*>Rolled [^<]*<\/b>/i, '') // Rolls (/tg/, /qst/)
-          .replace(/<span\b[^<]* class="fortune"[^]*$/i, ''); // Fortunes (/s4s/)
-        // Remove preceding and following new lines, trailing spaces.
-        return this.parseComment(html).trim().replace(/\s+$/gm, '');
-      },
-      postFromObject(data, boardID) {
-        const o = this.parseJSON(data, { boardID, siteID: g.SITE.ID });
-        return this.post(o);
-      },
-      post(o) {
-        const { ID, threadID, boardID, file } = o;
-        const { subject, email, name, tripcode, capcode, pass, uniqueID, flagCode, flagCodeTroll, flag, dateUTC, dateText, commentHTML } = o.info;
-        const { staticPath, gifIcon } = this;
-        /* Post Info */
-        let capcodeDescription, capcodePlural, capcodeLC;
-        if (capcode) {
-          capcodeLC = capcode.toLowerCase();
-          if (capcode === 'Founder') {
-            capcodePlural = 'the Founder';
-            capcodeDescription = "4chan's Founder";
-          } else if (capcode === 'Verified') {
-            capcodePlural = 'Verified Users';
-            capcodeDescription = '';
-          } else {
-            const capcodeLong = $.getOwn({ 'Admin': 'Administrator', 'Mod': 'Moderator' }, capcode) || capcode;
-            capcodePlural = `${capcodeLong}s`;
-            capcodeDescription = `a 4chan ${capcodeLong}`;
+        if (QR.selected === this)
+          this.load();
+      }); // load persona
+      if (select)
+        this.select();
+      this.unlock();
+      QR.captcha.moreNeeded();
+    }
+    rm() {
+      this.delete();
+      const index = QR.posts.indexOf(this);
+      if (QR.posts.length === 1) {
+        new QR.post(true);
+        $.rmClass(QR.nodes.el, 'dump');
+      } else if (this === QR.selected) {
+        (QR.posts[index - 1] || QR.posts[index + 1]).select();
+      }
+      QR.posts.splice(index, 1);
+      QR.status();
+      QR.captcha.updateThread?.();
+    }
+    delete() {
+      $.rm(this.nodes.el);
+      URL.revokeObjectURL(this.URL);
+      this.dismissErrors();
+    }
+    lock(lock = true) {
+      this.isLocked = lock;
+      if (this !== QR.selected)
+        return;
+      for (const name of ['thread', 'name', 'email', 'sub', 'com', 'fileButton', 'filename', 'spoiler', 'flag']) {
+        let node = QR.nodes[name];
+        if (node)
+          node.disabled = lock;
+      }
+      this.nodes.rm.style.visibility = lock ? 'hidden' : '';
+      this.nodes.spoiler.disabled = lock;
+      this.nodes.el.draggable = !lock;
+    }
+    unlock() { this.lock(false); }
+    select() {
+      if (QR.selected) {
+        QR.selected.nodes.el.removeAttribute('id');
+        QR.selected.forceSave();
+      }
+      QR.selected = this;
+      this.lock(this.isLocked);
+      this.nodes.el.id = 'selected';
+      // Scroll the list to center the focused post.
+      const rectEl = this.nodes.el.getBoundingClientRect();
+      const rectList = this.nodes.el.parentNode.getBoundingClientRect();
+      this.nodes.el.parentNode.scrollLeft += (rectEl.left + (rectEl.width / 2)) - rectList.left - (rectList.width / 2);
+      this.load();
+    }
+    load() {
+      // Load this post's values.
+      for (const name of ['thread', 'name', 'email', 'sub', 'com', 'filename', 'flag']) {
+        let node = QR.nodes[name];
+        if (!node)
+          continue;
+        node.value = this[name] || node.dataset.default || '';
+      }
+      (this.thread !== 'new' ? $.addClass : $.rmClass)(QR.nodes.el, 'reply-to-thread');
+      this.showFileData();
+      QR.characterCount();
+    }
+    save(input, forced) {
+      if (input.type === 'checkbox') {
+        this.spoiler = input.checked;
+        return;
+      }
+      const { name } = input.dataset;
+      if (!['thread', 'name', 'email', 'sub', 'com', 'filename', 'flag'].includes(name))
+        return;
+      const prev = this[name] || input.dataset.default || null;
+      this[name] = input.value || input.dataset.default || null;
+      switch (name) {
+        case 'thread':
+          (this.thread !== 'new' ? $.addClass : $.rmClass)(QR.nodes.el, 'reply-to-thread');
+          QR.status();
+          QR.captcha.updateThread?.();
+          break;
+        case 'com':
+          this.updateComment();
+          break;
+        case 'filename':
+          if (!this.file)
+            return;
+          this.saveFilename();
+          this.updateFilename();
+          break;
+        case 'name':
+        case 'flag':
+          if (this[name] !== prev) { // only save manual changes, not values filled in by persona settings
+            QR.persona.set(this);
           }
-        }
-        const url = this.threadURL(boardID, threadID);
-        const postLink = `${url}#p${ID}`;
-        const quoteLink = this.sameThread(boardID, threadID)
-          ? `javascript:quote('${+ID}');` : `${url}#q${ID}`;
-        const postInfo = generatePostInfoHtml(ID, o, subject, capcode, email, name, tripcode, pass, capcodeLC, capcodePlural, staticPath, gifIcon, capcodeDescription, uniqueID, flag, flagCode, flagCodeTroll, dateUTC, dateText, postLink, quoteLink, boardID, threadID);
-        /* File Info */
-        let protocol, fileURL, shortFilename, fileThumb;
-        if (file) {
-          protocol = /^https?:(?=\/\/i\.4cdn\.org\/)/;
-          fileURL = file.url.replace(protocol, '');
-          shortFilename = this.shortFilename(file.name);
-          fileThumb = file.isSpoiler ? this.spoilerThumb(boardID) : file.thumbURL.replace(protocol, '');
-        }
-        const fileBlock = generateFileHtml(file, ID, boardID, fileURL, shortFilename, fileThumb, o, staticPath, gifIcon);
-        /* Whole Post */
-        const postClass = o.isReply ? 'reply' : 'op';
-        const postContent = o.isReply ? [postInfo, fileBlock] : [fileBlock, postInfo];
-        postContent.push(h("blockquote", { class: "postMessage", id: `m${ID}` }, commentHTML));
-        // I wonder if there's a better way to skip this in the catalog without breaking hovers.
-        // Currently, this is just hidden by css.
-        if (!o.isReply && o.threadReplies != null) {
-          postContent.push(h("span", { class: "summary preview-summary" }, this.summaryText('', o.threadReplies, o.threadImages, true)));
-        }
-        const wholePost = h(hFragment, null,
-          (o.isReply ? h("div", { class: "sideArrows", id: `sa${ID}` }, ">>") : ''),
-          h("div", { id: `p${ID}`, class: `post ${postClass}${o.capcodeHighlight ? ' highlightPost' : ''}` }, ...postContent));
-        const container = $.el('div', {
-          className: `postContainer ${postClass}Container`,
-          id: `pc${ID}`
-        });
-        $.extend(container, wholePost);
-        // Fix quotelinks
-        for (var quote of $$('.quotelink', container)) {
-          var href = quote.getAttribute('href');
-          if (href[0] === '#') {
-            if (!this.sameThread(boardID, threadID))
-              quote.href = this.threadURL(boardID, threadID) + href;
-          } else {
-            let match = quote.href.match(SWYotsuba.regexp.quotelink);
-            if (match && (this.sameThread(match[1], match[2]))) {
-              quote.href = href.match(/(#[^#]*)?$/)[0] || '#';
-            }
-          }
-        }
-        return container;
-      },
-      summaryText(status, posts, files, hoverPreview = false) {
-        let text = '';
-        if (status)
-          text += `${status} `;
-        text += `${posts} post${posts == 1 ? '' : 's'}`;
-        if (+files)
-          text += ` and ${files} image repl${files > 1 ? 'ies' : 'y'}`;
-        return hoverPreview ? text : `${text} ${status === '-' ? 'shown' : 'omitted'}.`;
-      },
-      summary(boardID, threadID, posts, files) {
-        return $.el('a', {
-          className: 'summary',
-          textContent: this.summaryText('', posts, files),
-          href: `/${boardID}/thread/${threadID}`
-        });
-      },
-      thread(thread, data, withReplies) {
-        let root = thread.nodes.root;
-        if (root) {
-          $.rmAll(root);
-        } else {
-          thread.nodes.root = (root = $.el('div', {
-            className: 'thread',
-            id: `t${data.no}`
-          }));
-        }
-        if (this.hat)
-          $.add(root, this.hat.cloneNode(false));
-        $.add(root, thread.OP.nodes.root);
-        if (data.omitted_posts || (!withReplies && data.replies)) {
-          const [posts, files] = withReplies
-            // XXX data.omitted_images is not accurate.
-            ? [data.omitted_posts, data.images - data.last_replies.filter(data => !!data.ext).length]
-            : [data.replies, data.images];
-          const summary = this.summary(thread.board.ID, data.no, posts, files);
-          $.add(root, summary);
-        }
-        return root;
-      },
-      catalogThread(thread, data, pageCount) {
-        let cssText, imgClass, src;
-        const { staticPath, gifIcon } = this;
-        const { tn_w, tn_h } = data;
-        if (data.spoiler && !Conf['Reveal Spoiler Thumbnails']) {
-          src = `${staticPath}spoiler`;
-          let spoilerRange = this.spoilerRange[thread.board];
-          // Randomize the spoiler image.
-          if (spoilerRange)
-            src += (`-${thread.board}`) + Math.floor(1 + (spoilerRange * Math.random()));
-          src += '.png';
-          imgClass = 'spoiler-file';
-          cssText = "--tn-w: 100; --tn-h: 100;";
-        } else if (data.filedeleted) {
-          src = `${staticPath}filedeleted-res${gifIcon}`;
-          imgClass = 'deleted-file';
-        } else if (thread.OP.file) {
-          src = thread.OP.file.thumbURL;
-          const ratio = 250 / Math.max(tn_w, tn_h);
-          cssText = `--tn-w: ${tn_w * ratio}; --tn-h: ${tn_h * ratio};`;
-        } else {
-          src = `${staticPath}nofile.png`;
-          imgClass = 'no-file';
-        }
-        const postCount = data.replies + 1;
-        const fileCount = data.images + !!data.ext;
-        const container = $.el('div', generateCatalogThreadHtml(thread, src, imgClass, data, postCount, fileCount, pageCount, staticPath, gifIcon));
-        $.before(thread.OP.nodes.info, [...container.childNodes]);
-        for (var br of $$('br', thread.OP.nodes.comment)) {
-          if (br.previousSibling && (br.previousSibling.nodeName === 'BR'))
-            $.addClass(br, 'extra-linebreak');
-        }
-        const root = $.el('div', {
-          className: 'thread catalog-thread',
-          id: `t${thread}`
-        });
-        if (thread.OP.highlights)
-          $.addClass(root, ...thread.OP.highlights);
-        if (!thread.OP.file)
-          $.addClass(root, 'noFile');
-        root.style.cssText = cssText || '';
-        return root;
-      },
-      catalogReply(thread, data) {
-        let excerpt = '';
-        if (data.com)
-          excerpt = this.parseCommentDisplay(data.com).replace(/>>\d+/g, '').trim().replace(/\n+/g, ' // ');
-        if (data.ext)
-          excerpt || (excerpt = `${$.unescape(data.filename)}${data.ext}`);
-        if (data.com)
-          excerpt || (excerpt = $.unescape(data.com.replace(/<br\b[^<]*>/gi, ' // ')));
-        if (!excerpt)
-          excerpt = '\xA0';
-        if (excerpt.length > 73)
-          excerpt = `${excerpt.slice(0, 70)}...`;
-        const link = this.postURL(thread.board.ID, thread.ID, data.no);
-        return $.el('div', { className: 'catalog-reply' }, h(hFragment, null,
-          h("span", null,
-            h("time", { "data-utc": data.time * 1000, "data-abbrev": "1" }, "..."),
-            ": "),
-          h("a", { class: "catalog-reply-excerpt", href: link }, excerpt),
-          h("a", { class: "catalog-reply-preview", href: link }, "...")));
+          break;
+      }
+      if (!forced)
+        this.preventAutoPost();
+    }
+    forceSave() {
+      if (this !== QR.selected)
+        return;
+      // Do this in case people use extensions
+      // that do not trigger the `input` event.
+      for (const name of ['thread', 'name', 'email', 'sub', 'com', 'filename', 'spoiler', 'flag']) {
+        let node = QR.nodes[name];
+        if (!node)
+          continue;
+        this.save(node, true);
       }
     }
-  };
+    preventAutoPost() {
+      // Disable auto-posting if you're editing the first post
+      // during the last 5 seconds of the cooldown.
+      if (QR.cooldown.auto && (this === QR.posts[0])) {
+        QR.cooldown.update(); // adding/removing file can change cooldown
+        if (QR.cooldown.seconds <= 5)
+          QR.cooldown.auto = false;
+      }
+    }
+    setComment(com) {
+      this.com = com || null;
+      if (this === QR.selected)
+        QR.nodes.com.value = this.com;
+      return this.updateComment();
+    }
+    updateComment() {
+      if (this === QR.selected)
+        QR.characterCount();
+      this.nodes.span.textContent = this.com;
+      QR.captcha.moreNeeded();
+    }
+    isOnlyQuotes() {
+      return (this.com || '').trim() === (this.quotedText || '').trim();
+    }
+    static rmErrored(e) {
+      e.stopPropagation();
+      for (let i = QR.posts.length - 1; i >= 0; i--) {
+        const post = QR.posts[i];
+        if (post.errors?.some(error => doc.contains(error)))
+          post.rm();
+      }
+    }
+    error(className, message, link) {
+      const div = $.el('div', { className });
+      $.extend(div, {
+        innerHTML: message + (link ? ` [<a href="${E(link)}" target="_blank">More info</a>]` : '') +
+          `<br>[<a href="javascript:;">delete post</a>] [<a href="javascript:;">delete all</a>]`
+      });
+      (this.errors || (this.errors = [])).push(div);
+      const [rm, rmAll] = $$('a', div);
+      $.on(div, 'click', () => {
+        if (QR.posts.includes(this))
+          this.select();
+      });
+      $.on(rm, 'click', e => {
+        e.stopPropagation();
+        if (QR.posts.includes(this))
+          this.rm();
+      });
+      $.on(rmAll, 'click', QR.post.rmErrored);
+      QR.error(div, true);
+    }
+    fileError(message, link) {
+      this.error('file-error', `${this.filename}: ${message}`, link);
+    }
+    dismissErrors(test = () => true) {
+      if (this.errors) {
+        for (var error of this.errors) {
+          if (doc.contains(error) && test(error))
+            error.parentNode.previousElementSibling.click();
+        }
+      }
+    }
+    /**
+    * Checks if the mime type and file size are valid. For images, it will convert unsupported files to png, shrinks
+    * files with a resolution that is too big, and converts to jpeg if the file size is too big.
+    * It will not attempt to convert files that aren't images.
+    * @param file The old file.
+    * @returns A promise with the old file if it was valid, or a new file if it wasn't.
+    */
+    async validateFile(file) {
+      // Do not check on altchans, those might support types 4chan doesn't
+      if (location.hostname.endsWith('4chan.org') && !QR.mimeTypes.includes(file.type)) {
+        if (file.type.startsWith('image/')) {
+          const msg = `The ${file.type.slice(6)} image was converted to png.`;
+          file = await QR.convert(file, 'png');
+          new Notice('info', msg, 3);
+        } else {
+          throw new Error('Unsupported file type.');
+        }
+      }
+      const maxSize = QR.getMaxSize(file);
+      if (file.type.startsWith('image/')) {
+        let img = await createImageBitmap(file);
+        const { width: originalW, height: originalH } = img;
+        let width = originalW, height = originalH;
+        if (width > QR.max_width) {
+          height = Math.round(height * (QR.max_width / width));
+          width = QR.max_width;
+        }
+        if (height > QR.max_height) {
+          width = Math.round(width * (QR.max_height / height));
+          height = QR.max_height;
+        }
+        if (width !== originalW || height !== originalH) {
+          file = await QR.convert(file, file.type === 'image/jpeg' ? 'jpeg' : 'png', { width, height, img });
+          img = undefined; // just in case the file size shrinkage also needs to run using the new file
+          new Notice('warning', `Image was too large and shrank from ${originalW}x${originalH} to ${width}x${height}.` +
+            'It might have lost animation.');
+        }
+        if (file.size > maxSize) {
+          const originalSize = file.size;
+          file = await QR.convert(file, 'jpeg', { maxSize, img });
+          new Notice('warning', `Image was too large (${$.bytesToString(originalSize)}) and got converted to jpg (` +
+            `${$.bytesToString(file.size)}). It might have lost transparency or animation.`);
+        }
+      } else if (file.size > maxSize) {
+        throw new Error(`File too large (file: ${$.bytesToString(file.size)}, max: ${$.bytesToString(maxSize)}).`);
+      }
+      return file;
+    }
+    async setFile(file) {
+      try {
+        // Needs to be set before the validation for some error messages.
+        this.file = file;
+        this.filename = file.name;
+        this.originalName = file.name;
+        this.file = await this.validateFile(file);
+        this.originalName = file.name;
+        if (Conf['Randomize Filename'] && !this.file.name.toLowerCase().includes('[sound=')) {
+          this.randomizeName(false);
+        } else {
+          this.filename = this.file.name;
+        }
+        this.filesize = $.bytesToString(this.file.size);
+        $.addClass(this.nodes.el, 'has-file', 'has-' + this.file.type.split('/')[0]);
+        QR.captcha.moreNeeded();
+        URL.revokeObjectURL(this.URL);
+        this.saveFilename();
+        if (this === QR.selected) {
+          this.showFileData();
+        } else {
+          this.updateFilename();
+        }
+        this.rmMetadata();
+        this.nodes.el.dataset.type = this.file.type;
+        this.nodes.el.style.backgroundImage = '';
+        if (/^(image|video)\//.test(this.file.type)) {
+          this.nodes.spanFileName.textContent = '';
+          this.readFile();
+        } else {
+          this.nodes.spanFileName.textContent = this.file.name.match(/\.([^\.]+)$/)[1];
+        }
+      } catch (error) {
+        console.error(error);
+        this.fileError(error?.message || error || 'unknown error when setting a file');
+      }
+      this.preventAutoPost();
+    }
+    randomizeName(set = true) {
+      this.filename = `${Date.now() * 1000 - Math.floor(Math.random() * 365 * DAY * 1000)}`;
+      const ext = this.file.name.match(QR.validExtension);
+      if (ext)
+        this.filename += ext[0];
+      if (set)
+        QR.nodes.filename.value = this.filename;
+    }
+    restoreName() {
+      QR.nodes.filename.value = this.filename = this.originalName;
+    }
+    readFile() {
+      const isVideo = /^video\//.test(this.file.type);
+      const el = $.el(isVideo ? 'video' : 'img');
+      if (isVideo && !el.canPlayType(this.file.type))
+        return;
+      const event = isVideo ? 'loadeddata' : 'load';
+      var onload = () => {
+        $.off(el, event, onload);
+        $.off(el, 'error', onerror);
+        this.checkDimensions(el);
+        this.setThumbnail(el);
+        $.event('QRMetadata', null, this.nodes.el);
+      };
+      var onerror = () => {
+        $.off(el, event, onload);
+        $.off(el, 'error', onerror);
+        this.fileError(`Corrupt ${isVideo ? 'video' : 'image'} or error reading metadata.`, meta.upstreamFaq + '#error-reading-metadata');
+        URL.revokeObjectURL(el.src);
+        // XXX https://bugzilla.mozilla.org/show_bug.cgi?id=1021289
+        this.nodes.el.removeAttribute('data-height');
+        $.event('QRMetadata', null, this.nodes.el);
+      };
+      this.nodes.el.dataset.height = 'loading';
+      $.on(el, event, onload);
+      $.on(el, 'error', onerror);
+      el.src = URL.createObjectURL(this.file);
+    }
+    checkDimensions(el) {
+      let height, width;
+      if (el.tagName === 'IMG') {
+        ({ height, width } = el);
+        this.nodes.el.dataset.height = height;
+        this.nodes.el.dataset.width = width;
+        if ((height > QR.max_height) || (width > QR.max_width))
+          this.fileError(`Image too large (image: ${height}x${width}px, max: ${QR.max_height}x${QR.max_width}px)`);
+        if ((height < QR.min_height) || (width < QR.min_width))
+          this.fileError(`Image too small (image: ${height}x${width}px, min: ${QR.min_height}x${QR.min_width}px)`);
+      } else {
+        const { videoHeight, videoWidth, duration } = el;
+        this.nodes.el.dataset.height = videoHeight;
+        this.nodes.el.dataset.width = videoWidth;
+        this.nodes.el.dataset.duration = duration;
+        const max_height = Math.min(QR.max_height, QR.max_height_video);
+        const max_width = Math.min(QR.max_width, QR.max_width_video);
+        if ((videoHeight > max_height) || (videoWidth > max_width))
+          this.fileError(`Video too large (video: ${videoHeight}x${videoWidth}px, max: ${max_height}x${max_width}px)`);
+        if ((videoHeight < QR.min_height) || (videoWidth < QR.min_width))
+          this.fileError(`Video too small (video: ${videoHeight}x${videoWidth}px, min: ${QR.min_height}x${QR.min_width}px)`);
+        if (!isFinite(duration)) {
+          this.fileError('Video lacks duration metadata (try remuxing)');
+        } else if (duration > QR.max_duration_video) {
+          this.fileError(`Video too long (video: ${duration}s, max: ${QR.max_duration_video}s)`);
+        }
+        if (BoardConfig.noAudio(g.BOARD.ID) && $.hasAudio(el))
+          this.fileError('Audio not allowed');
+      }
+    }
+    setThumbnail(el) {
+      // Create a redimensioned thumbnail.
+      let height, width;
+      const isVideo = el.tagName === 'VIDEO';
+      // Generate thumbnails only if they're really big.
+      // Resized pictures through canvases look like ass,
+      // so we generate thumbnails `s` times bigger then expected
+      // to avoid crappy resized quality.
+      let s = 90 * 2 * window.devicePixelRatio;
+      if (this.file.type === 'image/gif')
+        s *= 3; // let them animate
+      if (isVideo) {
+        height = el.videoHeight;
+        width = el.videoWidth;
+      } else {
+        ({ height, width } = el);
+        if ((height < s) || (width < s)) {
+          this.URL = el.src;
+          this.nodes.el.style.backgroundImage = `url(${this.URL})`;
+          return;
+        }
+      }
+      if (height <= width) {
+        width = (s / height) * width;
+        height = s;
+      } else {
+        height = (s / width) * height;
+        width = s;
+      }
+      const cv = $.el('canvas');
+      cv.height = height;
+      cv.width = width;
+      const drawThumbNail = () => {
+        cv.getContext('2d').drawImage(el, 0, 0, width, height);
+        URL.revokeObjectURL(el.src);
+        cv.toBlob(blob => {
+          this.URL = URL.createObjectURL(blob);
+          this.nodes.el.style.backgroundImage = `url(${this.URL})`;
+        });
+      };
+      if (isVideo) {
+        el.currentTime = 0;
+        el.addEventListener("seeked", drawThumbNail);
+      } else {
+        drawThumbNail();
+      }
+    }
+    rmFile() {
+      if (this.isLocked)
+        return;
+      delete this.file;
+      delete this.filename;
+      delete this.filesize;
+      this.nodes.el.removeAttribute('title');
+      QR.nodes.filename.removeAttribute('title');
+      this.rmMetadata();
+      this.nodes.el.style.backgroundImage = '';
+      $.rmClass(this.nodes.el, 'has-file', 'has-image', 'has-video');
+      this.showFileData();
+      URL.revokeObjectURL(this.URL);
+      this.dismissErrors(error => $.hasClass(error, 'file-error'));
+      this.preventAutoPost();
+    }
+    rmMetadata() {
+      for (var attr of ['type', 'height', 'width', 'duration']) {
+        // XXX https://bugzilla.mozilla.org/show_bug.cgi?id=1021289
+        this.nodes.el.removeAttribute(`data-${attr}`);
+      }
+    }
+    saveFilename() {
+      this.file.newName = (this.filename || '').replace(/[/\\]/g, '-');
+      // 4chan will truncate the filename if it has no extension.
+      if (!QR.validExtension.test(this.filename))
+        this.file.newName += `.${$.getOwn(QR.extensionFromType, this.file.type) || 'jpg'}`;
+    }
+    updateFilename() {
+      const long = `${this.filename} (${this.filesize})`;
+      this.nodes.el.title = long;
+      if (this !== QR.selected)
+        return;
+      QR.nodes.filename.title = long;
+    }
+    showFileData() {
+      if (this.file) {
+        this.updateFilename();
+        QR.nodes.filename.value = this.filename;
+        $.addClass(QR.nodes.oekaki, 'has-file');
+        $.addClass(QR.nodes.fileSubmit, 'has-file', 'has-' + this.file.type.split('/')[0]);
+      } else {
+        $.rmClass(QR.nodes.oekaki, 'has-file');
+        $.rmClass(QR.nodes.fileSubmit, 'has-file', 'has-image', 'has-video');
+      }
+      if (this.file?.source != null) {
+        QR.nodes.fileSubmit.dataset.source = this.file.source;
+      } else {
+        QR.nodes.fileSubmit.removeAttribute('data-source');
+      }
+      QR.nodes.spoiler.checked = this.spoiler;
+    }
+    pasteText(file) {
+      this.pasting = true;
+      this.preventAutoPost();
+      const reader = new FileReader();
+      reader.onload = e => {
+        const { result } = e.target;
+        this.setComment((this.com ? `${this.com}\n${result}` : result));
+        delete this.pasting;
+      };
+      reader.readAsText(file);
+    }
+    dragStart(e) {
+      const { left, top } = this.getBoundingClientRect();
+      e.dataTransfer.setDragImage(this, e.clientX - left, e.clientY - top);
+      $.addClass(this, 'drag');
+    }
+    dragEnd() { $.rmClass(this, 'drag'); }
+    dragEnter() { $.addClass(this, 'over'); }
+    dragLeave() { $.rmClass(this, 'over'); }
+    dragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    }
+    drop() {
+      $.rmClass(this, 'over');
+      if (!this.draggable)
+        return;
+      const el = $('.drag', this.parentNode);
+      const index = el => {
+        for (let i = 0; i < el.parentNode.children.length; i++) {
+          if (el.parentNode.children[i] === el)
+            return i;
+        }
+        return -1;
+      };
+      const oldIndex = index(el);
+      const newIndex = index(this);
+      if (QR.posts[oldIndex].isLocked || QR.posts[newIndex].isLocked)
+        return;
+      (oldIndex < newIndex ? $.after : $.before)(this, el);
+      const post = QR.posts.splice(oldIndex, 1)[0];
+      QR.posts.splice(newIndex, 0, post);
+      QR.status();
+      QR.captcha.updateThread?.();
+    }
+  }
+  QR.post = post;
 
-  const rootFor = ({ siteID }) => Conf.siteProperties[siteID]?.root || `http://${siteID}/`;
-  const rootOrEmptyFor = ({ siteID }) => Conf.siteProperties[siteID]?.root || '';
-  const SWTinyboard = {
-      isOPContainerThread: true,
-      mayLackJSON: true,
-      threadModTimeIgnoresSage: true,
-      disabledFeatures: [
-          'Resurrect Quotes',
-          'Quick Reply Personas',
-          'Quick Reply',
-          'Cooldown',
-          'Report Link',
-          'Delete Link',
-          'Edit Link',
-          'Quote Inlining',
-          'Quote Previewing',
-          'Quote Backlinks',
-          'File Info Formatting',
-          'Image Expansion',
-          'Image Expansion (Menu)',
-          'Comment Expansion',
-          'Thread Expansion',
-          'Favicon',
-          'Quote Threading',
-          'Thread Updater',
-          'Banner',
-          'Flash Features',
-          'Reply Pruning'
-      ],
-      detect() {
-          for (const script of $$('script:not([src])', d.head)) {
-              let m = script.textContent.match(/\bvar configRoot=(".*?")/);
-              if (m) {
-                  var properties = dict();
-                  try {
-                      var root = JSON.parse(m[1]);
-                      if (root[0] === '/') {
-                          properties.root = location.origin + root;
-                      }
-                      else if (/^https?:/.test(root)) {
-                          properties.root = root;
-                      }
-                  }
-                  catch (error) { }
-                  return properties;
+  const KEY_NAMES = {
+      8: '', // return
+      13: 'Enter',
+      27: 'Esc',
+      32: 'Space',
+      37: 'Left',
+      38: 'Up',
+      39: 'Right',
+      40: 'Down',
+      59: 'Semicolon',
+      186: 'Semicolon',
+      188: 'Comma',
+      190: 'Period',
+      191: 'Slash',
+  };
+  var Keybinds = {
+      init() {
+          if (!Conf.Keybinds)
+              return;
+          for (var hotkey in Config.hotkeys) {
+              $.sync(hotkey, Keybinds.sync);
+          }
+          var init = () => {
+              $.off(d, '4chanXInitFinished', init);
+              $.on(d, 'keydown', Keybinds.keydown);
+              for (var node of $$('[accesskey]')) {
+                  node.removeAttribute('accesskey');
+              }
+          };
+          $.on(d, '4chanXInitFinished', init);
+      },
+      sync(key, hotkey) { return Conf[hotkey] = key; },
+      keydown(e) {
+          let key, thread, threadRoot, catalog, notifications;
+          if (!(key = Keybinds.keyCode(e)))
+              return;
+          const tag = {
+              [Conf['Spoiler tags']]: 'spoiler',
+              [Conf['Code tags']]: 'code',
+              [Conf['Eqn tags']]: 'eqn',
+              [Conf['Math tags']]: 'math',
+              [Conf['SJIS tags']]: 'sjis',
+          }[key];
+          const mode = {
+              [Conf['Paged mode']]: 'paged',
+              [Conf['Infinite scrolling mode']]: 'infinite',
+              [Conf['All pages mode']]: 'all-pages'
+          }[key];
+          const dir = {
+              [Conf['Next reply']]: 1,
+              [Conf['Previous reply']]: -1,
+              [Conf['Deselect reply']]: 0
+          }[key];
+          const { target } = e;
+          if (['INPUT', 'TEXTAREA'].includes(target.nodeName)) {
+              if (!/(Esc|Alt|Ctrl|Meta|Shift\+\w{2,})/.test(key) || /^Alt\+(\d|Up|Down|Left|Right)$/.test(key))
+                  return;
+          }
+          if (['index', 'thread'].includes(g.VIEW)) {
+              threadRoot = Nav.getThread();
+              thread = Get.threadFromRoot(threadRoot);
+          }
+          let hasAction = false;
+          // QR & Options
+          if (QR.postingIsEnabled) {
+              if (key === Conf['Open empty QR']) {
+                  Keybinds.qr();
+                  hasAction = true;
+              }
+              else if (key === Conf['Post from URL']) {
+                  QR.handleUrl('');
+                  hasAction = true;
+              }
+              else if (key === Conf['Add new post']) {
+                  QR.addPost();
+                  hasAction = true;
+              }
+              else if (key === Conf['Open QR'] && threadRoot) {
+                  Keybinds.qr(threadRoot);
+                  hasAction = true;
               }
           }
-          return false;
+          if (key === Conf['Toggle board list'] && Conf['Custom Board Navigation']) {
+              Header.toggleBoardList();
+              hasAction = true;
+          }
+          if (key === Conf['Toggle header']) {
+              Header.toggleBarVisibility();
+              hasAction = true;
+          }
+          if (key === Conf['Open settings']) {
+              Settings.open();
+              hasAction = true;
+          }
+          if (key === Conf.Close) {
+              if (Settings.dialog) {
+                  Settings.close();
+              }
+              else if ((notifications = $$('.notification')).length) {
+                  for (var notification of notifications) {
+                      $('.close', notification).click();
+                  }
+              }
+              else if (QR.nodes?.preview) {
+                  QR.closePreview();
+              }
+              else if (QR.nodes && !(QR.nodes.el.hidden || (window.getComputedStyle(QR.nodes.form).display === 'none'))) {
+                  if (Conf['Persistent QR']) {
+                      QR.hide();
+                  }
+                  else {
+                      QR.close();
+                  }
+              }
+              else if (Embedding.lastEmbed) {
+                  Embedding.closeFloat();
+              }
+              hasAction = true;
+          }
+          if (target.nodeName === 'TEXTAREA' && tag) {
+              Keybinds.tags(tag, target);
+              hasAction = true;
+          }
+          if (QR.nodes && !QR.nodes.el.hidden) {
+              if (key === Conf['Toggle sage']) {
+                  Keybinds.sage();
+                  hasAction = true;
+              }
+              if (key === Conf['Toggle Cooldown'] && $.hasClass(QR.nodes.fileSubmit, 'custom-cooldown')) {
+                  QR.toggleCustomCooldown();
+                  hasAction = true;
+              }
+              if (key === Conf['Submit QR'] && !QR.status()) {
+                  QR.submit();
+                  hasAction = true;
+              }
+          }
+          // Index/Thread related
+          if (key === Conf.Update) {
+              switch (g.VIEW) {
+                  case 'thread':
+                      if (ThreadUpdater.enabled)
+                          ThreadUpdater.update();
+                      hasAction = true;
+                      break;
+                  case 'index':
+                      if (indexEnabled)
+                          Index.update();
+                      hasAction = true;
+              }
+          }
+          if (ThreadWatcher.enabled) {
+              if (key === Conf.Watch && thread) {
+                  ThreadWatcher.toggle(thread);
+                  hasAction = true;
+              }
+              if (key === Conf['Update thread watcher']) {
+                  ThreadWatcher.buttonFetchAll();
+                  hasAction = true;
+              }
+              if (key === Conf['Toggle thread watcher']) {
+                  ThreadWatcher.toggleWatcher();
+                  hasAction = true;
+              }
+          }
+          if (key === Conf['Toggle threading'] && QuoteThreading.ready) {
+              QuoteThreading.toggleThreading();
+              hasAction = true;
+          }
+          // Images
+          if (ImageExpand.enabled) {
+              if (key === Conf['Expand image'] && threadRoot) {
+                  var post = Get.postFromNode(Keybinds.post(threadRoot));
+                  if (post.file) {
+                      ImageExpand.toggle(post);
+                      hasAction = true;
+                  }
+              }
+              if (key === Conf['Expand images']) {
+                  ImageExpand.cb.toggleAll();
+                  hasAction = true;
+              }
+          }
+          if (key === Conf['Open Gallery'] && Gallery.enabled) {
+              Gallery.cb.toggle();
+              hasAction = true;
+          }
+          if (key === Conf.fappeTyme && FappeTyme.nodes?.fappe) {
+              FappeTyme.toggle('fappe');
+              hasAction = true;
+          }
+          if (key === Conf.werkTyme && FappeTyme.nodes?.werk) {
+              FappeTyme.toggle('werk');
+              hasAction = true;
+          }
+          // Board Navigation
+          if (key === Conf['Front page']) {
+              if (indexEnabled) {
+                  Index.userPageNav(1);
+              }
+              else {
+                  location.href = `/${g.BOARD}/`;
+              }
+              hasAction = true;
+          }
+          if (key === Conf['Open front page']) {
+              $.open(`${location.origin}/${g.BOARD}/`);
+              hasAction = true;
+          }
+          if (g.VIEW === 'index') {
+              if (key === Conf['Next page']) {
+                  if (indexEnabled) {
+                      if (!['paged', 'infinite'].includes(Conf['Index Mode']))
+                          return;
+                      $('.next button', Index.pagelist).click();
+                  }
+                  else {
+                      $(g.SITE.selectors.nav.next)?.click();
+                  }
+                  hasAction = true;
+              }
+              if (key === Conf['Previous page']) {
+                  if (indexEnabled) {
+                      if (!['paged', 'infinite'].includes(Conf['Index Mode']))
+                          return;
+                      $('.prev button', Index.pagelist).click();
+                  }
+                  else {
+                      $(g.SITE.selectors.nav.prev)?.click();
+                  }
+                  hasAction = true;
+              }
+              if (key === Conf['Search form']) {
+                  var searchInput = indexEnabled
+                      ? Index.searchInput : g.SITE.selectors.searchBox
+                      ? $(g.SITE.selectors.searchBox) : undefined;
+                  if (searchInput) {
+                      Header.scrollToIfNeeded(searchInput);
+                      searchInput.focus();
+                      hasAction = true;
+                  }
+              }
+              if (key === Conf['Mark thread read'] && thread && UnreadIndex.enabled) {
+                  UnreadIndex.markRead.call(threadRoot);
+                  hasAction = true;
+              }
+          }
+          if (mode && indexEnabledOn(g.BOARD)) {
+              location.href = g.VIEW === 'index' ? `#${mode}` : `/${g.BOARD}/#${mode}`;
+          }
+          if (key === Conf['Open catalog'] && (catalog = CatalogLinks.catalog())) {
+              location.href = catalog;
+          }
+          if (key === Conf['Cycle sort type'] && indexEnabled) {
+              Index.cycleSortType();
+              hasAction = true;
+          }
+          // Thread Navigation
+          if (threadRoot) {
+              if (g.VIEW === 'index') {
+                  if (key === Conf['Next thread']) {
+                      Nav.scroll(1);
+                      hasAction = true;
+                  }
+                  else if (key === Conf['Previous thread']) {
+                      Nav.scroll(-1);
+                      hasAction = true;
+                  }
+                  else if (key === Conf['Expand thread']) {
+                      ExpandThread.toggle(thread);
+                      // Keep thread from moving off screen when contracted.
+                      Header.scrollTo(threadRoot);
+                      hasAction = true;
+                  }
+                  else if (key === Conf['Open thread']) {
+                      Keybinds.open(thread);
+                      hasAction = true;
+                  }
+                  else if (key === Conf['Open thread tab']) {
+                      Keybinds.open(thread, true);
+                      hasAction = true;
+                  }
+              }
+              // Reply Navigation
+              if (dir !== undefined) {
+                  Keybinds.hl(dir, threadRoot);
+                  hasAction = true;
+              }
+              if (key === Conf['Quick Filter MD5']) {
+                  post = Keybinds.post(threadRoot);
+                  Keybinds.hl(1, threadRoot);
+                  Filter.quickFilterMD5.call(post, e);
+                  hasAction = true;
+              }
+              if (QuoteYou.db) {
+                  if (key === Conf['Previous Post Quoting You']) {
+                      QuoteYou.cb.seek('preceding');
+                      hasAction = true;
+                  }
+                  if (key === Conf['Next Post Quoting You']) {
+                      QuoteYou.cb.seek('following');
+                      hasAction = true;
+                  }
+              }
+          }
+          if (key === Conf.Hide && thread && ThreadHiding.db) {
+              Header.scrollTo(threadRoot);
+              ThreadHiding.toggle(thread);
+              hasAction = true;
+          }
+          if (hasAction) {
+              e.preventDefault();
+              e.stopPropagation();
+          }
       },
-      awaitBoard(cb) {
-          let reactUI = $.id('react-ui');
-          if (reactUI) {
-              const s = (this.selectors = Object.create(this.selectors));
-              s.boardFor = { index: '.page-container' };
-              s.thread = 'div[id^="thread_"]';
-              Main.mounted(cb);
+      keyCode(e) {
+          function keyName(kc) {
+              if (kc in KEY_NAMES)
+                  return KEY_NAMES[kc];
+              if ((48 <= kc && kc <= 57) || (65 <= kc && kc <= 90))
+                  return String.fromCharCode(kc).toLowerCase(); // 0-9, A-Z
+              if (96 <= kc && kc <= 105)
+                  return String.fromCharCode(kc - 48); // numpad 0-9
+              return null;
+          }
+          let key = keyName(e.keyCode);
+          if (key) {
+              if (e.altKey)
+                  key = 'Alt+' + key;
+              if (e.ctrlKey)
+                  key = 'Ctrl+' + key;
+              if (e.metaKey)
+                  key = 'Meta+' + key;
+              if (e.shiftKey)
+                  key = 'Shift+' + key;
+          }
+          return key;
+      },
+      post(thread) {
+          const s = g.SITE.selectors;
+          return $(`${s.postContainer}${s.highlightable.reply}.${g.SITE.classes.highlight}`, thread)
+              || $(`${g.SITE.isOPContainerThread ? s.thread : s.postContainer}${s.highlightable.op}`, thread);
+      },
+      qr(thread) {
+          QR.open();
+          if (thread)
+              QR.quote.call(Keybinds.post(thread));
+          QR.nodes.com.focus();
+      },
+      tags(tag, ta) {
+          BoardConfig.ready(() => {
+              const { config } = g.BOARD;
+              const TAG_SUPPORT = {
+                  spoiler: 'spoilers',
+                  code: 'code_tags',
+                  math: 'math_tags',
+                  eqn: 'math_tags',
+                  sjis: 'sjis_tags',
+              };
+              const supported = !!config[TAG_SUPPORT[tag]];
+              if (!supported)
+                  new Notice('warning', `[${tag}] tags are not supported on /${g.BOARD}/.`, 20);
+          });
+          const { value } = ta;
+          const selStart = ta.selectionStart;
+          const selEnd = ta.selectionEnd;
+          ta.value =
+              value.slice(0, selStart) +
+                  `[${tag}]` + value.slice(selStart, selEnd) + `[/${tag}]` +
+                  value.slice(selEnd);
+          // Move the caret to the end of the selection.
+          const range = (`[${tag}]`).length + selEnd;
+          ta.setSelectionRange(range, range);
+          // Fire the 'input' event
+          $.event('input', null, ta);
+      },
+      sage: () => QR.nodes.email.value = /sage/i.test(QR.nodes.email.value) ? "" : "sage",
+      open(thread, tab) {
+          if (g.VIEW !== 'index')
+              return;
+          const url = Get.url('thread', thread);
+          if (tab) {
+              return $.open(url);
           }
           else {
-              cb();
+              return location.href = url;
           }
       },
-      urls: {
-          post: ({ postID }) => `#${postID}`,
-          index: ({ siteID, boardID }) => `${rootFor({ siteID })}${boardID}/`,
-          catalog: ({ siteID, boardID }) => `${rootFor({ siteID })}${boardID}/catalog.html`,
-          file: ({ siteID, boardID }, filename) => `${rootFor({ siteID })}${boardID}/${filename}`,
-          archivedThreadJSON: (thread) => SWTinyboard.urls.threadJSON(thread, true),
-          thumb: (board, filename) => SWTinyboard.urls.file(board, filename),
-          thread: ({ siteID, boardID, threadID }, isArchived) => `${rootFor({ siteID })}${boardID}/${isArchived ? 'archive/' : ''}res/${threadID}.html`,
-          threadJSON: ({ siteID, boardID, threadID }, isArchived) => {
-              const root = rootOrEmptyFor({ siteID });
-              return root && `${root}${boardID}/${isArchived ? 'archive/' : ''}res/${threadID}.json`;
-          },
-          threadsListJSON({ siteID, boardID }) {
-              const root = rootOrEmptyFor({ siteID });
-              return root && `${root}${boardID}/threads.json`;
-          },
-          archiveListJSON({ siteID, boardID }) {
-              const root = rootOrEmptyFor({ siteID });
-              return root && `${root}${boardID}/archive/archive.json`;
-          },
-          catalogJSON({ siteID, boardID }) {
-              const root = rootOrEmptyFor({ siteID });
-              return root && `${root}${boardID}/catalog.json`;
-          },
-      },
-      selectors: {
-          board: 'form[name="postcontrols"]',
-          thread: 'input[name="board"] ~ div[id^="thread_"]',
-          threadDivider: 'div[id^="thread_"] > hr:last-child',
-          summary: '.omitted',
-          postContainer: 'div[id^="reply_"]:not(.hidden)', // postContainer is thread for OP
-          opBottom: '.op',
-          replyOriginal: 'div[id^="reply_"]:not(.hidden)',
-          infoRoot: '.intro',
-          info: {
-              subject: '.subject',
-              name: '.name',
-              email: '.email',
-              tripcode: '.trip',
-              uniqueID: '.poster_id',
-              capcode: '.capcode',
-              flag: '.flag',
-              date: 'time',
-              nameBlock: 'label',
-              quote: 'a[href*="#q"]',
-              reply: 'a[href*="/res/"]:not([href*="#"])'
-          },
-          icons: {
-              isSticky: '.fa-thumb-tack',
-              isClosed: '.fa-lock'
-          },
-          file: {
-              text: '.fileinfo',
-              link: '.fileinfo > a',
-              thumb: 'a > .post-image'
-          },
-          thumbLink: '.file > a',
-          multifile: '.files > .file',
-          highlightable: {
-              op: ' > .op',
-              reply: '.reply',
-              catalog: ' > .thread'
-          },
-          comment: '.body',
-          spoiler: '.spoiler',
-          quotelink: 'a[onclick*="highlightReply("]',
-          catalog: {
-              board: '#Grid',
-              thread: '.mix',
-              thumb: '.thread-image'
-          },
-          boardList: '.boardlist',
-          boardListBottom: '.boardlist.bottom',
-          styleSheet: '#stylesheet',
-          psa: '.blotter',
-          nav: {
-              prev: '.pages > form > [value=Previous]',
-              next: '.pages > form > [value=Next]'
-          }
-      },
-      classes: {
-          highlight: 'highlighted'
-      },
-      xpath: {
-          thread: 'div[starts-with(@id,"thread_")]',
-          postContainer: 'div[starts-with(@id,"reply_") or starts-with(@id,"thread_")]',
-          replyContainer: 'div[starts-with(@id,"reply_")]'
-      },
-      regexp: {
-          quotelink: new RegExp(`\
-/\
-([^/]+)\
-/res/\
-(\\d+)\
-(?:\\.\\w+)?#\
-(\\d+)\
-$\
-`),
-          quotelinkHTML: /<a [^>]*\bhref="[^"]*\/([^\/]+)\/res\/(\d+)(?:\.\w+)?#(\d+)"/g
-      },
-      Build: {
-          parseJSON(data, board) {
-              const o = SWYotsuba.Build.parseJSON(data, board);
-              if (data.ext === 'deleted') {
-                  delete o.file;
-                  $.extend(o, {
-                      files: [],
-                      fileDeleted: true,
-                      filesDeleted: [0]
-                  });
+      hl(delta, thread) {
+          const replySelector = `${g.SITE.selectors.postContainer}${g.SITE.selectors.highlightable.reply}`;
+          const { highlight } = g.SITE.classes;
+          const postEl = $(`${replySelector}.${highlight}`, thread);
+          if (!delta) {
+              if (postEl) {
+                  $.rmClass(postEl, highlight);
               }
-              if (data.extra_files) {
-                  let file;
-                  for (let i = 0; i < data.extra_files.length; i++) {
-                      var extra_file = data.extra_files[i];
-                      if (extra_file.ext === 'deleted') {
-                          o.filesDeleted.push(i);
-                      }
-                      else {
-                          file = SWYotsuba.Build.parseJSONFile(data, board);
-                          o.files.push(file);
-                      }
-                  }
-                  if (o.files.length)
-                      o.file = o.files[0];
-              }
-              return o;
-          },
-          parseComment(html) {
-              html = html
-                  .replace(/<br\b[^<]*>/gi, '\n')
-                  .replace(/<[^>]*>/g, '');
-              return $.unescape(html);
-          }
-      },
-      bgColoredEl: () => $.el('div', { className: 'post reply' }),
-      isFileURL: (url) => /\/src\/[^\/]+/.test(url.pathname),
-      preParsingFixes(board) {
-          // fixes effects of unclosed link in announcement
-          let broken = $('a > input[name="board"]', board);
-          if (broken)
-              return $.before(broken.parentNode, broken);
-      },
-      parseNodes(post, nodes) {
-          // Add vichan's span.poster_id around the ID if not already present.
-          if (nodes.uniqueID)
               return;
-          let text = '';
-          let node = nodes.nameBlock.nextSibling;
-          while (node && (node.nodeType === 3)) {
-              text += node.textContent;
-              node = node.nextSibling;
           }
-          let m = text.match(/(\s*ID:\s*)(\S+)/);
-          if (m) {
-              nodes.info.normalize();
-              let { nextSibling } = nodes.nameBlock;
-              nextSibling = nextSibling.splitText(m[1].length);
-              nextSibling.splitText(m[2].length);
-              let uniqueID = $.el('span', { className: 'poster_id' });
-              nodes.uniqueID = uniqueID;
-              $.replace(nextSibling, uniqueID);
-              $.add(uniqueID, nextSibling);
+          if (postEl) {
+              const { height } = postEl.getBoundingClientRect();
+              if ((Header.getTopOf(postEl) >= -height) && (Header.getBottomOf(postEl) >= -height)) { // We're at least partially visible
+                  const { root } = Get.postFromNode(postEl).nodes;
+                  const axis = delta === 1 ? 'following' : 'preceding';
+                  let next = $.x(`${axis}-sibling::${g.SITE.xpath.replyContainer}[not(@hidden) and not(child::div[@class='stub'])][1]`, root);
+                  if (!next)
+                      return;
+                  if (!next.matches(replySelector))
+                      next = $(replySelector, next);
+                  Header.scrollToIfNeeded(next, delta === 1);
+                  $.addClass(next, highlight);
+                  $.rmClass(postEl, highlight);
+                  return;
+              }
+              $.rmClass(postEl, highlight);
           }
-      },
-      parseDate(node) {
-          let date = Date.parse(node.getAttribute('datetime')?.trim());
-          if (!isNaN(date))
-              return new Date(date);
-          date = Date.parse(node.textContent.trim() + ' UTC'); // e.g. onesixtwo.club
-          if (!isNaN(date))
-              return new Date(date);
-          return undefined;
-      },
-      parseFile(post, file) {
-          let info, infoNode;
-          const { text, link, thumb } = file;
-          if ($.x(`ancestor::${this.xpath.postContainer}[1]`, text) !== post.nodes.root)
-              return false; // file belongs to a reply
-          if (!(infoNode = link.nextSibling?.textContent.includes('(') ? link.nextSibling : link.nextElementSibling))
-              return false;
-          if (!(info = infoNode.textContent.match(/\((.*,\s*)?([\d.]+ ?[KMG]?B).*\)/)))
-              return false;
-          const nameNode = $('.postfilename', text);
-          $.extend(file, {
-              name: nameNode ? (nameNode.title || nameNode.textContent) : link.pathname.match(/[^/]*$/)[0],
-              size: info[2],
-              dimensions: info[0].match(/\d+x\d+/)?.[0]
-          });
-          if (thumb) {
-              $.extend(file, {
-                  thumbURL: /\/static\//.test(thumb.src) && $.isImage(link.href) ? link.href : thumb.src,
-                  isSpoiler: /^Spoiler/i.test(info[1] || '') || (link.textContent === 'Spoiler Image')
-              });
+          const replies = $$(replySelector, thread);
+          if (delta === -1)
+              replies.reverse();
+          for (var reply of replies) {
+              if (((delta === 1) && (Header.getTopOf(reply) > 0)) || ((delta === -1) && (Header.getBottomOf(reply) > 0))) {
+                  $.addClass(reply, highlight);
+                  return;
+              }
           }
-          return true;
-      },
-      // Detect old Tinyboard image expansion that changes src attribute on thumbnail.
-      isThumbExpanded: (file) => $.hasClass(file.thumb.parentNode, 'expanded') || (file.thumb.parentNode.dataset.expanded === 'true'),
-      isLinkified: (link) => /\bnofollow\b/.test(link.rel),
-      catalogPin: (threadRoot) => threadRoot.dataset.sticky = 'true',
-  };
-
-  const SW = { tinyboard: SWTinyboard, yotsuba: SWYotsuba };
-
-  var FileInfo = {
-    init() {
-      if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf['File Info Formatting'])
-        return;
-      Callbacks.Post.push({
-        name: 'File Info Formatting',
-        cb: this.node
-      });
-    },
-    node() {
-      let a;
-      if (!this.file)
-        return;
-      if (this.isClone) {
-        for (a of $$('.file-info .download-button', this.file.text)) {
-          $.on(a, 'click', ImageCommon.download);
-        }
-        for (a of $$('.file-info .quick-filter-md5', this.file.text)) {
-          $.on(a, 'click', Filter.quickFilterMD5);
-        }
-        return;
       }
-      const oldInfo = $.el('span', { className: 'fileText-original' });
-      $.prepend(this.file.link.parentNode, oldInfo);
-      $.add(oldInfo, [this.file.link.previousSibling, this.file.link, this.file.link.nextSibling]);
-      const info = $.el('span', { className: 'file-info' });
-      FileInfo.format(Conf.fileInfo, this, info);
-      $.prepend(this.file.text, info);
-    },
-    format(formatString, post, outputNode) {
-      const tokens = FileInfo.getTokens(formatString);
-      const output = tokens.map(t => typeof t === 'function' ? t.call(post) : t);
-      $.extend(outputNode, { innerHTML: E.cat(output) });
-      FileInfo.bindFileButtons(outputNode);
-    },
-    getTokens(formatString) {
-      if (FileInfo._tokensKey === formatString)
-        return FileInfo._tokens;
-      const tokens = [];
-      const FORMAT_REGEX = /%(.)|[^%]+/g;
-      formatString.replace(FORMAT_REGEX, (s, c) => {
-        tokens.push($.hasOwn(FileInfo.formatters, c) ? FileInfo.formatters[c] : { innerHTML: E(s) });
-        return '';
-      });
-      FileInfo._tokensKey = formatString;
-      FileInfo._tokens = tokens;
-      return tokens;
-    },
-    bindFileButtons(container) {
-      for (const a of $$('.download-button, .quick-filter-md5', container)) {
-        if (a.classList.contains('download-button')) {
-          $.on(a, 'click', ImageCommon.download);
-        } else {
-          $.on(a, 'click', Filter.quickFilterMD5);
-        }
-      }
-    },
-    formatters: {
-      t() { return { innerHTML: E(this.file.url.slice(this.file.url.lastIndexOf('/') + 1)), [isEscaped]: true }; },
-      T() { return h("a", { href: this.file.url, target: "_blank" }, FileInfo.formatters.t.call(this)); },
-      l() { return h("a", { href: this.file.url, target: "_blank" }, FileInfo.formatters.n.call(this)); },
-      L() { return h("a", { href: this.file.url, target: "_blank" }, FileInfo.formatters.N.call(this)); },
-      n() {
-        const fullname = this.file.name;
-        const shortname = SW.yotsuba.Build.shortFilename(this.file.name, this.isReply);
-        if (fullname === shortname) {
-          return { innerHTML: E(fullname), [isEscaped]: true };
-        } else {
-          return h("span", { class: "fnswitch" },
-            h("span", { class: "fntrunc" }, shortname),
-            h("span", { class: "fnfull" }, fullname));
-        }
-      },
-      N() { return { innerHTML: E(this.file.name), [isEscaped]: true }; },
-      d() {
-        return h("a", { href: this.file.url, download: this.file.name, class: "download-button" }, Icon.raw('download'));
-      },
-      f() {
-        return {
-          innerHTML: `<a href="javascript:;" class="quick-filter-md5">${Icon.get('xmark')}</a>`,
-          [isEscaped]: true,
-        };
-      },
-      p() { return { innerHTML: ((this.file.isSpoiler) ? "Spoiler, " : ""), [isEscaped]: true }; },
-      s() { return { innerHTML: E(this.file.size), [isEscaped]: true }; },
-      B() { return { innerHTML: Math.round(this.file.sizeInBytes) + " Bytes", [isEscaped]: true }; },
-      K() { return { innerHTML: (Math.round(this.file.sizeInBytes / 1024)) + " KB", [isEscaped]: true }; },
-      M() { return { innerHTML: (Math.round(this.file.sizeInBytes / 1048576 * 100) / 100) + " MB", [isEscaped]: true }; },
-      r() { return { innerHTML: E(this.file.dimensions || "PDF"), [isEscaped]: true }; },
-      g() { return { innerHTML: ((this.file.tag) ? ", " + E(this.file.tag) : ""), [isEscaped]: true }; },
-      '%'() { return { innerHTML: "%", [isEscaped]: true }; }
-    }
   };
 
   var Settings = {
@@ -19954,7 +21017,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
           tag: 'Loop'
         }
       };
-      FileInfo.format(this.value, data, this.nextElementSibling);
+      FileInfoFormat.format(this.value, data, this.nextElementSibling);
     },
     favicon() {
       Favicon.switch();
@@ -20043,2194 +21106,10 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
     },
   };
 
-  var Filter = {
-    /**
-    * Uses a Map for string types, with the value to filter for as the key.
-    * This allows faster lookup than iterating over every filter.
-    */
-    filters: new Map(),
-    init() {
-      if (!['index', 'thread', 'catalog'].includes(g.VIEW) || !Conf.Filter)
-        return;
-      if ((g.VIEW === 'catalog') && !Conf['Filter in Native Catalog'])
-        return;
-      if (!Conf['Filtered Backlinks']) {
-        $.addClass(doc, 'hide-backlinks');
-      }
-      for (var key in Config.filter) {
-        for (var line of Conf[key].split('\n')) {
-          let hl;
-          let regexp;
-          let top;
-          let hide = true;
-          let mask = 0;
-          let boards = false;
-          let excludes = false;
-          let reason;
-          let poster = false;
-          let replies = false;
-          let noti = false;
-          let stub = Conf.Stubs;
-          if (line[0] === '#')
-            continue;
-          const regexpMatch = line.match(/\/(.*)\/(\w*)/);
-          if (!regexpMatch)
-            continue;
-          if (key === 'uniqueID' || key === 'MD5') {
-            // MD5 filter will use strings instead of regular expressions.
-            regexp = regexpMatch[1];
-          } else {
-            try {
-              // Please, don't write silly regular expressions.
-              regexp = RegExp(regexpMatch[1], regexpMatch[2]);
-            } catch (err) {
-              // I warned you, bro.
-              new Notice('warning', [
-                $.tn(`Invalid ${key} filter:`),
-                $.el('br'),
-                $.tn(line),
-                $.el('br'),
-                $.tn(err.message)
-              ], 60);
-              continue;
-            }
-          }
-          // Don't mix up filter flags with the regular expression.
-          const options = line.length > regexpMatch[0].length ? line.replace(regexpMatch[0], '') : '';
-          if (options) {
-            // List of the boards this filter applies to.
-            boards = this.parseBoards(options.match(/(?:^|;)\s*boards:([^;]+)/)?.[1]);
-            // Boards to exclude from an otherwise global rule.
-            excludes = this.parseBoards(options.match(/(?:^|;)\s*exclude:([^;]+)/)?.[1]);
-            // Filter OPs along with their threads or replies only.
-            const op = options.match(/(?:^|;)\s*op:(no|only)/)?.[1] || '';
-            mask = $.getOwn({ 'no': 1, 'only': 2 }, op) || 0;
-            // Filter only posts with/without files.
-            const file = options.match(/(?:^|;)\s*file:(no|only)/)?.[1] || '';
-            mask = mask | ($.getOwn({ 'no': 4, 'only': 8 }, file) || 0);
-            // Overrule the `Show Stubs` setting.
-            // Defaults to stub showing.
-            const stubOption = options.match(/(?:^|;)\s*stub:(yes|no)/)?.[1];
-            if (stubOption === 'yes')
-              stub = true;
-            else if (stubOption === 'no')
-              stub = false;
-            // Desktop notification
-            noti = /(?:^|;)\s*notify/.test(options);
-            // Highlight the post.
-            // If not specified, the highlight class will be filter-highlight.
-            const highlightRes = options.match(/(?:^|;)\s*highlight(?::([\w-]+))?/);
-            if (highlightRes) {
-              hl = highlightRes[1] || 'filter-highlight';
-              // Put highlighted OP's thread on top of the board page or not.
-              // Defaults to on top.
-              top = (options.match(/(?:^|;)\s*top:(yes|no)/)?.[1] || 'yes') === 'yes';
-              hide = /(?:^|;)\s*hide(?:[;:]|$)/.test(options);
-            }
-            // Hide the post (default case).
-            hide = hide || !(hl || noti);
-            reason = options.match(/(?:^|;)\s*reason:([^;$]+)/)?.[1];
-            poster = /(?:^|;)\s*poster(?:[;:]|$)/.test(options);
-            replies = /(?:^|;)\s*replies(?:[;:]|$)/.test(options);
-          }
-          const filterObj = { regexp, boards, excludes, mask, hide, stub, hl, top, noti, reason, poster, replies };
-          // Fields that this filter applies to (for 'general' filters)
-          if (key === 'general') {
-            const types = options.match(/(?:^|;)\s*type:([^;]*)/)?.[1].split(',')
-              || ['subject', 'name', 'filename', 'comment'];
-            for (var type of types) {
-              this.filters.get(type)?.push(filterObj) ?? this.filters.set(type, [filterObj]);
-            }
-          } else {
-            this.filters.get(key)?.push(filterObj) ?? this.filters.set(key, [filterObj]);
-          }
-        }
-      }
-      if (!this.filters.size)
-        return;
-      // conversion from array to map for string types
-      for (const type of ['MD5', 'uniqueID']) {
-        const filtersForType = this.filters.get(type);
-        if (!filtersForType)
-          continue;
-        const map = new Map();
-        for (const filter of filtersForType) {
-          map.get(filter.regexp)?.push(filter) ?? map.set(filter.regexp, [filter]);
-        }
-        this.filters.set(type, map);
-      }
-      if (g.VIEW === 'catalog') {
-        Filter.catalog();
-      } else {
-        Callbacks.Post.push({
-          name: 'Filter',
-          cb: this.node
-        });
-      }
-    },
-    // Parse comma-separated list of boards.
-    // Sites can be specified by a beginning part of the site domain followed by a colon.
-    parseBoards(boardsRaw) {
-      if (!boardsRaw)
-        return false;
-      let boards = Filter.parseBoardsMemo[boardsRaw];
-      if (boards)
-        return boards;
-      boards = dict();
-      let siteFilter = '';
-      for (var boardID of boardsRaw.split(',')) {
-        if (boardID.includes(':'))
-          [siteFilter, boardID] = boardID.split(':').slice(-2);
-        for (var siteID in g.sites) {
-          var site = g.sites[siteID];
-          if (siteID.slice(0, siteFilter.length) === siteFilter) {
-            if (['nsfw', 'sfw'].includes(boardID)) {
-              for (var boardID2 of site.sfwBoards?.(boardID === 'sfw') || []) {
-                boards[`${siteID}/${boardID2}`] = true;
-              }
-            } else {
-              boards[`${siteID}/${encodeURIComponent(boardID)}`] = true;
-            }
-          }
-        }
-      }
-      Filter.parseBoardsMemo[boardsRaw] = boards;
-      return boards;
-    },
-    parseBoardsMemo: dict(),
-    test(post, hideable = true) {
-      if (post.filterResults)
-        return post.filterResults;
-      let hide = false;
-      let stub = true;
-      let hl = undefined;
-      let top = false;
-      let noti = false;
-      let poster = false;
-      let replies = false;
-      let reasons;
-      if (QuoteYou.isYou(post)) {
-        hideable = false;
-      }
-      let mask = (post.isReply ? 2 : 1);
-      mask = (mask | (post.file ? 4 : 8));
-      const board = `${post.siteID}/${post.boardID}`;
-      const site = `${post.siteID}/*`;
-      for (const type of Filter.filters.keys()) {
-        for (const value of Filter.values(type, post)) {
-          const filtersOrMap = Filter.filters.get(type);
-          const filtersForType = Array.isArray(filtersOrMap) ? filtersOrMap : filtersOrMap.get(value);
-          if (!filtersForType)
-            continue;
-          const isString = type === 'uniqueID' || type === 'MD5';
-          for (const filter of filtersForType) {
-            if ((filter.boards && !(filter.boards[board]
-              || filter.boards[site]))
-              || (filter.excludes && (filter.excludes[board]
-                || filter.excludes[site]))
-              || (filter.mask & mask)
-              || (isString ? (filter.regexp !== value)
-                : !filter.regexp.test(value)))
-              continue;
-            if (filter.hide) {
-              if (hideable) {
-                hide = true;
-                if (stub) {
-                  ({ stub } = filter);
-                  (reasons || (reasons = [])).push(filter.reason || `Filtered ${type} ${filter.regexp}`);
-                }
-              }
-            }
-            if (filter.hl) {
-              if (!hl?.includes(filter.hl))
-                (hl || (hl = [])).push(filter.hl);
-              if (Conf['Always Show Highlighted Threads']) {
-                hide = false;
-                hideable = false;
-              }
-            }
-            if (!top)
-              ({ top } = filter);
-            if (filter.noti)
-              noti = true;
-            if (filter.poster)
-              poster = true;
-            if (filter.replies)
-              replies = true;
-          }
-        }
-      }
-      post.filterResults = { hide, stub, hl, top, noti, poster, replies, reasons };
-      return post.filterResults;
-    },
-    node() {
-      if (this.isClone ||
-        // Happens when hovering over a dead link in the catalog.
-        (!this.isReply && !this.thread.nodes.root))
-        return;
-      const { hide, stub, hl, noti, poster, replies } = Filter.test(this, (!this.isFetchedQuote && (this.isReply || (g.VIEW === 'index'))));
-      // Add temporary filter for the poster ID for future posts.
-      let reason;
-      if (poster && this.info.uniqueID) {
-        reason = `Hidden because it's the same poster as ${this.ID} (${this.filterResults.reasons})`;
-        const { uniqueID } = this.info;
-        const newFilter = {
-          regexp: uniqueID,
-          boards: false,
-          excludes: false,
-          mask: 0,
-          hide,
-          stub,
-          replies,
-          // A filter can only have one hl class.
-          hl: hl?.[0],
-          reason,
-        };
-        const map = Filter.filters.get('uniqueID');
-        if (map) {
-          map.get(uniqueID)?.push(newFilter) ?? map.set(uniqueID, [newFilter]);
-        } else {
-          Filter.filters.set('uniqueID', (new Map()).set(uniqueID, [newFilter]));
-        }
-      }
-      if (hide) {
-        if (this.isReply) {
-          PostHiding.hide(this, stub);
-          if (replies) {
-            Recursive.applyAndAdd(PostHiding.hide, this, stub, undefined, `Hidden recursively from ${this.ID}`);
-          }
-          if (poster && this.info.uniqueID) {
-            g.posts.forEach((p) => {
-              if (p.info.uniqueID === this.info.uniqueID && p !== this) {
-                PostHiding.hide(p, stub, replies, reason);
-                if (replies) {
-                  Recursive.applyAndAdd(PostHiding.hide, p, stub, undefined, `Hidden recursively from ${p.ID}`);
-                }
-              }
-            });
-          }
-        } else {
-          ThreadHiding.hide(this.thread, stub);
-        }
-      }
-      if (hl) {
-        this.thread.isHighlighted = true;
-        this.highlights = hl;
-        $.addClass(this.nodes.root, ...hl);
-        if (this.isReply) {
-          const hlFn = (post, ...hl) => { $.addClass(post.nodes.root, ...hl); };
-          if (replies)
-            Recursive.applyAndAdd(hlFn, this, ...hl);
-          if (poster && this.info.uniqueID) {
-            g.posts.forEach((p) => {
-              if (p.info.uniqueID === this.info.uniqueID && p !== this) {
-                $.addClass(p.nodes.root, ...hl);
-                if (replies)
-                  Recursive.applyAndAdd(hlFn, p, ...hl);
-              }
-            });
-          }
-        }
-      }
-      if (noti && Unread.posts && (this.ID > Unread.lastReadPost) && !QuoteYou.isYou(this)) {
-        Unread.openNotification(this, ' triggered a notification filter');
-      }
-      if (this.file?.thumbLink) {
-        $.on(this.file.thumbLink, 'click', (e) => {
-          if (!e.shiftKey || !Conf['MD5 Quick Filter in Threads'])
-            return;
-          Filter.quickFilterMD5.call(this);
-          e.preventDefault();
-          e.stopImmediatePropagation();
-        });
-      }
-    },
-    catalog() {
-      let url = g.SITE.urls.catalogJSON?.(g.BOARD);
-      if (!url)
-        return;
-      Filter.catalogData = dict();
-      $.ajax(url, { onloadend: Filter.catalogParse });
-      Callbacks.CatalogThreadNative.push({
-        name: 'Filter',
-        cb: this.catalogNode
-      });
-    },
-    catalogParse() {
-      if (![200, 404].includes(this.status)) {
-        new Notice('warning', `Failed to fetch catalog JSON data. ${this.status ? `Error ${this.statusText} (${this.status})` : 'Connection Error'}`, 1);
-        return;
-      }
-      for (var page of this.response) {
-        for (var item of page.threads) {
-          Filter.catalogData[item.no] = item;
-        }
-      }
-      g.BOARD.threads.forEach((thread) => {
-        if (thread.catalogViewNative) {
-          return Filter.catalogNode.call(thread.catalogViewNative);
-        }
-      });
-    },
-    catalogNode() {
-      if ((this.boardID !== g.BOARD.ID) || !Filter.catalogData[this.ID])
-        return;
-      if (QuoteYou.db?.get({ siteID: g.SITE.ID, boardID: this.boardID, threadID: this.ID, postID: this.ID }))
-        return;
-      const { hide, hl, top } = Filter.test(g.SITE.Build.parseJSON(Filter.catalogData[this.ID], this));
-      if (hide)
-        this.nodes.root.hidden = true;
-      if (hl) {
-        this.highlights = hl;
-        $.addClass(this.nodes.root, ...hl);
-      }
-      if (top) {
-        $.prepend(this.nodes.root.parentNode, this.nodes.root);
-        g.SITE.catalogPin?.(this.nodes.root);
-      }
-    },
-    isHidden: (post) => !!Filter.test(post).hide,
-    valueF: {
-      postID: (post) => [`${post.ID}`],
-      name: (post) => post.info.name === undefined ? [] : [post.info.name],
-      uniqueID: (post) => [post.info.uniqueID || ''],
-      tripcode: (post) => post.info.tripcode === undefined ? [] : [post.info.tripcode],
-      capcode: (post) => post.info.capcode === undefined ? [] : [post.info.capcode],
-      pass: (post) => [post.info.pass],
-      email: (post) => [post.info.email],
-      subject: (post) => [post.info.subject || (post.isReply ? undefined : '')],
-      comment: (post) => {
-        if (post.info.comment == null) {
-          post.info.comment = g.sites[post.siteID]?.Build?.parseComment?.(post.info.commentHTML.innerHTML);
-        }
-        return [post.info.comment];
-      },
-      flag: (post) => post.info.flag === undefined ? [] : [post.info.flag],
-      filename: (post) => post.files.map(f => f.name),
-      dimensions: (post) => post.files.map(f => f.dimensions),
-      filesize: (post) => post.files.map(f => f.size),
-      MD5: (post) => post.files.map(f => f.MD5)
-    },
-    values(key, post) {
-      if ($.hasOwn(Filter.valueF, key)) {
-        return Filter.valueF[key](post).filter(v => v != null);
-      } else {
-        return [key.split('+').map((k) => {
-            let f;
-            if (f = $.getOwn(Filter.valueF, k)) {
-              return f(post).map(v => v || '').join('\n');
-            } else {
-              return '';
-            }
-          }).join('\n')];
-      }
-    },
-    addFilter(type, re, cb) {
-      if (!$.hasOwn(Config.filter, type))
-        return;
-      return $.get(type, Conf[type], (item) => {
-        // Add a new line before the regexp unless the text is empty.
-        const save = item[type] ? `${item[type]}\n${re}` : re;
-        return $.set(type, save, cb);
-      });
-    },
-    removeFilters(type, res, cb) {
-      return $.get(type, Conf[type], (item) => {
-        let save = item[type];
-        const filterArray = Array.isArray(res) ? res : [...res.values()].flat();
-        const r = filterArray.map(Filter.escape).join('|');
-        save = save.replace(RegExp(`(?:$\n|^)(?:${r})$`, 'mg'), '');
-        $.set(type, save, cb);
-      });
-    },
-    showFilters(type) {
-      // Open the settings and display & focus the relevant filter textarea.
-      Settings.open('Filter');
-      const section = $('.section-container');
-      const select = $('select[name=filter]', section);
-      select.value = type;
-      Settings.selectFilter.call(select);
-      $.onExists(section, 'textarea', (ta) => {
-        const tl = ta.textLength;
-        ta.setSelectionRange(tl, tl);
-        ta.focus();
-      });
-    },
-    quickFilterMD5() {
-      const post = this instanceof Post ? this : Get.postFromNode(this);
-      const files = post.files.filter(f => f.MD5);
-      if (!files.length)
-        return;
-      const filter = files.map(f => `/${f.MD5}/`).join('\n');
-      Filter.addFilter('MD5', filter);
-      const origin = post.origin || post;
-      if (origin.isReply) {
-        PostHiding.hide(origin, undefined, undefined, files.map(f => `Filtered MD5 ${f.MD5}`).join(' & '));
-      } else if (g.VIEW === 'index') {
-        ThreadHiding.hide(origin.thread);
-      }
-      if (!Conf['MD5 Quick Filter Notifications']) {
-        // feedback for when nothing gets hidden
-        if (post.nodes.post.getBoundingClientRect().height) {
-          new Notice('info', 'MD5 filtered.', 2);
-        }
-        return;
-      }
-      let { notice } = Filter.quickFilterMD5;
-      if (notice) {
-        notice.filters.push(filter);
-        notice.posts.push(origin);
-        $('span', notice.el).textContent = `${notice.filters.length} MD5s filtered.`;
-        notice.resetTimer();
-      } else {
-        const msg = $.el('div', { innerHTML: "<span>MD5 filtered.</span> [<a href=\"javascript:;\">show</a>] [<a href=\"javascript:;\">undo</a>]" });
-        notice = (Filter.quickFilterMD5.notice = new Notice('info', msg, 10, () => delete Filter.quickFilterMD5.notice));
-        notice.filters = [filter];
-        notice.posts = [origin];
-        const links = $$('a', msg);
-        $.on(links[0], 'click', Filter.quickFilterCB.show.bind(notice));
-        $.on(links[1], 'click', Filter.quickFilterCB.undo.bind(notice));
-      }
-    },
-    quickFilterCB: {
-      show() {
-        Filter.showFilters('MD5');
-        this.close();
-      },
-      undo() {
-        Filter.removeFilters('MD5', this.filters);
-        for (var post of this.posts) {
-          if (post.isReply) {
-            PostHiding.show(post);
-          } else if (g.VIEW === 'index') {
-            ThreadHiding.show(post.thread);
-          }
-        }
-        this.close();
-      }
-    },
-    escape: (value) => value.replace(/[/\\^$\n.(){}[\]?*+|]/g, (c) => c === '\n' ? '\\n' : `\\${c}`),
-    menu: {
-      init() {
-        if (!['index', 'thread'].includes(g.VIEW) || !Conf.Menu || !Conf.Filter)
-          return;
-        const div = $.el('div', { textContent: 'Filter' });
-        const entry = {
-          el: div,
-          order: 50,
-          open(post) {
-            Filter.menu.post = post;
-            return true;
-          },
-          subEntries: []
-        };
-        for (var type of [
-          ['Name', 'name'],
-          ['Unique ID', 'uniqueID'],
-          ['Tripcode', 'tripcode'],
-          ['Capcode', 'capcode'],
-          ['Pass Date', 'pass'],
-          ['Email', 'email'],
-          ['Subject', 'subject'],
-          ['Comment', 'comment'],
-          ['Flag', 'flag'],
-          ['Filename', 'filename'],
-          ['Image dimensions', 'dimensions'],
-          ['Filesize', 'filesize'],
-          ['Image MD5', 'MD5']
-        ]) {
-          // Add a sub entry for each filter type.
-          entry.subEntries.push(Filter.menu.createSubEntry(type[0], type[1]));
-        }
-        Menu.menu.addEntry(entry);
-      },
-      createSubEntry(text, type) {
-        const el = $.el('a', {
-          href: 'javascript:;',
-          textContent: text
-        });
-        el.dataset.type = type;
-        $.on(el, 'click', Filter.menu.makeFilter);
-        return { el, open(post) { return Filter.values(type, post).length; }
-        };
-      },
-      makeFilter() {
-        const { type } = this.dataset;
-        // Convert value -> regexp, unless type is MD5
-        const values = Filter.values(type, Filter.menu.post);
-        const res = values.map((value) => {
-          if (['uniqueID', 'MD5'].includes(type)) {
-            return `/${value}/`;
-          } else {
-            return `/^${Filter.escape(value)}$/`;
-          }
-        }).join('\n');
-        Filter.addFilter(type, res, () => Filter.showFilters(type));
-      }
-    }
-  };
-
-  var Site = {
-      defaultProperties: {
-          '4chan.org': { software: 'yotsuba' },
-          // '4channel.org': {canonical: '4chan.org'},
-          '4cdn.org': { canonical: '4chan.org' },
-      },
-      init(cb) {
-          $.extend(Conf.siteProperties, Site.defaultProperties);
-          let hostname = Site.resolve();
-          if (hostname && $.hasOwn(SW, Conf.siteProperties[hostname].software)) {
-              this.set(hostname);
-              cb();
-          }
-          $.onExists(doc, 'body', () => {
-              for (let software in SW) {
-                  let changes = SW[software].detect?.();
-                  if (changes) {
-                      changes.software = software;
-                      hostname = location.hostname.replace(/^www\./, '');
-                      var properties = (Conf.siteProperties[hostname] || (Conf.siteProperties[hostname] = dict()));
-                      var changed = 0;
-                      for (var key in changes) {
-                          if (properties[key] !== changes[key]) {
-                              properties[key] = changes[key];
-                              changed++;
-                          }
-                      }
-                      if (changed)
-                          $.set('siteProperties', Conf.siteProperties);
-                      if (!g.SITE) {
-                          this.set(hostname);
-                          cb();
-                      }
-                      return;
-                  }
-              }
-          });
-      },
-      resolve(url = location) {
-          let { hostname } = url;
-          while (hostname && !$.hasOwn(Conf.siteProperties, hostname)) {
-              hostname = hostname.replace(/^[^.]*\.?/, '');
-          }
-          if (hostname) {
-              let canonical = Conf.siteProperties[hostname].canonical;
-              if (canonical)
-                  hostname = canonical;
-          }
-          return hostname;
-      },
-      parseURL(url) {
-          const siteID = Site.resolve(url);
-          return Main.parseURL(g.sites[siteID], url);
-      },
-      set(hostname) {
-          for (var ID in Conf.siteProperties) {
-              var properties = Conf.siteProperties[ID];
-              if (properties.canonical)
-                  continue;
-              var { software } = properties;
-              if (!software || !$.hasOwn(SW, software))
-                  continue;
-              let site = Object.create(SW[software]);
-              g.sites[ID] = site;
-              $.extend(site, { ID, siteID: ID, properties, software });
-          }
-          return g.SITE = g.sites[hostname];
-      }
-  };
-
-  const CatalogLinks = {
-      init() {
-          if ((g.SITE.software === 'yotsuba') && (Conf['External Catalog'] || Conf['JSON Index']) && !(Conf['JSON Index'] && (g.VIEW === 'index'))) {
-              const selectors = {
-                  thread: '.navLinks.desktop > a',
-                  archive: '.navLinks.desktop > a',
-                  catalog: '.navLinks > :first-child > a',
-                  index: '#ctrl-top > a, .cataloglink > a'
-              };
-              const selector = selectors[g.VIEW];
-              $.ready(() => {
-                  for (const link of $$(selector)) {
-                      switch (link.pathname.replace(/\/+/g, '/')) {
-                          case `/${g.BOARD}/`:
-                              if (Conf['JSON Index']) {
-                                  link.textContent = 'Index';
-                              }
-                              link.href = CatalogLinks.index();
-                              break;
-                          case `/${g.BOARD}/catalog`:
-                              link.href = CatalogLinks.catalog();
-                              break;
-                      }
-                      let catalogURL = CatalogLinks.catalog();
-                      if ((g.VIEW === 'catalog') && (catalogURL !== g.SITE.urls.catalog?.(g.BOARD))) {
-                          const catalogLink = link.parentNode.cloneNode(true);
-                          const link2 = catalogLink.firstElementChild;
-                          link2.href = catalogURL;
-                          link2.textContent = link2.hostname === location.hostname
-                              ? `${meta.name} Catalog` : 'External Catalog';
-                          $.after(link.parentNode, [$.tn(' '), catalogLink]);
-                      }
-                  }
-              });
-          }
-          if ((g.SITE.software === 'yotsuba') && Conf['JSON Index'] && Conf[`Use ${meta.name} Catalog`]) {
-              Callbacks.Post.push({
-                  name: 'Catalog Link Rewrite',
-                  cb: this.node
-              });
-          }
-          if (this.enabled = Conf['Catalog Links']) {
-              let el = UI.checkbox('Header catalog links', 'Catalog Links');
-              CatalogLinks.el = el;
-              el.id = 'toggleCatalog';
-              const input = $('input', el);
-              $.on(input, 'change', this.toggle);
-              $.sync('Header catalog links', CatalogLinks.set);
-              Header.menu.addEntry({ el, order: 95 });
-          }
-      },
-      node() {
-          for (const a of $$('a', this.nodes.comment)) {
-              // let m = a.href.match(/^https?:\/\/(boards\.4chan(?:nel)?\.org\/[^\/]+)\/catalog(#s=.*)?/);
-              let m = a.href.match(/^https?:\/\/(boards\.4chan\.org\/[^\/]+)\/catalog(#s=.*)?/);
-              if (m)
-                  a.href = `//${m[1]}/${m[2] || '#catalog'}`;
-          }
-      },
-      toggle() {
-          $.event('CloseMenu');
-          $.set('Header catalog links', this.checked);
-          CatalogLinks.set(this.checked);
-      },
-      set(useCatalog) {
-          Conf['Header catalog links'] = useCatalog;
-          CatalogLinks.setLinks(Header.boardList);
-          CatalogLinks.setLinks(Header.bottomBoardList);
-          CatalogLinks.el.title = `Turn catalog links ${useCatalog ? 'off' : 'on'}.`;
-          return $('input', CatalogLinks.el).checked = useCatalog;
-      },
-      // Also called by Header when board lists are loaded / generated.
-      setLinks(list) {
-          if ((!(CatalogLinks.enabled ?? Conf['Catalog Links'])) || !list)
-              return;
-          // do not transform links unless they differ from the expected value at most by this tail
-          const tail = /(?:index)?(?:\.\w+)?$/;
-          for (const a of $$('a:not([data-only])', list)) {
-              let { siteID, boardID } = a.dataset;
-              if (!siteID || !boardID) {
-                  let VIEW;
-                  ({ siteID, boardID, VIEW } = Site.parseURL(a));
-                  if (!siteID || !boardID || !['index', 'catalog'].includes(VIEW) || (!a.dataset.indexOptions && (a.href.replace(tail, '') !== (Get.url(VIEW, { siteID, boardID }) || '').replace(tail, ''))))
-                      continue;
-                  $.extend(a.dataset, { siteID, boardID });
-              }
-              const board = { siteID, boardID };
-              const url = Conf['Header catalog links'] ? CatalogLinks.catalog(board) : Get.url('index', board);
-              if (url) {
-                  a.href = url;
-                  if (a.dataset.indexOptions && (url.split('#')[0] === Get.url('index', board))) {
-                      a.href += (a.hash ? '/' : '#') + a.dataset.indexOptions;
-                  }
-              }
-          }
-      },
-      externalParse() {
-          CatalogLinks.externalList = dict();
-          for (const line of Conf.externalCatalogURLs.split('\n')) {
-              if (line[0] === '#')
-                  continue;
-              const url = line.split(';')[0];
-              const boards = Filter.parseBoards(line.match(/;boards:([^;]+)/)?.[1] || '*');
-              const excludes = Filter.parseBoards(line.match(/;exclude:([^;]+)/)?.[1]) || dict();
-              for (const board in boards) {
-                  if (!excludes[board] && !excludes[board.split('/')[0] + '/*']) {
-                      CatalogLinks.externalList[board] = url;
-                  }
-              }
-          }
-      },
-      external({ siteID, boardID }) {
-          if (!CatalogLinks.externalList)
-              CatalogLinks.externalParse();
-          const external = (CatalogLinks.externalList[`${siteID}/${boardID}`] || CatalogLinks.externalList[`${siteID}/*`]);
-          if (external) {
-              return external.replace(/%board/g, boardID);
-          }
-          else {
-              return undefined;
-          }
-      },
-      jsonIndex(board, hash) {
-          if ((g.SITE.ID === board.siteID) && (g.BOARD.ID === board.boardID) && (g.VIEW === 'index')) {
-              return hash;
-          }
-          else {
-              return Get.url('index', board) + hash;
-          }
-      },
-      catalog(board = g.BOARD) {
-          let external, nativeCatalog;
-          if (Conf['External Catalog'] && (external = CatalogLinks.external(board))) {
-              return external;
-          }
-          else if (Index.enabledOn(board) && Conf[`Use ${meta.name} Catalog`]) {
-              return CatalogLinks.jsonIndex(board, '#catalog');
-          }
-          else if (nativeCatalog = Get.url('catalog', board)) {
-              return nativeCatalog;
-          }
-          else {
-              return CatalogLinks.external(board);
-          }
-      },
-      index: (board = g.BOARD) => Index.enabledOn(board)
-          ? CatalogLinks.jsonIndex(board, '#index') : Get.url('index', board)
-  };
-
-  var Header = {
-    init() {
-      $.onExists(doc, 'body', () => {
-        if (!PageReady.isThisPageLegit())
-          return;
-        $.add(this.bar, [noticesRoot, this.toggle]);
-        $.prepend(d.body, this.bar);
-        $.add(d.body, Header.hover);
-        this.setBarPosition(Conf['Bottom Header']);
-      });
-      this.menu = new UI.Menu('header');
-      const menuButton = $.el('span', { className: 'menu-button' });
-      Icon.set(menuButton, 'caretDown', 'Menu');
-      const box = UI.checkbox;
-      const barFixedToggler = box('Fixed Header', 'Fixed Header');
-      const headerToggler = box('Header auto-hide', 'Auto-hide header');
-      const scrollHeaderToggler = box('Header auto-hide on scroll', 'Auto-hide header on scroll');
-      const barPositionToggler = box('Bottom Header', 'Bottom header');
-      const linkJustifyToggler = box('Centered links', 'Centered links');
-      const customNavToggler = box('Custom Board Navigation', 'Custom board navigation');
-      const footerToggler = box('Bottom Board List', 'Hide bottom board list');
-      const shortcutToggler = box('Shortcut Icons', 'Shortcut Icons');
-      const editCustomNav = $.el('a', {
-        textContent: 'Edit custom board navigation',
-        href: 'javascript:;'
-      });
-      this.barFixedToggler = barFixedToggler.firstElementChild;
-      this.scrollHeaderToggler = scrollHeaderToggler.firstElementChild;
-      this.barPositionToggler = barPositionToggler.firstElementChild;
-      this.linkJustifyToggler = linkJustifyToggler.firstElementChild;
-      this.headerToggler = headerToggler.firstElementChild;
-      this.footerToggler = footerToggler.firstElementChild;
-      this.shortcutToggler = shortcutToggler.firstElementChild;
-      this.customNavToggler = customNavToggler.firstElementChild;
-      $.on(menuButton, 'click', this.menuToggle);
-      $.on(this.headerToggler, 'change', this.toggleBarVisibility);
-      $.on(this.barFixedToggler, 'change', this.toggleBarFixed);
-      $.on(this.barPositionToggler, 'change', this.toggleBarPosition);
-      $.on(this.scrollHeaderToggler, 'change', this.toggleHideBarOnScroll);
-      $.on(this.linkJustifyToggler, 'change', this.toggleLinkJustify);
-      $.on(this.footerToggler, 'change', this.toggleFooterVisibility);
-      $.on(this.shortcutToggler, 'change', this.toggleShortcutIcons);
-      $.on(this.customNavToggler, 'change', this.toggleCustomNav);
-      $.on(editCustomNav, 'click', this.editCustomNav);
-      this.setBarFixed(Conf['Fixed Header']);
-      this.setHideBarOnScroll(Conf['Header auto-hide on scroll']);
-      this.setBarVisibility(Conf['Header auto-hide']);
-      this.setLinkJustify(Conf['Centered links']);
-      this.setShortcutIcons(Conf['Shortcut Icons']);
-      this.setFooterVisibility(Conf['Bottom Board List']);
-      $.sync('Fixed Header', this.setBarFixed);
-      $.sync('Header auto-hide on scroll', this.setHideBarOnScroll);
-      $.sync('Bottom Header', this.setBarPosition);
-      $.sync('Shortcut Icons', this.setShortcutIcons);
-      $.sync('Header auto-hide', this.setBarVisibility);
-      $.sync('Centered links', this.setLinkJustify);
-      $.sync('Bottom Board List', this.setFooterVisibility);
-      this.addShortcut('menu', menuButton, 900);
-      this.menu.addEntry({
-        el: $.el('span', { textContent: 'Header' }),
-        order: 107,
-        subEntries: [
-          { el: barFixedToggler },
-          { el: headerToggler },
-          { el: scrollHeaderToggler },
-          { el: barPositionToggler },
-          { el: linkJustifyToggler },
-          { el: footerToggler },
-          { el: shortcutToggler },
-          { el: customNavToggler },
-          { el: editCustomNav }
-        ]
-      });
-      $.on(d, 'CreateNotification', this.createNotification);
-      this.setBoardList();
-      $.onExists(doc, `${g.SITE.selectors.boardList} + *`, Header.generateFullBoardList);
-      PageReady.ready(() => {
-        let footer = $.id('boardNavDesktopFoot');
-        if ((g.SITE.software === 'yotsuba') && !footer) {
-          let absbot = $.id('absbot');
-          if (!absbot)
-            return;
-          footer = $.id('boardNavDesktop').cloneNode(true);
-          footer.id = 'boardNavDesktopFoot';
-          $('#navtopright', footer).id = 'navbotright';
-          $('#settingsWindowLink', footer).id = 'settingsWindowLinkBot';
-          $.before(absbot, footer);
-          $.global('stubCloneTopNav');
-        }
-        if (Header.bottomBoardList = $(g.SITE.selectors.boardListBottom)) {
-          for (var a of $$('a', Header.bottomBoardList)) {
-            if ((a.hostname === location.hostname) && (a.pathname.split('/')[1] === g.BOARD.ID))
-              a.className = 'current';
-          }
-          CatalogLinks.setLinks(Header.bottomBoardList);
-        }
-      });
-      if ((g.SITE.software === 'yotsuba') && ((g.VIEW === 'catalog') || !Conf['Disable Native Extension'])) {
-        const cs = $.el('a', { href: 'javascript:;' });
-        if (g.VIEW === 'catalog') {
-          cs.title = (cs.textContent = 'Catalog Settings');
-          Icon.set(cs, 'bookOpen', 'Catalog Settings');
-          this.addShortcut('native', cs, 810);
-        } else {
-          cs.title = (cs.textContent = '4chan Settings');
-          cs.className = 'native-settings';
-          this.addShortcut('native', cs, 810);
-        }
-        $.on(cs, 'click', () => $.id('settingsWindowLink').click());
-      }
-      this.enableDesktopNotifications();
-    },
-    bar: $.el('div', { id: 'header-bar' }),
-    shortcuts: $.el('span', { id: 'shortcuts' }),
-    hover: $.el('div', { id: 'hoverUI' }),
-    toggle: $.el('div', { id: 'scroll-marker' }),
-    setBoardList() {
-      let boardList = $.el('span', { id: 'board-list' });
-      Header.boardList = boardList;
-      $.extend(boardList, { innerHTML: "<span id=\"custom-board-list\"></span><span id=\"full-board-list\" hidden><span class=\"hide-board-list-container brackets-wrap\"><a href=\"javascript:;\" class=\"hide-board-list-button\">&nbsp;-&nbsp;</a></span> <span class=\"boardList\"></span></span>" });
-      const btn = $('.hide-board-list-button', boardList);
-      $.on(btn, 'click', Header.toggleBoardList);
-      $.prepend(Header.bar, [Header.boardList, Header.shortcuts]);
-      Header.setCustomNav(Conf['Custom Board Navigation']);
-      Header.generateBoardList(Conf.boardnav);
-      $.sync('Custom Board Navigation', Header.setCustomNav);
-      $.sync('boardnav', Header.generateBoardList);
-    },
-    generateFullBoardList() {
-      let nodes;
-      if (g.SITE.transformBoardList) {
-        nodes = g.SITE.transformBoardList();
-      } else {
-        nodes = [...$(g.SITE.selectors.boardList).cloneNode(true).childNodes];
-      }
-      const fullBoardList = $('.boardList', Header.boardList);
-      $.add(fullBoardList, nodes);
-      for (var a of $$('a', fullBoardList)) {
-        if ((a.hostname === location.hostname) && (a.pathname.split('/')[1] === g.BOARD.ID))
-          a.className = 'current';
-      }
-      CatalogLinks.setLinks(fullBoardList);
-    },
-    generateBoardList(boardnav) {
-      const list = $('#custom-board-list', Header.boardList);
-      $.rmAll(list);
-      if (!boardnav)
-        return;
-      boardnav = boardnav.replace(/(\r\n|\n|\r)/g, ' ');
-      const segments = boardnav.split(/(\{\{(?:"[^"]+")?|\}\})/);
-      const spanStack = [];
-      let currentContainer = list;
-      segments.forEach(segment => {
-        if (segment.startsWith('{{')) {
-          const span = $.el('span');
-          $.add(currentContainer, span);
-          spanStack.push(span);
-          currentContainer = span;
-          if (segment.length > 2)
-            span.className = segment.slice(3, -1);
-        } else if (segment === '}}') {
-          spanStack.pop();
-          currentContainer = spanStack.length > 0
-            ? spanStack[spanStack.length - 1] : list;
-        } else {
-          const re = /[\w@]+(-(all|title|replace|full|index|catalog|archive|expired|nt|(mode|sort|text):"[^"]+"(,"[^"]+")?))*|[^\w@]+/g;
-          const segmentNodes = (segment.match(re) || []).map((t) => Header.mapCustomNavigation(t));
-          segmentNodes.forEach(node => currentContainer.appendChild(node));
-        }
-      });
-      CatalogLinks.setLinks(list);
-    },
-    mapCustomNavigation(t) {
-      let a, href, m, url, urlV;
-      if (/^[^\w@]/.test(t))
-        return $.tn(t);
-      let text = (url = null);
-      t = t.replace(/-text:"([^"]+)"(?:,"([^"]+)")?/g, (m0, m1, m2) => {
-        text = m1;
-        url = m2;
-        return '';
-      });
-      let indexOptions = [];
-      t = t.replace(/-(?:mode|sort):"([^"]+)"/g, (m0, m1) => {
-        indexOptions.push(m1.toLowerCase().replace(/\ /g, '-'));
-        return '';
-      });
-      indexOptions = indexOptions.join('/');
-      if (/^toggle-all/.test(t)) {
-        a = $.el('a', {
-          className: 'show-board-list-button',
-          textContent: text || '+',
-          href: 'javascript:;'
-        });
-        $.on(a, 'click', Header.toggleBoardList);
-        return a;
-      }
-      if (/^external/.test(t)) {
-        a = $.el('a', {
-          href: url || 'javascript:;',
-          textContent: text || '+',
-          className: 'external'
-        });
-        if (/-nt/.test(t)) {
-          a.target = '_blank';
-          a.rel = 'noopener';
-        }
-        return a;
-      }
-      let boardID = t.split('-')[0];
-      if (boardID === 'current') {
-        // if (['boards.4chan.org', 'boards.4channel.org'].includes(location.hostname)) {
-        if (location.hostname === 'boards.4chan.org') {
-          boardID = g.BOARD.ID;
-        } else {
-          a = $.el('a', {
-            href: `/${g.BOARD.ID}/`,
-            textContent: text || decodeURIComponent(g.BOARD.ID),
-            className: 'current'
-          });
-          if (/-nt/.test(t)) {
-            a.target = '_blank';
-            a.rel = 'noopener';
-          }
-          if (/-index/.test(t)) {
-            a.dataset.only = 'index';
-          } else if (/-catalog/.test(t)) {
-            a.dataset.only = 'catalog';
-            a.href += 'catalog.html';
-          } else if (/-(archive|expired)/.test(t)) {
-            a = a.firstChild; // Its text node.
-          }
-          return a;
-        }
-      }
-      if (boardID === '@') {
-        a = $.el('a', {
-          href: 'https://x.com/4chan',
-          title: '4chan Twitter',
-          className: 'navSmall',
-          textContent: '@'
-        });
-      } else {
-        a = $.el('a', {
-          // href: `//${BoardConfig.domain(boardID)}/${boardID}/`,
-          href: `//boards.4chan.org/${boardID}/`,
-          textContent: boardID,
-          title: BoardConfig.title(boardID)
-        });
-        if (['catalog', 'archive'].includes(g.VIEW) && (urlV = Get.url(g.VIEW, { siteID: '4chan.org', boardID })))
-          a.href = urlV;
-        if ((a.hostname === location.hostname) && (boardID === g.BOARD.ID)) {
-          a.className = 'current';
-        }
-      }
-      a.textContent = /-title/.test(t) || (/-replace/.test(t) && (a.hostname === location.hostname) && (boardID === g.BOARD.ID))
-        ? a.title || a.textContent : /-full/.test(t)
-        ? (`/${boardID}/`) + (a.title ? ` - ${a.title}` : '')
-        : text || boardID;
-      if (m = t.match(/-(index|catalog)/)) {
-        const urlIC = CatalogLinks[m[1]]({ siteID: '4chan.org', boardID });
-        if (urlIC) {
-          a.dataset.only = m[1];
-          a.href = urlIC;
-          if (m[1] === 'catalog')
-            $.addClass(a, 'catalog');
-        } else {
-          return a.firstChild; // Its text node.
-        }
-      }
-      if (Conf['JSON Index'] && indexOptions) {
-        a.dataset.indexOptions = indexOptions;
-        // if (['boards.4chan.org', 'boards.4channel.org'].includes(a.hostname) && (a.pathname.split('/')[2] === '')) {
-        if (a.hostname === 'boards.4chan.org' && a.pathname.split('/')[2] === '') {
-          a.href += (a.hash ? '/' : '#') + indexOptions;
-        }
-      }
-      if (/-archive/.test(t)) {
-        if (href = Redirect.to('board', { boardID })) {
-          a.href = href;
-        } else {
-          return a.firstChild; // Its text node.
-        }
-      }
-      if (/-expired/.test(t)) {
-        if (BoardConfig.isArchived(boardID)) {
-          // a.href = `//${BoardConfig.domain(boardID)}/${boardID}/archive`;
-          a.href = `//boards.4chan.org/${boardID}/archive`;
-        } else {
-          return a.firstChild; // Its text node.
-        }
-      }
-      if (/-nt/.test(t)) {
-        a.target = '_blank';
-        a.rel = 'noopener';
-      }
-      return a;
-    },
-    applyToggle(condition, ...targets) {
-      for (const [el, ...classes] of targets) {
-        condition ? $.addClass(el, ...classes) : $.rmClass(el, ...classes);
-      }
-    },
-    setShortcutIcons(show) {
-      Header.shortcutToggler.checked = show;
-      Header.applyToggle(show, [doc, 'shortcut-icons']);
-    },
-    setBarFixed(fixed) {
-      Header.barFixedToggler.checked = fixed;
-      Header.applyToggle(fixed, [doc, 'fixed'], [Header.bar, 'dialog']);
-    },
-    setLinkJustify(centered) {
-      Header.linkJustifyToggler.checked = centered;
-      Header.applyToggle(centered, [doc, 'centered-links']);
-    },
-    hideBarOnScroll() {
-      const offsetY = window.scrollY;
-      Header.applyToggle(offsetY > (Header.previousOffset || 0), [Header.bar, 'autohide', 'scroll']);
-      return Header.previousOffset = offsetY;
-    },
-    toggleBoardList() {
-      const { bar } = Header;
-      const custom = $('#custom-board-list', bar);
-      const full = $('#full-board-list', bar);
-      const showBoardList = !full.hidden;
-      custom.hidden = !showBoardList;
-      full.hidden = showBoardList;
-    },
-    toggleLinkJustify() {
-      $.event('CloseMenu');
-      const centered = this.nodeName === 'INPUT' ? this.checked : undefined;
-      Header.setLinkJustify(centered);
-      $.set('Centered links', centered);
-    },
-    toggleBarFixed() {
-      $.event('CloseMenu');
-      Header.setBarFixed(this.checked);
-      Conf['Fixed Header'] = this.checked;
-      $.set('Fixed Header', this.checked);
-    },
-    toggleShortcutIcons() {
-      $.event('CloseMenu');
-      Header.setShortcutIcons(this.checked);
-      Conf['Shortcut Icons'] = this.checked;
-      $.set('Shortcut Icons', this.checked);
-    },
-    setBarVisibility(hide) {
-      Header.headerToggler.checked = hide;
-      $.event('CloseMenu');
-      (hide ? $.addClass : $.rmClass)(Header.bar, 'autohide');
-      (hide ? $.addClass : $.rmClass)(doc, 'autohide');
-    },
-    toggleBarVisibility() {
-      const hide = this.nodeName === 'INPUT'
-        ? this.checked : !$.hasClass(Header.bar, 'autohide');
-      Conf['Header auto-hide'] = hide;
-      $.set('Header auto-hide', hide);
-      Header.setBarVisibility(hide);
-      const message = `The header bar will ${hide
-      ? 'automatically hide itself.' : 'remain visible.'}`;
-      new Notice('info', message, 2);
-    },
-    setHideBarOnScroll(hide) {
-      Header.scrollHeaderToggler.checked = hide;
-      if (hide) {
-        $.on(window, 'scroll', Header.hideBarOnScroll);
-        return;
-      }
-      $.off(window, 'scroll', Header.hideBarOnScroll);
-      $.rmClass(Header.bar, 'scroll');
-      Header.bar.classList.toggle('autohide', Conf['Header auto-hide']);
-    },
-    toggleHideBarOnScroll() {
-      const hide = this.checked;
-      $.cb.checked.call(this);
-      Header.setHideBarOnScroll(hide);
-    },
-    setBarPosition(bottom) {
-      if (Header.barPositionToggler)
-        Header.barPositionToggler.checked = bottom;
-      $.event('CloseMenu');
-      const args = bottom ? [
-        'bottom-header',
-        'top-header',
-        'after'
-      ] : [
-        'top-header',
-        'bottom-header',
-        'add'
-      ];
-      $.addClass(doc, args[0]);
-      $.rmClass(doc, args[1]);
-      return $[args[2]](Header.bar, noticesRoot);
-    },
-    toggleBarPosition() {
-      $.cb.checked.call(this);
-      Header.setBarPosition(this.checked);
-    },
-    setFooterVisibility(hide) {
-      Header.footerToggler.checked = hide;
-      doc.classList.toggle('hide-bottom-board-list', hide);
-    },
-    toggleFooterVisibility() {
-      $.event('CloseMenu');
-      const hide = this.nodeName === 'INPUT'
-        ? this.checked : $.hasClass(doc, 'hide-bottom-board-list');
-      Header.setFooterVisibility(hide);
-      $.set('Bottom Board List', hide);
-      const message = hide
-        ? 'The bottom navigation will now be hidden.'
-        : 'The bottom navigation will remain visible.';
-      return new Notice('info', message, 2);
-    },
-    setCustomNav(show) {
-      Header.customNavToggler.checked = show;
-      const cust = $('#custom-board-list', Header.bar);
-      const full = $('#full-board-list', Header.bar);
-      const btn = $('.hide-board-list-container', full);
-      return [cust.hidden, full.hidden, btn.hidden] = show
-        ? [false, true, false] : [true, false, true];
-    },
-    toggleCustomNav() {
-      $.cb.checked.call(this);
-      Header.setCustomNav(this.checked);
-    },
-    editCustomNav() {
-      Settings.open('Advanced');
-      const settings = $.id('fourchanx-settings');
-      $('[name=boardnav]', settings).focus();
-    },
-    scrollTo(root, down = false, needed = false) {
-      let height, x;
-      if (!root.offsetParent)
-        return; // hidden or fixed
-      if (down) {
-        x = Header.getBottomOf(root);
-        if (Conf['Fixed Header'] && Conf['Header auto-hide on scroll'] && Conf['Bottom header']) {
-          ({ height } = Header.bar.getBoundingClientRect());
-          const isHidden = Header.isHidden();
-          if (x <= 0 && !isHidden)
-            x += height;
-          else if (x > 0 && isHidden)
-            x -= height;
-        }
-        if (!needed || (x < 0))
-          return window.scrollBy(0, -x);
-      } else {
-        x = Header.getTopOf(root);
-        if (Conf['Fixed Header'] && Conf['Header auto-hide on scroll'] && !Conf['Bottom header']) {
-          ({ height } = Header.bar.getBoundingClientRect());
-          const isHidden = Header.isHidden();
-          if (x >= 0 && !isHidden)
-            x += height;
-          else if (x < 0 && isHidden)
-            x -= height;
-        }
-        if (!needed || (x < 0))
-          return window.scrollBy(0, x);
-      }
-    },
-    scrollToIfNeeded(root, down) { Header.scrollTo(root, down, true); },
-    getTopOf(root) {
-      let { top } = root.getBoundingClientRect();
-      if (Conf['Fixed Header'] && !Conf['Bottom Header']) {
-        const headRect = Header.toggle.getBoundingClientRect();
-        top -= headRect.top + headRect.height;
-      }
-      return top;
-    },
-    getBottomOf(root) {
-      const { clientHeight } = doc;
-      let bottom = clientHeight - root.getBoundingClientRect().bottom;
-      if (Conf['Fixed Header'] && Conf['Bottom Header']) {
-        const headRect = Header.toggle.getBoundingClientRect();
-        bottom -= (clientHeight - headRect.bottom) + headRect.height;
-      }
-      return bottom;
-    },
-    isNodeVisible(node) {
-      if (d.hidden || !doc.contains(node))
-        return false;
-      const { height } = node.getBoundingClientRect();
-      return ((Header.getTopOf(node) + height) >= 0) && ((Header.getBottomOf(node) + height) >= 0);
-    },
-    isHidden() {
-      const { top } = Header.bar.getBoundingClientRect();
-      return Conf['Bottom header'] ? top === doc.clientHeight : top < 0;
-    },
-    addShortcut(id, el, index) {
-      const shortcut = $.el('span', {
-        id: `shortcut-${id}`,
-        className: 'shortcut brackets-wrap'
-      });
-      $.add(shortcut, el);
-      shortcut.dataset.index = index.toString();
-      for (var item of $$('[data-index]', Header.shortcuts)) {
-        if (+item.dataset.index > +index) {
-          $.before(item, shortcut);
-          return;
-        }
-      }
-      $.add(Header.shortcuts, shortcut);
-    },
-    rmShortcut(el) { $.rm(el.parentElement); },
-    menuToggle(e) { Header.menu.toggle(e, this, g); },
-    createNotification(e) {
-      const { type, content, lifetime } = e.detail;
-      let notice = new Notice(type, content, lifetime);
-      return notice;
-    },
-    areNotificationsEnabled: false,
-    enableDesktopNotifications() {
-      let notice;
-      if (!window.Notification || !Conf['Desktop Notifications'])
-        return;
-      switch (Notification.permission) {
-        case 'granted':
-          Header.areNotificationsEnabled = true;
-          return;
-        case 'denied': return; // requestPermission doesn't work if status is 'denied', but it'll still work if status is 'default'.
-      }
-      const el = $.el('span', { innerHTML: `${meta.name} needs your permission to show desktop notifications. ` +
-          `[<a href=\"${E(meta.upstreamFaq)}#why-is-4chan-x-asking-for-permission-to-show-desktop-notifications\" target=\"_blank\">FAQ</a>]` +
-          `<br><button>Authorize</button> or <button>Disable</button>`
-      });
-      const [authorize, disable] = $$('button', el);
-      $.on(authorize, 'click', () => Notification.requestPermission((status) => {
-        Header.areNotificationsEnabled = status === 'granted';
-        if (status === 'default')
-          return;
-        notice.close();
-      }));
-      $.on(disable, 'click', () => {
-        $.set('Desktop Notifications', false);
-        notice.close();
-      });
-      return notice = new Notice('info', el);
-    }
-  };
-
-  function MediaControls() {
-    return (h("div", { class: 'media-controls' },
-      h("button", { "data-action": "rotateLeft" }, Icon.raw('rotateLeft')),
-      h("button", { "data-action": "rotateRight" }, Icon.raw('rotateRight'))));
-  }
-
-  const Sound = {
-    /** Add event listeners for videos with audio from a third party */
-    setupSync(video, audio) {
-      const syncTime = () => {
-        video.currentTime = audio.currentTime % video.duration;
-      };
-      $.on(audio, 'playing play', () => {
-        syncTime();
-        video.play();
-      });
-      $.on(audio, 'seeked waiting', syncTime);
-      $.on(audio, 'ratechange', () => {
-        video.currentTime = audio.currentTime;
-        video.playbackRate = audio.playbackRate;
-      });
-      $.on(audio, 'waiting pause', () => { video.pause(); });
-      $.one(audio, 'canplay', () => {
-        if (audio.currentTime < .1)
-          video.currentTime = 0;
-      });
-    },
-    setupSoundpost(el, file) {
-      const soundUrlMatch = file.name.match(/\[sound=([^\]]+\.(?:webm|ogg|mp3|wav|m4a))]/i);
-      if (!soundUrlMatch)
-        return;
-      let url;
-      try {
-        const src = decodeURIComponent(soundUrlMatch[1]);
-        url = new URL(src.startsWith('http') ? src : `https://${src}`);
-      } catch {
-        return;
-      }
-      const audioEl = new Audio(url.href);
-      Volume.setup(audioEl);
-      if (el instanceof HTMLVideoElement) {
-        Sound.setupSync(el, audioEl);
-        el.controls = false;
-      }
-      audioEl.loop = true;
-      audioEl.controls = Conf['Show Controls'];
-      audioEl.autoplay = Conf.Autoplay;
-      el.after(audioEl);
-      file.audio = audioEl;
-    }
-  };
-
-  var ImageExpand = {
-    init() {
-      if (!(this.enabled = Conf['Image Expansion'] && ['index', 'thread'].includes(g.VIEW)))
-        return;
-      this.EAI = $.el('a', {
-        className: 'expand-all-shortcut',
-        title: 'Expand All Images',
-        href: 'javascript:;'
-      });
-      Icon.set(this.EAI, 'expand', 'Expand All Images');
-      $.on(this.EAI, 'click', this.cb.toggleAll);
-      Header.addShortcut('expand-all', this.EAI, 520);
-      $.on(d, 'scroll visibilitychange', this.cb.playVideos);
-      this.videoControls = $.el('span', { className: 'video-controls' });
-      $.extend(this.videoControls, { innerHTML: " <a href=\"javascript:;\" title=\"You can also contract the video by dragging it to the left.\">contract</a>" });
-      Callbacks.Post.push({ name: 'Image Expansion', cb: this.node });
-    },
-    node() {
-      if (!this.file || (!this.file.isImage && !this.file.isVideo))
-        return;
-      $.on(this.file.thumbLink, 'click', ImageExpand.cb.toggle);
-      if (this.isClone) {
-        if (this.file.isExpanding) {
-          // If we clone a post where the image is still loading,
-          // make it loading in the clone too.
-          ImageExpand.contract(this);
-          ImageExpand.expand(this);
-        } else if (this.file.isExpanded && this.file.isVideo) {
-          Volume.setup(this.file.fullImage);
-          ImageExpand.setupVideoCB(this);
-          ImageExpand.setupVideo(this, !this.origin.file.fullImage?.paused || this.origin.file.wasPlaying, this.file.fullImage.controls);
-        }
-      } else if (ImageExpand.on && !this.isHidden && !this.isFetchedQuote &&
-        (Conf['Expand spoilers'] || !this.file.isSpoiler) &&
-        (Conf['Expand videos'] || !this.file.isVideo)) {
-        ImageExpand.expand(this);
-      }
-    },
-    cb: {
-      toggle(e) {
-        if ($.modifiedClick(e))
-          return;
-        const post = Get.postFromNode(this);
-        const { file } = post;
-        if (file.isExpanded && ImageCommon.onControls(e))
-          return;
-        e.preventDefault();
-        if (!Conf.Autoplay && file.fullImage?.paused) {
-          file.fullImage.play();
-        } else {
-          ImageExpand.toggle(post);
-        }
-      },
-      toggleAll() {
-        let func;
-        $.event('CloseMenu');
-        const threadRoot = Nav.getThread();
-        const toggle = (post) => {
-          const { file } = post;
-          if (!file || (!file.isImage && !file.isVideo) || !doc.contains(post.nodes.root))
-            return;
-          if (ImageExpand.on &&
-            ((!Conf['Expand spoilers'] && file.isSpoiler) ||
-              (!Conf['Expand videos'] && file.isVideo) ||
-              (Conf['Expand from here'] && (Header.getTopOf(file.thumb) < 0)) ||
-              (Conf['Expand thread only'] && (g.VIEW === 'index') && !threadRoot?.contains(file.thumb)))) {
-            return;
-          }
-          return $.queueTask(func, post);
-        };
-        if (ImageExpand.on = $.hasClass(ImageExpand.EAI, 'expand-all-shortcut')) {
-          ImageExpand.EAI.className = 'contract-all-shortcut';
-          ImageExpand.EAI.title = 'Contract All Images';
-          Icon.set(ImageExpand.EAI, 'shrink', 'Contract All Images');
-          func = ImageExpand.expand;
-        } else {
-          ImageExpand.EAI.className = 'expand-all-shortcut';
-          ImageExpand.EAI.title = 'Expand All Images';
-          Icon.set(ImageExpand.EAI, 'expand', 'Expand All Images');
-          func = ImageExpand.contract;
-        }
-        return g.posts.forEach((post) => {
-          for (post of [post, ...post.clones]) {
-            toggle(post);
-          }
-        });
-      },
-      playVideos() {
-        return g.posts.forEach((post) => {
-          for (post of [post, ...post.clones]) {
-            var { file } = post;
-            if (!file || !file.isVideo || !file.isExpanded)
-              continue;
-            var video = file.fullImage;
-            var visible = ($.hasAudio(video) && !video.muted) || Header.isNodeVisible(video);
-            if (visible && file.wasPlaying) {
-              delete file.wasPlaying;
-              video.play();
-            } else if (!visible && !video.paused) {
-              file.wasPlaying = true;
-              video.pause();
-            }
-          }
-        });
-      },
-      setFitness() {
-        return $[this.checked ? 'addClass' : 'rmClass'](doc, this.name.toLowerCase().replace(/\s+/g, '-'));
-      }
-    },
-    toggle(post) {
-      if (!post.file.isExpanding && !post.file.isExpanded) {
-        post.file.scrollIntoView = Conf['Scroll into view'];
-        ImageExpand.expand(post);
-        return;
-      }
-      ImageExpand.contract(post);
-      if (Conf['Advance on contract']) {
-        let next = post.nodes.root;
-        while ((next = $.x("following::div[contains(@class,'postContainer')][1]", next))) {
-          if (!$('.stub', next) && (next.offsetHeight !== 0))
-            break;
-        }
-        if (next)
-          Header.scrollTo(next);
-      }
-    },
-    contract(post) {
-      let bottom, el, oldHeight, scrollY;
-      const { file } = post;
-      if (el = file.fullImage) {
-        const top = Header.getTopOf(el);
-        bottom = top + el.getBoundingClientRect().height;
-        oldHeight = d.body.clientHeight;
-        ({ scrollY } = window);
-      }
-      $.rmClass(post.nodes.root, 'expanded-image');
-      $.rmClass(file.thumb, 'expanding');
-      $.rm(file.videoControls);
-      file.thumbLink.href = file.url;
-      file.thumbLink.target = '_blank';
-      for (var x of ['isExpanding', 'isExpanded', 'videoControls', 'wasPlaying', 'scrollIntoView']) {
-        delete file[x];
-      }
-      if (!el)
-        return;
-      if (doc.contains(el)) {
-        if (bottom <= 0) {
-          // For images entirely above us, scroll to remain in place.
-          window.scrollBy(0, ((scrollY - window.scrollY) + d.body.clientHeight) - oldHeight);
-        } else {
-          // For images not above us that would be moved above us, scroll to the thumbnail.
-          Header.scrollToIfNeeded(post.nodes.root);
-        }
-        // If we have scrolled right viewing an expanded image, return to the left.
-        if (window.scrollX > 0)
-          window.scrollBy(-window.scrollX, 0);
-      }
-      $.off(el, 'error', ImageExpand.error);
-      ImageCommon.pushCache(el);
-      if (file.isVideo) {
-        ImageCommon.pause(el);
-        for (var eventName in ImageExpand.videoCB) {
-          var cb = ImageExpand.videoCB[eventName];
-          $.off(el, eventName, cb);
-        }
-      }
-      if (Conf['Restart when Opened'])
-        ImageCommon.rewind(file.thumb);
-      delete file.fullImage;
-      $.queueTask(() => {
-        // XXX Work around Chrome/Chromium not firing mouseover on the thumbnail.
-        if (file.isExpanding || file.isExpanded)
-          return;
-        $.rmClass(el, 'full-image');
-        if (el.id)
-          return;
-        $.rm(el);
-      });
-      if (file.audio) {
-        file.audio.remove();
-        delete file.audio;
-        if (file.audioSlider) {
-          file.audioSlider.remove();
-          delete file.audioSlider;
-        }
-      }
-      if (file.imageMediaControls) {
-        $.rm(file.imageMediaControls);
-        delete file.imageMediaControls;
-      }
-    },
-    expand(post, src) {
-      const { file } = post;
-      const { thumb, thumbLink, isVideo } = file;
-      // Do not expand images of hidden/filtered replies, or already expanded pictures.
-      if (post.isHidden || file.isExpanding || file.isExpanded)
-        return;
-      let el;
-      $.addClass(thumb, 'expanding');
-      file.isExpanding = true;
-      if (file.fullImage) {
-        el = file.fullImage;
-      } else if (ImageCommon.cache?.dataset.fileID === `${post.fullID}.${file.index}`) {
-        el = (file.fullImage = ImageCommon.popCache());
-        $.on(el, 'error', ImageExpand.error);
-        if (Conf['Restart when Opened'] && (el.id !== 'ihover'))
-          ImageCommon.rewind(el);
-        el.removeAttribute('id');
-      } else {
-        el = (file.fullImage = $.el((isVideo ? 'video' : 'img')));
-        el.dataset.fileID = `${post.fullID}.${file.index}`;
-        $.on(el, 'error', ImageExpand.error);
-        el.src = src || file.url;
-      }
-      el.className = 'full-image';
-      $.after(thumb, el);
-      if (isVideo) {
-        // add contract link to file info
-        if (!file.videoControls) {
-          file.videoControls = ImageExpand.videoControls.cloneNode(true);
-          $.add(file.text, file.videoControls);
-        }
-        // disable link to file so native controls can work
-        thumbLink.removeAttribute('href');
-        thumbLink.removeAttribute('target');
-        el.loop = true;
-        Volume.setup(el);
-        ImageExpand.setupVideoCB(post);
-      }
-      if (!isVideo) {
-        $.asap((() => el.naturalHeight), () => ImageExpand.completeExpand(post));
-      } else if (el.readyState >= el.HAVE_METADATA) {
-        ImageExpand.completeExpand(post);
-      } else {
-        $.on(el, 'loadedmetadata', () => ImageExpand.completeExpand(post));
-      }
-      if (Conf['Enable sound posts'] && Conf['Allow Sound'])
-        Sound.setupSoundpost(el, file);
-      if (Conf['Image Media Controls']) {
-        const controls = $.el('div', MediaControls());
-        const [y, x] = Conf.imageMediaControlsPosition.split('-');
-        [...controls.childNodes][0].classList.add(`media-controls-${x}`, `media-controls-${y}`);
-        const container = $.el('div', { className: 'media-controls-container' });
-        const wrapper = $.el('div', { className: 'media-controls-wrapper' });
-        file.imageMediaControls = container;
-        $.add(container, [...controls.childNodes]);
-        $.add(wrapper, el);
-        $.add(container, wrapper);
-        $.prepend(thumbLink, container);
-        const totalRotationStates = 4;
-        let currentRotationState = 0;
-        let initialImageContentWidth = 0;
-        const positiveModulo = (a, n) => ((a % n) + n) % n;
-        const compensateTransformedSize = () => {
-          const rotationState = positiveModulo(currentRotationState, totalRotationStates);
-          const { width, height } = wrapper.getBoundingClientRect();
-          if (rotationState === 1 || rotationState === 3) {
-            el.style.maxHeight = `${initialImageContentWidth}px`;
-          } else {
-            el.style.maxHeight = '';
-          }
-          Object.assign(container.style, { width: `${width}px`, height: `${height}px` });
-        };
-        const compensateTransformedSizeObserver = new ResizeObserver(compensateTransformedSize);
-        // Capture width once the element is actually laid out, regardless of
-        // whether expansion was triggered by click or keybinding.
-        const initWidthObserver = new ResizeObserver((entries, obs) => {
-          const w = entries[0]?.contentRect.width ?? 0;
-          if (w > 0) {
-            initialImageContentWidth = w;
-            el.style.maxWidth = `${w}px`;
-            el.style.maxHeight = '';
-            obs.disconnect();
-          }
-        });
-        initWidthObserver.observe(el);
-        function updateRotation() {
-          compensateTransformedSizeObserver.observe(wrapper);
-          wrapper.setAttribute('rotation', String(positiveModulo(currentRotationState, totalRotationStates)));
-          compensateTransformedSize();
-        }
-        const leftBtn = thumbLink.querySelector('[data-action="rotateLeft"]');
-        const rightBtn = thumbLink.querySelector('[data-action="rotateRight"]');
-        $.on(leftBtn, 'click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          currentRotationState--;
-          updateRotation();
-        });
-        $.on(rightBtn, 'click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          currentRotationState++;
-          updateRotation();
-        });
-      }
-    },
-    completeExpand(post) {
-      const { file } = post;
-      if (!file.isExpanding)
-        return; // contracted before the image loaded
-      const bottom = Header.getTopOf(file.thumb) + file.thumb.getBoundingClientRect().height;
-      const oldHeight = d.body.clientHeight;
-      const { scrollY } = window;
-      $.addClass(post.nodes.root, 'expanded-image');
-      $.rmClass(file.thumb, 'expanding');
-      file.isExpanded = true;
-      delete file.isExpanding;
-      // Scroll to keep our place in the thread when images are expanded above us.
-      if (doc.contains(post.nodes.root) && (bottom <= 0))
-        window.scrollBy(0, ((scrollY - window.scrollY) + d.body.clientHeight) - oldHeight);
-      // Scroll to display full image.
-      if (file.scrollIntoView) {
-        delete file.scrollIntoView;
-        const imageBottom = Math.min(doc.clientHeight - file.fullImage.getBoundingClientRect().bottom - 25, Header.getBottomOf(file.fullImage));
-        if (imageBottom < 0)
-          window.scrollBy(0, Math.min(-imageBottom, Header.getTopOf(file.fullImage)));
-      }
-      if (file.isVideo)
-        ImageExpand.setupVideo(post, Conf.Autoplay, Conf['Show Controls']);
-    },
-    setupVideo(post, playing, controls) {
-      const { audio } = post.file;
-      const fullImage = post.file.fullImage;
-      if (!playing && !audio) {
-        fullImage.controls = controls;
-        return;
-      }
-      fullImage.controls = false;
-      $.asap((() => doc.contains(fullImage)), function () {
-        if (!d.hidden && Header.isNodeVisible(fullImage)) {
-          fullImage.play();
-        } else {
-          post.file.wasPlaying = true;
-        }
-      });
-      fullImage.controls = controls && !audio;
-    },
-    videoCB: (function () {
-      // dragging to the left contracts the video
-      let mousedown = false;
-      return {
-        mouseover: () => mousedown = false,
-        mousedown: (e) => { if (e.button === 0) {
-          return mousedown = true;
-        } },
-        mouseup: (e) => { if (e.button === 0) {
-          return mousedown = false;
-        } },
-        mouseout(e) { if (((e.buttons & 1) || mousedown) && (e.clientX <= this.getBoundingClientRect().left)) {
-          ImageExpand.toggle(Get.postFromNode(this));
-        } }
-      };
-    })(),
-    setupVideoCB(post) {
-      for (var eventName in ImageExpand.videoCB) {
-        var cb = ImageExpand.videoCB[eventName];
-        $.on(post.file.fullImage, eventName, cb);
-      }
-      if (post.file.videoControls)
-        $.on(post.file.videoControls.firstElementChild, 'click', () => ImageExpand.toggle(post));
-    },
-    error() {
-      const post = Get.postFromNode(this);
-      $.rm(this);
-      delete post.file.fullImage;
-      // Images can error:
-      //  - before the image started loading.
-      //  - after the image started loading.
-      // Don't try to re-expand if it was already contracted.
-      if (!post.file.isExpanding && !post.file.isExpanded)
-        return;
-      if (ImageCommon.decodeError(this, post.file))
-        return ImageExpand.contract(post);
-      // Don't autoretry images from the archive.
-      if (ImageCommon.isFromArchive(this))
-        return ImageExpand.contract(post);
-      ImageCommon.error(this, post, post.file, 10 * SECOND, function (URL) {
-        if (post.file.isExpanding || post.file.isExpanded) {
-          ImageExpand.contract(post);
-          if (URL)
-            return ImageExpand.expand(post, URL);
-        }
-      });
-    },
-    menu: {
-      init() {
-        if (!ImageExpand.enabled)
-          return;
-        const el = $.el('span', {
-          textContent: 'Image Expansion',
-          className: 'image-expansion-link'
-        });
-        const { createSubEntry } = ImageExpand.menu;
-        const subEntries = [];
-        for (var name in Config.imageExpansion) {
-          var conf = Config.imageExpansion[name];
-          subEntries.push(createSubEntry(name, conf[1]));
-        }
-        Header.menu.addEntry({ el, order: 105, subEntries });
-      },
-      createSubEntry(name, desc) {
-        const label = UI.checkbox(name, name);
-        label.title = desc;
-        const input = label.firstElementChild;
-        if (['Fit width', 'Fit height'].includes(name))
-          $.on(input, 'change', ImageExpand.cb.setFitness);
-        $.event('change', null, input);
-        $.on(input, 'change', $.cb.checked);
-        return { el: label };
-      }
-    }
-  };
-
-  class Post {
-    toString() { return this.ID; }
-    constructor(root, thread, board, flags = {}) {
-
-      // Skip initialization for PostClone
-      if (root === undefined && thread === undefined && board === undefined)
-        return;
-      this.root = root;
-      this.thread = thread;
-      this.board = board;
-      $.extend(this, flags);
-      this.ID = +root.id.match(/\d*$/)[0];
-      this.postID = this.ID;
-      this.threadID = this.thread.ID;
-      this.boardID = this.board.ID;
-      this.siteID = g.SITE.ID;
-      this.fullID = `${this.board}.${this.ID}`;
-      this.context = this;
-      this.isReply = (this.ID !== this.threadID);
-      root.dataset.fullID = this.fullID;
-      this.nodes = this.parseNodes(root);
-      if (!this.isReply) {
-        this.thread.OP = this;
-        for (var key of ['isSticky', 'isClosed', 'isArchived']) {
-          let selector = g.SITE.selectors.icons[key];
-          if (selector)
-            this.thread[key] = !!$(selector, this.nodes.info);
-        }
-        if (this.thread.isArchived) {
-          this.thread.isClosed = true;
-          this.thread.kill();
-        }
-      }
-      const name = this.nodes.name?.textContent;
-      const tripcode = this.nodes.tripcode?.textContent;
-      this.info = {
-        subject: this.nodes.subject?.textContent || undefined,
-        name,
-        email: this.nodes.email ? decodeURIComponent(this.nodes.email.href.replace(/^mailto:/, '')) : undefined,
-        tripcode,
-        uniqueID: this.nodes.uniqueID?.textContent,
-        capcode: this.nodes.capcode?.textContent.replace('## ', ''),
-        pass: this.nodes.pass?.title.match(/\d*$/)[0],
-        flagCode: this.nodes.flag?.className.match(/flag-(\w+)/)?.[1].toUpperCase(),
-        flagCodeTroll: this.nodes.flag?.className.match(/bfl-(\w+)/)?.[1].toUpperCase(),
-        flag: this.nodes.flag?.title,
-        date: this.nodes.date ? g.SITE.parseDate(this.nodes.date) : undefined,
-      };
-      g.SITE.parseInfo?.(this); // parses the tripcode
-      if (this.info.tripcode && !this.nodes.tripcode) {
-        if (this.nodes.name)
-          this.nodes.name.textContent = this.info.name;
-        const span = $.el('span', { className: 'postertrip', textContent: this.info.tripcode });
-        this.nodes.name.insertAdjacentElement('afterend', span);
-        span.insertAdjacentText('beforebegin', ' ');
-        this.nodes.tripcode = span;
-      }
-      // this now has to happen after the tripcode parsing
-      this.info.nameBlock = Conf.Anonymize
-        ? 'Anonymous' : `${this.info.name || ''} ${this.info.tripcode || ''}`.trim();
-      if (this.info.capcode)
-        this.info.nameBlock += ` ## ${this.info.capcode}`;
-      if (this.info.uniqueID)
-        this.info.nameBlock += ` (ID: ${this.info.uniqueID})`;
-      this.parseComment();
-      this.parseQuotes();
-      this.parseFiles();
-      this.isDead = false;
-      this.isHidden = false;
-      this.clones = [];
-
-      if (g.posts.get(this.fullID)) {
-        this.isRebuilt = true;
-        this.clones = g.posts.get(this.fullID).clones;
-        for (var clone of this.clones) {
-          clone.origin = this;
-        }
-      }
-      if (!this.isFetchedQuote && (this.ID > this.thread.lastPost))
-        this.thread.lastPost = this.ID;
-      if (this.ID < this.thread.lastPost && g.VIEW === 'thread') {
-        this.board.posts.insert(this.ID, this);
-        this.thread.posts.insert(this.ID, this);
-        g.posts.insert(this.fullID, this, key => +(key.split('.')[1]) < this.ID);
-      } else {
-        this.board.posts.push(this.ID, this);
-        this.thread.posts.push(this.ID, this);
-        g.posts.push(this.fullID, this);
-      }
-    }
-    parseNodes(root) {
-      const s = g.SITE.selectors;
-      const post = $(s.post, root) || root;
-      const info = $(s.infoRoot, post);
-      const nodes = {
-        root,
-        bottom: this.isReply || !g.SITE.isOPContainerThread ? root : $(s.opBottom, root),
-        post,
-        info,
-        comment: $(s.comment, post),
-        quotelinks: [],
-        archivelinks: [],
-        embedlinks: [],
-        backlinks: post.getElementsByClassName('backlink'),
-        uniqueIDRoot: undefined,
-        uniqueID: undefined,
-      };
-      for (var key in s.info) {
-        var selector = s.info[key];
-        nodes[key] = $(selector, info);
-      }
-      g.SITE.parseNodes?.(this, nodes);
-      if (!nodes.uniqueIDRoot)
-        nodes.uniqueIDRoot = nodes.uniqueID;
-      return nodes;
-    }
-    parseComment() {
-      // Merge text nodes and remove empty ones.
-      this.nodes.comment.normalize();
-      // Get the comment's text.
-      // <br> -> \n
-      // Remove:
-      //   'Comment too long'...
-      //   EXIF data. (/p/)
-      let bq = this.nodes.comment.cloneNode(true);
-      this.nodes.commentClean = bq;
-      g.SITE.cleanComment?.(bq);
-      return this.info.comment = this.nodesToText(bq);
-    }
-    commentDisplay() {
-      // Get the comment's text for display purposes (e.g. notifications, excerpts).
-      // In addition to what's done in generating `@info.comment`, remove:
-      //   Spoilers. (filter to '[spoiler]')
-      //   Rolls. (/tg/, /qst/)
-      //   Fortunes. (/s4s/)
-      //   Preceding and following new lines.
-      //   Trailing spaces.
-      const bq = this.nodes.commentClean.cloneNode(true);
-      if (!Conf['Remove Spoilers'] && !Conf['Reveal Spoilers'])
-        this.cleanSpoilers(bq);
-      g.SITE.cleanCommentDisplay?.(bq);
-      return this.nodesToText(bq).trim().replace(/\s+$/gm, '');
-    }
-    commentOrig() {
-      // Get the comment's text for reposting purposes.
-      const bq = this.nodes.commentClean.cloneNode(true);
-      g.SITE.insertTags?.(bq);
-      return this.nodesToText(bq);
-    }
-    nodesToText(bq) {
-      let node;
-      let text = "";
-      const nodes = $.X('.//br|.//text()', bq);
-      let i = 0;
-      while ((node = nodes.snapshotItem(i++))) {
-        text += node.data || '\n';
-      }
-      return text;
-    }
-    cleanSpoilers(bq) {
-      const spoilers = $$(g.SITE.selectors.spoiler, bq);
-      for (var node of spoilers) {
-        $.replace(node, $.tn('[spoiler]'));
-      }
-    }
-    parseQuotes() {
-      this.quotes = [];
-      for (var quotelink of $$(g.SITE.selectors.quotelink, this.nodes.comment)) {
-        this.parseQuote(quotelink);
-      }
-    }
-    parseQuote(quotelink) {
-      // Only add quotes that link to posts on an imageboard.
-      // Don't add:
-      //  - board links. (>>>/b/)
-      //  - catalog links. (>>>/b/catalog or >>>/b/search)
-      //  - rules links. (>>>/a/rules)
-      //  - text-board quotelinks. (>>>/img/1234)
-      const match = quotelink.href.match(g.SITE.regexp.quotelink);
-      if (!match && (!this.isClone || !quotelink.dataset.postID))
-        return; // normal or resurrected quote
-      this.nodes.quotelinks.push(quotelink);
-      if (this.isClone)
-        return;
-      // ES6 Set when?
-      const fullID = `${match[1]}.${match[3]}`;
-      if (!this.quotes.includes(fullID))
-        this.quotes.push(fullID);
-    }
-    parseFiles() {
-      this.files = [];
-      const fileRoots = this.fileRoots();
-      let index = 0;
-      for (let docIndex = 0; docIndex < fileRoots.length; docIndex++) {
-        var fileRoot = fileRoots[docIndex];
-        let file = this.parseFile(fileRoot);
-        if (file) {
-          file.index = (index++);
-          file.docIndex = docIndex;
-          this.files.push(file);
-        }
-      }
-      if (this.files.length)
-        return this.file = this.files[0];
-    }
-    fileRoots() {
-      if (g.SITE.selectors.multifile) {
-        const roots = $$(g.SITE.selectors.multifile, this.nodes.root);
-        if (roots.length)
-          return roots;
-      }
-      return [this.nodes.root];
-    }
-    parseFile(fileRoot) {
-      const file = { isDead: false };
-      for (var key in g.SITE.selectors.file) {
-        var selector = g.SITE.selectors.file[key];
-        file[key] = $(selector, fileRoot);
-      }
-      file.thumbLink = file.thumb?.parentNode;
-      if (!(file.text && file.link))
-        return;
-      if (!g.SITE.parseFile(this, file))
-        return;
-      $.extend(file, {
-        url: file.link.href,
-        isImage: $.isImage(file.link.href),
-        isVideo: $.isVideo(file.link.href)
-      });
-      let size = +file.size.match(/[\d.]+/)[0];
-      let unit = ['B', 'KB', 'MB', 'GB'].indexOf(file.size.match(/\w+$/)[0]);
-      while (unit-- > 0) {
-        size *= 1024;
-      }
-      file.sizeInBytes = size;
-      return file;
-    }
-    kill(file = false, index = 0) {
-      if (file) {
-        if (this.isDead || this.files[index].isDead)
-          return;
-        this.files[index].isDead = true;
-        $.addClass(this.nodes.root, 'deleted-file');
-      } else {
-        if (this.isDead)
-          return;
-        this.isDead = true;
-        $.rmClass(this.nodes.root, 'deleted-file');
-        $.addClass(this.nodes.root, 'deleted-post');
-      }
-      let strong = $('strong.warning', this.nodes.info);
-      if (!strong) {
-        strong = $.el('strong', { className: 'warning' });
-        $.after($('input', this.nodes.info), strong);
-      }
-      strong.textContent = file ? '[File deleted]' : '[Deleted]';
-      if (this.isClone)
-        return;
-      for (var clone of this.clones) {
-        clone.kill(file, index);
-      }
-      if (file)
-        return;
-      // Get quotelinks/backlinks to this post
-      // and paint them (Dead).
-      for (var quotelink of Get.allQuotelinksLinkingTo(this)) {
-        if (!$.hasClass(quotelink, 'deadlink')) {
-          $.add(quotelink, Post.deadMark.cloneNode(true));
-          $.addClass(quotelink, 'deadlink');
-        }
-      }
-    }
-    markAsFromArchive() {
-      let strong = $('strong.warning', this.nodes.info);
-      if (!strong) {
-        strong = $.el('strong', { className: 'warning' });
-        $.after($('input', this.nodes.info), strong);
-      }
-      strong.textContent = '[Deleted, restored from external archive]';
-      $.addClass(this.nodes.root, 'from-archive');
-      if (this.isClone)
-        return;
-      for (var clone of this.clones) {
-        clone.markAsFromArchive();
-      }
-      for (var quotelink of Get.allQuotelinksLinkingTo(this)) {
-        $.addClass(quotelink, 'from-archive-link');
-      }
-    }
-    // XXX Workaround for 4chan's racing condition
-    // giving us false-positive dead posts.
-    resurrect() {
-      this.isDead = false;
-      $.rmClass(this.nodes.root, 'deleted-post', 'from-archive');
-      const strong = $('strong.warning', this.nodes.info);
-      // no false-positive files
-      if (this.files.some(file => file.isDead)) {
-        $.addClass(this.nodes.root, 'deleted-file');
-        strong.textContent = '[File deleted]';
-      } else {
-        $.rm(strong);
-      }
-      if (this.isClone)
-        return;
-      for (var clone of this.clones) {
-        clone.resurrect();
-      }
-      for (var quotelink of Get.allQuotelinksLinkingTo(this)) {
-        if ($.hasClass(quotelink, 'deadlink'))
-          $.rm($('.qmark-dead', quotelink));
-        $.rmClass(quotelink, 'deadlink', 'from-archive-link');
-      }
-    }
-    collect() {
-      g.posts.rm(this.fullID);
-      this.thread.posts.rm(this);
-      this.board.posts.rm(this);
-    }
-    addClone(context, contractThumb) {
-      // Callbacks may not have been run yet due to anti-browser-lock delay in Main.callbackNodesDB.
-      Callbacks.Post.execute(this);
-      return new PostClone(this, context, contractThumb);
-    }
-    rmClone(index) {
-      this.clones.splice(index, 1);
-      for (var clone of this.clones.slice(index)) {
-        clone.nodes.root.dataset.clone = index++;
-      }
-    }
-    setCatalogOP(isCatalogOP) {
-      this.nodes.root.classList.toggle('catalog-container', isCatalogOP);
-      this.nodes.root.classList.toggle('opContainer', !isCatalogOP);
-      this.nodes.post.classList.toggle('catalog-post', isCatalogOP);
-      this.nodes.post.classList.toggle('op', !isCatalogOP);
-      this.nodes.post.style.left = (this.nodes.post.style.right = null);
-    }
-  }
-  // because of a circular dependency $ might not be initialized, so we can't use $.el
-  Post.deadMark = (() => {
-    const el = d.createElement('span');
-    // \u00A0 is nbsp
-    el.textContent = '\u00A0(Dead)';
-    el.className = 'qmark-dead';
-    return el;
-  })();
-  class PostClone extends Post {
-    constructor(origin, context, contractThumb) {
-      super();
-      this.isClone = true;
-      let file, fileRoots, key;
-      this.origin = origin;
-      this.context = context;
-      for (key of ['ID', 'postID', 'threadID', 'boardID', 'siteID', 'fullID', 'board', 'thread', 'info', 'quotes', 'isReply']) {
-        // Copy or point to the origin's key value.
-        this[key] = this.origin[key];
-      }
-      const { nodes } = this.origin;
-      const root = contractThumb ? this.cloneWithoutVideo(nodes.root) : nodes.root.cloneNode(true);
-      for (var node of [root, ...$$('[id]', root)]) {
-        node.id += `_${PostClone.suffix}`;
-      }
-      PostClone.suffix++;
-      // Remove inlined posts inside of this post.
-      for (var inline of $$('.inline', root)) {
-        $.rm(inline);
-      }
-      for (var inlined of $$('.inlined', root)) {
-        $.rmClass(inlined, 'inlined');
-      }
-      this.nodes = this.parseNodes(root);
-      root.hidden = false; // post hiding
-      $.rmClass(root, 'forwarded'); // quote inlining
-      $.rmClass(this.nodes.post, 'highlight'); // keybind navigation, ID highlighting
-      // Remove catalog stuff.
-      if (!this.isReply) {
-        this.setCatalogOP(false);
-        $.rm($('.catalog-link', this.nodes.post));
-        $.rm($('.catalog-stats', this.nodes.post));
-        $.rm($('.catalog-replies', this.nodes.post));
-      }
-      this.parseQuotes();
-      this.quotes = [...this.origin.quotes];
-      this.files = [];
-      if (this.origin.files.length)
-        fileRoots = this.fileRoots();
-      for (var originFile of this.origin.files) {
-        // Copy values, point to relevant elements.
-        file = { ...originFile };
-        var fileRoot = fileRoots[file.docIndex];
-        for (key in g.SITE.selectors.file) {
-          var selector = g.SITE.selectors.file[key];
-          file[key] = $(selector, fileRoot);
-        }
-        file.thumbLink = file.thumb?.parentNode;
-        if (file.thumbLink)
-          file.fullImage = $('.full-image', file.thumbLink);
-        file.videoControls = $('.video-controls', file.text);
-        if (file.videoThumb)
-          file.thumb.muted = true;
-        this.files.push(file);
-      }
-      if (this.files.length) {
-        this.file = this.files[0];
-        // Contract thumbnails in quote preview
-        if (this.file.thumb && contractThumb)
-          ImageExpand.contract(this);
-      }
-      if (this.origin.isDead)
-        this.isDead = true;
-      root.dataset.clone = this.origin.clones.push(this) - 1;
-      return this;
-    }
-    cloneWithoutVideo(node) {
-      if ((node.tagName === 'VIDEO') && !node.dataset.md5) { // (exception for WebM thumbnails)
-        return [];
-      } else if ((node.nodeType === Node.ELEMENT_NODE) && $('video', node)) {
-        const clone = node.cloneNode(false);
-        for (var child of node.childNodes) {
-          $.add(clone, this.cloneWithoutVideo(child));
-        }
-        return clone;
-      } else {
-        return node.cloneNode(true);
-      }
-    }
-  }
-  PostClone.suffix = 0;
-
-  const Anonymize = {
-      init() {
-          if (!Conf.Anonymize) {
-              return;
-          }
-          $.addClass(doc, 'anonymize');
-      }
-  };
+  var Settings$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    default: Settings
+  });
 
   var ImageHover = {
     init() {
@@ -22962,6 +21841,37 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               }
           }
       }
+  };
+
+  var FileInfo = {
+    init() {
+      if (!['index', 'thread', 'archive'].includes(g.VIEW) || !Conf['File Info Formatting'])
+        return;
+      Callbacks.Post.push({
+        name: 'File Info Formatting',
+        cb: this.node
+      });
+    },
+    node() {
+      let a;
+      if (!this.file)
+        return;
+      if (this.isClone) {
+        for (a of $$('.file-info .download-button', this.file.text)) {
+          $.on(a, 'click', ImageCommon.download);
+        }
+        for (a of $$('.file-info .quick-filter-md5', this.file.text)) {
+          $.on(a, 'click', Filter.quickFilterMD5);
+        }
+        return;
+      }
+      const oldInfo = $.el('span', { className: 'fileText-original' });
+      $.prepend(this.file.link.parentNode, oldInfo);
+      $.add(oldInfo, [this.file.link.previousSibling, this.file.link, this.file.link.nextSibling]);
+      const info = $.el('span', { className: 'file-info' });
+      FileInfoFormat.format(Conf.fileInfo, this, info);
+      $.prepend(this.file.text, info);
+    }
   };
 
   var Fourchan = {
@@ -24084,6 +22994,1134 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
               $.add(green, deadlink);
           }
           $.replace(deadlink, [...deadlink.childNodes]);
+      }
+  };
+
+  var ReportPage = `<legend><label><input id="archive-report-enabled" type="checkbox">Report illegal content to archives</label></legend>
+<label for="archive-report-reason">Details</label>
+<textarea id="archive-report-reason" disabled>Illegal content</textarea>
+<button id="archive-report-submit" hidden>Submit</button>`;
+
+  const Report = {
+      init() {
+          let match = location.search.match(/\bno=(\d+)/);
+          if (!match)
+              return;
+          Captcha.replace.init();
+          this.postID = +match[1];
+          $.ready(this.ready);
+      },
+      ready() {
+          $.addStyle(CSS$1.report);
+          if (Conf['Archive Report'])
+              Report.archive();
+          new MutationObserver(function () {
+              Report.fit('iframe[src^="https://www.google.com/recaptcha/api2/frame"]');
+              return Report.fit('body');
+          }).observe(d.body, {
+              childList: true,
+              attributes: true,
+              subtree: true
+          });
+          Report.fit('body');
+      },
+      fit(selector) {
+          let el = $(selector, doc);
+          if (!(el && (getComputedStyle(el).visibility !== 'hidden')))
+              return;
+          const dy = (el.getBoundingClientRect().bottom - doc.clientHeight) + 8;
+          if (dy > 0)
+              window.resizeBy(0, dy);
+      },
+      archive() {
+          let match, urls;
+          if (!(urls = Redirect.report(g.BOARD.ID)).length)
+              return;
+          const form = $('form');
+          const types = $.id('reportTypes');
+          const message = $('h3');
+          const fieldset = $.el('fieldset', {
+              id: 'archive-report',
+              hidden: true
+          }, { innerHTML: ReportPage });
+          const enabled = $('#archive-report-enabled', fieldset);
+          const reason = $('#archive-report-reason', fieldset);
+          const submit = $('#archive-report-submit', fieldset);
+          $.on(enabled, 'change', function () {
+              return reason.disabled = !this.checked;
+          });
+          if (form && types) {
+              fieldset.hidden = !$('[value="31"]', types).checked;
+              $.on(types, 'change', (e) => {
+                  fieldset.hidden = (e.target.value !== '31');
+                  Report.fit('body');
+              });
+              $.after(types, fieldset);
+              Report.fit('body');
+              $.one(form, 'submit', function (e) {
+                  if (!fieldset.hidden && enabled.checked) {
+                      e.preventDefault();
+                      return Report.archiveSubmit(urls, reason.value, results => {
+                          this.action = '#archiveresults=' + encodeURIComponent(JSON.stringify(results));
+                          return this.submit();
+                      });
+                  }
+              });
+          }
+          else if (message) {
+              fieldset.hidden = /Report submitted!/.test(message.textContent);
+              $.on(enabled, 'change', function () {
+                  return submit.hidden = !this.checked;
+              });
+              $.after(message, fieldset);
+              $.on(submit, 'click', () => Report.archiveSubmit(urls, reason.value, Report.archiveResults));
+          }
+          if (match = location.hash.match(/^#archiveresults=(.*)$/)) {
+              try {
+                  return Report.archiveResults(JSON.parse(decodeURIComponent(match[1])));
+              }
+              catch (error) { }
+          }
+      },
+      archiveSubmit(urls, reason, cb) {
+          const form = $.formData({
+              board: g.BOARD.ID,
+              num: Report.postID,
+              reason
+          });
+          const results = [];
+          for (const [name, url] of urls) {
+              (function (name, url) {
+                  return $.ajax(url, {
+                      onloadend() {
+                          results.push([name, this.response || { error: '' }]);
+                          if (results.length === urls.length) {
+                              return cb(results);
+                          }
+                      },
+                      form
+                  });
+              })(name, url);
+          }
+      },
+      archiveResults(results) {
+          const fieldset = $.id('archive-report');
+          for (const [name, response] of results) {
+              const line = $.el('h3', { className: 'archive-report-response' });
+              if ('success' in response) {
+                  $.addClass(line, 'archive-report-success');
+                  line.textContent = `${name}: ${response.success}`;
+              }
+              else {
+                  $.addClass(line, 'archive-report-error');
+                  line.textContent = `${name}: ${response.error || 'Error reporting post.'}`;
+              }
+              if (fieldset) {
+                  $.before(fieldset, line);
+              }
+              else {
+                  $.add(d.body, line);
+              }
+          }
+      }
+  };
+
+  const PostSuccessful = {
+      init() {
+          if (!Conf['Remember Your Posts'])
+              return;
+          $.ready(this.ready);
+      },
+      ready() {
+          if (d.title !== 'Post successful!')
+              return;
+          let [_, threadID, postID] = $('h1').nextSibling.textContent.match(/thread:(\d+),no:(\d+)/);
+          postID = +postID;
+          threadID = +threadID || postID;
+          const db = new DataBoard('yourPosts');
+          return db.set({
+              boardID: g.BOARD.ID,
+              threadID,
+              postID,
+              val: true
+          });
+      }
+  };
+
+  function generatePostInfoHtml(ID, o, subject, capcode, email, name, tripcode, pass, capcodeLC, capcodePlural, staticPath, gifIcon, capcodeDescription, uniqueID, flag, flagCode, flagCodeTroll, dateUTC, dateText, postLink, quoteLink, boardID, threadID) {
+    const nameHtml = [h("span", { class: `name${capcode ? ' capcode' : ''}` }, name)];
+    if (tripcode)
+      nameHtml.push(' ', h("span", { class: "postertrip" }, tripcode));
+    if (pass)
+      nameHtml.push(' ', h("span", { title: `Pass user since ${pass}`, class: "n-pu" }));
+    if (capcode) {
+      nameHtml.push(' ', h("strong", { class: `capcode hand id_${capcodeLC}`, title: `Highlight posts by ${capcodePlural}` },
+        "## ",
+        capcode));
+    }
+    const nameBlockContent = email ? [' ', h("a", { href: `mailto:${email}`, class: "useremail" }, ...nameHtml)] : nameHtml;
+    if (capcodeDescription) {
+      nameBlockContent.push(h("img", { src: `${staticPath}${capcodeLC}icon${gifIcon}`, alt: `${capcode} Icon`, title: `This user is ${capcodeDescription}.`, class: "identityIcon retina" }));
+    } else {
+      nameBlockContent.push(' ');
+    }
+    if (uniqueID && !capcode) {
+      nameBlockContent.push(h("span", { class: `posteruid id_${uniqueID}` },
+        "(ID: ",
+        h("span", { class: "hand", title: "Highlight posts by this ID" }, uniqueID),
+        ")"));
+    }
+    if (flagCode)
+      nameBlockContent.push(' ', h("span", { title: flag, class: `flag flag-${flagCode.toLowerCase()}` }));
+    if (flagCodeTroll)
+      nameBlockContent.push(' ', h("span", { title: flag, class: `bfl bfl-${flagCodeTroll.toLowerCase()}` }));
+    const postNumContent = [
+      h("a", { href: postLink, title: "Link to this post" }, "No."),
+      h("a", { href: quoteLink, title: "Reply to this post" }, ID),
+    ];
+    if (o.isSticky) {
+      const src = `${staticPath}sticky${gifIcon}`;
+      postNumContent.push(' ');
+      postNumContent.push(h("img", { src: src, alt: "Sticky", title: "Sticky", class: "stickyIcon retina" }));
+    }
+    if (o.isClosed && !o.isArchived) {
+      postNumContent.push(' ');
+      const src = `${staticPath}closed${gifIcon}`;
+      postNumContent.push(h("img", { src: src, alt: "Closed", title: "Closed", class: "closedIcon retina" }));
+    }
+    if (o.isArchived) {
+      postNumContent.push(' ', h("img", { src: `${staticPath}archived${gifIcon}`, alt: "Archived", title: "Archived", class: "archivedIcon retina" }));
+    }
+    if (!o.isReply && g.VIEW === "index") {
+      postNumContent.push(' \u00A0 ', // \u00A0 is nbsp
+      h("span", null,
+        "[",
+        h("a", { href: `/${boardID}/thread/${threadID}`, class: "replylink" }, "Reply"),
+        "]"));
+    }
+    return h("div", { class: "postInfo desktop", id: `pi${ID}` },
+      h("input", { type: "checkbox", name: ID, value: "delete" }),
+      ' ',
+      ...((!o.isReply || subject) ? [h("span", { class: "subject" }, subject), ' '] : []),
+      h("span", { class: `nameBlock${capcode ? ` capcode${capcode}` : ''}` }, ...nameBlockContent),
+      ' ',
+      h("span", { class: "dateTime", "data-utc": dateUTC }, dateText),
+      ' ',
+      h("span", { class: `postNum${!(boardID === " f" && !o.isReply) ? ' desktop' : ''}` }, ...postNumContent));
+  }
+
+  function generateFileHtml(file, ID, boardID, fileURL, shortFilename, fileThumb, o, staticPath, gifIcon) {
+    if (file) {
+      const fileContent = [];
+      fileContent.push(h("div", { class: "fileText", id: `fT${ID}`, title: file.isSpoiler ? file.name : null },
+        'File: ',
+        h("a", { title: file.name === shortFilename || file.isSpoiler ? null : file.name, href: fileURL, target: "_blank" }, file.isSpoiler ? 'Spoiler Image' : shortFilename),
+        ` (${file.size}, ${file.dimensions || "PDF"})`), h("a", { class: `fileThumb${file.isSpoiler ? ' imgspoiler' : ''}`, href: fileURL, target: "_blank", "data-m": file.hasDownscale ? '' : null },
+        h("img", { src: fileThumb, alt: file.size, "data-md5": file.MD5, style: `height: ${file.isSpoiler ? '100' : file.theight}px; width: ${file.isSpoiler ? '100' : file.twidth}px;`, loading: "lazy" })));
+      return h("div", { class: "file", id: `f${ID}` }, ...fileContent);
+    } else if (o.fileDeleted) {
+      return h("div", { class: "file", id: `f${ID}` },
+        h("span", { class: "fileThumb" },
+          h("img", { src: `${staticPath}filedeleted-res${gifIcon}`, alt: "File deleted.", class: "fileDeletedRes retina" })));
+    }
+    return { innerHTML: '', [isEscaped]: true };
+  }
+
+  function generateCatalogThreadHtml(thread, src, imgClass, data, postCount, fileCount, pageCount, staticPath, gifIcon) {
+    return h(hFragment, null,
+      h("a", { class: "catalog-link", href: `/${thread.board}/thread/${thread.ID}` }, imgClass ?
+        h("img", { src: src, class: `catalog-thumb ${imgClass}` }) :
+        h("img", { src: src, class: "catalog-thumb", "data-width": data.tn_w, "data-height": data.tn_h })),
+      h("div", { class: "catalog-stats" },
+        h("span", { title: "Posts / Files / Page" },
+          h("span", { class: `post-count${data.bumplimit ? ' warning' : ''}` }, postCount),
+          ' / ',
+          h("span", { class: `file-count${data.imagelimit ? ' warning' : ''}` }, fileCount),
+          ' / ',
+          h("span", { class: "page-count" }, pageCount)),
+        h("span", { class: "catalog-icons" },
+          thread.isSticky ? h("img", { src: `${staticPath}sticky${gifIcon}`, class: "stickyIcon", title: "Sticky" }) : '',
+          thread.isClosed ? h("img", { src: `${staticPath}closed${gifIcon}`, class: "closedIcon", title: "Closed" }) : '')));
+  }
+
+  const boardOrigin = () => `${location.protocol}//boards.4chan.org`;
+  const cdnOrigin = () => `${location.protocol}//a.4cdn.org`;
+  const SWYotsuba = {
+    isOPContainerThread: false,
+    hasIPCount: true,
+    archivedBoardsKnown: true,
+    urls: {
+      post: ({ postID }) => `#p${postID}`,
+      index: ({ boardID }) => `${boardOrigin()}/${boardID}/`,
+      thread: ({ boardID, threadID }) => `${boardOrigin()}/${boardID}/thread/${threadID}`,
+      threadJSON: ({ boardID, threadID }) => `${cdnOrigin()}/${boardID}/thread/${threadID}.json`,
+      threadsListJSON: ({ boardID }) => `${cdnOrigin()}/${boardID}/threads.json`,
+      catalogJSON: ({ boardID }) => `${cdnOrigin()}/${boardID}/catalog.json`,
+      thumb: ({ boardID }, filename) => `${location.protocol}//${ImageHost.thumbHost()}/${boardID}/${filename}`,
+      catalog: ({ boardID }) => `${boardOrigin()}/${boardID}/catalog`,
+      archive: ({ boardID }) => BoardConfig.isArchived(boardID) ? `${boardOrigin()}/${boardID}/archive` : undefined,
+      archiveListJSON: ({ boardID }) => BoardConfig.isArchived(boardID) ? `${cdnOrigin()}/${boardID}/archive.json` : '',
+      file: ({ boardID }, filename) => `${location.protocol}//${ImageHost.host()}/${boardID}/${filename}`,
+    },
+    noAudio: ({ boardID }) => BoardConfig.noAudio(boardID),
+    selectors: {
+      board: '.board',
+      thread: '.thread',
+      threadDivider: '.board > hr',
+      summary: 'a.summary',
+      postContainer: '.postContainer',
+      replyOriginal: '.replyContainer:not([data-clone])',
+      sideArrows: 'div.sideArrows',
+      post: '.post',
+      infoRoot: '.postInfo',
+      info: {
+        subject: '.subject',
+        name: '.name',
+        email: '.useremail',
+        tripcode: '.postertrip',
+        uniqueIDRoot: '.posteruid',
+        uniqueID: '.posteruid > .hand',
+        capcode: '.capcode.hand',
+        pass: '.n-pu',
+        flag: '.flag, .bfl',
+        date: '.dateTime',
+        nameBlock: '.nameBlock',
+        quote: '.postNum > a:nth-of-type(2)',
+        reply: '.replylink'
+      },
+      icons: {
+        isSticky: '.stickyIcon',
+        isClosed: '.closedIcon',
+        isArchived: '.archivedIcon'
+      },
+      file: {
+        text: '.file > .fileText',
+        link: '.fileText > a',
+        thumb: 'a.fileThumb > [data-md5]'
+      },
+      thumbLink: 'a.fileThumb',
+      highlightable: {
+        op: '.opContainer',
+        reply: ' > .reply',
+        catalog: ''
+      },
+      comment: '.postMessage',
+      spoiler: 's',
+      quotelink: ':not(pre) > .quotelink', // XXX https://github.com/4chan/4chan-JS/issues/77: 4chan currently creates quote links inside [code] tags; ignore them
+      catalog: {
+        board: '#threads',
+        thread: '.thread',
+        thumb: '.thumb'
+      },
+      boardList: '#boardNavDesktop > .boardList',
+      boardListBottom: '#boardNavDesktopFoot > .boardList',
+      styleSheet: 'link[title=switch]',
+      psa: '#globalMessage',
+      psaTop: '#globalToggle',
+      searchBox: '#search-box',
+      nav: {
+        prev: '.prev > form > [type=submit]',
+        next: '.next > form > [type=submit]'
+      }
+    },
+    classes: {
+      highlight: 'highlight'
+    },
+    xpath: {
+      thread: 'div[contains(concat(" ",@class," ")," thread ")]',
+      postContainer: 'div[contains(@class,"postContainer")]',
+      replyContainer: 'div[contains(@class,"replyContainer")]'
+    },
+    // ^https?://boards\\.4chan(?:nel)?\\.org/+\
+    regexp: {
+      quotelink: new RegExp(`\
+^https?://boards\\.4chan\\.org/+\
+([^/]+)\
+/+thread/+\
+(\\d+)\
+(?:[/?][^#]*)?\
+(?:#p(\\d+))?$\
+`),
+      // /<a [^>]*\bhref="(?:(?:\/\/boards\.4chan(?:nel)?\.org)?\/([^\/]+)\/thread\/)?(\d+)?(?:#p(\d+))?"/g,
+      // /^https?:\/\/www\.4chan(?:nel)?\.org\/+pass(?:$|[?#])/,
+      // /^https?:\/\/sys\.4chan(?:nel)?\.org\/+captcha(?:$|[?#])/,
+      quotelinkHTML: /<a [^>]*\bhref="(?:(?:\/\/boards\.4chan\.org)?\/([^\/]+)\/thread\/)?(\d+)?(?:#p(\d+))?"/g,
+      pass: /^https?:\/\/www\.4chan\.org\/+pass(?:$|[?#])/,
+      captcha: /^https?:\/\/sys\.4chan\.org\/+captcha(?:$|[?#])/,
+    },
+    bgColoredEl: () => $.el('div', { className: 'reply' }),
+    isThisPageLegit() {
+      // not 404 error page or similar.
+      // return ['boards.4chan.org', 'boards.4channel.org'].includes(location.hostname) &&
+      return location.hostname === 'boards.4chan.org' &&
+        d.doctype &&
+        !$('link[href*="favicon-status.ico"]', d.head) &&
+        !['4chan - Temporarily Offline', '4chan - Error', '504 Gateway Time-out', 'MathJax Equation Source'].includes(d.title);
+    },
+    // XXX Sometimes threads don't 404 but are left over as stubs containing one garbage reply post.
+    is404: () => ['4chan - Temporarily Offline', '4chan - 404 Not Found'].includes(d.title) || ((g.VIEW === 'thread') && $('.board') && !$('.opContainer')),
+    isIncomplete: () => ['index', 'thread'].includes(g.VIEW) && !$('.board + *'),
+    // ['www.4chan.org', 'www.4channel.org'].includes(url.hostname);
+    isBoardlessPage: (url) => url.hostname === 'www.4chan.org',
+    // !['boards.4chan.org', 'boards.4channel.org'].includes(url.hostname);
+    isAuxiliaryPage: (url) => url.hostname !== 'boards.4chan.org',
+    isFileURL: (url) => ImageHost.test(url.hostname),
+    initAuxiliary() {
+      switch (location.hostname) {
+        // case 'www.4chan.org': case 'www.4channel.org':
+        case 'www.4chan.org':
+          $.onExists(doc, 'body', () => $.addStyle(CSS$1.www));
+          Captcha.replace.init();
+          return;
+        // case 'sys.4chan.org': case 'sys.4channel.org':
+        case 'sys.4chan.org':
+          var pathname = location.pathname.split(/\/+/);
+          if (pathname[2] === 'imgboard.php') {
+            let match;
+            if (/\bmode=report\b/.test(location.search)) {
+              Report.init();
+            } else if (match = location.search.match(/\bres=(\d+)/)) {
+              $.ready(function () {
+                if (Conf['404 Redirect'] && ($.id('errmsg')?.textContent === 'Error: Specified thread does not exist.')) {
+                  return Redirect.navigate('thread', {
+                    boardID: g.BOARD.ID,
+                    postID: +match[1]
+                  });
+                }
+              });
+            }
+          } else if (pathname[2] === 'post') {
+            PostSuccessful.init();
+          }
+          return;
+      }
+    },
+    scriptData() {
+      for (var script of $$('script:not([src])', d.head)) {
+        if (/\bcooldowns *=/.test(script.textContent))
+          return script.textContent;
+      }
+      return '';
+    },
+    parseThreadMetadata(thread) {
+      const scriptData = this.scriptData();
+      thread.postLimit = /\bbumplimit *= *1\b/.test(scriptData);
+      thread.fileLimit = /\bimagelimit *= *1\b/.test(scriptData);
+      let m = scriptData.match(/\bunique_ips *= *(\d+)\b/);
+      thread.ipCount = m ? +m[1] : undefined;
+    },
+    parseInfo(post) {
+      if (post.info.tripcode == null && /!/.test(post.info.name))
+        [, post.info.name, post.info.tripcode] = post.info.name.match(/(.*?) ?(!.*)/);
+    },
+    parseDate: (node) => new Date(node.dataset.utc * 1000),
+    parseFile(post, file) {
+      const { text, link, thumb } = file;
+      let info = link.nextSibling?.textContent.match(/\(([\d.]+ [KMG]?B).*\)/);
+      if (!info)
+        return false;
+      $.extend(file, {
+        name: text.title || link.title || link.textContent,
+        size: info[1],
+        dimensions: info[0].match(/\d+x\d+/)?.[0],
+        tag: info[0].match(/,[^,]*, ([a-z]+)\)/i)?.[1],
+        MD5: text.dataset.md5
+      });
+      if (thumb) {
+        $.extend(file, {
+          thumbURL: thumb.src,
+          MD5: thumb.dataset.md5,
+          isSpoiler: $.hasClass(thumb.parentNode, 'imgspoiler')
+        });
+        if (file.isSpoiler) {
+          let m = link.href.match(/\d+(?=\.\w+$)/);
+          file.thumbURL = m ? `${location.protocol}//${ImageHost.thumbHost()}/${post.board}/${m[0]}s.jpg` : undefined;
+        }
+      }
+      return true;
+    },
+    cleanComment(bq) {
+      let abbr = $('.abbr', bq);
+      if (abbr) { // 'Comment too long' or 'EXIF data available'
+        for (var node of $$('.abbr + br, .exif', bq)) {
+          $.rm(node);
+        }
+        for (let i = 0; i < 2; i++) {
+          let br = abbr.previousSibling;
+          if (br && (br.nodeName === 'BR'))
+            $.rm(br);
+        }
+        $.rm(abbr);
+      }
+    },
+    cleanCommentDisplay(bq) {
+      let b = $('b', bq);
+      if (b && /^Rolled /.test(b.textContent))
+        $.rm(b);
+      $.rm($('.fortune', bq));
+    },
+    insertTags(bq) {
+      let node;
+      for (node of $$('s, .removed-spoiler', bq)) {
+        $.replace(node, [$.tn('[spoiler]'), ...node.childNodes, $.tn('[/spoiler]')]);
+      }
+      for (node of $$('.prettyprint', bq)) {
+        $.replace(node, [$.tn('[code]'), ...node.childNodes, $.tn('[/code]')]);
+      }
+    },
+    hasCORS: (url) => url.split('/').slice(0, 3).join('/') === (location.protocol + '//a.4cdn.org'),
+    sfwBoards: (sfw) => BoardConfig.sfwBoards(sfw),
+    uidColor(uid) {
+      let msg = 0;
+      let i = 0;
+      while (i < 8) {
+        msg = ((msg << 5) - msg) + uid.charCodeAt(i++);
+      }
+      return (msg >> 8) & 0xFFFFFF;
+    },
+    isLinkified: (link) => ImageHost.test(link.hostname),
+    testNativeExtension: () => $.global('testNativeExtension', {}),
+    transformBoardList() {
+      let node;
+      const nodes = [];
+      const spacer = () => $.el('span', { className: 'spacer' });
+      const items = $.X('.//a|.//text()[not(ancestor::a)]', $(SWYotsuba.selectors.boardList));
+      let i = 0;
+      while ((node = items.snapshotItem(i++))) {
+        switch (node.nodeName) {
+          case '#text':
+            for (var chr of node.nodeValue) {
+              var span = $.el('span', { textContent: chr });
+              if (chr === ' ')
+                span.className = 'space';
+              if (chr === ']')
+                nodes.push(spacer());
+              nodes.push(span);
+              if (chr === '[')
+                nodes.push(spacer());
+            }
+            break;
+          case 'A':
+            var a = node.cloneNode(true);
+            nodes.push(a);
+            break;
+        }
+      }
+      return nodes;
+    },
+    Build: {
+      staticPath: '//s.4cdn.org/image/',
+      gifIcon: window.devicePixelRatio >= 2 ? '@2x.gif' : '.gif',
+      spoilerRange: Object.create(null),
+      shortFilename,
+      spoilerThumb(boardID) {
+        let spoilerRange = this.spoilerRange[boardID];
+        if (spoilerRange) {
+          // Randomize the spoiler image.
+          return `${this.staticPath}spoiler-${boardID}${Math.floor(1 + (spoilerRange * Math.random()))}.png`;
+        } else {
+          return `${this.staticPath}spoiler.png`;
+        }
+      },
+      sameThread: (boardID, threadID) => (g.VIEW === 'thread') && (g.BOARD.ID === boardID) && (g.THREADID === +threadID),
+      threadURL(boardID, threadID) {
+        if (boardID !== g.BOARD.ID) {
+          return `//boards.4chan.org/${boardID}/thread/${threadID}`;
+        } else if ((g.VIEW !== 'thread') || (+threadID !== g.THREADID)) {
+          return `/${boardID}/thread/${threadID}`;
+        } else {
+          return '';
+        }
+      },
+      postURL(boardID, threadID, postID) {
+        return `${this.threadURL(boardID, threadID)}#p${postID}`;
+      },
+      parseJSON(data, { siteID, boardID }) {
+        const o = {
+          // id
+          ID: data.no,
+          postID: data.no,
+          threadID: data.resto || data.no,
+          boardID,
+          siteID,
+          isReply: !!data.resto,
+          // thread status
+          isSticky: !!data.sticky,
+          isClosed: !!data.closed,
+          isArchived: !!data.archived,
+          threadReplies: data.replies,
+          threadImages: data.images,
+          // file status
+          fileDeleted: !!data.filedeleted,
+          filesDeleted: data.filedeleted ? [0] : []
+        };
+        o.info = {
+          subject: $.unescape(data.sub),
+          email: $.unescape(data.email),
+          name: $.unescape(data.name) || '',
+          tripcode: data.trip,
+          pass: (data.since4pass != null) ? `${data.since4pass}` : undefined,
+          uniqueID: data.id,
+          flagCode: data.country,
+          flagCodeTroll: data.board_flag,
+          flag: $.unescape((data.country_name || data.flag_name)),
+          dateUTC: data.time,
+          dateText: data.now,
+          // Yes, we use the raw string here
+          commentHTML: { innerHTML: data.com || '', [isEscaped]: true }
+        };
+        if (data.capcode) {
+          o.info.capcode = data.capcode.replace(/_highlight$/, '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+          o.capcodeHighlight = /_highlight$/.test(data.capcode);
+          delete o.info.uniqueID;
+        }
+        o.files = [];
+        if (data.ext) {
+          o.file = this.parseJSONFile(data, { siteID, boardID });
+          o.files.push(o.file);
+        }
+        // Temporary JSON properties for events such as April 1 / Halloween
+        o.extra = dict();
+        for (var key in data) {
+          if (key[0] === 'x')
+            o.extra[key] = data[key];
+        }
+        return o;
+      },
+      parseJSONFile(data, { siteID, boardID }) {
+        const site = g.sites[siteID];
+        const filename = `${data.tim}${data.ext}`;
+        const o = {
+          name: ($.unescape(data.filename)) + data.ext,
+          url: site.urls.file({ siteID, boardID }, filename),
+          height: data.h,
+          width: data.w,
+          MD5: data.md5,
+          size: $.bytesToString(data.fsize),
+          thumbURL: site.urls.thumb({ siteID, boardID }, `${data.tim}s.jpg`),
+          theight: data.tn_h,
+          twidth: data.tn_w,
+          isSpoiler: !!data.spoiler,
+          tag: data.tag,
+          hasDownscale: !!data.m_img
+        };
+        if ((data.h != null) && !/\.pdf$/.test(o.url))
+          o.dimensions = `${o.width}x${o.height}`;
+        return o;
+      },
+      parseComment(html) {
+        html = html
+          .replace(/<br\b[^<]*>/gi, '\n')
+          .replace(/\n\n<span\b[^<]* class="abbr"[^]*$/i, '') // EXIF data (/p/)
+          .replace(/<[^>]*>/g, '');
+        return $.unescape(html);
+      },
+      parseCommentDisplay(html) {
+        // Hide spoilers.
+        if (!Conf['Remove Spoilers'] && !Conf['Reveal Spoilers']) {
+          let html2;
+          while ((html2 = html.replace(/<s>(?:(?!<\/?s>).)*<\/s>/g, '[spoiler]')) !== html) {
+            html = html2;
+          }
+        }
+        html = html
+          .replace(/^<b\b[^<]*>Rolled [^<]*<\/b>/i, '') // Rolls (/tg/, /qst/)
+          .replace(/<span\b[^<]* class="fortune"[^]*$/i, ''); // Fortunes (/s4s/)
+        // Remove preceding and following new lines, trailing spaces.
+        return this.parseComment(html).trim().replace(/\s+$/gm, '');
+      },
+      postFromObject(data, boardID) {
+        const o = this.parseJSON(data, { boardID, siteID: g.SITE.ID });
+        return this.post(o);
+      },
+      post(o) {
+        const { ID, threadID, boardID, file } = o;
+        const { subject, email, name, tripcode, capcode, pass, uniqueID, flagCode, flagCodeTroll, flag, dateUTC, dateText, commentHTML } = o.info;
+        const { staticPath, gifIcon } = this;
+        /* Post Info */
+        let capcodeDescription, capcodePlural, capcodeLC;
+        if (capcode) {
+          capcodeLC = capcode.toLowerCase();
+          if (capcode === 'Founder') {
+            capcodePlural = 'the Founder';
+            capcodeDescription = "4chan's Founder";
+          } else if (capcode === 'Verified') {
+            capcodePlural = 'Verified Users';
+            capcodeDescription = '';
+          } else {
+            const capcodeLong = $.getOwn({ 'Admin': 'Administrator', 'Mod': 'Moderator' }, capcode) || capcode;
+            capcodePlural = `${capcodeLong}s`;
+            capcodeDescription = `a 4chan ${capcodeLong}`;
+          }
+        }
+        const url = this.threadURL(boardID, threadID);
+        const postLink = `${url}#p${ID}`;
+        const quoteLink = this.sameThread(boardID, threadID)
+          ? `javascript:quote('${+ID}');` : `${url}#q${ID}`;
+        const postInfo = generatePostInfoHtml(ID, o, subject, capcode, email, name, tripcode, pass, capcodeLC, capcodePlural, staticPath, gifIcon, capcodeDescription, uniqueID, flag, flagCode, flagCodeTroll, dateUTC, dateText, postLink, quoteLink, boardID, threadID);
+        /* File Info */
+        let protocol, fileURL, shortFilename, fileThumb;
+        if (file) {
+          protocol = /^https?:(?=\/\/i\.4cdn\.org\/)/;
+          fileURL = file.url.replace(protocol, '');
+          shortFilename = this.shortFilename(file.name);
+          fileThumb = file.isSpoiler ? this.spoilerThumb(boardID) : file.thumbURL.replace(protocol, '');
+        }
+        const fileBlock = generateFileHtml(file, ID, boardID, fileURL, shortFilename, fileThumb, o, staticPath, gifIcon);
+        /* Whole Post */
+        const postClass = o.isReply ? 'reply' : 'op';
+        const postContent = o.isReply ? [postInfo, fileBlock] : [fileBlock, postInfo];
+        postContent.push(h("blockquote", { class: "postMessage", id: `m${ID}` }, commentHTML));
+        // I wonder if there's a better way to skip this in the catalog without breaking hovers.
+        // Currently, this is just hidden by css.
+        if (!o.isReply && o.threadReplies != null) {
+          postContent.push(h("span", { class: "summary preview-summary" }, this.summaryText('', o.threadReplies, o.threadImages, true)));
+        }
+        const wholePost = h(hFragment, null,
+          (o.isReply ? h("div", { class: "sideArrows", id: `sa${ID}` }, ">>") : ''),
+          h("div", { id: `p${ID}`, class: `post ${postClass}${o.capcodeHighlight ? ' highlightPost' : ''}` }, ...postContent));
+        const container = $.el('div', {
+          className: `postContainer ${postClass}Container`,
+          id: `pc${ID}`
+        });
+        $.extend(container, wholePost);
+        // Fix quotelinks
+        for (var quote of $$('.quotelink', container)) {
+          var href = quote.getAttribute('href');
+          if (href[0] === '#') {
+            if (!this.sameThread(boardID, threadID))
+              quote.href = this.threadURL(boardID, threadID) + href;
+          } else {
+            let match = quote.href.match(SWYotsuba.regexp.quotelink);
+            if (match && (this.sameThread(match[1], match[2]))) {
+              quote.href = href.match(/(#[^#]*)?$/)[0] || '#';
+            }
+          }
+        }
+        return container;
+      },
+      summaryText(status, posts, files, hoverPreview = false) {
+        let text = '';
+        if (status)
+          text += `${status} `;
+        text += `${posts} post${posts == 1 ? '' : 's'}`;
+        if (+files)
+          text += ` and ${files} image repl${files > 1 ? 'ies' : 'y'}`;
+        return hoverPreview ? text : `${text} ${status === '-' ? 'shown' : 'omitted'}.`;
+      },
+      summary(boardID, threadID, posts, files) {
+        return $.el('a', {
+          className: 'summary',
+          textContent: this.summaryText('', posts, files),
+          href: `/${boardID}/thread/${threadID}`
+        });
+      },
+      thread(thread, data, withReplies) {
+        let root = thread.nodes.root;
+        if (root) {
+          $.rmAll(root);
+        } else {
+          thread.nodes.root = (root = $.el('div', {
+            className: 'thread',
+            id: `t${data.no}`
+          }));
+        }
+        if (this.hat)
+          $.add(root, this.hat.cloneNode(false));
+        $.add(root, thread.OP.nodes.root);
+        if (data.omitted_posts || (!withReplies && data.replies)) {
+          const [posts, files] = withReplies
+            // XXX data.omitted_images is not accurate.
+            ? [data.omitted_posts, data.images - data.last_replies.filter(data => !!data.ext).length]
+            : [data.replies, data.images];
+          const summary = this.summary(thread.board.ID, data.no, posts, files);
+          $.add(root, summary);
+        }
+        return root;
+      },
+      catalogThread(thread, data, pageCount) {
+        let cssText, imgClass, src;
+        const { staticPath, gifIcon } = this;
+        const { tn_w, tn_h } = data;
+        if (data.spoiler && !Conf['Reveal Spoiler Thumbnails']) {
+          src = `${staticPath}spoiler`;
+          let spoilerRange = this.spoilerRange[thread.board];
+          // Randomize the spoiler image.
+          if (spoilerRange)
+            src += (`-${thread.board}`) + Math.floor(1 + (spoilerRange * Math.random()));
+          src += '.png';
+          imgClass = 'spoiler-file';
+          cssText = "--tn-w: 100; --tn-h: 100;";
+        } else if (data.filedeleted) {
+          src = `${staticPath}filedeleted-res${gifIcon}`;
+          imgClass = 'deleted-file';
+        } else if (thread.OP.file) {
+          src = thread.OP.file.thumbURL;
+          const ratio = 250 / Math.max(tn_w, tn_h);
+          cssText = `--tn-w: ${tn_w * ratio}; --tn-h: ${tn_h * ratio};`;
+        } else {
+          src = `${staticPath}nofile.png`;
+          imgClass = 'no-file';
+        }
+        const postCount = data.replies + 1;
+        const fileCount = data.images + !!data.ext;
+        const container = $.el('div', generateCatalogThreadHtml(thread, src, imgClass, data, postCount, fileCount, pageCount, staticPath, gifIcon));
+        $.before(thread.OP.nodes.info, [...container.childNodes]);
+        for (var br of $$('br', thread.OP.nodes.comment)) {
+          if (br.previousSibling && (br.previousSibling.nodeName === 'BR'))
+            $.addClass(br, 'extra-linebreak');
+        }
+        const root = $.el('div', {
+          className: 'thread catalog-thread',
+          id: `t${thread}`
+        });
+        if (thread.OP.highlights)
+          $.addClass(root, ...thread.OP.highlights);
+        if (!thread.OP.file)
+          $.addClass(root, 'noFile');
+        root.style.cssText = cssText || '';
+        return root;
+      },
+      catalogReply(thread, data) {
+        let excerpt = '';
+        if (data.com)
+          excerpt = this.parseCommentDisplay(data.com).replace(/>>\d+/g, '').trim().replace(/\n+/g, ' // ');
+        if (data.ext)
+          excerpt || (excerpt = `${$.unescape(data.filename)}${data.ext}`);
+        if (data.com)
+          excerpt || (excerpt = $.unescape(data.com.replace(/<br\b[^<]*>/gi, ' // ')));
+        if (!excerpt)
+          excerpt = '\xA0';
+        if (excerpt.length > 73)
+          excerpt = `${excerpt.slice(0, 70)}...`;
+        const link = this.postURL(thread.board.ID, thread.ID, data.no);
+        return $.el('div', { className: 'catalog-reply' }, h(hFragment, null,
+          h("span", null,
+            h("time", { "data-utc": data.time * 1000, "data-abbrev": "1" }, "..."),
+            ": "),
+          h("a", { class: "catalog-reply-excerpt", href: link }, excerpt),
+          h("a", { class: "catalog-reply-preview", href: link }, "...")));
+      }
+    }
+  };
+
+  const rootFor = ({ siteID }) => Conf.siteProperties[siteID]?.root || `http://${siteID}/`;
+  const rootOrEmptyFor = ({ siteID }) => Conf.siteProperties[siteID]?.root || '';
+  const SWTinyboard = {
+      isOPContainerThread: true,
+      mayLackJSON: true,
+      threadModTimeIgnoresSage: true,
+      disabledFeatures: [
+          'Resurrect Quotes',
+          'Quick Reply Personas',
+          'Quick Reply',
+          'Cooldown',
+          'Report Link',
+          'Delete Link',
+          'Edit Link',
+          'Quote Inlining',
+          'Quote Previewing',
+          'Quote Backlinks',
+          'File Info Formatting',
+          'Image Expansion',
+          'Image Expansion (Menu)',
+          'Comment Expansion',
+          'Thread Expansion',
+          'Favicon',
+          'Quote Threading',
+          'Thread Updater',
+          'Banner',
+          'Flash Features',
+          'Reply Pruning'
+      ],
+      detect() {
+          for (const script of $$('script:not([src])', d.head)) {
+              let m = script.textContent.match(/\bvar configRoot=(".*?")/);
+              if (m) {
+                  var properties = dict();
+                  try {
+                      var root = JSON.parse(m[1]);
+                      if (root[0] === '/') {
+                          properties.root = location.origin + root;
+                      }
+                      else if (/^https?:/.test(root)) {
+                          properties.root = root;
+                      }
+                  }
+                  catch (error) { }
+                  return properties;
+              }
+          }
+          return false;
+      },
+      awaitBoard(cb) {
+          let reactUI = $.id('react-ui');
+          if (reactUI) {
+              const s = (this.selectors = Object.create(this.selectors));
+              s.boardFor = { index: '.page-container' };
+              s.thread = 'div[id^="thread_"]';
+              Main.mounted(cb);
+          }
+          else {
+              cb();
+          }
+      },
+      urls: {
+          post: ({ postID }) => `#${postID}`,
+          index: ({ siteID, boardID }) => `${rootFor({ siteID })}${boardID}/`,
+          catalog: ({ siteID, boardID }) => `${rootFor({ siteID })}${boardID}/catalog.html`,
+          file: ({ siteID, boardID }, filename) => `${rootFor({ siteID })}${boardID}/${filename}`,
+          archivedThreadJSON: (thread) => SWTinyboard.urls.threadJSON(thread, true),
+          thumb: (board, filename) => SWTinyboard.urls.file(board, filename),
+          thread: ({ siteID, boardID, threadID }, isArchived) => `${rootFor({ siteID })}${boardID}/${isArchived ? 'archive/' : ''}res/${threadID}.html`,
+          threadJSON: ({ siteID, boardID, threadID }, isArchived) => {
+              const root = rootOrEmptyFor({ siteID });
+              return root && `${root}${boardID}/${isArchived ? 'archive/' : ''}res/${threadID}.json`;
+          },
+          threadsListJSON({ siteID, boardID }) {
+              const root = rootOrEmptyFor({ siteID });
+              return root && `${root}${boardID}/threads.json`;
+          },
+          archiveListJSON({ siteID, boardID }) {
+              const root = rootOrEmptyFor({ siteID });
+              return root && `${root}${boardID}/archive/archive.json`;
+          },
+          catalogJSON({ siteID, boardID }) {
+              const root = rootOrEmptyFor({ siteID });
+              return root && `${root}${boardID}/catalog.json`;
+          },
+      },
+      selectors: {
+          board: 'form[name="postcontrols"]',
+          thread: 'input[name="board"] ~ div[id^="thread_"]',
+          threadDivider: 'div[id^="thread_"] > hr:last-child',
+          summary: '.omitted',
+          postContainer: 'div[id^="reply_"]:not(.hidden)', // postContainer is thread for OP
+          opBottom: '.op',
+          replyOriginal: 'div[id^="reply_"]:not(.hidden)',
+          infoRoot: '.intro',
+          info: {
+              subject: '.subject',
+              name: '.name',
+              email: '.email',
+              tripcode: '.trip',
+              uniqueID: '.poster_id',
+              capcode: '.capcode',
+              flag: '.flag',
+              date: 'time',
+              nameBlock: 'label',
+              quote: 'a[href*="#q"]',
+              reply: 'a[href*="/res/"]:not([href*="#"])'
+          },
+          icons: {
+              isSticky: '.fa-thumb-tack',
+              isClosed: '.fa-lock'
+          },
+          file: {
+              text: '.fileinfo',
+              link: '.fileinfo > a',
+              thumb: 'a > .post-image'
+          },
+          thumbLink: '.file > a',
+          multifile: '.files > .file',
+          highlightable: {
+              op: ' > .op',
+              reply: '.reply',
+              catalog: ' > .thread'
+          },
+          comment: '.body',
+          spoiler: '.spoiler',
+          quotelink: 'a[onclick*="highlightReply("]',
+          catalog: {
+              board: '#Grid',
+              thread: '.mix',
+              thumb: '.thread-image'
+          },
+          boardList: '.boardlist',
+          boardListBottom: '.boardlist.bottom',
+          styleSheet: '#stylesheet',
+          psa: '.blotter',
+          nav: {
+              prev: '.pages > form > [value=Previous]',
+              next: '.pages > form > [value=Next]'
+          }
+      },
+      classes: {
+          highlight: 'highlighted'
+      },
+      xpath: {
+          thread: 'div[starts-with(@id,"thread_")]',
+          postContainer: 'div[starts-with(@id,"reply_") or starts-with(@id,"thread_")]',
+          replyContainer: 'div[starts-with(@id,"reply_")]'
+      },
+      regexp: {
+          quotelink: new RegExp(`\
+/\
+([^/]+)\
+/res/\
+(\\d+)\
+(?:\\.\\w+)?#\
+(\\d+)\
+$\
+`),
+          quotelinkHTML: /<a [^>]*\bhref="[^"]*\/([^\/]+)\/res\/(\d+)(?:\.\w+)?#(\d+)"/g
+      },
+      Build: {
+          parseJSON(data, board) {
+              const o = SWYotsuba.Build.parseJSON(data, board);
+              if (data.ext === 'deleted') {
+                  delete o.file;
+                  $.extend(o, {
+                      files: [],
+                      fileDeleted: true,
+                      filesDeleted: [0]
+                  });
+              }
+              if (data.extra_files) {
+                  let file;
+                  for (let i = 0; i < data.extra_files.length; i++) {
+                      var extra_file = data.extra_files[i];
+                      if (extra_file.ext === 'deleted') {
+                          o.filesDeleted.push(i);
+                      }
+                      else {
+                          file = SWYotsuba.Build.parseJSONFile(data, board);
+                          o.files.push(file);
+                      }
+                  }
+                  if (o.files.length)
+                      o.file = o.files[0];
+              }
+              return o;
+          },
+          parseComment(html) {
+              html = html
+                  .replace(/<br\b[^<]*>/gi, '\n')
+                  .replace(/<[^>]*>/g, '');
+              return $.unescape(html);
+          }
+      },
+      bgColoredEl: () => $.el('div', { className: 'post reply' }),
+      isFileURL: (url) => /\/src\/[^\/]+/.test(url.pathname),
+      preParsingFixes(board) {
+          // fixes effects of unclosed link in announcement
+          let broken = $('a > input[name="board"]', board);
+          if (broken)
+              return $.before(broken.parentNode, broken);
+      },
+      parseNodes(post, nodes) {
+          // Add vichan's span.poster_id around the ID if not already present.
+          if (nodes.uniqueID)
+              return;
+          let text = '';
+          let node = nodes.nameBlock.nextSibling;
+          while (node && (node.nodeType === 3)) {
+              text += node.textContent;
+              node = node.nextSibling;
+          }
+          let m = text.match(/(\s*ID:\s*)(\S+)/);
+          if (m) {
+              nodes.info.normalize();
+              let { nextSibling } = nodes.nameBlock;
+              nextSibling = nextSibling.splitText(m[1].length);
+              nextSibling.splitText(m[2].length);
+              let uniqueID = $.el('span', { className: 'poster_id' });
+              nodes.uniqueID = uniqueID;
+              $.replace(nextSibling, uniqueID);
+              $.add(uniqueID, nextSibling);
+          }
+      },
+      parseDate(node) {
+          let date = Date.parse(node.getAttribute('datetime')?.trim());
+          if (!isNaN(date))
+              return new Date(date);
+          date = Date.parse(node.textContent.trim() + ' UTC'); // e.g. onesixtwo.club
+          if (!isNaN(date))
+              return new Date(date);
+          return undefined;
+      },
+      parseFile(post, file) {
+          let info, infoNode;
+          const { text, link, thumb } = file;
+          if ($.x(`ancestor::${this.xpath.postContainer}[1]`, text) !== post.nodes.root)
+              return false; // file belongs to a reply
+          if (!(infoNode = link.nextSibling?.textContent.includes('(') ? link.nextSibling : link.nextElementSibling))
+              return false;
+          if (!(info = infoNode.textContent.match(/\((.*,\s*)?([\d.]+ ?[KMG]?B).*\)/)))
+              return false;
+          const nameNode = $('.postfilename', text);
+          $.extend(file, {
+              name: nameNode ? (nameNode.title || nameNode.textContent) : link.pathname.match(/[^/]*$/)[0],
+              size: info[2],
+              dimensions: info[0].match(/\d+x\d+/)?.[0]
+          });
+          if (thumb) {
+              $.extend(file, {
+                  thumbURL: /\/static\//.test(thumb.src) && $.isImage(link.href) ? link.href : thumb.src,
+                  isSpoiler: /^Spoiler/i.test(info[1] || '') || (link.textContent === 'Spoiler Image')
+              });
+          }
+          return true;
+      },
+      // Detect old Tinyboard image expansion that changes src attribute on thumbnail.
+      isThumbExpanded: (file) => $.hasClass(file.thumb.parentNode, 'expanded') || (file.thumb.parentNode.dataset.expanded === 'true'),
+      isLinkified: (link) => /\bnofollow\b/.test(link.rel),
+      catalogPin: (threadRoot) => threadRoot.dataset.sticky = 'true',
+  };
+
+  const SW = { tinyboard: SWTinyboard, yotsuba: SWYotsuba };
+
+  var Site = {
+      defaultProperties: {
+          '4chan.org': { software: 'yotsuba' },
+          // '4channel.org': {canonical: '4chan.org'},
+          '4cdn.org': { canonical: '4chan.org' },
+      },
+      init(cb) {
+          $.extend(Conf.siteProperties, Site.defaultProperties);
+          let hostname = resolve();
+          if (hostname && $.hasOwn(SW, Conf.siteProperties[hostname].software)) {
+              this.set(hostname);
+              cb();
+          }
+          $.onExists(doc, 'body', () => {
+              for (let software in SW) {
+                  let changes = SW[software].detect?.();
+                  if (changes) {
+                      changes.software = software;
+                      hostname = location.hostname.replace(/^www\./, '');
+                      var properties = (Conf.siteProperties[hostname] || (Conf.siteProperties[hostname] = dict()));
+                      var changed = 0;
+                      for (var key in changes) {
+                          if (properties[key] !== changes[key]) {
+                              properties[key] = changes[key];
+                              changed++;
+                          }
+                      }
+                      if (changed)
+                          $.set('siteProperties', Conf.siteProperties);
+                      if (!g.SITE) {
+                          this.set(hostname);
+                          cb();
+                      }
+                      return;
+                  }
+              }
+          });
+      },
+      set(hostname) {
+          for (var ID in Conf.siteProperties) {
+              var properties = Conf.siteProperties[ID];
+              if (properties.canonical)
+                  continue;
+              var { software } = properties;
+              if (!software || !$.hasOwn(SW, software))
+                  continue;
+              let site = Object.create(SW[software]);
+              g.sites[ID] = site;
+              $.extend(site, { ID, siteID: ID, properties, software });
+          }
+          return g.SITE = g.sites[hostname];
       }
   };
 
