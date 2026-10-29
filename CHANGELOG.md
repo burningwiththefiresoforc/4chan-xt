@@ -2,6 +2,13 @@
 
 4chan XT uses a different user script namespace than 4chan X, so to migrate you need to export settings from 4chan X, and import them in XT.
 
+### 2.32.1 (2026-10-29)
+
+- Resolved hundreds of circular dependencies. This one has the most potential for bugs that will have to be shaken out over time.
+- Fixed an issue making thread hiding from the menu in the index not work.
+- Added opus support for soundposts.
+- The alert beep now defaults to 4chan's native extension beep so it no longer needs to be bundled with the script.
+
 ### 2.32.0 (2026-09-07)
 
 - Added option to make highlighting override hiding in filters.
