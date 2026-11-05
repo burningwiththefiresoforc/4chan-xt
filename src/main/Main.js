@@ -62,6 +62,7 @@ import ThreadUpdater from "../Monitoring/ThreadUpdater";
 import ThreadWatcher from "../Monitoring/ThreadWatcher";
 import Unread from "../Monitoring/Unread";
 import UnreadIndex from "../Monitoring/UnreadIndex";
+import YouScanner from "../Monitoring/YouScanner";
 import $ from "../platform/$";
 import $$ from "../platform/$$";
 import PostRedirect from "../Posting/PostRedirect";
@@ -874,6 +875,7 @@ User agent: ${navigator.userAgent}\
     ['Thread Updater',            ThreadUpdater],
     ['Thread Watcher',            ThreadWatcher],
     ['Thread Watcher (Menu)',     ThreadWatcher.menu],
+    ['Find Replies to You',       YouScanner],
     ['Mark New IPs',              MarkNewIPs],
     ['Index Navigation',          Nav],
     ['Keybinds',                  Keybinds],
