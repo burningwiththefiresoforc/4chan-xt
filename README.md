@@ -65,9 +65,32 @@ Other features and fixes:
 <details>
 
 - [ ] Clean up circular dependencies
+- [ ] Migrate altchan functionality (_maybe_)
+    - Long term it would likely be better to maintain separate forks for different chans. This would probably require creating a script that can synchronize different forks/branches.
+- [ ] Drop extension support
+    - The extension is only chrome compatible and I'm not sure anybody even uses it or if it even works anymore.
+- [ ] Options search bar
 
 </details>
 
+## Policy on LLM generated code
+
+Like it or not LLM generated code is a reality in our day and age. There is already LLM generated code present in this project. But for quality and scope reasons, here are some expectations the current maintainer ([burningwiththefiresoforc](https://github.com/burningwiththefiresoforc)) would like to lay out for anybody contributing using these tools (and some that apply to all contributions).
+
+- The opening comments for pull requests and interactions with the maintainer should be written by a human author. This shows some level of personal responsibility and care when contributing, and LLMs can sometimes be overly verbose.
+- The codebase's existing helper functions and libraries should be used or at least retrofitted whenever possible. Other projects, while adding useful features, have blazed forward often without using or improving upon the already existing architecture. The current project was started with the explicit intention of avoiding this pitfall. No offense is intended toward these other projects, this is simply a difference in ideals.
+- Multiple features should be broken up into multiple pull requests.
+- Optimization should be a priority.
+- Improving the codebase will always take precedence over adding features.
+- Small, lightweight features will always take precedence over large or performance hogging features.
+
+## What Should I Contribute?
+
+This fork is intended to _maintain_ the 4chan-X/XT tradition rather than significantly push development forward. This means that the most valuable contributions will be future-proofing and those that improve the ease of maintenence, such as clearing out the junk that has accumulated over the years. I want to narrow scope wherever it is reasonable to.
+
+Contributions should ideally be 4chan focused. As explained [here](https://github.com/TuxedoTako/4chan-xt/issues/177) altchan support is a bit of a lost cause. In the future, support for these other chans may be dropped entirely for the main branch and migrated to alternate branches or repos. This is a better model than a one-size-fits-all and would probably improve compatibility for everybody in the long run. Chans come and go and often contributions to 4chan-X/XT for compatibility are not maintained by their authors or very well documented.
+- People looking to contribute to altchans should check out [figamin's Allchan-XT-Plus](https://github.com/figamin/Allchan-XT-Plus) or may be better off contributing directly to the frontend of their respective imageboard which often will have a public repo.
+- A worthy endeavor would be a script that offers a way to synchronize the thread watcher and other 4chan-XT features between different imageboards, which would take the burden off of the main branch of 4chan-XT for this. This is the main obstacle for creating a more decentralized branch/fork model.
 
 <details>
 <summary>Old readme</summary>
