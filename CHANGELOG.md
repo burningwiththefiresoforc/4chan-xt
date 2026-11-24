@@ -2,6 +2,11 @@
 
 4chan XT uses a different user script namespace than 4chan X, so to migrate you need to export settings from 4chan X, and import them in XT.
 
+### 2.32.2 (2026-11-23)
+
+- Optimized SVG size.
+- Added a policy on LLM generated code and some ideals for the future of the fork.
+
 ### 2.32.1 (2026-10-29)
 
 - Resolved hundreds of circular dependencies. This one has the most potential for bugs that will have to be shaken out over time.
