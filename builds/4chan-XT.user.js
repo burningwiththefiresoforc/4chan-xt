@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         4chan XT
-// @version      2.32.2
+// @version      2.32.3
 // @minGMVer     4.00
 // @minFFVer     115
 // @namespace    4chan-XT
@@ -179,8 +179,8 @@
   'use strict';
 
   var version = {
-    "version": "2.32.2",
-    "date": "2026-11-23T09:09:09Z"
+    "version": "2.32.3",
+    "date": "2026-11-27T09:09:09Z"
   }
   ;
 
@@ -3805,9 +3805,8 @@ current-archive-text:"Archive"]
       },
       ready(cb) {
           return $.ready(() => {
-              if (PageReady.isThisPageLegit()) {
+              if (PageReady.isThisPageLegit())
                   return cb();
-              }
           });
       }
   };
@@ -15227,22 +15226,19 @@ svg.icon {
           FileInfoFormat._tokens = tokens;
           return tokens;
       },
-      // onQuickFilterMD5 is injected so this module never needs to import Filter.
-      bindFileButtons(container, onQuickFilterMD5) {
-          for (const a of $$('.download-button, .quick-filter-md5', container)) {
-              if (a.classList.contains('download-button')) {
-                  $.on(a, 'click', ImageCommon.download);
-              }
-              else if (onQuickFilterMD5) {
-                  $.on(a, 'click', onQuickFilterMD5);
-              }
+      bindFileButtons(container) {
+          for (const a of $$('.download-button', container)) {
+              $.on(a, 'click', ImageCommon.download);
+          }
+          for (const a of $$('.quick-filter-md5', container)) {
+              $.on(a, 'click', Filter.quickFilterMD5);
           }
       },
-      format(formatString, post, outputNode, onQuickFilterMD5) {
+      format(formatString, post, outputNode) {
           const tokens = FileInfoFormat.getTokens(formatString);
           const output = tokens.map(t => typeof t === 'function' ? t.call(post) : t);
           $.extend(outputNode, { innerHTML: E.cat(output) });
-          FileInfoFormat.bindFileButtons(outputNode, onQuickFilterMD5);
+          FileInfoFormat.bindFileButtons(outputNode);
       },
   };
 
@@ -21850,16 +21846,10 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       });
     },
     node() {
-      let a;
       if (!this.file)
         return;
       if (this.isClone) {
-        for (a of $$('.file-info .download-button', this.file.text)) {
-          $.on(a, 'click', ImageCommon.download);
-        }
-        for (a of $$('.file-info .quick-filter-md5', this.file.text)) {
-          $.on(a, 'click', Filter.quickFilterMD5);
-        }
+        FileInfoFormat.bindFileButtons(this.file.text);
         return;
       }
       const oldInfo = $.el('span', { className: 'fileText-original' });
@@ -21868,7 +21858,7 @@ Enable it on boards.${location.hostname.split('.')[1]}.org in your browser's pri
       const info = $.el('span', { className: 'file-info' });
       FileInfoFormat.format(Conf.fileInfo, this, info);
       $.prepend(this.file.text, info);
-    }
+    },
   };
 
   var Fourchan = {

@@ -2,6 +2,10 @@
 
 4chan XT uses a different user script namespace than 4chan X, so to migrate you need to export settings from 4chan X, and import them in XT.
 
+### 2.32.3 (2026-11-27)
+
+- Fixed a bug causing the quickfilter to not work in the file info.
+
 ### 2.32.2 (2026-11-23)
 
 - Optimized SVG size.
