@@ -13,7 +13,7 @@ const PageReady = {
 
   ready(cb) {
     return $.ready(() => {
-      if (PageReady.isThisPageLegit()) { return cb(); }
+      if (PageReady.isThisPageLegit()) return cb();
     });
   }
 };

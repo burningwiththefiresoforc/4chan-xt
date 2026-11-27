@@ -2,6 +2,7 @@ import { g, Conf, E } from "../globals/globals";
 import h, { isEscaped } from "../globals/jsx";
 import Icon from "../Icons/icon";
 import ImageCommon from "../Images/ImageCommon";
+import Filter from "../Filtering/Filter";
 import $ from "../platform/$";
 import $$ from "../platform/$$";
 import { shortFilename } from "../site/shortFilename";
@@ -57,22 +58,20 @@ const FileInfoFormat = {
     return tokens;
   },
 
-  // onQuickFilterMD5 is injected so this module never needs to import Filter.
-  bindFileButtons(container, onQuickFilterMD5) {
-    for (const a of $$('.download-button, .quick-filter-md5', container)) {
-      if (a.classList.contains('download-button')) {
-        $.on(a, 'click', ImageCommon.download);
-      } else if (onQuickFilterMD5) {
-        $.on(a, 'click', onQuickFilterMD5);
-      }
+  bindFileButtons(container) {
+    for (const a of $$('.download-button', container)) {
+      $.on(a, 'click', ImageCommon.download);
+    }
+    for (const a of $$('.quick-filter-md5', container)) {
+      $.on(a, 'click', Filter.quickFilterMD5);
     }
   },
 
-  format(formatString, post, outputNode, onQuickFilterMD5) {
+  format(formatString, post, outputNode) {
     const tokens = FileInfoFormat.getTokens(formatString);
     const output = tokens.map(t => typeof t === 'function' ? t.call(post) : t);
     $.extend(outputNode, {innerHTML: E.cat(output)});
-    FileInfoFormat.bindFileButtons(outputNode, onQuickFilterMD5);
+    FileInfoFormat.bindFileButtons(outputNode);
   },
 };
 

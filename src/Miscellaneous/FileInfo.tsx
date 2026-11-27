@@ -25,15 +25,9 @@ var FileInfo = {
   },
 
   node() {
-    let a;
     if (!this.file) return;
     if (this.isClone) {
-      for (a of $$('.file-info .download-button', this.file.text)) {
-        $.on(a, 'click', ImageCommon.download);
-      }
-      for (a of $$('.file-info .quick-filter-md5', this.file.text)) {
-        $.on(a, 'click', Filter.quickFilterMD5);
-      }
+      FileInfoFormat.bindFileButtons(this.file.text);
       return;
     }
 
@@ -44,6 +38,6 @@ var FileInfo = {
     const info = $.el('span', {className: 'file-info'});
     FileInfoFormat.format(Conf.fileInfo, this, info);
     $.prepend(this.file.text, info);
-  }
+  },
 };
 export default FileInfo;
